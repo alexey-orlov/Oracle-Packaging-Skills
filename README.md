@@ -38,6 +38,12 @@ claude plugin install oracle-packs-web@oracle-packaging-skills   # only if you b
 
 Before either, run `tools/sync-shared.sh` so each plugin carries the current `shared/` copy (the release step; `--check` reports drift).
 
+**On the owner's Mac (done 2026-09-18):** the repo folder itself is registered as a local marketplace and both plugins are installed at user scope, so `/oracle-packs:…` and `/oracle-packs-web:…` work in every session. After editing the repo, refresh the installed copies:
+
+```bash
+tools/sync-shared.sh && claude plugin marketplace update oracle-packaging-skills && claude plugin update oracle-packs@oracle-packaging-skills && claude plugin update oracle-packs-web@oracle-packaging-skills
+```
+
 ## Requirements
 
 Python packages go in a virtualenv, never in system Python. From the repo root:
