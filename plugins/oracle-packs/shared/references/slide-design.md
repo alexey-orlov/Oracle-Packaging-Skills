@@ -49,7 +49,7 @@ _Carried over from the practice owner's standing design rules, built up from his
     partner's layer leads (top) and each layer carries the official logo — pull it from a
     brand deck's vector asset (recolour the white-on-dark SVG, render, crop to bounds, make
     the background transparent) rather than a text stand-in. Differentiate the layers by
-    weight and shape (solid ink tiles on a framed band vs light rounded cards on a tinted
+    weight and shape (solid ink tiles on a framed band vs light cut-corner cards on a tinted
     band), not by tint alone. Ship a logo only where it is cleared — see
     `naming-and-clearance.md`.
 13. **External slides carry no internal operating numbers** (2026-09-02): headcount, POD

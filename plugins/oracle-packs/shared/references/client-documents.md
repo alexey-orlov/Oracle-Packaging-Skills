@@ -53,7 +53,12 @@ patterns", "packaged") as if it were customer language.
   Oracle's platforms to agents in production."*: "too long of a heading"). Uppercase display
   type multiplies length, so budget from the rendered size before writing: an H1 is two to
   four words (≤ ~24 characters a line, two lines at most), an H2 five words or fewer (≤ ~30
-  characters), and the argument moves into the lead. Check the phone break too: no line left
+  characters), and the argument moves into the lead. **Since SoftServe's 2026 rebrand the
+  display type is sentence case, not uppercase** (Azurio serif at weight 400), so the
+  multiplier is gone but the budget is not: measured on the practice mini-site's own hero,
+  an H1 holds ~15 characters a line at 96px in a 700px column, a product name ~22 at 64px
+  and an H2 ~30. Re-measure against the rendered size rather than reusing the uppercase
+  numbers. Check the phone break too: no line left
   holding a lone short word.
 - Name the readers before drafting (for a partner-facing site: a partner rep opening the page
   live on a call, and an enterprise buyer reading alone), and write every headline and lead
