@@ -1,0 +1,26 @@
+# Python dependencies for the oracle-packs document builders.
+#
+#   python3 -m venv .venv && .venv/bin/pip install -r plugins/oracle-packs/requirements.txt
+#
+# Never install these into the system Python. Python 3.9 or newer; everything else the builders
+# need is in the standard library. Verified on Python 3.14.6 / macOS with the versions in the
+# comments; the floors below are the oldest releases carrying the APIs the tools use.
+
+PyYAML>=6.0            # reads pack-spec.yaml — every tool                  (verified 6.0.3)
+python-docx>=1.1.0     # builds the feature list .docx                      (verified 1.2.0)
+python-pptx>=1.0.0     # builds the sales deck and the exec-summary slide   (verified 1.0.2)
+Pillow>=10.0           # text-fit estimation behind the deck fit report     (verified 12.3.0)
+pypdf>=4.0             # counts pages in the printed one-pager PDF          (verified 6.19.0)
+
+# Not Python packages, but required by the builders and the QA loop:
+#
+#   Google Chrome or Chromium — skills/one-pager/tools/build_one_pager.py turns the rendered HTML
+#   into a PDF and proves it is one A4 page. Found via $CHROME_BIN, the macOS default application
+#   path, or google-chrome / chromium on PATH. Without it the tool writes the HTML and exits 4,
+#   because the one-page rule cannot be verified.
+#
+#   poppler (`pdftotext`), optional — shared/tools/lint_artifact.py reads .pdf through it. Without
+#   it a .pdf is skipped with a warning and counted as "not evaluated", never as a pass.
+#
+#   A renderer for slide QA, optional — skills/deck/tools/render_probe.sh reports what this machine
+#   has (qlmanage, soffice, pdftoppm) and prints the contact-sheet recipe for it.

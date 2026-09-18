@@ -1,0 +1,35 @@
+# Fixture catalog — the shape lint_spec.py / lint_artifact.py read from
+# shared/data/oracle-products.yaml. A few entries, enough to exercise the id
+# check (SPEC004) and the vendor-spelling checks (ART101, ART103).
+products:
+  - id: oci-gpu-instances
+    name: OCI GPU Instances
+    short: GPU Instances
+    vendor: Oracle
+    not_this: ["Oracle GPU Cloud"]
+  - id: oracle-fusion-field-service
+    name: Oracle Fusion Field Service
+    short: Fusion Field Service
+    vendor: Oracle
+    not_this: ["Oracle Field Service Cloud"]
+  - id: oci-object-storage
+    name: OCI Object Storage
+    short: Object Storage
+    vendor: Oracle
+    not_this: []
+  - id: oracle-ai-data-platform
+    name: Oracle AI Data Platform
+    short: AI Data Platform
+    vendor: Oracle
+    not_this: ["AIDP", "Oracle Data & AI Platform"]
+  - id: oracle-autonomous-ai-lakehouse
+    name: Oracle Autonomous AI Lakehouse
+    short: Autonomous AI Lakehouse
+    vendor: Oracle
+    not_this: ["Oracle AI Lakehouse", "Autonomous Data Warehouse"]
+  - id: nvidia-cuopt
+    name: NVIDIA cuOpt
+    short: cuOpt
+    vendor: NVIDIA
+    aliases: ["cuOpt on OCI"]
+    not_this: ["cuOpt", "Oracle cuOpt"]   # bare, without the vendor prefix

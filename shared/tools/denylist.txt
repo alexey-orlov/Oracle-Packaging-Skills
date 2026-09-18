@@ -1,0 +1,57 @@
+# denylist.txt — customer names and marks that must never ship outside SoftServe.
+#
+# INTERNAL TO SOFTSERVE. This file itself is internal material: it is the list of
+# every customer an accelerator pack has been generalized from, so it never goes
+# into an artifact, a repository readme, a demo, or anything a customer or an
+# Oracle seller reads. It ships inside the plugin bundle for the linters only.
+#
+# Used by lint_artifact.py (rules ART001 customer name, ART002 logo/asset path)
+# and lint_spec.py (rule SPEC010). Rationale and the channel matrix:
+# shared/references/naming-and-clearance.md §3.
+#
+# FORMAT
+#   one entry per line; blank lines and `# ...` comments ignored
+#   plain entry        matched case-sensitively on word boundaries (Sky, not "sky")
+#   ~entry             matched case-insensitively (use for acronyms and slugs)
+#   entry with a "/"   matched as a case-insensitive substring (path fragments)
+#   Every entry is also matched, case- and separator-insensitively, inside file
+#   names and asset paths, so <name>-logo.svg and <name>_air.png are caught.
+#
+# HOW TO ADD A LINE
+#   Add the customer the moment a pack starts being generalized from their
+#   engagement — before the first artifact is built, not after a leak. Extend,
+#   never trim: a name stays on the list after the engagement ends, because the
+#   source SoWs, decks, transcripts and spreadsheets it sits in do not go away.
+#   Keep the alphabetical-ish grouping, add a short comment when the name is
+#   ambiguous, and run `shared/tools/tests/run_tests.sh` afterwards.
+#   Clearance to name a customer on one channel is set per pack in the spec's
+#   clearance.customer_name_allowed — never by deleting a line here.
+
+# --- Engagements the current packs derive from -----------------------------
+Bosch
+BSH                     # Bosch's appliance business; the same engagement
+Riyadh Air
+RiyadhAir
+Riyahd                  # misspelling that survived in source decks
+DHL
+SBG                     # Saudi Binladin Group
+Binladin
+NHS
+KPN
+Sky
+Channel 4
+Belron
+Nesma
+Toyota
+FreeTech
+NATO
+Eriks
+OMV
+
+# --- Our own internal names -------------------------------------------------
+GigaCloud               # never appears in any Oracle artifact
+AIDP                    # internal abbreviation; write Oracle AI Data Platform
+
+# --- Asset paths that carry customer marks ---------------------------------
+logos/                  # no cleared vendor or customer logo file exists
+assets/img/logos/

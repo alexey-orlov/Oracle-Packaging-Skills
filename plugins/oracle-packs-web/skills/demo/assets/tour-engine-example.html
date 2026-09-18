@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>tour-engine — minimal example</title>
+<style>
+  /* The smallest CSS that satisfies the engine's DOM contract. A real demo
+     restyles all of this; nothing here is required beyond the selectors. */
+  :root { --bg:#F4F6FA; --card:#fff; --ink:#0B1220; --ink2:#4A5568; --line:#E6EAF1; --primary:#2F5BEA; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:14px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; color:var(--ink); background:var(--bg); }
+  header { display:flex; align-items:center; gap:10px; padding:12px 18px; background:var(--card); border-bottom:1px solid var(--line); }
+  header b { font-size:15px; }
+  main { padding:24px 18px; display:grid; gap:18px; max-width:760px; }
+  .panel { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px 18px; }
+  .kpis { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+  .kpi { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px 14px; }
+  .kpi span { display:block; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink2); }
+  .kpi b { font-size:22px; }
+  .kpi i { font-style:normal; color:#137C4B; font-size:12px; }
+  button { font:inherit; cursor:pointer; border-radius:8px; border:1px solid var(--line); background:var(--card); padding:8px 14px; }
+  button.primary { background:var(--primary); border-color:var(--primary); color:#fff; }
+  .muted { color:var(--ink2); }
+
+  /* ---- the engine's contract ---- */
+  .tour { position:fixed; z-index:60; width:306px; transition:top .25s ease, left .25s ease; }
+  .tour-card { background:var(--card); border-radius:12px; border-top:3px solid var(--primary);
+               box-shadow:0 12px 32px rgba(15,23,42,.18), 0 0 0 1px rgba(15,23,42,.06); padding:14px 16px 12px; }
+  .tour-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+  .tour-step { font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--primary); }
+  .tour-close { border:0; background:transparent; color:var(--ink2); font-size:12px; padding:2px 4px; }
+  .tour-card strong { display:block; font-size:14.5px; margin-bottom:4px; }
+  .tour-card p { margin:0; color:var(--ink2); font-size:13px; }
+  /* Fractional progress: the engine writes <i><b style="width:N%">. */
+  .tour-progress { display:flex; gap:4px; margin-top:12px; }
+  .tour-progress i { flex:1; height:3px; border-radius:999px; background:#E6EAF1; overflow:hidden; }
+  .tour-progress i b { display:block; height:100%; border-radius:999px; background:var(--primary); transition:width .25s ease; }
+  .tour-target { position:relative; z-index:55; border-radius:10px;
+                 box-shadow:0 0 0 3px #fff, 0 0 0 6px var(--primary), 0 0 0 12px rgba(47,91,234,.18) !important; }
+  @keyframes nudge { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
+  .tour.is-nudge { animation:nudge .35s ease; }
+  body.tour-gutter main { padding-right:340px; }
+
+  .modal { position:fixed; inset:0; background:rgba(11,18,32,.48); display:grid; place-items:center; z-index:70; padding:20px; }
+  .modal-card { background:var(--card); border-radius:14px; width:min(560px,100%); padding:22px 24px; }
+  .gate-actions { display:flex; gap:10px; margin:18px 0 12px; flex-wrap:wrap; }
+  .gate-note { font-size:12px; color:var(--ink2); }
+  #gate-try { display:grid; gap:8px; margin-top:12px; }
+  #gate-try button { text-align:left; display:grid; gap:2px; }
+  #gate-try span { font-size:12px; color:var(--ink2); }
+  [hidden] { display:none !important; }
+</style>
+</head>
+<body>
+
+<header>
+  <b>Example app</b>
+  <span class="muted" id="tour-pill" hidden>Guided walkthrough</span>
+  <span style="flex:1"></span>
+  <button id="tour-toggle" type="button">Exit guide</button>
+</header>
+
+<main>
+  <div class="panel">
+    <p class="muted" style="margin-top:0">Today's plan, as it stands.</p>
+    <button class="primary" id="btn-run" type="button">Run the optimization</button>
+  </div>
+
+  <div class="kpis" id="kpis" hidden>
+    <div class="kpi"><span>Jobs per person per day</span><b id="k1">—</b><i id="d1"></i></div>
+    <div class="kpi"><span>Capacity used</span><b id="k2">—</b><i id="d2"></i></div>
+    <div class="kpi"><span>Average wait</span><b id="k3">—</b><i id="d3"></i></div>
+  </div>
+
+  <div class="panel" id="changes" hidden>
+    <p class="muted" style="margin-top:0">Eleven changes produced those numbers.</p>
+    <button id="btn-review" type="button">Review changes</button>
+  </div>
+</main>
+
+<!-- welcome / end card -->
+<div class="modal" id="gate" hidden>
+  <div class="modal-card">
+    <h2 id="gate-title" style="margin:0 0 10px">Example walkthrough</h2>
+    <p id="gate-body" class="muted" style="margin:0">Run the plan, read what improved, then open the changes behind it. Three steps, under a minute.</p>
+    <div class="gate-actions">
+      <button class="primary" id="gate-start" type="button">Start the walkthrough</button>
+      <button id="gate-free" type="button">Explore freely</button>
+    </div>
+    <div id="gate-try" hidden></div>
+    <p class="gate-note">Demo data only. Nothing leaves this page.</p>
+  </div>
+</div>
+
+<!-- tour callout -->
+<div class="tour" id="tour" hidden>
+  <div class="tour-card">
+    <div class="tour-top">
+      <span class="tour-step" id="tour-step"></span>
+      <button class="tour-close" id="tour-skip" type="button" aria-label="Skip this step">Skip</button>
+    </div>
+    <strong id="tour-title"></strong>
+    <p id="tour-body"></p>
+    <div class="tour-progress" id="tour-progress"></div>
+    <button class="primary" id="tour-next" type="button" hidden style="margin-top:10px">Next</button>
+  </div>
+</div>
+
+<script src="tour-engine.js"></script>
+<script>
+(function () {
+  "use strict";
+  var $ = function (s) { return document.querySelector(s); };
+
+  /* ---- the demo's own state: current + named changes + additive effects ----
+     Every KPI is COMPUTED from what is applied, so an undo recomputes them and
+     every number on screen reconciles. See references/demo-data-model.md. */
+  var BASE = { jobs: 5.42, capacity: 0.83, wait: 5.9 };
+  var CHANGES = [
+    { id: "cover",  effects: { jobs: +0.14, capacity: +0.03, wait: -0.4 } },
+    { id: "capsplit", effects: { jobs: +0.09, capacity: -0.01, wait: -0.2 } },
+    { id: "move",   effects: { jobs: +0.05, capacity: +0.02, wait: +0.1 } }
+  ];
+  var S = { ran: false, applied: [], busy: false };
+
+  function kpis(applied) {
+    var k = { jobs: BASE.jobs, capacity: BASE.capacity, wait: BASE.wait };
+    CHANGES.forEach(function (c) {
+      if (applied.indexOf(c.id) === -1) return;
+      k.jobs += c.effects.jobs; k.capacity += c.effects.capacity; k.wait += c.effects.wait;
+    });
+    return k;
+  }
+  function render() {
+    var a = kpis(S.applied), b = BASE;
+    $("#k1").textContent = a.jobs.toFixed(2);
+    $("#k2").textContent = Math.round(a.capacity * 100) + "%";
+    $("#k3").textContent = a.wait.toFixed(1) + " d";
+    /* Deltas from the RAW means, never from the rounded displays. */
+    $("#d1").textContent = (a.jobs >= b.jobs ? "+" : "") + (((a.jobs - b.jobs) / b.jobs) * 100).toFixed(1) + "%";
+    $("#d2").textContent = (a.capacity >= b.capacity ? "+" : "") + Math.round((a.capacity - b.capacity) * 100) + " pts";
+    $("#d3").textContent = (a.wait - b.wait).toFixed(1) + " d";
+  }
+
+  function run() {
+    if (S.ran) return;
+    S.busy = true;
+    $("#btn-run").disabled = true;
+    setTimeout(function () {
+      S.ran = true; S.busy = false; S.applied = CHANGES.map(function (c) { return c.id; });
+      $("#kpis").hidden = false; $("#changes").hidden = false;
+      render();
+      tour.next();                 /* the stage landed: release the waiting step */
+    }, 900);
+  }
+  function review() { $("#changes").scrollIntoView({ block: "center", behavior: "smooth" }); }
+
+  /* ---- the tour ---------------------------------------------------------
+     A step is {id, major, side, title, body, target(), anchor?, auto(), …}.
+     `major` is what the viewer counts in; several steps may share one. */
+  var tour = TourEngine.create({
+    busy: function () { return S.busy; },
+    labels: { exit: "Exit guide", restart: "Restart walkthrough" },
+    steps: [
+      { id: "run", major: 1, side: "bottom", waits: true,
+        title: "Run the optimization",
+        body: "Today's plan is on screen with its problems flagged. Run it for the next four weeks.",
+        target: function () { return $("#btn-run"); },
+        auto: run },
+
+      /* A passive step: it asks for nothing, so the guard blocks every click
+         and Next is the way forward. This is the step that leads with the
+         value — before → after, immediately after the run. */
+      { id: "kpis", major: 2, side: "bottom", passive: true,
+        title: "Read what improved",
+        body: "Same four weeks, same method, before and after. Read the three deltas, then continue.",
+        target: function () { return $("#kpis"); },
+        anchor: function () { return $(".kpi"); },
+        auto: function () { tour.next(); } },
+
+      { id: "review", major: 3, side: "top",
+        title: "See where the gain came from",
+        body: "Each change carries the rule that produced it and its effect on these numbers.",
+        target: function () { return $("#btn-review"); },
+        avoid: function () { return $("#kpis"); },
+        auto: review }
+    ],
+    end: {
+      title: "What you can act on now",
+      body: "Three changes produced the gain, each traceable to its rule. Undo any of them and the numbers follow. Nothing was written to any system.",
+      doors: [
+        { id: "kpis", label: "Read the numbers again", hint: "before and after, same method", go: function () { $("#kpis").scrollIntoView(); } },
+        { id: "changes", label: "Open the changes", hint: "rule and effect, one per row", go: review }
+      ],
+      note: "Demo data only. Nothing leaves this page."
+    }
+  });
+
+  /* The demo calls after() from inside its own handlers — state first, then
+     after(), or the tour advances while the page is still busy. */
+  $("#btn-run").addEventListener("click", function () { run(); });
+  $("#btn-review").addEventListener("click", function () { review(); tour.after("review"); });
+
+  TourEngine.boot({
+    tour: tour,
+    prime: function (state) {
+      if (state === "start") return;
+      S.ran = true; S.applied = CHANGES.map(function (c) { return c.id; });
+      $("#kpis").hidden = false; $("#changes").hidden = false; render();
+    },
+    clean: function () { $("#tour-toggle").hidden = true; $("#tour-pill").hidden = true; },
+    defaultState: "solved"
+  });
+
+  window.DEMO = { state: S, tour: tour, kpis: kpis, run: run };
+})();
+</script>
+</body>
+</html>

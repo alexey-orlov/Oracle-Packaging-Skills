@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>{{ doc_title }}</title>
+<!--
+  Sales one-pager template — anatomy and CSS taken verbatim from the reference one-pager
+  build source (2026-07-17). Content is replaced by tokens; see references/one-pager-anatomy.md
+  for the block order, the word budget per block and the CSS token list.
+
+  Token syntax (rendered by tools/build_one_pager.py, no third-party template engine).
+  Written below with <> in place of the doubled braces, so this comment is not itself a token:
+    <a.b>       HTML-escaped substitution; a missing value renders as nothing
+    <& a.b>     raw substitution (pre-built markup only)
+    <# a.b> ... </ a.b>   section: repeats for a list, renders once for a truthy scalar or
+                          mapping, renders nothing at all for empty / false / missing
+    <^ a.b> ... </ a.b>   inverted section: renders only when the value is empty or false
+    <.>         the current item, inside a list of scalars
+
+  Everything that varies by pack lives in the spec; everything that varies by channel is
+  resolved by the builder before rendering (name variant, attribution, contact, logo).
+  Fonts are system fonts only — nothing is shipped or fetched.
+-->
+<style>
+  @page { size: A4; margin: 0; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 210mm; }
+  body {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    color: #26282B;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  /* overflow is VISIBLE on purpose: the reference build source clipped it, which hides an
+     over-full page. Letting it spill makes Chrome emit a second PDF page, which is what
+     tools/build_one_pager.py checks for -- a silent clip would ship a cut-off contact block. */
+  .page { width: 210mm; height: 297mm; overflow: visible; display: flex; flex-direction: column; background: #FFFFFF; }
+
+  /* ---------- HERO ---------- */
+  /* 38mm is the reference band; it grows only if an optional subheading needs the room */
+  .hero { position: relative; min-height: 38mm; background: #17191C; overflow: hidden; flex: 0 0 auto; }
+  .hero-img { position: absolute; top: 0; right: 0; width: 46%; height: 100%; object-fit: cover; object-position: 62% 30%; }
+  .hero-fade { position: absolute; top: 0; right: 0; width: 46%; height: 100%;
+    background: linear-gradient(90deg, #17191C 0%, rgba(23,25,28,0.55) 22%, rgba(23,25,28,0) 60%); }
+  .hero-content { position: relative; z-index: 2; height: 100%; padding: 5.5mm 10mm 5mm; display: flex; flex-direction: column; }
+  .hero-top { display: flex; align-items: center; justify-content: flex-start; gap: 4mm; }
+  .ss-logo { height: 4.6mm; width: auto; display: block; }
+  .ss-logo path { fill: #FFFFFF !important; }
+  .eyebrow { font-size: 6.4pt; letter-spacing: 0.20em; color: #C1DFF3; font-weight: 600; text-transform: uppercase; padding-left: 4mm; border-left: 0.35mm solid rgba(255,255,255,0.25); }
+  .hero h1 { margin-top: 4mm; font-size: 25pt; line-height: 1.02; font-weight: 700; color: #FFFFFF; letter-spacing: -0.01em; }
+  .hero .h1-sub { margin-top: 0.8mm; font-size: 8pt; font-weight: 600; letter-spacing: 0.06em; color: #C1DFF3; }
+  /* The reference page lands at exactly 297mm with zero slack, so the optional subheading has to
+     buy its own line back from the hero's own margins -- otherwise the band grows and the CTA
+     contact block is pushed onto a second page. Measured: the line costs 4.57mm, these give 4.6mm. */
+  .hero-content:has(.h1-sub) { padding-top: 5mm; padding-bottom: 3mm; }
+  .hero-content:has(.h1-sub) h1 { margin-top: 2.4mm; }
+  .h1-sub + .sub { margin-top: 0.8mm; }
+  .hero .sub { margin-top: 2.2mm; width: 58%; font-size: 9pt; line-height: 1.4; color: #D9E4EC; }
+  /* no hero photo: the subhead may use the full width */
+  .page.no-hero-img .hero .sub { width: 80%; }
+
+  /* ---------- SHARED ---------- */
+  /* main must NOT be allowed to shrink below its content (no min-height: 0): if it did, the
+     overflow would slide under the opaque CTA footer and vanish silently instead of
+     pushing onto a second page where the build tool can see it. */
+  main { flex: 1 1 auto; padding: 4.4mm 10mm 0; display: flex; flex-direction: column; gap: 3mm; }
+  h2.sec { font-size: 8pt; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #1485C3; margin-bottom: 2.4mm; }
+  p, li { font-size: 8.3pt; line-height: 1.42; }
+  ul.dash { list-style: none; margin-top: 2mm; }
+  ul.dash li { padding-left: 4mm; position: relative; margin-bottom: 1.5mm; }
+  ul.dash li::before { content: ""; position: absolute; left: 0.4mm; top: 1.55mm; width: 1.5mm; height: 1.5mm; border-radius: 50%; background: #1485C3; }
+  .sell-card ul.dash li::before { background: #F36949; }
+  ul.dash b { color: #17191C; }
+
+  /* ---------- PITCH ROW ---------- */
+  .pitch { display: grid; grid-template-columns: 57.5% 39.5%; column-gap: 3%; align-items: stretch; }
+  .block + .block { margin-top: 3.8mm; }
+  .arch { display: grid; grid-template-columns: 25mm 1fr 54mm; column-gap: 2mm; margin-top: 2.2mm; align-items: stretch; }
+  .arch .ofs { background: #EDF0F2; border-radius: 1.8mm; padding: 1.8mm 2mm; display: flex; flex-direction: column; justify-content: center; text-align: center; }
+  .arch .ofs b { font-size: 7.2pt; line-height: 1.2; }
+  .arch .ofs small { font-size: 6.2pt; color: #4C5156; line-height: 1.25; display: block; margin-top: 0.8mm; }
+  .arch .pipes { display: flex; flex-direction: column; justify-content: center; gap: 2.4mm; }
+  .pipe-lbl { font-size: 6.1pt; color: #4C5156; text-align: center; margin-bottom: 0.8mm; line-height: 1.2; }
+  .pipe { position: relative; height: 0.35mm; background: #4A8FBC; }
+  .pipe.right::after { content: ""; position: absolute; right: -0.1mm; top: -1.4mm; border-left: 2.2mm solid #4A8FBC; border-top: 1.6mm solid transparent; border-bottom: 1.6mm solid transparent; }
+  .pipe.left::before { content: ""; position: absolute; left: -0.1mm; top: -1.4mm; border-right: 2.2mm solid #4A8FBC; border-top: 1.6mm solid transparent; border-bottom: 1.6mm solid transparent; }
+  .arch .oci { border: 0.35mm solid #1485C3; border-radius: 2mm; padding: 1.5mm 2mm 1.8mm; background: #F4FAFE; }
+  .oci-label { font-size: 5.9pt; font-weight: 700; letter-spacing: 0.09em; line-height: 1.32; color: #1485C3; text-transform: uppercase; text-align: center; margin-bottom: 1.2mm; }
+  .oci-inner { display: flex; align-items: stretch; gap: 1.5mm; }
+  .oci-inner .obox { flex: 1 1 0; background: #FFFFFF; border: 0.25mm solid #A9D3F1; border-radius: 1.5mm; padding: 1.3mm 1.6mm; text-align: center; display: flex; flex-direction: column; justify-content: center; }
+  .obox b { font-size: 7pt; line-height: 1.2; }
+  .obox small { font-size: 6.1pt; color: #4C5156; display: block; margin-top: 0.6mm; line-height: 1.22; }
+  .oci-link { align-self: center; color: #1485C3; font-size: 8.5pt; font-weight: 700; }
+  .kpis { display: flex; gap: 2mm; margin: 0.4mm 0 2.2mm; }
+  .kpi { background: #E4F1FA; color: #0F6DA0; font-size: 7.3pt; font-weight: 600; border-radius: 10mm; padding: 1.4mm 3.2mm 1.2mm; }
+  .kpi span { font-weight: 700; }
+
+  .sell-card { background: #FFF1EB; border-radius: 2.4mm; padding: 4.4mm 5mm; display: flex; flex-direction: column; }
+  .sell-card h2.sec { color: #E2542F; }
+  .sell-card .verticals-label { font-size: 7pt; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #A8552F; margin: 3.2mm 0 1.8mm; }
+  .chips { display: flex; flex-wrap: wrap; gap: 1.4mm; }
+  .chip { background: #FFFFFF; border: 0.28mm solid #F9C4B2; color: #26282B; font-size: 7pt; font-weight: 500; border-radius: 1.4mm; padding: 1.2mm 2.4mm 1mm; }
+  .vert-lines { margin-top: 1.4mm; }
+  .vert-lines .v { font-size: 7pt; line-height: 1.3; margin-bottom: 1.2mm; }
+  .vert-lines .v b { color: #17191C; }
+
+  /* ---------- PROOF ---------- */
+  .proof { background: #EAF4FB; border-radius: 2.4mm; padding: 4.2mm 5.5mm 3.8mm; }
+  .proof-head { display: flex; align-items: flex-start; gap: 5mm; }
+  .proof-logo { height: 5.4mm; width: auto; margin-top: 0.8mm; flex: 0 0 auto; }
+  .proof-head p { font-size: 8pt; line-height: 1.34; }
+  .stats { display: grid; grid-template-columns: repeat({{ proof.stat_columns }}, 1fr); gap: 3mm; margin-top: 2.6mm; }
+  .stat { background: #FFFFFF; border-radius: 1.8mm; padding: 2.4mm 3.2mm 2.2mm; }
+  .stat .num { font-size: 15.5pt; font-weight: 700; color: #1485C3; letter-spacing: -0.01em; }
+  .stat .num small { font-size: 8.5pt; font-weight: 700; color: #1485C3; }
+  .stat .lbl { font-size: 6.9pt; line-height: 1.3; color: #4C5156; margin-top: 1.1mm; }
+  .caveat { font-size: 6.4pt; color: #6B7280; margin-top: 1.8mm; }
+
+  /* ---------- PACKAGES ---------- */
+  table.pk { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  table.pk col.lbl { width: 47mm; }
+  table.pk th, table.pk td { border: 0.22mm solid #D8DEE3; vertical-align: top; }
+  .tier-h { padding: 2.2mm 3mm 2mm; }
+  .tier-h .t-name { font-size: 10.5pt; font-weight: 700; display: flex; align-items: baseline; gap: 1.8mm; }
+  .tier-h .t-size { font-size: 7pt; font-weight: 700; border: 0.3mm solid currentColor; border-radius: 1mm; padding: 0.5mm 1.6mm 0.4mm; }
+  .tier-h .t-scope { font-size: 7pt; line-height: 1.28; font-weight: 400; margin-top: 1.2mm; }
+  th.t-s  { background: #DCEEFA; color: #17394F; }
+  th.t-m  { background: #A9D3F1; color: #12324A; }
+  th.t-l  { background: #1485C3; color: #FFFFFF; }
+  th.corner { background: #FFFFFF; border: none; border-right: 0.22mm solid #D8DEE3; border-bottom: 0.22mm solid #D8DEE3; }
+  td.rlbl, th.rlbl { font-size: 6.8pt; color: #4C5156; padding: 1.05mm 2.6mm; font-weight: 600; text-align: left; line-height: 1.22; background: #F7F9FA; vertical-align: middle; }
+  td.val { font-size: 8.2pt; padding: 1.2mm 3mm; text-align: center; vertical-align: middle; }
+  td.val.price { font-size: 9pt; font-weight: 700; color: #17191C; }
+  table.pk tr.blk-top td { border-top: 0.55mm solid #7C8891; }
+  td.val .sub-note { display: inline; font-size: 6.6pt; font-weight: 400; color: #6B7280; margin-left: 1.2mm; }
+  td.val .fnmark { font-size: 7pt; font-weight: 700; color: #1485C3; vertical-align: super; line-height: 0; margin-left: 0.3mm; }
+  td.dot { text-align: center; font-size: 7.8pt; color: #1485C3; padding: 0.6mm 0; vertical-align: middle; }
+  td.dot.none { color: #9AA3AB; }
+  /* one fine-print row: legend | disclaimer | price footnote. The disclaimer shares this row
+     rather than taking a line of its own -- see the hero note above on the 297mm budget. */
+  .pk-notes { display: flex; justify-content: space-between; align-items: baseline; gap: 5mm; margin-top: 1.6mm; }
+  .pk-notes p { font-size: 6.4pt; color: #6B7280; }
+  .pk-notes .disclaimer { flex: 1 1 auto; font-size: 6.2pt; color: #8A9199; text-align: center; }
+
+  /* ---------- CTA ---------- */
+  footer.cta { flex: 0 0 auto; margin-top: 2.2mm; background: #F36949; color: #FFFFFF; padding: 2.8mm 10mm; display: flex; align-items: center; justify-content: space-between; gap: 8mm; }
+  .cta-left { display: flex; align-items: center; gap: 4mm; }
+  .spark { height: 7.5mm; width: auto; flex: 0 0 auto; }
+  .spark path { fill: #FFFFFF !important; }
+  .cta-text .q { font-size: 10.5pt; font-weight: 700; line-height: 1.12; }
+  .cta-text .a { font-size: 7.7pt; margin-top: 0.8mm; color: #FFE3D9; }
+  .cta-contact { text-align: right; flex: 0 0 auto; }
+  .cta-contact .name { font-size: 9.5pt; font-weight: 700; }
+  .cta-contact .org { font-size: 7.4pt; color: #FFE3D9; margin-top: 0.4mm; }
+  .cta-contact .mail { font-size: 8.4pt; font-weight: 600; margin-top: 0.6mm; }
+</style>
+</head>
+<body>
+<div class="page{{^ hero_image }} no-hero-img{{/ hero_image }}">
+
+  <!-- HERO — name + optional subheading + one-liner -->
+  <header class="hero">
+    {{# hero_image }}<img class="hero-img" src="{{ hero_image }}" alt="">
+    <div class="hero-fade"></div>{{/ hero_image }}
+    <div class="hero-content">
+      <div class="hero-top">
+        <svg class="ss-logo" viewBox="0 0 324.12 96.2" xmlns="http://www.w3.org/2000/svg" overflow="hidden"><g><path d="M98.52 66.87C89.66 66.87 83.92 62.7 83.92 54.88L84.44 54.36 88.61 54.36 89.13 54.88C89.13 60.09 92.78 62.18 99.03 62.18 103.72 62.18 107.37 60.62 107.37 56.44 107.37 51.75 104.24 50.7 96.94 49.66 89.64 48.62 84.95 45.49 84.95 39.23 84.95 34.54 88.6 29.32 97.98 29.32 105.8 29.32 111.53 32.45 111.53 40.27L111.01 40.79 106.84 40.79 106.32 40.27C106.32 36.1 104.24 34.01 97.46 34.01 92.77 34.01 90.16 36.1 90.16 39.22 90.16 43.39 92.77 44.43 100.06 45.48 107.36 46.52 112.57 49.13 112.57 56.43 112.57 62.17 108.4 66.86 98.5 66.86Z" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="4" fill="#FFFFFF" fill-opacity="1"/><path d="M127.88 39.76C135.7 39.76 140.39 44.97 140.39 53.32 140.39 61.67 135.7 66.88 127.88 66.88 120.06 66.88 115.37 61.67 115.37 53.32 115.37 44.97 120.06 39.76 127.88 39.76ZM127.88 62.18C132.57 62.18 135.18 59.05 135.18 53.32 135.18 47.59 132.57 44.46 127.88 44.46 123.19 44.46 120.58 47.59 120.58 53.32 120.58 59.05 123.19 62.18 127.88 62.18Z" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="4" fill="#FFFFFF" fill-opacity="1"/><path d="M193.57 66.87C184.71 66.87 178.97 62.7 178.97 54.88L179.49 54.36 183.66 54.36 184.18 54.88C184.18 60.09 187.83 62.18 194.08 62.18 198.77 62.18 202.42 60.62 202.42 56.44 202.42 51.75 199.29 50.7 191.99 49.66 184.69 48.62 180 45.49 180 39.23 180 34.54 183.65 29.32 193.03 29.32 200.85 29.32 206.58 32.45 206.58 40.27L206.06 40.79 201.89 40.79 201.37 40.27C201.37 36.1 199.29 34.01 192.51 34.01 187.82 34.01 185.21 36.1 185.21 39.22 185.21 43.39 187.82 44.43 195.11 45.48 202.41 46.52 207.62 49.13 207.62 56.43 207.62 62.17 203.45 66.86 193.55 66.86Z" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="4" fill="#FFFFFF" fill-opacity="1"/><path d="M210.42 53.31C210.42 46.01 214.07 39.75 222.41 39.75 230.75 39.75 234.4 46.01 234.4 53.31L234.4 54.87 233.88 55.39 216.68 55.39 216.16 55.91C216.16 56.95 216.68 62.17 222.94 62.17 225.03 62.17 227.11 61.65 228.15 59.04L228.67 58.52 232.84 58.52 233.36 59.04C232.84 63.21 229.19 66.86 222.93 66.86 214.59 66.86 210.42 61.12 210.42 53.3ZM228.67 50.71C228.67 49.15 228.15 44.45 222.41 44.45 216.67 44.45 216.15 49.14 216.15 50.71L216.67 51.23 228.14 51.23 228.66 50.71Z" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="4" fill="#FFFFFF" fill-opacity="1"/><path d="M279.81 53.31C279.81 46.01 283.46 39.75 291.8 39.75 300.14 39.75 303.79 46.01 303.79 53.31L303.79 54.87 303.27 55.39 286.07 55.39 285.55 55.91C285.55 56.95 286.07 62.17 292.33 62.17 294.42 62.17 296.5 61.65 297.54 59.04L298.06 58.52 302.23 58.52 302.75 59.04C302.23 63.21 298.58 66.86 292.32 66.86 283.98 66.86 279.81 61.12 279.81 53.3ZM298.06 50.71C298.06 49.15 297.54 44.45 291.8 44.45 286.06 44.45 285.54 49.14 285.54 50.71L286.06 51.23 297.53 51.23 298.05 50.71Z" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="4" fill="#FFFFFF" fill-opacity="1"/><path d="M252.54 40.28 250.45 40.28C246.8 40.28 245.24 41.32 243.67 42.89L243.15 42.89 243.15 40.8 242.63 40.28 238.46 40.28 237.94 40.8 237.94 65.83 238.46 66.35 242.63 66.35 243.15 65.83 243.15 52.8C243.15 46.54 245.76 44.98 249.93 44.98L252.54 44.98 253.06 44.46 253.06 40.81 252.54 40.29Z" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="4" fill="#FFFFFF" fill-opacity="1"/><path d="M269.71 65.83 269.19 66.35 264.5 66.35 263.98 65.83 255.12 44.45 255.12 40.8 255.64 40.28 258.77 40.28 259.29 40.8 266.59 59.05 267.11 59.05 274.41 40.8 274.93 40.28 278.06 40.28 278.58 40.8 278.58 44.45 269.72 65.83Z" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="4" fill="#FFFFFF" fill-opacity="1"/><path d="M171.87 61.66C170.83 61.66 169.78 61.14 169.78 59.57L169.78 45.49 170.3 44.97 175.44 44.97 175.96 44.45 177.66 40.8 177.14 40.28 170.29 40.28 169.77 39.76 169.77 35.07 169.25 34.55 165.08 34.55 164.56 35.07 164.56 39.76 164.04 40.28 161.29 40.28 160.77 40.8 159.07 44.45 159.07 44.45C159.07 44.45 159.07 44.45 159.07 44.45L159.59 44.97 164.05 44.97 164.57 45.49 164.57 59.57C164.57 64.26 168.22 66.35 171.87 66.35L176.04 66.35 176.56 65.83 176.56 62.18 176.04 61.66 171.87 61.66Z" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="4" fill="#FFFFFF" fill-opacity="1"/><path d="M152.1 40.28 151.58 39.76 151.58 37.67C151.58 36.11 152.62 35.58 153.67 35.58L157.05 35.58 157.57 35.06 159.27 31.41 158.75 30.89 153.67 30.89C150.02 30.89 146.37 32.98 146.37 37.67L146.37 39.76 145.85 40.28 142.8 40.28 142.27 40.8 140.57 44.45 141.09 44.97 145.84 44.97 146.36 45.49 146.36 65.82 146.88 66.34 151.05 66.34 151.57 65.82 151.57 45.49 152.09 44.97 156.15 44.97 156.67 44.45 158.37 40.8 157.85 40.28 152.09 40.28Z" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="4" fill="#FFFFFF" fill-opacity="1"/></g><path d="M40.27 51.12 39.33 51.83 21.31 54.83 20.33 55.57 20.62 56.32 36.03 59.35 36.03 59.35 36.71 61.1 31.47 75.81 31.91 76.45 32.95 75.81 49.98 45.08 50.93 44.37 68.95 41.37 69.93 40.63 69.64 39.88 54.23 36.85 54.23 36.85 53.54 35.1 58.79 20.39 58.34 19.75 57.3 20.39 40.27 51.12Z" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="4" fill="#FFFFFF" fill-opacity="1"/></svg>
+        {{# hero.eyebrow }}<div class="eyebrow">{{ hero.eyebrow }}</div>{{/ hero.eyebrow }}
+      </div>
+      <h1>{{ hero.name }}</h1>
+      {{# hero.subheading }}<div class="h1-sub">{{ hero.subheading }}</div>{{/ hero.subheading }}
+      <p class="sub">{{ hero.one_liner }}</p>
+    </div>
+  </header>
+
+  <main>
+    <!-- PITCH — problem, solution + data-flow line | why it sells + verticals -->
+    <section class="pitch">
+      <div class="pitch-left">
+        <div class="block">
+          <h2 class="sec">{{ problem.heading }}</h2>
+          <p>{{ problem.text }}</p>
+          {{# problem.has_points }}
+          <ul class="dash">
+            {{# problem.points }}<li>{{# label }}<b>{{ label }}:</b> {{/ label }}{{ text }}</li>
+            {{/ problem.points }}
+          </ul>
+          {{/ problem.has_points }}
+        </div>
+        <div class="block">
+          <h2 class="sec">{{ solution.heading }}</h2>
+          {{# solution.has_chips }}
+          <div class="kpis">
+            {{# solution.chips }}<div class="kpi">{{ label }} <span>{{& arrow }}</span></div>{{/ solution.chips }}
+          </div>
+          {{/ solution.has_chips }}
+          <p>{{ solution.text }}</p>
+          {{# data_flow }}
+          <div class="arch">
+            <div class="ofs"><b>{{ source.name }}</b>{{# source.note }}<small>{{ source.note }}</small>{{/ source.note }}</div>
+            <div class="pipes">
+              <div>
+                <div class="pipe-lbl">{{ to_platform_label }}</div>
+                <div class="pipe right"></div>
+              </div>
+              <div>
+                <div class="pipe-lbl">{{ from_platform_label }}</div>
+                <div class="pipe left"></div>
+              </div>
+            </div>
+            <div class="oci">
+              {{# platform.label }}<div class="oci-label">{{& platform.label }}</div>{{/ platform.label }}
+              <div class="oci-inner">
+                {{# platform.boxes }}{{# sep }}<div class="oci-link">&#8596;</div>{{/ sep }}<div class="obox"><b>{{ name }}</b>{{# note }}<small>{{ note }}</small>{{/ note }}</div>{{/ platform.boxes }}
+              </div>
+            </div>
+          </div>
+          {{/ data_flow }}
+        </div>
+      </div>
+
+      <!-- WHY IT SELLS — the partner seller's card -->
+      <aside class="sell-card">
+        <h2 class="sec">{{ sell.heading }}</h2>
+        {{# sell.has_points }}
+        <ul class="dash">
+          {{# sell.points }}<li>{{# label }}<b>{{ label }}:</b> {{/ label }}{{ text }}</li>
+          {{/ sell.points }}
+        </ul>
+        {{/ sell.has_points }}
+        {{# verticals.show }}
+        <div class="verticals-label">{{ verticals.label }}</div>
+        {{# verticals.as_chips }}
+        <div class="chips">
+          {{# verticals.items }}<div class="chip">{{ name }}</div>{{/ verticals.items }}
+        </div>
+        {{/ verticals.as_chips }}
+        {{^ verticals.as_chips }}
+        <div class="vert-lines">
+          {{# verticals.items }}<div class="v"><b>{{ name }}</b>{{# line }} &mdash; {{ line }}{{/ line }}</div>{{/ verticals.items }}
+        </div>
+        {{/ verticals.as_chips }}
+        {{/ verticals.show }}
+      </aside>
+    </section>
+
+    <!-- PROOF — one metric set, attribution by channel, caveat -->
+    {{# proof.show }}
+    <section class="proof">
+      <div class="proof-head">
+        {{# proof.logo }}<img class="proof-logo" src="{{ proof.logo }}" alt="{{ proof.attribution }}">{{/ proof.logo }}
+        <p>{{# proof.attribution_inline }}<b>{{ proof.attribution }}.</b> {{/ proof.attribution_inline }}{{ proof.story }}</p>
+      </div>
+      <div class="stats">
+        {{# proof.stats }}<div class="stat">
+          <div class="num">{{# prefix }}<small>{{ prefix }}</small> {{/ prefix }}{{ figure }}{{# suffix }} <small>{{ suffix }}</small>{{/ suffix }}</div>
+          <div class="lbl">{{ label }}</div>
+        </div>{{/ proof.stats }}
+      </div>
+      {{# proof.caveat }}<p class="caveat">{{ proof.caveat }}</p>{{/ proof.caveat }}
+    </section>
+    {{/ proof.show }}
+
+    <!-- PACKAGES — three tiers, capability rows -->
+    <section class="packages">
+      <h2 class="sec">{{ packages.heading }}</h2>
+      <table class="pk">
+        <colgroup><col class="lbl">{{# packages.tiers }}<col>{{/ packages.tiers }}</colgroup>
+        <tr>
+          <th class="corner"></th>
+          {{# packages.tiers }}<th class="tier-h {{ th_class }}">
+            <div class="t-name">{{ name }}{{# size_tag }} <span class="t-size">{{ size_tag }}</span>{{/ size_tag }}</div>
+            {{# scope_line }}<div class="t-scope">{{ scope_line }}</div>{{/ scope_line }}
+          </th>{{/ packages.tiers }}
+        </tr>
+        {{# packages.rows }}<tr{{# blk_top }} class="blk-top"{{/ blk_top }}><td class="rlbl">{{& label }}</td>{{# cells }}<td class="{{ css }}">{{& text }}</td>{{/ cells }}</tr>
+        {{/ packages.rows }}
+      </table>
+      <div class="pk-notes">
+        <p>{{& packages.legend }}</p>
+        {{# disclaimer }}<p class="disclaimer">{{ disclaimer }}</p>{{/ disclaimer }}
+        {{# packages.footnote }}<p>{{ packages.footnote }}</p>{{/ packages.footnote }}
+      </div>
+    </section>
+  </main>
+
+  <!-- CTA — question, answer, contact for this channel -->
+  <footer class="cta">
+    <div class="cta-left">
+      <svg class="spark" viewBox="0 0 50 57" xmlns="http://www.w3.org/2000/svg" fill="none" overflow="hidden"><path d="M20.108 31.5362 19.1567 32.252 0.991696 35.2641 0 36.0121 0.290252 36.7601 15.8268 39.8123 16.5162 41.5697 11.2271 56.3566 11.6786 57 12.7268 56.3566 29.896 25.4678 30.8433 24.748 49.0083 21.7359 50 20.9879 49.7097 20.2399 34.1732 17.1877 33.4838 15.4303 38.7729 0.643432 38.3214 0 37.2732 0.643432 20.108 31.5362Z" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="4" fill="#000000" fill-opacity="1"/></svg>
+      <div class="cta-text">
+        <div class="q">{{ cta.question }}</div>
+        <div class="a">{{ cta.answer }}</div>
+      </div>
+    </div>
+    <div class="cta-contact">
+      <div class="name">{{ cta.contact.name }}</div>
+      {{# cta.contact.org }}<div class="org">{{ cta.contact.org }}</div>{{/ cta.contact.org }}
+      <div class="mail">{{ cta.contact.email }}</div>
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>

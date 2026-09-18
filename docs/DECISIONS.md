@@ -1,0 +1,20 @@
+# Owner decisions the skills implement
+
+Recorded 2026-09-18 from the owner's answers during the preparation. These are the standing rules; the research they came from lives in the owner's personal repo, not here. Rewrite a line when a decision changes; do not append dated updates.
+
+| Topic | Decision | Where it is enforced |
+|---|---|---|
+| Component count | 12 shared components, signed off in the fixed order problem↔solution → one-liner → ICP → name → verticals → capabilities → workflow → architecture → Oracle products → KPIs → packages | `spec` skill, `signoff-flow.md` |
+| Tier vocabulary | One set everywhere: PoV Jumpstart / Integration / Scaling; S/M/L only as size tags in internal tables | `lint_spec.py`, `pack-anatomy.md` |
+| PoV duration | Per package, ideally 4–8 weeks; 10 weeks hard cap; the skill pushes back with reasons above 8 and refuses above 10 | `pov-rules.md`, `lint_spec.py` |
+| Outcome figures | One metric set per pack, from the customer study; attribution varies by approval and channel (named under the customer logo where approved, anonymized otherwise); two different sets for one pack are unacceptable | schema `kpis`, `lint_spec.py`, `check_consistency.py` |
+| Features | Area > Category > Feature with ● available / ◐ partial / ○ roadmap; the feature list is the master; the site's workflow-stage view is derived per pack | `feature-list` skill, `listing` skill (`derive-stage-view`) |
+| Oracle products | Picked from one shared catalog with canonical names; required = built on it or fully relies on it; optional = could logically be a source or destination; mostly expressed as a per-item flag inside the architecture stack | `shared/data/oracle-products.yaml`, `lint_spec.py` |
+| Pack name by channel | Site: plain name; internal exec slide: name + "App"; external one-pager and deck: plain name with an optional "Accelerator App by SoftServe" subheading | schema `meta.name_variants`, `naming-and-clearance.md` |
+| Integration claims | State the tier next to every integration claim (file export / import in the PoV, API integration in the Integration tier) | `spec` sign-off card 9, `deck` and `one-pager` skills |
+| Standard artifact set | The five artifacts plus the executive summary slide; demo video and Marketplace package/listing are part of a pack's end state but not built by the skills yet; no separate internal scoping one-pager (the feature list plays that role) | `build` skill, `PLAN.md` |
+| Sales one-pager | One A4 page, always; overflow means cuts proposed to the owner, never smaller type | `one-pager` skill, `build_one_pager.py` |
+| Contacts | Partner print: the alliances contact and mailbox as printed on the existing one-pagers; site: the practice mailbox with the same person named; internal: the person doing the packaging, with the R&D request mailbox | schema `contacts`, `naming-and-clearance.md` |
+| Delivery model | Standalone GitHub repo as a plugin marketplace with two plugins (`oracle-packs`: spec + documents; `oracle-packs-web`: listing + demo); pilot as a plain copy first; run the plugin spike before relying on marketplace installs | `README.md`, `PLAN.md` §7 |
+| Interaction style | Every proposal comes with a brief exec-level TLDR and grounding plus a question widget; the skill asks the user to locate raw inputs and answers a predefined question list, skipping what the context already answers; when something essential is missing it asks rather than invents; the whole brief is confirmed before building; artifacts are built sequentially with a review pause after each; a demo asks for sources first | `spec`, `build`, `demo` skills |
+| Generalization | The crucial step: the generalized workflow is defined with the domain (how the job is done across industries, how the delivered case differs), a vendor and competitor study, vertical differentiation with adjudication, general enough but not too general; research results come as a very structured TLDR, then one or more name · one-liner · problem↔solution options for the user to pick or send back for more research | `generalization-method.md`, `research-brief-format.md` |

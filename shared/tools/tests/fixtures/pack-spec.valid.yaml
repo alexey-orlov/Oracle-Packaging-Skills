@@ -1,0 +1,179 @@
+# A minimal pack spec that is valid against shared/schema/pack-spec.md.
+# Fixture only: the engagement, the figures and the prices are invented, and the
+# customer is a fictional stand-in — no real engagement is named in this repo.
+# `python3 shared/tools/lint_spec.py <this file> --strict` exits 0.
+
+meta:
+  slug: workforce-optimization
+  name: Workforce Optimization
+  name_source: user:2026-09-18
+  name_variants:
+    site: Workforce Optimization
+    internal_slide: Workforce Optimization App
+    external: Workforce optimization
+    external_subheading: Accelerator App by SoftServe
+  roadmap_item_id: workforce-optimization
+  roadmap_block: Data analysis & decision agents
+  source_engagement:
+    customer: Northwind Appliances          # fictional stand-in, fixture only
+    delivered: PoC, Jun 2026, zone and technician allocation on field-service data
+    divergence_from_pack: "The pack generalizes the allocation rules; the PoC hard-coded one customer's."
+  status: confirmed
+  spec_version: 1
+  generated_with: { roadmap_version: 2026-09-17, catalog_version: 2026-09-18 }
+
+clearance:
+  customer_name_allowed:
+    internal: true
+    partner_print: false
+    customer_site: false
+    demo: false
+  anonymized_descriptor: a global home-appliance manufacturer
+  internal_only_facts: [contract value, named customer accounts, headcount]
+  approvals: []
+
+problem_solution:
+  problem: "Dispatchers plan technician work zones by hand, so the plan is stale before the day starts."
+  solution: "The app re-optimizes zones and daily plans on the customer's own data and hands the dispatcher a plan to review."
+  reframe: "Review the plan, don't build it"
+  source: user:2026-09-18
+
+one_liner:
+  full: "Re-plan technician zones and daily routes on your own field-service data, and hand the dispatcher a plan to approve instead of a blank grid."
+  short: "Your dispatchers approve the plan instead of building it."
+  banned_words_checked: true
+  source: user:2026-09-18
+
+icp:
+  line: "Field-service operations leaders at companies running Oracle Fusion Field Service with 200+ technicians"
+  buyer_roles: [VP Field Service, COO]
+  qualifying_signals: ["Manual zone planning", "Overtime above plan", "Technician utilization below 70%"]
+  disqualifiers: ["Fewer than 50 technicians", "No digital work-order system"]
+  source: user:2026-09-18
+
+verticals:
+  - name: Industrial equipment service
+    framing:
+      problem: "Skill-matched technicians are scarce, so a mis-assigned job costs a second visit."
+      solution: "Allocation weights skills and travel together, and flags the jobs no one nearby can take."
+    what_matters_here: "First-time fix rate, not raw travel time"
+    worked_example: "A regional service arm re-plans 1,800 weekly work orders across 14 zones."
+    status: plausible
+
+capabilities:
+  - area: Allocation rules
+    customization_scope_area: "Rule weights and the constraint set, per customer"
+    categories:
+      - name: Availability
+        features:
+          - name: Technician availability and skills constraints
+            status: available
+            customization_scope: "Rule weights and constraint set per customer"
+            specificity: [use_case]
+            tier_first_available: pov
+            source: feature-list 2026-07-17
+
+workflow:
+  inputs:
+    - { system: Oracle Fusion Field Service, data: work orders, technicians, zones }
+  steps:
+    - n: 1
+      name: Ingest and validate demand
+      actor: system
+      human_in_the_loop: false
+      failure_path: "Missing fields flag the row, they never drop it; the dispatcher resolves"
+    - n: 2
+      name: Optimize zones and daily plan
+      actor: ai
+      human_in_the_loop: false
+      failure_path: "No feasible plan returns the previous plan plus the broken constraints"
+    - n: 3
+      name: Review and approve
+      actor: human
+      human_in_the_loop: true
+      failure_path: "An edited plan is re-checked before write-back"
+  outputs:
+    - { system: Oracle Fusion Field Service, data: approved plan written back }
+
+architecture:
+  inputs: [work orders, technician roster, zone geometry]
+  stack:
+    - { layer: Custom configuration, vendor: SoftServe, items: [rule weights, review UI] }
+    - { layer: Accelerator business app, vendor: Oracle + SoftServe, items: [planning app] }
+    - { layer: Optimization engine, vendor: NVIDIA, items: [NVIDIA cuOpt], catalog_id: nvidia-cuopt }
+    - { layer: Infrastructure, vendor: Oracle, items: [OCI compute with GPUs, Object Storage] }
+  outputs: [approved plan, plan telemetry]
+
+oracle_products:
+  - id: oci-gpu-instances
+    role: required
+    why: "Runs the optimization engine"
+  - id: oracle-fusion-field-service
+    role: required
+    why: "Source of work orders and destination of the approved plan"
+    integration: { pov: "file export / import", integration: "API write-back", scaling: "API + telemetry" }
+  - id: oci-object-storage
+    role: optional
+    why: "Landing zone for demand forecasts"
+
+kpis:
+  - name: Planning cycle time
+    formula: "Time from demand freeze to approved plan"
+    baseline: "~2 days manual"
+    figure: "~30 min"
+    figure_status: pov_result
+    attribution:
+      named_when_allowed: "Proof of value"
+      otherwise: "proof of value at a global home-appliance manufacturer"
+    caveat: "Illustrative proof-of-value result, not contractual"
+    source: pov-report 2026-06-30
+
+packages:
+  tiers:
+    - id: pov
+      name: PoV Jumpstart
+      size_tag: S
+      duration_weeks: { target: 6, min: 4, max: 8, hard_cap: 10 }
+      services_price: { value: 90000, currency: EUR, status: indicative, footnote: "Indicative; scope confirmed at kickoff" }
+      infra_price_monthly: { value: 2000, currency: EUR, status: indicative }
+      what_you_get: ["A plan on your data", "A measured baseline", "A go / no-go readout"]
+      scope_in: ["One region", "One planning horizon"]
+      scope_out: ["Write-back integration", "Custom KPIs"]
+    - id: integration
+      name: Integration
+      size_tag: M
+      duration_weeks: { min: 12, max: 20 }
+      services_price: { range: [300000, 500000], currency: EUR, status: indicative }
+      what_you_get: ["A live integrated app", "Write-back to the system of record"]
+      scope_in: ["One to two API integrations"]
+      scope_out: ["Market-local rules"]
+    - id: scaling
+      name: Scaling
+      size_tag: L
+      duration_weeks: { min: 12, max: 52 }
+      services_price: { status: tbd }
+      what_you_get: ["Rollout across markets", "Market-local rules and custom KPIs"]
+      scope_in: ["Many markets"]
+      scope_out: []
+  capability_handling:
+    - area: Allocation rules
+      pov: "Standard rule set on customer data"
+      integration: "Customer rules and weights"
+      scaling: "Per-market rules, custom KPIs"
+  why_it_sells_for_the_partner:
+    - "A natural Oracle Fusion Field Service cross-sell"
+    - "Net-new OCI GPU consumption on top of the SaaS seat"
+    - "Repeatable across comparable accounts"
+  target_oci_consumption: "GPU compute for the optimization run, per market"
+
+contacts:
+  partner_print: { name: Karsten Tramborg, title: Alliances & Partnerships Director, email: ktram@softserveinc.com }
+  site: { mailbox: oracle@softserveinc.com, named: Karsten Tramborg }
+  internal: { name: Pack owner, email: RnDrequest@softserveinc.com }
+
+provenance:
+  inputs:
+    - { path: fixtures/feature-list.docx, kind: feature-list, read: 2026-09-18 }
+  research_brief: packs/workforce-optimization/research-brief.md
+
+open_questions: []

@@ -1,0 +1,840 @@
+# Workforce Optimization — worked example of a pack spec.
+#
+# This file reproduces the DELIVERED Workforce Optimization artifacts (sales one-pager,
+# sales deck, feature list, executive summary, mini-site listing, interactive demo) in the
+# schema of shared/schema/pack-spec.md, with the 2026-09-18 decisions applied on top. It is
+# the acceptance fixture for the builder skills and a reading model for /oracle-packs:spec.
+#
+# It is NOT a signed-off spec. status is `draft` and stays `draft` until the pack owner walks
+# it through /oracle-packs:spec: the four first-order components (problem_solution, one_liner,
+# icp, name) carry artifact sources here, and the schema requires a `user:` source on each of
+# them before `status: confirmed`. See `open_questions` for everything still unconfirmed.
+#
+# Source tokens used in every `source:` field are defined in `provenance.inputs[].id`.
+# Inferences are marked `(inferred)` in the text they qualify.
+
+meta:
+  slug: workforce-optimization
+  name: Workforce Optimization
+  name_source: one-pager-2026-07-17, decisions-2026-09-18   # artifact-sourced; `user:<date>` only after sign-off
+  name_variants:
+    site: Workforce Optimization
+    internal_slide: Workforce Optimization App
+    external: Workforce optimization
+    external_subheading: Accelerator App by SoftServe
+    note: >-
+      Rule from decisions-2026-09-18. The live mini-site currently ships the sentence-case
+      "Workforce optimization" as `name`; it is relabelled at the next site rebuild.
+    source: decisions-2026-09-18
+  roadmap_item_id: workforce-optimization
+  roadmap_block: Data analysis & optimization
+  source_engagement:
+    # The delivery customer's name is deliberately NOT written in this repo — see the repo's
+    # rules of the repo and shared/tools/denylist.txt. A real pack spec carries it here, under
+    # clearance.customer_name_allowed; this worked example carries the descriptor instead.
+    customer: "<the delivery customer — a global home-appliance manufacturer>"
+    delivered: >-
+      Work-zone optimization PoC: NVIDIA cuOpt on OCI computing technician-to-zone allocations
+      from the customer's own historical field-service data, with dispatcher approval in the
+      loop. File-based in and out (XLSX upload, file export); no Oracle Fusion Field Service
+      integration. Results modeled from 12 simulations across three countries. Three months.
+    divergence_line: >-
+      The pack generalizes the allocation rules the proof of value hard-coded; system integration
+      and the feedback loop are Integration-tier scope.
+    divergence_from_pack: >-
+      The pack generalizes what the PoC hard-coded. Business logic — allocation rules,
+      constraints, KPI formulas, forecasting — was written for one customer and is per-client
+      configuration in the pack; the dispatcher UI and approval workflow are the reusable core.
+      The PoC ran file-based with a limited rule set, which is exactly the PoV Jumpstart tier;
+      Oracle Fusion Field Service integration, additional data sources and the feedback loop are
+      sold as Integration-tier scope and were not delivered. Distance-based (zoneless) planning
+      is a separate future product, not a gap in this pack.
+    source: spec-doc-2026-09-16, call-2026-07-07, site-2026-09-17
+  status: draft
+  spec_version: 1
+  generated_with: { roadmap_version: 2026-09-18, catalog_version: 2026-09-18 }   # the `generated:` / `version:` lines of shared/data/
+
+clearance:
+  customer_name_allowed:
+    internal: true
+    partner_print: false                # approval pending with Alex — see open_questions
+    customer_site: false                # granted 2026-09-14, withdrawn 2026-09-16
+    demo: false
+  anonymized_descriptor: a global home-appliance manufacturer
+  internal_only_facts:
+    - named customer accounts and logos
+    - contract values and per-engagement pricing beyond the published PoV price
+    - the customer's service-zone geography, zone-naming convention and zone counts
+    - technician identifiers and per-technician uplifts above the cleared median
+    - headcount, POD and capacity numbers
+    - the roadmap ceiling and any "gap" statement
+  approvals: []
+  source: site-2026-09-17, decisions-2026-09-18
+
+problem_solution:                        # component 1
+  problem: >-
+    Field-service operators plan their mobile workforce by hand: work zones, technician
+    assignments, dozens of rules and constraints.
+  problem_points:                         # the three sub-problems the print artifacts bullet
+    - label: Suboptimal efficiency
+      text: uneven workloads and under-used capacity
+    - label: Lower customer satisfaction
+      text: longer wait times from suboptimal allocations
+    - label: Poor scalability
+      text: "planning hinges on scarce senior dispatchers; new zones launch slowly"
+  solution: >-
+    NVIDIA cuOpt ingests demand, availability, skills and constraints, and computes the best
+    technician-to-zone-to-job plan in minutes. Dispatchers review it on a live map, re-optimize
+    and write the plan back to Oracle Fusion Field Service.
+  outcome_chips: ["Productivity ↑", "Capacity utilization ↑", "Customer wait time ↓"]
+  reframe: "Review the plan, don't build it"
+  source: one-pager-2026-07-17
+
+one_liner:                               # component 2
+  full: >-
+    Optimizes field-service work zones and schedules with NVIDIA cuOpt: a region's four-week plan,
+    built in minutes and approved by dispatchers.
+  short: "A region's four-week field plan, optimized in minutes and approved by dispatchers."
+  banned_words_checked: true
+  note: >-
+    `full` is the mini-site's `oneLiner` and is the canonical product one-liner; `short` is its
+    rep-sayable `shortLine`. The one-pager hero line it replaces ("…packaged from proof of value
+    to enterprise scale") was rejected by the owner: a one-liner states the job and the outcome,
+    never how we package it (naming-and-clearance §4, asserted as ART206 on every channel). The
+    vendor name is the catalog's — the site still writes "Oracle Field Service" and is relabelled
+    at the next rebuild. The delivered sales deck cover carries a third, deck-scoped line ("AI
+    accelerator service packages on Oracle OCI + NVIDIA cuOpt…") that describes the deck rather
+    than the product; it is retired at the deck's next rebuild.
+  source: site-2026-09-17, decisions-2026-09-18
+
+icp:                                     # component 3
+  line: "Any mobile field force planned against skills, availability and geography."
+  buyer_roles: [VP Field Service, Head of Service Operations, Head of Dispatch, COO]
+  qualifying_signals:
+    - "Zone-based planning: technicians are allocated to geographic work zones, not routed job by job"
+    - "A heavy, centralized dispatch and scheduling routine run by a small number of senior dispatchers"
+    - "Oracle Fusion Field Service, or an equivalent field-service management system, as the system of record"
+    - "A recurring planning horizon of two or more weeks (roster mode), with bookings already on the calendar"
+    - "More than one region or market, with rules that differ between them"
+  disqualifiers:
+    - "Distance-based (zoneless) planning — a separate future product, not this pack"
+    - "Within-day dynamic dispatch as the primary need — on the roadmap, not in the pack today"
+    - "Jobs that routinely require two or more technicians on site (out of the delivered PoC's scope)"
+    - "No historical planning data the customer can hand over for a proof of value"
+  note: >-
+    `line` is the only clean customer-side ICP sentence in the delivered estate (the one-pager's
+    nearest equivalent is filed under partner value and gates on owning Oracle Fusion Field
+    Service). Qualifying signals and disqualifiers are internal and reach no external artifact.
+  source: site-2026-09-17, call-2026-07-07, spec-doc-2026-09-16
+
+verticals:                               # component 5
+  - name: Residential appliance & white-goods repair
+    site_label: Manufacturing
+    framing:
+      problem: >-
+        In-home repair of manufactured goods is planned by hand: work zones and technician
+        allocations, region by region, juggling skills, spare parts, travel and absences. Urgent
+        call-outs and no-shows mean re-planning the day.
+      solution: >-
+        The solver plans the whole region against skills, parts, travel and existing bookings at
+        once, and the dispatcher reviews and approves the result. Rules that differ by market —
+        working time, holidays, service commitments — are configuration, so setting up a new
+        region is a configuration job.
+    what_matters_here: >-
+      Dispatch home-repair technicians by skill, spare parts and travel, absorbing urgent
+      call-outs and no-shows without re-planning the day.
+    worked_example: >-
+      The delivered proof of value: a residential appliance-repair field force across three
+      countries, planned on postcode-based work zones, optimized and approved by its own
+      dispatchers. Anonymized as "a global home-appliance manufacturer" outside internal use.
+    status: proven
+    source: deck-2026-07-13, site-2026-09-17
+
+  - name: Utilities — water · gas · electric
+    site_label: Utilities
+    framing:
+      problem: >-
+        Water, gas and electric crews are scheduled across service territories against SLAs, crew
+        certifications and outage spikes. Planned and emergency work compete for the same
+        capacity, and the balance is struck manually by a handful of senior dispatchers.
+      solution: >-
+        Territories, certifications and SLA commitments become weighted constraints, and the plan
+        is re-solved as the day's demand changes. Planned and emergency work are balanced against
+        the objectives you weight, and no allocation reaches a crew until a dispatcher approves it.
+    what_matters_here: >-
+      Schedule field crews across service territories against SLAs, outage spikes and crew
+      certifications, balancing planned and emergency work.
+    worked_example: "-"
+    status: plausible
+    source: deck-2026-07-13, site-2026-09-17
+
+  - name: Telecom & cable
+    site_label: Telecom & cable
+    framing:
+      problem: >-
+        Install-and-repair technicians have to be routed to tight appointment windows across
+        regions, matched to line skills. Missed windows cost customer satisfaction directly, and
+        launching a new service zone depends on scarce planning expertise.
+      solution: >-
+        Appointment windows and line skills are modeled as commitment and skill rules, and the
+        solver routes against them while minimizing travel. Launching a new zone comes down to a
+        configuration change.
+    what_matters_here: >-
+      Route install-and-repair technicians to tight appointment windows across regions, matching
+      line skills and cutting customer wait time.
+    worked_example: "-"
+    status: plausible
+    source: deck-2026-07-13, site-2026-09-17
+
+  - name: Industrial · medical-device · IT equipment service
+    site_label: Healthcare
+    framing:
+      problem: >-
+        Medical-device and equipment service engineers are allocated to contracted assets by
+        skill, SLA and location. Uptime on high-value machines is contractual, and the allocation
+        is worked out by hand against a rising number of installed assets.
+      solution: >-
+        Contracted SLAs, engineer certifications and asset locations become the constraint set the
+        solver works against, with uptime-critical commitments weighted as hard rules. The KPI
+        readout compares the current and the optimized plan on identical definitions.
+    what_matters_here: >-
+      Allocate asset-based service engineers to contracted equipment by skill, SLA and location,
+      keeping high-value machines uptime-critical.
+    worked_example: "-"
+    status: plausible
+    source: deck-2026-07-13, site-2026-09-17
+
+capabilities:                            # component 6 — Area > Category > Feature
+  # The delivered feature list (feature-list-2026-09-10) carries `Current status` merged down per
+  # CATEGORY and `Standard customization scope` merged down per AREA. Feature-level `status` below
+  # therefore inherits its category's cell — see each category's `note` — and feature-level
+  # `customization_scope` is deliberately unset; the area-level text is the real granularity.
+  # Glyph mapping applied per decisions-2026-09-18: `●` #1485C3 -> available, `●` #C1E4F5 ->
+  # partial (rendered `◐` from now on), `○` #AEB4BA -> roadmap.
+
+  - area: Allocation rules
+    stage: Set the rules
+    customization_scope_area: >-
+      Custom rules implementation · Rules configuration · Matching rules with source data formats ·
+      Balancing optimization function with penalty / rewards, allocation rules weights tuning to
+      achieve optimal allocation per customer · Introduction of additional optimization objectives
+    categories:
+      - name: Workforce availability rules
+        note: "Status cell `●` available, merged across all four features."
+        features:
+          - { name: Skill-based allocation, status: available, tier_first_available: pov, specificity: [], source: feature-list-2026-09-10 }
+          - { name: Maximal load per day, status: available, tier_first_available: pov, specificity: [], source: feature-list-2026-09-10 }
+          - { name: Planned vacation reallocation, status: available, tier_first_available: pov, specificity: [], source: feature-list-2026-09-10 }
+          - { name: Same-day sickness handling, status: available, tier_first_available: pov, specificity: [], source: feature-list-2026-09-10 }
+      - name: Distance-based
+        note: "Status cell `○` roadmap. No tier carries these; zoneless planning is a separate future product."
+        features:
+          - { name: Maximal distance / travel time rules, status: roadmap, specificity: [use_case], source: feature-list-2026-09-10 }
+          - { name: Real-time traffic / live travel data, status: roadmap, specificity: [use_case], source: feature-list-2026-09-10 }
+      - name: Dynamic
+        note: "Status cell `○` roadmap. Urgent / emergency handling is named in the Integration tier's advanced-allocation cell."
+        features:
+          - { name: Within-day job reassignment, status: roadmap, specificity: [use_case], source: feature-list-2026-09-10 }
+          - { name: Urgent / emergency request handling, status: roadmap, tier_first_available: integration, specificity: [use_case], source: feature-list-2026-09-10, deck-2026-07-13 }
+      - name: Workzone-based rules
+        note: "Status cell `●` available, merged across all four features. The pack's defining use case."
+        features:
+          - { name: Default work zones per technician, status: available, tier_first_available: pov, specificity: [use_case], source: feature-list-2026-09-10 }
+          - { name: Work zone-level demand, status: available, tier_first_available: pov, specificity: [use_case], source: feature-list-2026-09-10 }
+          - { name: Neighboring workzones, status: available, tier_first_available: pov, specificity: [use_case], source: feature-list-2026-09-10 }
+          - { name: Cross-zone allocation of selected technicians, status: available, tier_first_available: pov, specificity: [use_case], source: feature-list-2026-09-10 }
+      - name: Forecast-based rules
+        note: "Status cell `●` available. The customer supplies the forecast; the pack does not produce it."
+        features:
+          - { name: Forecast-based allocation (forecast data to be provided), status: available, tier_first_available: pov, specificity: [customer], source: feature-list-2026-09-10 }
+      - name: Commitment-based rules
+        note: >-
+          Status cell is the pale `●` = partially implemented out of the box, major improvements on
+          the roadmap. Rendered `◐` from now on. The delivered docx also hangs a `***` footnote
+          marker on "Non-movable appointments" whose footnote text is missing from the file.
+        features:
+          - { name: Non-movable appointments, status: partial, tier_first_available: pov, specificity: [], footnote_marker: "***", source: feature-list-2026-09-10 }
+          - { name: Different SLA types per appointment, status: partial, tier_first_available: integration, specificity: [customer], source: feature-list-2026-09-10, deck-2026-07-13 }
+      - name: Other rules
+        note: "Status cell `○` roadmap. Crews and inventory-coupling are named in the Integration tier's advanced-allocation cell."
+        features:
+          - { name: Spare-parts availability, status: roadmap, tier_first_available: integration, specificity: [industry], source: feature-list-2026-09-10, deck-2026-07-13 }
+          - { name: Crew-based assignments, status: roadmap, tier_first_available: integration, specificity: [industry], source: feature-list-2026-09-10, deck-2026-07-13 }
+          - { name: Other custom rules, status: roadmap, tier_first_available: integration, specificity: [customer], source: feature-list-2026-09-10 }
+      - name: Optimization function & rule weights
+        note: "Status cell `●` available, merged across all three features."
+        features:
+          - { name: "Multi-objective optimization (productivity, waiting time, workload balance)", status: available, tier_first_available: pov, specificity: [engine], source: feature-list-2026-09-10 }
+          - { name: Allocation rules weighting (hard / soft), status: available, tier_first_available: pov, specificity: [engine], source: feature-list-2026-09-10 }
+          - { name: Minimal disruption of current allocation, status: available, tier_first_available: pov, specificity: [engine], source: feature-list-2026-09-10 }
+
+  - area: Review and approval workflow
+    stage: Review, approve, measure
+    customization_scope_area: >-
+      Model decisions explanations / recommendations tuning to match custom allocation rules
+    categories:
+      - name: Review
+        note: "Status cell `●` available. The most reusable part of the delivered product (call-2026-07-07)."
+        features:
+          - { name: "Dispatcher UI (map, table views)", status: available, tier_first_available: pov, specificity: [], source: feature-list-2026-09-10 }
+          - { name: Dispatcher approval/rejection, status: available, tier_first_available: pov, specificity: [], source: feature-list-2026-09-10 }
+          - { name: Model decisions explanation and recommendations, status: available, tier_first_available: pov, specificity: [engine], source: feature-list-2026-09-10 }
+      - name: Feedback loop
+        note: "Status cell `○` roadmap. Sold as Integration-tier scope: the one-pager's re-optimization row is `—` at PoV."
+        features:
+          - { name: Iterative feedback-based re-optimization, status: roadmap, tier_first_available: integration, specificity: [], source: feature-list-2026-09-10, one-pager-2026-07-17 }
+          - { name: Human-feedback-driven model tuning, status: roadmap, tier_first_available: integration, specificity: [engine], source: feature-list-2026-09-10 }
+          - { name: Alternative allocation options (what-if), status: roadmap, tier_first_available: integration, specificity: [engine], source: feature-list-2026-09-10 }
+
+  - area: KPIs and analytics
+    stage: Solve the plan
+    customization_scope_area: "Custom (additional) KPIs · Custom formula for KPI calculation"
+    categories:
+      - name: KPI
+        note: "Status cell `●` available, merged across all four KPI features and down into Baseline comparison."
+        features:
+          - { name: Productivity (Jobs / Technician / Day), status: available, tier_first_available: pov, specificity: [], source: feature-list-2026-09-10 }
+          - { name: Capacity Utilization, status: available, tier_first_available: pov, specificity: [], source: feature-list-2026-09-10 }
+          - { name: Travel Reduction, status: available, tier_first_available: pov, specificity: [], source: feature-list-2026-09-10 }
+          - { name: Workload Balance, status: available, tier_first_available: pov, specificity: [], source: feature-list-2026-09-10 }
+      - name: Baseline comparison
+        note: "No status cell of its own; the merged `●` from the KPI category covers it."
+        features:
+          - { name: Compare baseline vs optimized allocation, status: available, tier_first_available: pov, specificity: [], source: feature-list-2026-09-10 }
+
+  - area: Integrations
+    stage: Load the period's data
+    customization_scope_area: "Integration configuration · Custom integrations"
+    categories:
+      - name: Integrations
+        note: >-
+          Status cell `○` roadmap — correct for the pack's own shipped code, and NOT a contradiction
+          of the one-pager's architecture: the PoV Jumpstart is file export / import, and every
+          system integration below is Integration-tier scope. State the tier with every claim.
+        features:
+          - { name: Oracle Fusion Field Service as a datasource / destination, status: roadmap, tier_first_available: integration, specificity: [], oracle_product: oracle-fusion-field-service, source: feature-list-2026-09-10, one-pager-2026-07-17 }
+          - { name: Demand forecasting datasource, status: roadmap, tier_first_available: integration, specificity: [customer], source: feature-list-2026-09-10 }
+          - { name: Visits booking system, status: roadmap, tier_first_available: integration, specificity: [customer], source: feature-list-2026-09-10 }
+          - { name: Inventory system for spare-parts availability, status: roadmap, tier_first_available: integration, specificity: [industry], source: feature-list-2026-09-10 }
+          - { name: HRM system for people availability, status: roadmap, tier_first_available: integration, specificity: [], source: feature-list-2026-09-10 }
+          - { name: BI system for KPIs / analytics exports, status: roadmap, tier_first_available: integration, specificity: [customer], source: feature-list-2026-09-10 }
+
+workflow:                                # component 7
+  inputs:
+    - system: Oracle Fusion Field Service
+      data: "work orders and bookings, technicians with skills and home postcode, work zones and their postcodes, technician calendars with day status and capacity"
+      tier: "PoV Jumpstart: exported to XLSX by the customer. Integration: API."
+    - system: Customer demand forecast
+      data: "forecast volumes per zone and period, supplied by the customer"
+      tier: "PoV Jumpstart: file. Integration: source system."
+  steps:
+    - n: 1
+      name: Load the period's data
+      actor: human
+      human_in_the_loop: true
+      description: >-
+        The dispatcher selects a region and a planning period of up to four weeks and loads the
+        period's data: demand, technician availability, skills, work zones and existing bookings.
+      failure_path: >-
+        Validation names the missing sheet or field rather than failing silently; the row is
+        flagged, not dropped, and the dispatcher fixes the input and re-runs. A warning does not
+        block the run.
+      vertical_differences:
+        Residential appliance & white-goods repair: "-"
+        Utilities — water · gas · electric: "-"
+        Telecom & cable: "-"
+        Industrial · medical-device · IT equipment service: "-"
+      source: spec-doc-2026-09-16, site-2026-09-17, demo-2026-09-16
+    - n: 2
+      name: Set the rules
+      actor: human
+      human_in_the_loop: true
+      description: >-
+        Zone, forecast and commitment rules are configured, then weighted as hard or soft
+        constraints against the objectives that matter — productivity, waiting time, workload
+        balance — with minimal disruption of the current allocation as a standing objective.
+      failure_path: >-
+        A constraint set that makes the period infeasible is surfaced before the solve, and a hard
+        rule is relaxed to soft only with the dispatcher's agreement (inferred — no delivered
+        artifact states the infeasibility path).
+      vertical_differences:
+        Residential appliance & white-goods repair: "Working time, holidays and service commitments differ by market and are configuration, so a new region is a configuration job."
+        Utilities — water · gas · electric: "Territories, crew certifications and SLA commitments become weighted constraints; planned and emergency work are balanced against the weights."
+        Telecom & cable: "Appointment windows and line skills are modeled as commitment and skill rules; travel is minimized against them."
+        Industrial · medical-device · IT equipment service: "Contracted SLAs, engineer certifications and asset locations form the constraint set, with uptime-critical commitments weighted as hard rules."
+      source: site-2026-09-17, feature-list-2026-09-10
+    - n: 3
+      name: Solve the plan
+      actor: ai
+      human_in_the_loop: false
+      description: >-
+        NVIDIA cuOpt computes the technician-to-zone-to-job plan against every constraint at once
+        on the GPU solver, after a travel matrix is built and the rules and objectives are loaded.
+        Minutes rather than days; up to about 20 minutes on a full region in the delivered product.
+      failure_path: >-
+        A solver timeout or an infeasible model returns the current plan unchanged with the
+        blocking constraint named, rather than a partial plan (inferred).
+      vertical_differences:
+        Residential appliance & white-goods repair: "-"
+        Utilities — water · gas · electric: "-"
+        Telecom & cable: "-"
+        Industrial · medical-device · IT equipment service: "-"
+      source: spec-doc-2026-09-16, demo-2026-09-16
+    - n: 4
+      name: Review, approve, measure
+      actor: human
+      human_in_the_loop: true
+      description: >-
+        The dispatcher compares the current and the optimized plan on a live map, drills into a
+        zone or a technician, and approves, rejects or comments per zone in the Zone View. KPIs are
+        shown before and after on identical definitions. Re-running with feedback is an
+        Integration-tier capability.
+      failure_path: >-
+        A rejected zone keeps its current allocation; nothing is exported until the dispatcher
+        approves, so a bad plan never reaches the field.
+      vertical_differences:
+        Residential appliance & white-goods repair: "-"
+        Utilities — water · gas · electric: "No allocation reaches a crew until a dispatcher approves it."
+        Telecom & cable: "-"
+        Industrial · medical-device · IT equipment service: "The KPI readout compares the current and the optimized plan on identical definitions."
+      source: spec-doc-2026-09-16, site-2026-09-17, demo-2026-09-16
+  outputs:
+    - system: Oracle Fusion Field Service
+      data: "optimized allocations — zones and visits — with the dispatcher's decisions and comments"
+      tier: "PoV Jumpstart: file export. Integration: API write-back. Scaling: API plus telemetry."
+    - system: BI
+      data: "KPIs per plan version"
+      tier: "Integration"
+  source: spec-doc-2026-09-16, site-2026-09-17, one-pager-2026-07-17
+
+architecture:                            # component 8
+  inputs:
+    - system: Oracle Fusion Field Service
+      data: "technicians, availability, bookings, default allocations"
+    - system: Additional data sources
+      data: "booking, parts inventory, HR/WFM, demand forecast (Integration tier)"
+  stack:
+    - layer: Custom configuration
+      vendor: SoftServe
+      items: ["Client allocation rules and constraints", "KPI definitions and formulas", "Data integrations and mappings"]
+    - layer: Accelerator business app
+      vendor: Oracle + SoftServe
+      name: Accelerator business app
+      summary: optimization engine wrapper and dispatcher UI
+      items: ["Optimization engine wrapper and dispatcher UI", "Approval workflow and re-solve loop", "KPI and analytics layer"]
+    - layer: Optimization engine
+      vendor: NVIDIA
+      name: NVIDIA cuOpt
+      summary: GPU-accelerated solver
+      items: [NVIDIA cuOpt — GPU-accelerated solver]
+      catalog_id: nvidia-cuopt          # NVIDIA, not an Oracle product — carried here, not in oracle_products
+    - layer: Infrastructure
+      vendor: Oracle
+      label: "Oracle · OCI dedicated AI cluster, Object Storage, IAM"
+      items:
+        - "OCI dedicated AI cluster, 4–8 NVIDIA A100 GPUs"
+        - "OCI Object Storage for the period's data"
+        - "OCI networking and IAM"
+        - "OKE / containers and Oracle Database 26ai for persistence (delivered PoC scope; not shown on the published architecture diagrams)"
+  outputs:
+    - system: Oracle Fusion Field Service
+      data: "optimized allocations: zones and visits"
+    - system: BI
+      data: "KPIs per plan version"
+    - system: Plan export
+      data: "the approved plan with the dispatcher's decisions and comments (18 columns in the delivered product)"
+  note: >-
+    The one-pager's `.arch` diagram is the canonical compact form (source system left, OCI box
+    right, two labelled pipes); deck slide 7 is the canonical detailed form. The four-rung ladder
+    above is the attribution device used on the executive summary and the section deck, and is a
+    different component from the data flow.
+  source: one-pager-2026-07-17, deck-2026-07-13, site-2026-09-17, spec-doc-2026-09-16
+
+oracle_products:                         # components 9 and 10 — catalog ids, Oracle-vendor only
+  #
+  # Every id below resolves to shared/data/oracle-products.yaml (catalog version 2026-09-18).
+  # NVIDIA cuOpt is NOT here: it is the pack's engine and is named in architecture.stack[].catalog_id.
+  # Three ids this example first coined have no catalog entry and are logged as catalog change
+  # requests in shared/data/oracle-products.README.md; each uses the closest catalogued product.
+  #
+  # NOTE ON `role: optional`. No delivered WfO artifact lists optional Oracle products as such —
+  # the component has no reference in the estate (component-map-2026-09-17 §4). The four
+  # `optional` entries below are inferred from the pack's own named integration list (booking,
+  # inventory, HR/WFM, demand forecasting, BI) mapped onto the Oracle products that would serve
+  # them; the booking system has no Oracle counterpart and stays customer-specific. All four
+  # need the owner's confirmation — see open_questions.
+  #
+  - id: oracle-fusion-field-service
+    role: required
+    why: "Source of work orders, technicians, zones and bookings, and destination of the approved plan"
+    integration:
+      pov: "File export / import — the customer exports XLSX and imports the optimized plan"
+      integration: "API write-back: in — staff, availability, booking data; out — optimized allocations (zones, visits); back — factual durations and times"
+      scaling: "API plus telemetry, multi-region"
+    name_note: >-
+      Canonical vendor name is "Oracle Fusion Field Service" (the Jul-17 one-pager). The deck, the
+      feature list and the mini-site still say "Oracle Field Service"; relabel at next rebuild.
+    source: one-pager-2026-07-17, site-2026-09-17
+  - id: oci-dedicated-ai-cluster
+    role: required
+    why: "Runs the NVIDIA cuOpt solver — a dedicated AI cluster of 4–8 NVIDIA A100 GPUs (A10 in the delivered PoC)"
+    catalog_note: >-
+      The example first coined `oci-compute-gpu`. The catalog has no such id; `oci-dedicated-ai-cluster`
+      is what the artifacts mean by "OCI dedicated AI cluster". `oci-gpu-instances` is the alternative
+      when a pack sizes raw GPU shapes instead — see the catalog change request.
+    source: one-pager-2026-07-17, deck-2026-07-13, spec-doc-2026-09-16
+  - id: oci-object-storage
+    role: required
+    why: "Holds the period's data — inputs, plan versions and exports"
+    source: site-2026-09-17
+  - id: oci-vcn
+    role: required
+    why: "Tenancy networking for the dedicated cluster"
+    catalog_note: "The example first coined `oci-networking`; the catalog's networking entry is the VCN."
+    source: site-2026-09-17
+  - id: oci-iam
+    role: required
+    why: "Identity and access for the dispatcher UI and the cluster"
+    source: site-2026-09-17
+  - id: oci-kubernetes-engine
+    role: required
+    why: "Runs the app and the pre/post-processing services as containers"
+    note: "From the delivered PoC's technical scope; absent from every published architecture diagram."
+    source: spec-doc-2026-09-16
+  - id: oracle-autonomous-ai-database
+    role: required
+    why: "Persistence for plan versions, decisions and KPI history"
+    note: "Delivered PoC used Oracle Database 26ai; absent from every published architecture diagram."
+    source: spec-doc-2026-09-16
+  - id: oracle-fusion-cloud-hcm
+    role: optional
+    why: "Could be the HR/WFM source for people availability, one of the five typical Integration-tier integrations"
+    inferred: true
+    catalog_note: >-
+      The example first coined `oracle-fusion-hcm`; the catalog's id is `oracle-fusion-cloud-hcm`
+      (Workforce Management is a module inside it — name the module when a pack depends on one).
+    source: one-pager-2026-07-17, deck-2026-07-13
+  - id: oracle-fusion-cloud-scm
+    role: optional
+    why: >-
+      Could be the inventory source for spare-parts availability and the demand-forecast source the
+      forecast-based allocation rules consume
+    inferred: true
+    catalog_note: >-
+      The example first coined two ids, `oracle-fusion-inventory-management` and
+      `oracle-fusion-demand-management`. The catalog carries neither: both are modules of Fusion SCM,
+      so the two entries collapse into one. Logged as a catalog change request — if the catalog ever
+      splits the modules out, this entry splits with it.
+    source: deck-2026-07-13
+  - id: oracle-analytics-cloud
+    role: optional
+    why: "Could be the BI destination for KPIs per plan version"
+    inferred: true
+    source: feature-list-2026-09-10, deck-2026-07-13
+
+kpis:                                    # component 11 — ONE metric set per pack
+  # The set below is the sales one-pager's set (decisions-2026-09-18: one metric set per pack,
+  # taken from the customer study; attribution varies by approval and channel, figures do not).
+  # The mini-site currently ships a different, anonymized, modeled set — see open_questions.
+  - name: Planning cycle time
+    formula: "Elapsed time to optimize and approve a region's four-week plan, end to end including dispatcher review"
+    baseline: "~2 days, planned by hand"
+    figure: "~30 min"
+    label: "to optimize and approve a region's four-week plan, down from ~2 days"
+    figure_status: pov_result
+    attribution:
+      named_when_allowed: "Proof of value · <the delivery customer>"
+      otherwise: "proof of value at a global home-appliance manufacturer"
+    caveat: "KPIs measured before/after on proof-of-value data; figures are illustrative, not contractual."
+    note: "Headline discipline (call-2026-07-09): the end-to-end figure, not the ~15-minute solve time."
+    source: one-pager-2026-07-17, call-2026-07-09
+  - name: Technician productivity
+    formula: "For each technician, total jobs ÷ days with at least one job; headline is the simple average across technicians, two decimals"
+    baseline: "the customer's current plan for the same window, computed on the identical formula"
+    figure: "up to +26%"
+    label: "productivity gain on proof-of-value data across three markets"
+    figure_status: pov_result
+    attribution:
+      named_when_allowed: "Proof of value · <the delivery customer>"
+      otherwise: "proof of value at a global home-appliance manufacturer"
+    caveat: "Productivity gain on proof-of-value data across the US, UK and Netherlands; illustrative, not contractual."
+    note: "Pair any single-digit percentage with the sentence explaining why it is large at scale (call-2026-07-09)."
+    source: one-pager-2026-07-17, spec-doc-2026-09-16
+  - name: Estimated savings at full launch
+    formula: "Cost of the additional staffing avoided at the optimized productivity, extrapolated to full launch"
+    baseline: "current staffing cost at the current plan"
+    figure: "€190K / month"
+    label: "estimated saving at full launch, valued as the staffing it avoids"
+    figure_status: modeled
+    attribution:
+      named_when_allowed: "Proof of value · <the delivery customer>"
+      otherwise: "proof of value at a global home-appliance manufacturer"
+    caveat: "Estimated savings at full launch, valued as the cost of additional staffing avoided; illustrative, not contractual."
+    note: >-
+      The one-pager types this as an estimate at full launch, not a measured proof-of-value
+      outcome, so `figure_status` is `modeled` rather than `pov_result`. Flagged for the owner.
+    source: one-pager-2026-07-17
+  - name: Capacity utilization
+    formula: "round(jobs ÷ (working days × 7) × 100), capped 0–100; the model assumes at most 7 jobs per technician per working day"
+    baseline: "the current plan for the same window"
+    figure: "-"
+    figure_status: "-"
+    caveat: "Computed identically on the current and the optimized plan; measured per engagement."
+    note: "Defined and measured, no cleared headline figure. The schema's figure_status enum has no value for this state."
+    source: spec-doc-2026-09-16, feature-list-2026-09-10
+  - name: Customer wait time
+    formula: "Booking date to appointment date in whole calendar days, averaged across jobs"
+    baseline: "the current plan for the same window"
+    figure: "-"
+    figure_status: "-"
+    caveat: "Computed identically on the current and the optimized plan; measured per engagement."
+    source: spec-doc-2026-09-16
+  - name: Travel reduction
+    formula: "Total planned travel across the period, current plan against optimized plan"
+    baseline: "the current plan for the same window"
+    figure: "-"
+    figure_status: "-"
+    caveat: "Computed identically on the current and the optimized plan; measured per engagement."
+    source: feature-list-2026-09-10
+  - name: Workload balance
+    formula: "Spread of jobs per technician across the period, current plan against optimized plan"
+    baseline: "the current plan for the same window"
+    figure: "-"
+    figure_status: "-"
+    caveat: "Computed identically on the current and the optimized plan; measured per engagement."
+    source: feature-list-2026-09-10
+
+packages:                                # component 12
+  tiers:
+    - id: pov
+      name: PoV Jumpstart
+      size_tag: S
+      scope_line: "Manual data import, limited rule set: prove the KPI gains on the customer's data."
+      duration_weeks: { target: 8, min: 6, max: 8, hard_cap: 10 }
+      duration_note: >-
+        The delivered print artifacts say "2 months" and the mini-site says "4–8 weeks";
+        normalized to 8 weeks per decisions-2026-09-18. The skill pushes back above 8 with
+        reasons and rejects above 10. The standing rule (shared/references/pov-rules.md) allows
+        a 4-week floor; this pack's own floor is 6 because the PoV needs a full four-week
+        planning period of the customer's data plus a dispatcher review cycle on top.
+      services_price: { value: 90000, currency: EUR, status: confirmed, footnote: "One-time. €100K on an early deck slide was a slip; €90K is the confirmed figure." }
+      infra_price_monthly: { value: 2000, currency: EUR, status: indicative, footnote: "Indicative; depends on the usage and optimization rules complexity." }
+      what_you_get:
+        - "An optimized four-week plan for one real region, computed on the customer's own historical data"
+        - "A before/after KPI readout — productivity, capacity utilization and wait time — computed identically on the current and the optimized plan"
+        - "The dispatcher review UI running in a sandboxed environment on the customer's own tenancy"
+        - "A costed plan for the next step: integration scope, additional sources, timeline"
+      entry_gate:
+        - "One real region and a period of historical planning data — demand, availability, skills, work zones and bookings"
+        - "The allocation rules that actually apply: zones, skills, absences, service commitments"
+        - "A dispatcher and a business owner who will review the plan and sign the baseline"
+      scope_in:
+        - "Foundational allocation with the recurring, most-typical constraints — zones, skills, planned absences"
+        - "Core KPIs predicted at scheduling and measured against the signed benchmark"
+        - "The dispatcher review UI, with approve, reject and re-run"
+        - "Sandboxed deployment on the customer's own tenancy"
+        - "A before/after KPI readout computed identically on both plans"
+      scope_out:
+        - "Oracle Fusion Field Service integration — Integration tier; the PoV is file export / import"
+        - "Additional data sources and BI integration — Integration tier"
+        - "The re-optimization feedback loop — Integration tier"
+        - "Live-traffic travel rules, within-day reassignment, spare-parts and crew-based assignment — roadmap"
+      source: one-pager-2026-07-17, site-2026-09-17, decisions-2026-09-18
+    - id: integration
+      name: Integration
+      size_tag: M
+      scope_line: "Full setup and integration, live at one location: no manual work, embedded in the workflow."
+      duration_weeks: { min: 12, max: 20 }
+      services_price: { range: [300000, 500000], currency: EUR, status: indicative }
+      infra_price_monthly: { value: 25000, currency: EUR, status: indicative, footnote: "Indicative; depends on the usage and optimization rules complexity." }
+      what_you_get:
+        - "Oracle Fusion Field Service integration: staff, availability and booking data in; optimized allocations out; factual durations and times back"
+        - "Up to five further integrations — booking, inventory for parts availability, HR/WFM for people availability, demand forecasting, BI"
+        - "The re-optimization feedback loop with alternative allocation options"
+        - "Advanced allocation with the full operational complexity — urgent jobs, crews, SLAs, inventory-coupling"
+        - "Enterprise-integrated deployment: dedicated landing zone, IAM, observability"
+      name_note: 'Printed as "Roll-out · M" on the delivered artifacts; relabelled to "Integration" at next rebuild.'
+      source: one-pager-2026-07-17, deck-2026-07-13, decisions-2026-09-18
+    - id: scaling
+      name: Scaling
+      size_tag: L
+      scope_line: "Scaling across locations: heterogeneous rules and data workflows per region."
+      duration_weeks: { min: 12, max: 52 }
+      services_price: { status: tbd }
+      infra_price_monthly: { status: tbd }
+      what_you_get:
+        - "Multiple region-specific optimization-rule configurations"
+        - "Region-specific KPI sets and analytics"
+        - "Multi-region integration and enterprise-integrated, multi-zone deployment"
+      name_note: >-
+        Frame as telemetry and local tailoring. Never label this tier "hardening" — it invites
+        "what was wrong before?" (call-2026-06-26).
+      source: one-pager-2026-07-17, deck-2026-07-13, call-2026-06-26
+  tier_semantics: >-
+    Tiers map to integration depth, not feature count (call-2026-06-26). PoV Jumpstart proves the
+    value on the customer's data with zero integration in a separate environment; Integration
+    delivers a live, fully-integrated deployment at one location; Scaling extends it across markets
+    with per-region rules and telemetry. PoV Jumpstart and Scaling are both optional — a bought-in
+    customer goes straight to Integration, and a uniform global customer may never need Scaling.
+  capability_handling_legend: "◐ partial · ● included · ●● multi-region / advanced · — not included"
+  capability_handling:
+    # The six commercial rows of the packages table. They are a different cut from the feature
+    # list's four areas; `maps_to_feature_areas` is the bridge the builders use.
+    - area: Optimization rules & guardrails
+      maps_to_feature_areas: [Allocation rules]
+      pov: "◐ Foundational allocation with recurring, most-typical constraints — zones, skills, planned absences"
+      integration: "● Advanced allocation with all operational complexities — urgent jobs, crews, SLAs, inventory-coupling"
+      scaling: "●● Multiple region-specific optimization-rule configurations"
+    - area: Re-optimization & feedback loop
+      maps_to_feature_areas: [Review and approval workflow]
+      pov: "— Not included"
+      integration: "● Feedback-driven re-optimization with alternative allocation options"
+      scaling: "●● Region-specific workflows"
+    - area: Analytics & efficiency KPIs
+      maps_to_feature_areas: [KPIs and analytics]
+      pov: "● Core KPIs predicted at scheduling"
+      integration: "● Plus execution-data feedback and custom analytics"
+      scaling: "●● Region-specific KPI sets"
+    - area: Oracle Fusion Field Service integration
+      maps_to_feature_areas: [Integrations]
+      pov: "— Not included; file export / import"
+      integration: "● In: staff, availability, booking data · Out: allocations · Back: factual durations and times"
+      scaling: "●● Multi-region"
+    - area: Additional data sources & BI
+      maps_to_feature_areas: [Integrations]
+      pov: "— Not included"
+      integration: "● Up to 5 typical integrations — booking system, inventory for parts availability, HR/WFM for people availability, demand forecasting, BI"
+      scaling: "●● Per-region data workflows"
+    - area: Deployment
+      maps_to_feature_areas: []
+      pov: "◐ Sandboxed"
+      integration: "● Enterprise-integrated — dedicated landing zone, IAM, observability"
+      scaling: "●● Enterprise-integrated, multi-zone"
+  why_it_sells_for_the_partner:
+    - "A natural Oracle Fusion Field Service cross-sell: native integration, known endpoints, a warm path into the account"
+    - "Net-new OCI consumption: recurring GPU workloads on dedicated OCI clusters, on top of the existing Fusion SaaS seat"
+    - "Repeatable: fits any Oracle Fusion Field Service customer with a heavy, centralized dispatch and scheduling routine"
+  target_oci_consumption: "-"            # open: committed on call-2026-07-09, never added to an artifact
+  source: one-pager-2026-07-17, decisions-2026-09-18
+
+one_pager:                               # per-artifact presentation overrides (see the schema)
+  proof_story_anonymized: >-
+    Delivered as a proof of value with a global home-appliance manufacturer: zone and technician
+    allocation computed on the operator's own historical data, reviewed and approved by its own
+    dispatchers.
+  cta:
+    question: See the fit in one of your accounts?
+    answer: >-
+      Let's scope a proof of value on the customer's own data: 8 weeks to measured KPIs.
+
+contacts:
+  partner_print: { name: Karsten Tramborg, title: Alliances & Partnerships Director, email: ktram@softserveinc.com }
+  site: { mailbox: oracle@softserveinc.com, named: Karsten Tramborg }
+  internal: { name: Bohdan Khomych, email: RnDrequest@softserveinc.com, note: "The person doing the packaging; the delivered section deck carries this name." }
+  source: decisions-2026-09-18, one-pager-2026-07-17
+
+provenance:
+  # Paths are written against three roots rather than as machine paths: `<practice-drive>` is the
+  # practice's shared drive for this account, `<owner-repo>` the owner's own notes repository,
+  # `<owner-local>` his local working folder. A real pack spec, which lives in the pack's own
+  # working folder and not in this repository, carries the resolved paths.
+  inputs:
+    - id: one-pager-2026-07-17
+      path: "<practice-drive>/Projects/Oracle/Packs/Workforce optimization package/Workforce Optimization - Sales one-pager - Oracle.pdf"
+      kind: one-pager
+      read: 2026-09-18
+      note: >-
+        The canonical sales one-pager (decisions-2026-09-18). The Jul-13 file at this path was
+        overwritten in place with the Jul-17 version under the same name so the share link
+        survived; the superseded Jul-13 PDF is archived locally. HTML build source lives only at
+        <owner-local>/Oracle/Workforce Optimization - Sales one-pager - Oracle.html
+      supplies: [problem_solution, one_liner, kpis, packages, architecture, oracle_products, contacts]
+    - id: feature-list-2026-09-10
+      path: "<practice-drive>/Projects/Oracle/Packs/Workforce optimization package/Workforce Optimization - Accelerator Pack one-pager.docx"
+      kind: feature-list
+      read: 2026-09-18
+      note: "4 areas / 13 categories / 38 features. Status glyph colours read from word/document.xml: #1485C3 available, #C1E4F5 partial, #AEB4BA roadmap."
+      supplies: [capabilities]
+    - id: deck-2026-07-13
+      path: "<practice-drive>/Projects/Oracle/Packs/Workforce optimization package/Workforce Optimization - Service packages - Oracle.pptx"
+      kind: deck
+      read: 2026-09-17
+      note: "10 slides. Read second-hand through component-map-2026-09-17, not opened in this pass."
+      supplies: [verticals, packages, architecture]
+    - id: exec-summary-2026-07-17
+      path: "<owner-local>/Oracle/Workforce Optimization - Executive summary - Oracle.pptx"
+      kind: deck
+      read: 2026-09-17
+      note: "Read second-hand through component-map-2026-09-17."
+      supplies: [kpis]
+    - id: section-deck-2026-09-11
+      path: "<practice-drive>/Projects/Oracle/Packs/Monthly AI products overviews/AI Solutions review - Sep/Oracle AI Packages - section slides.pptx"
+      kind: deck
+      read: 2026-09-17
+      note: "Latest executive-summary style; WfO is slides 5–6. Read second-hand through component-map-2026-09-17."
+      supplies: [contacts]
+    - id: site-2026-09-17
+      path: "<owner-repo>/outputs/oracle-solutions-site/site/data/content.js"
+      kind: listing
+      read: 2026-09-18
+      note: "products[] slug workforce-optimization, lines 1751–2088."
+      supplies: [icp, verticals, workflow, architecture, oracle_products, packages, clearance]
+    - id: demo-2026-09-16
+      path: "<owner-repo>/outputs/oracle-solutions-site/site/demo/workforce-optimization/data.js"
+      kind: demo
+      read: 2026-09-17
+      note: "Read second-hand through component-map-2026-09-17 and spec-doc-2026-09-16."
+      supplies: [workflow]
+    - id: spec-doc-2026-09-16
+      path: "<owner-repo>/context/areas/softserve/docs/2026-09-16_wfo-pack-spec-for-demo.md"
+      kind: call-note
+      read: 2026-09-18
+      note: "Distillation of the PoC user guide v3, requirements 1.6, UC #3 scope and the KPI methodology PDF."
+      supplies: [workflow, kpis, architecture, meta]
+    - id: component-map-2026-09-17
+      path: "<owner-repo>/context/areas/softserve/docs/2026-09-17_packaging-skills-prep/B-artifact-component-map.md"
+      kind: call-note
+      read: 2026-09-18
+      supplies: [all]
+    - id: decisions-2026-09-18
+      path: "<owner-repo>/context/areas/softserve/docs/2026-09-17_packaging-skills-prep/decisions-2026-09-18.md"
+      kind: call-note
+      read: 2026-09-18
+      supplies: [meta, packages, kpis, capabilities, contacts]
+    - id: call-2026-06-26
+      path: "<owner-repo>/context/areas/softserve/calls/oracle/2026-06-26_sales-call_gero-tshirt-packaging.md"
+      kind: call-note
+      read: 2026-09-17
+      note: "Tier semantics co-designed with the partner. Read second-hand through A1-sessions-decks-onepagers.md."
+      supplies: [packages]
+    - id: call-2026-07-07
+      path: "<owner-repo>/context/areas/softserve/calls/oracle/"
+      kind: call-note
+      read: 2026-09-17
+      note: "The standard-vs-custom classification session. Read second-hand through A1-sessions-decks-onepagers.md §2."
+      supplies: [capabilities, icp, meta]
+    - id: call-2026-07-09
+      path: "<owner-repo>/context/areas/softserve/calls/oracle/"
+      kind: call-note
+      read: 2026-09-17
+      note: "Offering-deck review with partner sales. Read second-hand through A1-sessions-decks-onepagers.md §2."
+      supplies: [kpis, packages]
+  research_brief: packs/workforce-optimization/research-brief.md   # not written; this example was reconstructed from delivered artifacts
+
+open_questions:
+  - "Customer name on partner-print artifacts: `clearance.customer_name_allowed.partner_print` is false here, but the delivered one-pager, deck, executive summary and section deck all print the customer's name and logo. Alex has not confirmed whether that approval stands. Until he does, every builder emits the anonymized descriptor and the delivered artifacts are out of compliance with their own spec."
+  - "Two figure sets for one pack. The print artifacts carry ~30 min / up to +26% / €190K per month; the mini-site carries the anonymized, modeled set (+4.5% median jobs per technician per day, ~5x three-year return, 83% of 12 simulations positive, 15–20% dispatcher productivity, no € figures). decisions-2026-09-18 says one metric set per pack, so one of the two has to go. This spec carries the one-pager set; the site set is not reproduced here."
+  - "`figure_status` for the €190K/month figure. The one-pager types it as an estimate at full launch, so it is recorded as `modeled`, not `pov_result`. Confirm."
+  - "Scaling-tier pricing is `tbd` on every artifact. Services and infrastructure both need a number or an explicit \"scoped per engagement\" line."
+  - "Target OCI consumption per tier was committed on the 2026-07-09 offering-deck review and never added to an artifact. Recorded as \"-\"."
+  - "The `***` footnote marker on \"Non-movable appointments\" in the delivered feature-list docx has no footnote text in the file. What did it say?"
+  - "The four optional Oracle products are inferred from the pack's integration list, not sourced from any artifact. Confirm or replace."
+  - "Catalog ids were reconciled against shared/data/oracle-products.yaml (version 2026-09-18): every id here now resolves. Three had no catalog entry and use the closest catalogued product — `oci-dedicated-ai-cluster` for the GPU cluster, `oci-vcn` for networking, and one merged `oracle-fusion-cloud-scm` entry where the example had separate inventory and demand-management ids. All three are logged as catalog change requests in shared/data/oracle-products.README.md; the catalog owner decides whether to split them out. Details in this folder's README.md."
+  - "`meta.source_engagement.delivered` carries no delivery window. The mini-site case study says three months; the exact start and end dates are not in any source read here."
+  - "Vertical labels: three different four-item lists exist (deck and feature list · mini-site generic industries · the productization workbook's Sheet3). This spec carries the deck labels with the site labels alongside; confirm which set is canonical for new artifacts."
+  - "Feature-level customization scope is unset by design — the delivered feature list scopes customization per AREA, and only `customization_scope_area` is filled. If the schema wants a feature-level value, it needs a source that does not exist today."
+  - "Feature-level `status` inherits the category's merged cell; the source has no per-feature granularity. Same question for the schema."
+  - "`specificity` tags are set only where the 2026-07-07 standard-vs-custom session supports them; everything else is `[]` rather than guessed. The full four-axis pass has not been run for this pack."
+  - "`vertical_differences` is filled only for workflow step 2 (Set the rules), which is the one step the vertical framings actually speak to. Steps 1, 3 and 4 are \"-\" for three of the four verticals."
+  - "Resolved in the schema, left here so the decision is visible: a KPI that is defined and measured per engagement but has no cleared headline figure is written `figure: \"-\"` (and `figure_status: \"-\"`), and needs no `attribution` — the enum did not need a fifth value, because `-` already means 'deliberately empty' everywhere in a spec. Four of the seven KPIs here sit in that state and keep their formula, baseline and caveat. What is still open is whether any of the four gets a cleared figure for the next artifact round."
+  - "`meta.name_variants.site` is Title Case per decisions-2026-09-18; the live listing ships sentence case. Which wins at the next site rebuild?"

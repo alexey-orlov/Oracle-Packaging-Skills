@@ -1,0 +1,28 @@
+{
+  "_README": [
+    "Copy this file to <site-root>/tools/deny-list.json and fill it in, or pass",
+    "--deny-list <file> / set $ORACLE_DENY_LIST. It ships EMPTY on purpose: a",
+    "deny-list is the one artifact that would carry the names it exists to keep",
+    "out of the build, so it belongs beside the site, never inside a shared plugin.",
+    "check-grammar.js warns on every run until customerNames is non-empty."
+  ],
+  "_customerNames": [
+    "Every customer, partner and end-client name the catalog must never print,",
+    "in every spelling anyone has used: the legal name, the trading name, the",
+    "misspelling in the source deck, the group abbreviation. Matched as whole",
+    "words against the raw text of content.js and review.js, so a name that is",
+    "also an ordinary word needs no escaping but will match that word too.",
+    "Example shape: [\"Acme\", \"Acme Group\", \"AcmeCo\"]"
+  ],
+  "customerNames": [],
+  "_bannedStrings": [
+    "Site-specific substrings that must never reach content.js, each with the",
+    "reason printed on failure. Use it for: internal company or product names,",
+    "internal deal-state vocabulary, figures out of a confidential business case,",
+    "third-party products named inside a customer's estate, personal mailboxes,",
+    "and any phrase an owner has retired in a review round. Matched as plain",
+    "substrings, not word-bounded.",
+    "Example shape: [[\"\\u20ac190K\", \"customer economics from a confidential case\"]]"
+  ],
+  "bannedStrings": []
+}

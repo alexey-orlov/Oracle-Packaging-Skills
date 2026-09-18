@@ -1,0 +1,907 @@
+#!/usr/bin/env python3
+"""Build the 10-slide Oracle accelerator-pack sales deck from a pack spec.
+
+    build_deck.py <pack-spec.yaml> --out <dir> [--channel partner_print|internal]
+                  [--fit-report] [--allow-overflow] [--base <pptx>]
+
+One function per slide; geometry from references/deck-anatomy.md. Text is
+sized to fit with a headless estimate (Pillow on a Helvetica-metric stand-in
+font, +6% safety) — the deck-kit rule is: trust geometry, not glyph widths.
+A box that would still overflow is printed and the build exits non-zero.
+
+Dependencies: pyyaml, python-pptx, Pillow  (see plugins/oracle-packs/requirements.txt)
+"""
+
+from __future__ import annotations
+
+import argparse
+import sys
+from pathlib import Path
+
+_HERE = Path(__file__).resolve().parent
+for _cand in (_HERE, _HERE.parents[1] / "deck" / "tools"):
+    if (_cand / "deckkit.py").exists():
+        sys.path.insert(0, str(_cand))
+        break
+
+from pptx.enum.shapes import MSO_SHAPE                       # noqa: E402
+from pptx.enum.dml import MSO_LINE_DASH_STYLE                # noqa: E402
+from pptx.enum.text import MSO_ANCHOR                        # noqa: E402
+from pptx.dml.color import RGBColor                          # noqa: E402
+from pptx.util import Emu, Pt                                # noqa: E402
+
+from deckkit import (                                        # noqa: E402
+    C, CONTENT_W, DECK_TITLE_BOX, FONT_BODY, FitEntry, FitLog, MARGIN_L,
+    Spec, SpecError, autofit_paras, autofit_pt, fmt_duration, fmt_price, inch,
+    log_box, new_slide, open_base, panel, pick_layout, product_name, rect,
+    stacked_height, textbox, wrap_count,
+)
+
+BASE_DEFAULT = _HERE.parent / "assets" / "softserve-deck-base.pptx"
+
+# Vendor → (tint, bar) for the solution-layers ladder, per the R&D monthly deck.
+VENDOR_COLORS = [
+    ("softserve", (C["orange_tint"], C["orange"])),
+    ("oracle + softserve", ("D2E7F6", C["blue"])),
+    ("softserve + oracle", ("D2E7F6", C["blue"])),
+    ("nvidia", (C["blue_tint"], C["blue_light"])),
+    ("oracle", ("EEF1F3", "6B7680")),
+]
+TIER_HEADER_FILL = [C["orange_light"], C["orange"], C["orange_dark"]]
+GLYPH_DEFAULT = {"pov": "◐", "integration": "●", "scaling": "●●"}
+GLYPH_NONE = "—"
+NO_STYLE = "{2D5ABB26-0587-4C30-8999-92F81FD0307C}"  # "No Style, No Grid"
+
+
+# ---------------------------------------------------------------------------
+# small helpers
+# ---------------------------------------------------------------------------
+
+def vendor_colors(vendor: str, i: int) -> tuple[str, str]:
+    v = (vendor or "").strip().lower()
+    for key, cols in VENDOR_COLORS:
+        if key == v:
+            return cols
+    for key, cols in VENDOR_COLORS:
+        if key in v:
+            return cols
+    return [(C["blue_tint"], C["blue"]), ("EEF1F3", "6B7680"),
+            (C["orange_tint"], C["orange"]), (C["blue_tint_2"], C["blue_light"])][i % 4]
+
+
+def chip(slide, x, y, w, h, text, fill=C["panel_grey"], color=C["blue"], sz=9.5,
+         line=None):
+    rect(slide, x, y, w, h, fill=fill, line=line, rounded=True, adj=0.25)
+    textbox(slide, x + 0.08, y, w - 0.16, h,
+            [{"t": text, "sz": sz, "b": True, "color": color, "align": "c"}],
+            anchor="m")
+
+
+def badge(slide, x, y, d, label, color=C["orange"]):
+    """Outlined numeral badge — slide-design rule 8 (no heavy ink fills)."""
+    rect(slide, x, y, d, d, fill=C["white"], line=color, line_pt=1.25,
+         rounded=True, adj=0.5)
+    textbox(slide, x, y, d, d,
+            [{"t": label, "sz": 9.5, "b": True, "color": color, "align": "c"}],
+            anchor="m")
+
+
+def arrow(slide, x, y, w, h, color=C["blue"], left=False):
+    shp = slide.shapes.add_shape(
+        MSO_SHAPE.LEFT_ARROW if left else MSO_SHAPE.RIGHT_ARROW,
+        inch(x), inch(y), inch(w), inch(h))
+    shp.fill.solid()
+    shp.fill.fore_color.rgb = RGBColor.from_string(color)
+    shp.line.fill.background()
+    shp.shadow.inherit = False
+    return shp
+
+
+def strip(slide, y, text, fit, slide_no, label="anchor strip", fill=C["ink"],
+          sz=11.5, h=0.46):
+    rect(slide, MARGIN_L, y, CONTENT_W, h, fill=fill)
+    textbox(slide, MARGIN_L + 0.18, y, CONTENT_W - 0.36, h,
+            [{"t": text, "sz": sz, "b": True, "color": C["white"], "align": "c"}],
+            anchor="m")
+    fit.add(slide_no, label, text, sz, CONTENT_W - 0.36, h, bold=True, max_lines=1)
+
+
+def footnote(slide, text, fit, slide_no, y=6.84, sz=8.0):
+    if not text:
+        return
+    textbox(slide, MARGIN_L, y, CONTENT_W, 0.30,
+            [{"t": text, "sz": sz, "color": C["muted_light"]}])
+    fit.add(slide_no, "footnote", text, sz, CONTENT_W, 0.30, max_lines=2)
+
+
+def content_title(slide, text, fit, slide_no, sub=None):
+    x, y, w, h = DECK_TITLE_BOX
+    pt = autofit_pt(text, w, 0.50, 26, 18, bold=True, max_lines=1)
+    textbox(slide, x, y, w, 0.50,
+            [{"t": text.upper(), "sz": pt, "b": True, "color": C["ink"]}], anchor="t")
+    fit.add(slide_no, "title", text.upper(), pt, w, 0.50, bold=True, max_lines=1)
+    if sub:
+        textbox(slide, MARGIN_L, 2.24, CONTENT_W, 0.30,
+                [{"t": sub, "sz": 12, "color": C["muted"]}])
+        fit.add(slide_no, "title sub", sub, 12, CONTENT_W, 0.30, max_lines=1)
+
+
+# ---------------------------------------------------------------------------
+# slides
+# ---------------------------------------------------------------------------
+
+def step_band(slide, y, steps, fit, slide_no, label="HOW IT RUNS"):
+    """A true sequence reads horizontally (slide-design rule 9)."""
+    n = max(1, min(len(steps), 6))
+    arrow_w, gap = 0.26, 0.16
+    bw = (CONTENT_W - (n - 1) * (arrow_w + 2 * gap)) / n
+    textbox(slide, MARGIN_L, y, CONTENT_W, 0.24,
+            [{"t": label, "sz": 10.5, "b": True, "color": C["blue"]}])
+    top = y + 0.32
+    bh = 1.05
+    for i in range(n):
+        st = steps[i]
+        x = MARGIN_L + i * (bw + arrow_w + 2 * gap)
+        rect(slide, x, top, bw, bh, fill=C["white"], line=C["hairline"], line_pt=0.75)
+        badge(slide, x + 0.16, top + 0.14, 0.26, str(st.get("n", i + 1)),
+              color=C["blue"])
+        name = str(st.get("name", ""))
+        pt = autofit_pt(name, bw - 0.32, 0.46, 11, 8, bold=True, max_lines=3)
+        textbox(slide, x + 0.16, top + 0.48, bw - 0.32, 0.46,
+                [{"t": name, "sz": pt, "b": True, "color": C["ink"]}])
+        fit.add(slide_no, f"step {i+1}", name, pt, bw - 0.32, 0.46, bold=True, max_lines=3)
+        if st.get("human_in_the_loop"):
+            textbox(slide, x + 0.52, top + 0.14, bw - 0.68, 0.26,
+                    [{"t": "person in the loop", "sz": 7.5, "color": C["muted"]}],
+                    anchor="m")
+        if i < n - 1:
+            arrow(slide, x + bw + gap, top + bh / 2 - 0.05, arrow_w, 0.10,
+                  color=C["hairline_alt"])
+    return top + bh
+
+
+def slide_01_cover(prs, layout, spec: Spec, fit: FitLog):
+    s = new_slide(prs, layout, title=None, header=None)
+    rect(s, 0, 0, 13.34, 7.5, fill=C["ink"])
+    rect(s, 0, 2.05, 0.90, 0.045, fill=C["orange"])
+
+    tiers = " · ".join(t.get("name", "") for t in spec.tiers())
+    textbox(s, 0.55, 1.45, 8.00, 0.28,
+            [{"t": tiers.upper(), "sz": 11.5, "b": True, "color": C["blue_light"]}])
+    fit.add(1, "cover eyebrow", tiers.upper(), 11.5, 8.00, 0.28, bold=True, max_lines=1)
+
+    name = spec.name()
+    pt = autofit_pt(name, 9.20, 1.05, 44, 30, bold=False, max_lines=2)
+    textbox(s, 0.55, 2.40, 9.20, 1.05,
+            [{"t": name, "sz": pt, "color": C["white"]}])
+    fit.add(1, "cover title", name, pt, 9.20, 1.05, max_lines=2)
+
+    sub = spec.subheading()
+    if sub:
+        textbox(s, 0.55, 3.52, 9.20, 0.32,
+                [{"t": sub, "sz": 15, "color": C["blue_light"]}])
+        fit.add(1, "cover subheading", sub, 15, 9.20, 0.32, max_lines=1)
+
+    one = spec.get("one_liner.full") or spec.get("one_liner.short") or ""
+    pt = autofit_pt(one, 8.60, 1.20, 18, 13, max_lines=3)
+    textbox(s, 0.55, 4.10, 8.60, 1.20, [{"t": one, "sz": pt, "color": "D9E4EC"}])
+    fit.add(1, "cover one-liner", one, pt, 8.60, 1.20, max_lines=3)
+
+    icp = spec.get("icp.line")
+    if icp:
+        textbox(s, 0.55, 5.70, 8.60, 0.50,
+                [{"t": [("WHO IT IS FOR   ", {"color": C["orange"], "b": True, "sz": 9}),
+                        (icp, {"color": "AEB6BD", "sz": 10})]}])
+        fit.add(1, "cover icp", "WHO IT IS FOR   " + icp, 10, 8.60, 0.50, max_lines=3)
+    return s
+
+
+
+def point_text(point) -> str:
+    """A `problem_points` entry: a plain string, or `{label, text}` from the schema."""
+    if isinstance(point, dict):
+        label = str(point.get("label") or "").strip()
+        body = str(point.get("text") or point.get("detail") or "").strip()
+        if label and body:
+            return f"{label}: {body}"
+        return label or body
+    return str(point)
+
+
+def slide_02_use_case(prs, layout, spec: Spec, fit: FitLog, header: str):
+    s = new_slide(prs, layout, title=None, header=header)
+    content_title(s, "Use case", fit, 2)
+
+    ps = spec.get("problem_solution", {}) or {}
+    top, h = 1.92, 3.68
+    panel(s, MARGIN_L, top, 6.02, h, fill=C["panel_grey"], accent=C["ink_soft"],
+          accent_w=0.10, line=None, rounded=True)
+    panel(s, 6.89, top, 6.02, h, fill=C["blue_tint_2"], accent=C["blue"],
+          accent_w=0.10, line=None, rounded=True)
+
+    textbox(s, 0.77, top + 0.18, 5.40, 0.30,
+            [{"t": "PROBLEM", "sz": 14, "b": True, "color": C["ink"]}])
+    textbox(s, 7.24, top + 0.18, 5.40, 0.30,
+            [{"t": "SOLUTION", "sz": 14, "b": True, "color": C["blue"]}])
+
+    problem = str(ps.get("problem", ""))
+    bullets = [point_text(b) for b in (ps.get("problem_points") or [])]
+    p_paras = [{"t": problem, "sz": 11.5, "b": True, "color": C["ink"],
+                "space_after": 8}]
+    for b in bullets:
+        lead, _, rest = b.partition(":")
+        p_paras.append({"t": [(lead + (":" if rest else "") + " ",
+                               {"b": True, "color": C["ink"]}),
+                              (rest.strip(), {"color": C["muted"]})],
+                        "sz": 11, "space_after": 5})
+    p_paras = autofit_paras(p_paras, 5.40, h - 0.76, default_sz=11.5,
+                            max_scale=1.35)
+    textbox(s, 0.76, top + 0.58, 5.40, h - 0.76, p_paras)
+    log_box(fit, 2, "problem card", 0.76, top + 0.58, 5.40, h - 0.76, p_paras, 11.5)
+
+    solution = str(ps.get("solution", ""))
+    reframe = ps.get("reframe")
+    s_paras = []
+    if reframe:
+        s_paras.append({"t": str(reframe).upper(), "sz": 13, "b": True,
+                        "color": C["blue"], "space_after": 7})
+    s_paras.append({"t": solution, "sz": 11.5, "color": C["ink"]})
+    s_paras = autofit_paras(s_paras, 5.40, 2.30, default_sz=11.5,
+                            max_scale=1.35)
+    textbox(s, 7.25, top + 0.58, 5.40, 2.30, s_paras)
+    log_box(fit, 2, "solution card", 7.25, top + 0.58, 5.40, 2.30, s_paras, 11.5)
+
+    chips = [str(k.get("chip") or k.get("name", "")) for k in spec.kpis()][:3]
+    cw, gap = 1.78, 0.06
+    for i, label in enumerate(chips):
+        x = 7.25 + i * (cw + gap)
+        pt = autofit_pt(label, cw - 0.16, 0.34, 9.5, 7.5, bold=True, max_lines=2)
+        chip(s, x, 5.05, cw, 0.40, label, fill=C["white"], sz=pt)
+        fit.add(2, f"kpi chip {i+1}", label, pt, cw - 0.16, 0.34, bold=True, max_lines=2)
+
+    anchor = spec.get("deck.anchor_line") or spec.get("packages.anchor_line")
+    if not anchor:
+        req = [p for p in (spec.get("oracle_products") or [])
+               if p.get("role") == "required"]
+        anchor = ("Anchored to " + ", ".join(
+            product_name(p) for p in req[:2]) +
+            " — one offer a partner account exec can carry into an account they already own.") if req else ""
+    strip(s, 5.82, anchor, fit, 2, "anchor strip", h=0.62)
+    return s
+
+
+def slide_03_verticals(prs, layout, spec: Spec, fit: FitLog, header: str):
+    s = new_slide(prs, layout, title=None, header=header)
+    content_title(s, "Vertical applications", fit, 3)
+
+    verticals = (spec.get("verticals") or [])[:4]
+    if not verticals:
+        fit.note("s3: no verticals in the spec — slide built as empty instances")
+    cw, ch = 6.00, 2.00
+    xs, ys = [MARGIN_L, 6.72], [2.48, 4.76]
+    for i in range(4):
+        x, y = xs[i % 2], ys[i // 2]
+        v = verticals[i] if i < len(verticals) else None
+        rect(s, x, y, cw, ch, fill=C["white"], line=C["hairline_alt"], line_pt=1.0)
+        rect(s, x, y, 2.25, ch, fill=C["blue"] if v else C["panel_grey"])
+        textbox(s, x, y, 2.25, ch,
+                [{"t": str(i + 1), "sz": 40, "b": True,
+                  "color": C["white"] if v else C["hairline_alt"], "align": "c"}],
+                anchor="m")
+        rect(s, x + 2.25, y, 0.06, ch, fill=C["ink_soft"] if v else C["hairline"])
+        if not v:
+            continue
+        name = str(v.get("name", ""))
+        pt = autofit_pt(name, 3.21, 0.70, 14.5, 10, bold=True, max_lines=3)
+        textbox(s, x + 2.54, y + 0.24, 3.21, 0.70,
+                [{"t": name, "sz": pt, "b": True, "color": C["ink"]}])
+        fit.add(3, f"vertical {i+1} name", name, pt, 3.21, 0.70, bold=True, max_lines=3)
+        rect(s, x + 2.54, y + 0.99, 0.55, 0.04, fill=C["ink_soft"])
+        body = (v.get("what_matters_here")
+                or (v.get("framing") or {}).get("solution") or "")
+        pt = autofit_pt(str(body), 3.21, 0.85, 11, 8, max_lines=5)
+        textbox(s, x + 2.54, y + 1.10, 3.21, 0.85,
+                [{"t": str(body), "sz": pt, "color": C["muted"]}])
+        fit.add(3, f"vertical {i+1} body", str(body), pt, 3.21, 0.85, max_lines=5)
+    return s
+
+
+def slide_04_today_tomorrow(prs, layout, spec: Spec, fit: FitLog, header: str):
+    s = new_slide(prs, layout, title=None, header=header)
+    ps = spec.get("problem_solution", {}) or {}
+    head = str(ps.get("reframe_question")
+               or f"What if the work changed: {ps.get('reframe', 'review, not build')}?")
+    pt = autofit_pt(head, 12.00, 0.45, 24, 17, bold=True, max_lines=1)
+    textbox(s, 0.43, 1.37, 12.00, 0.45, [{"t": head, "sz": pt, "b": True, "color": C["ink"]}])
+    fit.add(4, "reframe headline", head, pt, 12.00, 0.45, bold=True, max_lines=1)
+
+    sub = spec.get("one_liner.short") or spec.get("one_liner.full") or ""
+    textbox(s, 0.43, 1.96, 12.00, 0.28, [{"t": sub, "sz": 13, "color": C["muted"]}])
+    fit.add(4, "reframe sub", sub, 13, 12.00, 0.28, max_lines=1)
+
+    vcase = spec.get("deck.vertical_case")
+    if not vcase and spec.get("verticals"):
+        vcase = f"Vertical case: {spec.get('verticals')[0].get('name','')}"
+    if vcase:
+        textbox(s, 0.43, 2.36, 8.00, 0.26, [{"t": vcase, "sz": 11, "color": C["muted"]}])
+
+    pairs = [("TODAY", C["ink"], str(ps.get("today") or ps.get("problem", "")), MARGIN_L),
+             ("TOMORROW", C["blue"], str(ps.get("tomorrow") or ps.get("solution", "")), 6.88)]
+    for label, fill, body, x in pairs:
+        rect(s, x, 2.82, 6.02, 0.46, fill=fill)
+        textbox(s, x, 2.82, 6.02, 0.46,
+                [{"t": label, "sz": 12.5, "b": True, "color": C["white"], "align": "c"}],
+                anchor="m")
+        pt = autofit_pt(body, 6.02, 0.92, 11, 8.5, max_lines=6)
+        textbox(s, x, 3.38, 6.02, 0.92, [{"t": body, "sz": pt, "color": C["muted"]}])
+        fit.add(4, f"{label.lower()} body", body, pt, 6.02, 0.92, max_lines=6)
+        # Screenshot slot — an empty instance of the same container (rule 3),
+        # never a bare gap; the skill drops the real screen in at review.
+        slot = rect(s, x, 4.45, 6.02, 2.15, fill=C["panel_grey"], line=C["hairline_alt"])
+        slot.line.dash_style = MSO_LINE_DASH_STYLE.DASH
+        cap = ("Before: the manual artefact" if label == "TODAY"
+               else "After: the product screen")
+        textbox(s, x + 0.20, 4.45, 5.62, 2.15,
+                [{"t": cap, "sz": 9.5, "color": C["muted_light"], "align": "c"}],
+                anchor="m")
+    fit.note("s4: two screenshot slots are empty containers — drop the real "
+             "before/after screens in before review")
+    return s
+
+
+def slide_05_proof(prs, layout, spec: Spec, fit: FitLog, header: str):
+    s = new_slide(prs, layout, title=None, header=header)
+    kpis = spec.kpis()
+    headline = spec.get("deck.proof_headline") or (
+        f"{spec.proof_word()} on real data at {spec.customer_label()}")
+    pt = autofit_pt(headline, 12.49, 0.55, 23, 16, bold=True, max_lines=1)
+    textbox(s, MARGIN_L, 1.30, 12.49, 0.55,
+            [{"t": headline, "sz": pt, "b": True, "color": C["ink"]}], anchor="m")
+    fit.add(5, "proof headline", headline, pt, 12.49, 0.55, bold=True, max_lines=1)
+
+    # Peer claims: all or none (slide-design rule 11). If any KPI in the set is
+    # not clearable for this channel, the whole strip goes.
+    usable = spec.figured_kpis()
+    blocked = [k for k in kpis
+               if k.get("channels") and spec.channel not in k["channels"]]
+    show_stats = usable and not blocked
+    if kpis and not show_stats:
+        fit.note("s5: KPI strip dropped — not every metric in the set is cleared "
+                 "for this channel (peer claims are all-or-none)")
+
+    cw, gap = 3.96, 0.30
+    if show_stats:
+        for i, k in enumerate(usable[:3]):
+            x = MARGIN_L + i * (cw + gap)
+            rect(s, x, 2.10, cw, 0.80, fill=C["panel_grey"], rounded=True, adj=0.14)
+            fig = str(k.get("figure", ""))
+            base = k.get("baseline")
+            shown = f"{base} → {fig}" if base and k.get("show_baseline") else fig
+            fpt = autofit_pt(shown, cw - 0.36, 0.34, 19, 12, bold=True, max_lines=1)
+            textbox(s, x + 0.18, 2.22, cw - 0.36, 0.34,
+                    [{"t": shown, "sz": fpt, "b": True, "color": C["blue"]}])
+            fit.add(5, f"stat {i+1} value", shown, fpt, cw - 0.36, 0.34,
+                    bold=True, max_lines=1)
+            # a formula is a definition, not a stat label: name before formula
+            lab = str(k.get("label") or k.get("name") or k.get("formula", ""))
+            lpt = autofit_pt(lab, cw - 0.36, 0.28, 8.5, 6.5, max_lines=2)
+            textbox(s, x + 0.18, 2.58, cw - 0.36, 0.28,
+                    [{"t": lab, "sz": lpt, "color": C["muted"]}])
+            fit.add(5, f"stat {i+1} label", lab, lpt, cw - 0.36, 0.28, max_lines=2)
+
+    band_y = 3.10 if show_stats else 2.30
+    se = spec.get("meta.source_engagement", {}) or {}
+    blocks = [
+        ("CONTEXT", f"{spec.customer_label().capitalize()}. {se.get('delivered', '')}".strip()),
+        ("WHAT THE PACK DOES", str((spec.get("problem_solution") or {}).get("solution", ""))),
+    ]
+    need = max(stacked_height([{"t": b, "sz": 10.5}], 5.68)[0] for _, b in blocks)
+    band_h = min(6.05 - band_y, max(1.25, need + 0.56))
+    for i, (label, body) in enumerate(blocks):
+        x = MARGIN_L + i * (6.02 + 0.45)
+        rect(s, x, band_y, 6.02, 0.36, fill=C["blue"])
+        textbox(s, x + 0.16, band_y, 5.72, 0.36,
+                [{"t": label, "sz": 11, "b": True, "color": C["white"]}], anchor="m")
+        rect(s, x, band_y + 0.36, 6.02, band_h - 0.36, fill=C["white"],
+             line="DDE2E6", line_pt=0.75)
+        pt = autofit_pt(body, 5.68, band_h - 0.56, 10.5, 8, max_lines=14)
+        textbox(s, x + 0.17, band_y + 0.46, 5.68, band_h - 0.56,
+                [{"t": body, "sz": pt, "color": C["ink"]}])
+        fit.add(5, f"proof block {i+1}", body, pt, 5.68, band_h - 0.56, max_lines=14)
+
+    caveat = spec.kpi_caveat()
+    attribution = spec.kpi_attribution()
+    # `divergence_line` is the print-ready sentence; `divergence_from_pack` is the
+    # internal statement and overflows a two-line footnote by design.
+    div = se.get("divergence_line") or se.get("divergence_from_pack")
+    tail = " ".join(x for x in [f"Source: {attribution}.", caveat,
+                                (f"Pack scope differs from the delivered engagement: {div}"
+                                 if div else "")] if x)
+    steps = spec.get("workflow.steps") or []
+    bottom = band_y + band_h
+    if steps and bottom + 1.60 < 6.55:
+        bottom = step_band(s, bottom + 0.34, steps, fit, 5,
+                           label="HOW THE PLAN GETS MADE")
+    footnote(s, tail, fit, 5, y=min(6.62, bottom + 0.20), sz=8.5)
+    return s
+
+
+def slide_06_why_it_sells(prs, layout, spec: Spec, fit: FitLog, header: str):
+    s = new_slide(prs, layout, title=None, header=header)
+    content_title(s, "Why it sells for your account team", fit, 6,
+                  sub=spec.get("deck.seller_lead"))
+    claims = [str(c) for c in (spec.get("packages.why_it_sells_for_the_partner") or [])]
+    if not claims:
+        claims = ["(no seller claims in the spec — confirm them with /oracle-packs:spec)"]
+        fit.note("s6: packages.why_it_sells_for_the_partner is empty")
+    n = max(1, min(len(claims), 4))
+    gap = 0.26
+    cw = (CONTENT_W - gap * (n - 1)) / n
+    heads, details = [], []
+    for i in range(n):
+        head, _, rest = claims[i].partition(" \u2014 ")
+        heads.append(head)
+        details.append(rest)
+    cwi = (CONTENT_W - gap * (n - 1)) / n - 0.52
+    y, max_ch = 2.72, 3.10
+    head_sz, det_sz, scale = 14.0, 10.0, 1.0
+    while True:
+        head_sz, det_sz = round(14 * scale, 2), round(10 * scale, 2)
+        head_h = max(stacked_height([{"t": h, "sz": head_sz, "b": True}], cwi)[0]
+                     for h in heads)
+        det_h = max([stacked_height([{"t": d, "sz": det_sz}], cwi)[0]
+                     for d in details if d] or [0])
+        ch = 0.72 + head_h + (det_h + 0.18 if det_h else 0) + 0.28
+        if ch <= max_ch or scale <= 0.70:
+            break
+        scale = round(scale - 0.04, 3)
+    ch = min(max_ch, ch)
+    for i in range(n):
+        x = MARGIN_L + i * (cw + gap)
+        rect(s, x, y, cw, ch, fill=C["white"], line=C["hairline"], line_pt=0.75)
+        badge(s, x + 0.26, y + 0.26, 0.30, str(i + 1))
+        head, rest = heads[i], details[i]
+        # Every card hangs its claim and its detail from ONE shared baseline
+        # grid computed over all cards, so no card jumps (slide-design rule 2).
+        textbox(s, x + 0.26, y + 0.72, cwi, head_h,
+                [{"t": head, "sz": head_sz, "b": True, "color": C["ink"]}])
+        fit.add(6, f"seller claim {i+1}", head, head_sz, cwi, head_h, bold=True)
+        if rest:
+            textbox(s, x + 0.26, y + 0.72 + head_h + 0.18, cwi, det_h,
+                    [{"t": rest, "sz": det_sz, "color": C["muted"]}])
+            fit.add(6, f"seller detail {i+1}", rest, det_sz, cwi, det_h)
+
+    oci = spec.get("packages.target_oci_consumption")
+    oci_y = max(y + ch + 0.30, 5.35)
+    if not Spec.has_text(oci):
+        # `-` is the spec's "deliberately empty"; a CONSUMPTION strip with a dash
+        # in it is an empty container reading as content (slide-design rule 3).
+        if oci:
+            fit.note("s6: no target OCI consumption in the spec — strip omitted")
+        oci = None
+    if oci:
+        panel(s, MARGIN_L, oci_y, CONTENT_W, 0.48, fill=C["blue_tint"],
+              accent=C["blue"], line=C["hairline"])
+        textbox(s, MARGIN_L + 0.26, oci_y, CONTENT_W - 0.52, 0.48,
+                [{"t": [("CONSUMPTION  ", {"b": True, "color": C["blue"], "sz": 9}),
+                        (str(oci), {"color": C["ink"], "sz": 10.5})]}], anchor="m")
+        fit.add(6, "consumption strip", "CONSUMPTION  " + str(oci), 10.5,
+                CONTENT_W - 0.52, 0.48, max_lines=1)
+
+    ct = spec.contact()
+    cta = spec.get("deck.cta") or "Ready to test the fit in one of your accounts?"
+    who = " · ".join(x for x in [ct.get("name"), ct.get("title"), ct.get("email")] if x)
+    rect(s, MARGIN_L, 6.16, CONTENT_W, 0.52, fill=C["ink"])
+    textbox(s, MARGIN_L + 0.22, 6.16, 6.20, 0.52,
+            [{"t": cta, "sz": 11.5, "b": True, "color": C["white"]}], anchor="m")
+    textbox(s, 6.80, 6.16, 6.11 - 0.22, 0.52,
+            [{"t": who, "sz": 10, "color": "AEB6BD", "align": "r"}], anchor="m")
+    fit.add(6, "cta", cta, 11.5, 6.20, 0.52, bold=True, max_lines=1)
+    fit.add(6, "contact", who, 10, 5.89, 0.52, max_lines=1)
+    return s
+
+
+def slide_07_solution_layers(prs, layout, spec: Spec, fit: FitLog, header: str):
+    s = new_slide(prs, layout, title=None, header=header)
+    content_title(s, "Solution layers", fit, 7,
+                  sub=spec.get("deck.layers_sub")
+                  or "How the pack is layered — from the infrastructure up to the customer's own configuration.")
+    stack = spec.get("architecture.stack") or []
+    if not stack:
+        raise SpecError("pack spec has no `architecture.stack` — the "
+                        "high-level architecture component is not signed off")
+    y0, y1, gap = 2.78, 6.28, 0.14
+    n = len(stack)
+    rh = (y1 - y0 - gap * (n - 1)) / n
+    rect(s, 0.57, y0, 0.02, y1 - y0, fill=C["hairline_alt"])
+    textbox(s, 0.95, y0 - 0.28, 7.60, 0.24,
+            [{"t": "▲ business value", "sz": 10.5, "b": True, "color": C["blue_dark"]}])
+    for i, layer in enumerate(stack):
+        y = y0 + i * (rh + gap)
+        tint, bar = vendor_colors(str(layer.get("vendor", "")), i)
+        panel(s, 0.95, y, 11.45, rh, fill=tint, accent=bar, accent_w=0.06,
+              line=C["hairline"], rounded=True)
+        name = str(layer.get("layer", ""))
+        npt = autofit_pt(name, 3.10, rh - 0.20, 14, 10, bold=True, max_lines=2)
+        textbox(s, 1.30, y, 3.10, rh, [{"t": name, "sz": npt, "b": True, "color": C["ink"]}],
+                anchor="m")
+        fit.add(7, f"layer {i+1} name", name, npt, 3.10, rh - 0.20, bold=True, max_lines=2)
+        rect(s, 4.55, y + 0.14, 0.01, rh - 0.28, fill=C["hairline_alt"])
+        items = layer.get("items") or []
+        body = str(layer.get("summary") or ", ".join(str(i) for i in items))
+        bpt = autofit_pt(body, 5.05, rh - 0.20, 11, 8, max_lines=4)
+        textbox(s, 4.80, y, 5.05, rh, [{"t": body, "sz": bpt, "color": C["ink"]}], anchor="m")
+        fit.add(7, f"layer {i+1} body", body, bpt, 5.05, rh - 0.20, max_lines=4)
+        vend = str(layer.get("vendor", ""))
+        if vend:
+            vpt = autofit_pt(vend, 1.85, 0.30, 10.5, 7, bold=True, max_lines=1)
+            chip(s, 10.15, y + (rh - 0.38) / 2, 2.05, 0.38, vend,
+                 fill=C["white"], color=C["ink_soft"], sz=vpt)
+            fit.add(7, f"layer {i+1} vendor", vend, vpt, 1.85, 0.30, bold=True, max_lines=1)
+    return s
+
+
+def arch_node(entry) -> dict:
+    """architecture.inputs/outputs carry `{system, data}` or a plain label.
+
+    A plain string is the older shape and still reads correctly: everything up
+    to the first em-dash is the system, the rest is the data it carries.
+    """
+    if isinstance(entry, dict):
+        return entry
+    text = str(entry or "").strip()
+    if not text:
+        return {}
+    head, _, tail = text.partition(" — ")
+    return {"system": head.strip(), "data": tail.strip()}
+
+
+def arch_label(entry, fallback: str) -> str:
+    node = arch_node(entry)
+    return str(node.get("data") or node.get("system") or fallback)
+
+
+def slide_08_architecture(prs, layout, spec: Spec, fit: FitLog, header: str):
+    s = new_slide(prs, layout, title=None, header=header)
+    content_title(s, "Architecture", fit, 8,
+                  sub=spec.get("deck.architecture_sub")
+                  or "Reference architecture for the pack implementation.")
+    inputs = spec.get("architecture.inputs") or []
+    outputs = spec.get("architecture.outputs") or []
+    stack = spec.get("architecture.stack") or []
+
+    # left: sources
+    top, gap = 2.70, 0.30
+    n = max(1, min(len(inputs), 3))
+    bh = (3.10 - gap * (n - 1)) / n
+    for i in range(n):
+        src = arch_node(inputs[i]) if i < len(inputs) else {}
+        y = top + i * (bh + gap)
+        rect(s, 0.55, y, 2.95, bh, fill=C["blue"] if src else C["panel_grey"],
+             rounded=True, adj=0.10)
+        title = str(src.get("system") or src.get("name") or "Additional data sources")
+        data = str(src.get("data") or "")
+        tpt = autofit_pt(title, 2.65, 0.40, 13.5, 9, bold=True, max_lines=2)
+        paras = [{"t": title, "sz": tpt, "b": True, "color": C["white"], "align": "c"}]
+        if data:
+            paras.append({"t": data, "sz": 9.5, "color": C["white"], "align": "c",
+                          "space_before": 3})
+        paras = autofit_paras(paras, 2.65, bh - 0.16, default_sz=tpt)
+        textbox(s, 0.70, y, 2.65, bh, paras, anchor="m")
+        log_box(fit, 8, f"source {i+1}", 0.70, y, 2.65, bh - 0.16, paras, tpt)
+
+    # right: the platform container
+    cx, cy, cw, ch = 5.36, 2.55, 7.31, 3.70
+    infra = next((l for l in stack if "infra" in str(l.get("layer", "")).lower()),
+                 stack[-1] if stack else {})
+    rect(s, cx, cy, cw, ch, fill=C["white"], line=C["hairline_alt"], line_pt=1.5,
+         rounded=True, adj=0.04)
+    app = next((l for l in stack if "app" in str(l.get("layer", "")).lower()), None)
+    eng = next((l for l in stack if "engine" in str(l.get("layer", "")).lower()), None)
+    for j, (layer, fill, fg) in enumerate([(app, C["blue"], C["white"]),
+                                           (eng, C["panel_grey"], C["ink_soft"])]):
+        if not layer:
+            continue
+        y = cy + 0.42 + j * 1.15
+        rect(s, cx + 0.42, y, cw - 0.84, 0.92, fill=fill, rounded=True, adj=0.10)
+        nm = str(layer.get("layer", ""))
+        items = ", ".join(str(i) for i in (layer.get("items") or []))
+        body = str(layer.get("summary") or items)
+        paras = [{"t": nm, "sz": 14.5, "b": True, "color": fg, "align": "c"},
+                 {"t": body, "sz": 10, "color": fg, "align": "c", "space_before": 2}]
+        paras = autofit_paras(paras, cw - 1.20, 0.80, default_sz=14.5)
+        textbox(s, cx + 0.60, y, cw - 1.20, 0.92, paras, anchor="m")
+        log_box(fit, 8, f"platform box {j+1}", cx + 0.60, y, cw - 1.20, 0.80, paras, 14.5)
+    infra_name = str(infra.get("layer", "Infrastructure"))
+    infra_items = ", ".join(str(i) for i in (infra.get("items") or []))
+    paras = [{"t": infra_name, "sz": 14, "b": True, "color": C["ink"]},
+             {"t": infra_items, "sz": 10.5, "color": C["muted"], "space_before": 2}]
+    paras = autofit_paras(paras, cw - 0.84, 0.75, default_sz=14)
+    textbox(s, cx + 0.42, cy + 2.78, cw - 0.84, 0.75, paras)
+    log_box(fit, 8, "infra caption", cx + 0.42, cy + 2.78, cw - 0.84, 0.75, paras, 14)
+
+    # arrows in / out, each labelled (shape semantics, rule 7)
+    arrow(s, 3.62, 3.10, 1.60, 0.11, color=C["blue"])
+    textbox(s, 3.55, 2.66, 1.76, 0.40,
+            [{"t": arch_label(inputs[0], "inputs") if inputs else "inputs",
+              "sz": 8.5, "color": C["muted"], "align": "c"}], anchor="b")
+    arrow(s, 3.62, 3.72, 1.60, 0.11, color=C["blue_light"], left=True)
+    out_lbl = arch_label(outputs[0], "outputs") if outputs else "outputs"
+    textbox(s, 3.55, 3.88, 1.76, 0.46,
+            [{"t": out_lbl, "sz": 8.5, "color": C["muted"], "align": "c"}])
+    fit.add(8, "output arrow label", out_lbl, 8.5, 1.76, 0.46, max_lines=3)
+
+    tiers = {t.get("id"): t.get("name", "") for t in spec.tiers()}
+    notes = []
+    for p in (spec.get("oracle_products") or []):
+        integ = p.get("integration") or {}
+        if integ:
+            bits = [f"{tiers.get(k, k)}: {v}" for k, v in integ.items() if v]
+            notes.append(f"{p.get('name') or p.get('id')} — " + " · ".join(bits))
+    if notes:
+        footnote(s, "Integration by tier — " + "   |   ".join(notes), fit, 8,
+                 y=6.55, sz=8.5)
+    return s
+
+
+# ---------------------------------------------------------------------------
+# package tables
+# ---------------------------------------------------------------------------
+
+def _glyph(entry: dict, tier_id: str) -> str:
+    glyphs = entry.get("glyphs") or {}
+    if tier_id in glyphs:
+        return str(glyphs[tier_id])
+    prose = str(entry.get(tier_id, "") or "").strip()
+    if not prose or prose in ("-", "—", "none", "not included"):
+        return GLYPH_NONE
+    return GLYPH_DEFAULT.get(tier_id, "●")
+
+
+def _style_table(shape) -> None:
+    from pptx.oxml.ns import qn
+    tbl = shape.table
+    tbl.first_row = False
+    tbl.horz_banding = False
+    tblPr = shape._element.graphic.graphicData.tbl.find(qn("a:tblPr"))
+    if tblPr is not None:
+        for child in list(tblPr):
+            if child.tag == qn("a:tableStyleId"):
+                tblPr.remove(child)
+        el = tblPr.makeelement(qn("a:tableStyleId"), {})
+        el.text = NO_STYLE
+        tblPr.append(el)
+
+
+def _cell(cell, text, sz, bold=False, color=C["ink"], fill=C["white"],
+          align="l", font=FONT_BODY):
+    from pptx.enum.text import PP_ALIGN
+    cell.fill.solid()
+    cell.fill.fore_color.rgb = RGBColor.from_string(fill)
+    cell.margin_left = cell.margin_right = Emu(109728)
+    cell.margin_top = cell.margin_bottom = Emu(45720)
+    cell.vertical_anchor = MSO_ANCHOR.MIDDLE
+    tf = cell.text_frame
+    tf.word_wrap = True
+    p = tf.paragraphs[0]
+    p.alignment = {"l": PP_ALIGN.LEFT, "c": PP_ALIGN.CENTER,
+                   "r": PP_ALIGN.RIGHT}[align]
+    r = p.add_run()
+    r.text = str(text)
+    r.font.size = Pt(sz)
+    r.font.bold = bold
+    r.font.name = font
+    r.font.color.rgb = RGBColor.from_string(color)
+
+
+def _package_rows(spec: Spec, detailed: bool, with_infra: bool):
+    tiers = spec.tiers()
+    rows: list[tuple[str, list[str], dict]] = []
+    rows.append(("", [spec.tier_label(t) for t in tiers], {"header": True}))
+    rows.append(("Package scope",
+                 [str(t.get("scope_line") or (t.get("what_you_get") or [""])[0] or "")
+                  for t in tiers],
+                 {"sz": 10.0, "bold": True}))
+    if not detailed:
+        svc, foot_s = [], False
+        for t in tiers:
+            v, f = fmt_price(t.get("services_price"))
+            svc.append(v + ("*" if f else ""))
+            foot_s = foot_s or f
+        rows.append(("Services price (one-time)", svc, {"sz": 11.5, "bold": True,
+                                                        "align": "l"}))
+        if with_infra:
+            infra = []
+            for t in tiers:
+                v, f = fmt_price(t.get("infra_price_monthly"))
+                infra.append(v + ("*" if f else ""))
+            rows.append(("Infrastructure (monthly, consumption-based)", infra,
+                         {"sz": 11.5, "bold": True}))
+        rows.append(("Timeline", [fmt_duration(t.get("duration_weeks")) for t in tiers],
+                     {"sz": 11.0, "bold": True}))
+    handling = spec.get("packages.capability_handling") or []
+    for entry in handling:
+        area = str(entry.get("area", ""))
+        if detailed:
+            cells = []
+            for t in tiers:
+                tid = t.get("id")
+                prose = str(entry.get(tid, "") or "").strip()
+                g = _glyph(entry, tid)
+                cells.append(g if g == GLYPH_NONE or not prose else f"{g}  {prose}")
+            rows.append((area, cells, {"sz": 9.0, "bold": False, "align": "l"}))
+        else:
+            rows.append((area, [_glyph(entry, t.get("id")) for t in tiers],
+                         {"sz": 15.0, "bold": True, "align": "c", "glyph": True}))
+    return rows
+
+
+def _build_table(s, spec: Spec, fit: FitLog, slide_no: int, detailed: bool,
+                 with_infra: bool, top: float, bottom: float):
+    rows = _package_rows(spec, detailed, with_infra)
+    ncol = 1 + len(spec.tiers())
+    colw = [2.55] + [(CONTENT_W - 2.55) / (ncol - 1)] * (ncol - 1) if detailed \
+        else [2.92] + [(12.36 - 2.92) / (ncol - 1)] * (ncol - 1)
+    total_w = sum(colw)
+    band = bottom - top
+
+    def measure(scale: float) -> list[float]:
+        heights = []
+        for i, (label, cells, opt) in enumerate(rows):
+            sz = (12.5 if opt.get("header") else opt.get("sz", 10.0)) * scale
+            need = 0.26
+            for ci, txt in enumerate([label] + list(cells)):
+                if not txt:
+                    continue
+                w = colw[ci] - 0.26
+                csz = sz if ci or not opt.get("header") else sz
+                lines = wrap_count(str(txt), csz, w, bool(opt.get("bold")))
+                need = max(need, lines * csz * 1.22 / 72.0 + 0.13)
+            heights.append(max(0.33, need))
+        return heights
+
+    scale = 1.0
+    heights = measure(scale)
+    while sum(heights) > band and scale > 0.80:
+        scale = round(scale - 0.04, 2)
+        heights = measure(scale)
+    if sum(heights) > band:
+        fit.note(f"s{slide_no}: package table needs {sum(heights):.2f} in of "
+                 f"{band:.2f} in even at {int(scale*100)}% type — cut rows or wording")
+        fit.entries.append(FitEntry(
+            slide_no, "package table", "(whole table)", 10 * scale, False,
+            total_w, band, need_h=sum(heights), lines=len(rows)))
+
+    shape = s.shapes.add_table(len(rows), ncol, inch(MARGIN_L), inch(top),
+                               inch(total_w), inch(sum(heights)))
+    _style_table(shape)
+    tbl = shape.table
+    for ci, w in enumerate(colw):
+        tbl.columns[ci].width = Emu(inch(w))
+    for ri, ((label, cells, opt), h) in enumerate(zip(rows, heights)):
+        tbl.rows[ri].height = Emu(inch(h))
+        sz = (12.5 if opt.get("header") else opt.get("sz", 10.0)) * scale
+        if opt.get("header"):
+            _cell(tbl.cell(ri, 0), "", sz, fill=C["ink"])
+            for ci, txt in enumerate(cells):
+                _cell(tbl.cell(ri, ci + 1), txt, sz, bold=True, color=C["white"],
+                      fill=TIER_HEADER_FILL[min(ci, len(TIER_HEADER_FILL) - 1)],
+                      align="c")
+            continue
+        _cell(tbl.cell(ri, 0), label, sz * 0.86 if opt.get("glyph") else sz,
+              bold=True, color=C["ink"], fill=C["white"])
+        for ci, txt in enumerate(cells):
+            _cell(tbl.cell(ri, ci + 1), txt, sz,
+                  bold=bool(opt.get("bold")),
+                  color=C["ink"] if txt != GLYPH_NONE else C["muted_light"],
+                  fill=C["white"], align=opt.get("align", "l"))
+    return sum(heights), scale
+
+
+def slide_09_packages(prs, layout, spec: Spec, fit: FitLog, header: str):
+    s = new_slide(prs, layout, title=None, header=header)
+    content_title(s, "Service packages", fit, 9)
+    used, scale = _build_table(s, spec, fit, 9, detailed=False, with_infra=True,
+                               top=1.98, bottom=6.58)
+    legend = ("◐ partial   ● included   ●● multi-region / advanced"
+              "   — not in this tier")
+    star = any(fmt_price(t.get("services_price"))[1]
+               or fmt_price(t.get("infra_price_monthly"))[1] for t in spec.tiers())
+    note = "* Indicative; depends on usage and rule-set complexity." if star else ""
+    footnote(s, legend + ("   " + note if note else ""), fit, 9, y=6.66, sz=8.5)
+    if scale < 1.0:
+        fit.note(f"s9: table type scaled to {int(scale*100)}% to fit the band")
+    return s
+
+
+def slide_10_packages_detailed(prs, layout, spec: Spec, fit: FitLog, header: str):
+    s = new_slide(prs, layout, title=None, header=header)
+    content_title(s, "Service packages (detailed)", fit, 10)
+    used, scale = _build_table(s, spec, fit, 10, detailed=True, with_infra=False,
+                               top=2.05, bottom=6.62)
+    footnote(s, "◐ partial   ● included   ●● multi-region / advanced"
+                "   — not in this tier", fit, 10, y=6.70, sz=8.5)
+    if scale < 1.0:
+        fit.note(f"s10: table type scaled to {int(scale*100)}% to fit the band")
+    return s
+
+
+# ---------------------------------------------------------------------------
+
+BUILDERS = [
+    ("cover", slide_01_cover),
+    ("use case", slide_02_use_case),
+    ("verticals", slide_03_verticals),
+    ("today / tomorrow", slide_04_today_tomorrow),
+    ("proof", slide_05_proof),
+    ("why it sells", slide_06_why_it_sells),
+    ("solution layers", slide_07_solution_layers),
+    ("architecture", slide_08_architecture),
+    ("service packages", slide_09_packages),
+    ("service packages (detailed)", slide_10_packages_detailed),
+]
+
+
+def build(spec: Spec, base: Path, out_dir: Path, fit: FitLog) -> Path:
+    prs = open_base(base)
+    layout = pick_layout(prs, "ShortTitle-Empty", "Title-1Column")
+    header_tpl = spec.get("deck.running_header") or "OCI AI Accelerators — {name}"
+    header = header_tpl.format(name=spec.name())
+    for i, (label, fn) in enumerate(BUILDERS, 1):
+        try:
+            if i == 1:
+                fn(prs, layout, spec, fit)
+            else:
+                fn(prs, layout, spec, fit, header)
+        except SpecError:
+            raise
+        except Exception as exc:  # keep a partial deck rather than nothing
+            fit.note(f"s{i} ({label}) failed: {exc.__class__.__name__}: {exc}")
+    out_dir.mkdir(parents=True, exist_ok=True)
+    slug = spec.get("meta.slug", "pack")
+    out = out_dir / f"{slug}-sales-deck.pptx"
+    prs.save(str(out))
+    return out
+
+
+def main(argv=None) -> int:
+    ap = argparse.ArgumentParser(
+        description="Build the 10-slide accelerator-pack sales deck from a pack spec.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="Done means: fit report clean, contact sheet reviewed (see "
+               "tools/render_probe.sh), linter clean.")
+    ap.add_argument("spec", help="path to pack-spec.yaml")
+    ap.add_argument("--out", required=True, help="output directory")
+    ap.add_argument("--channel", default="partner_print",
+                    choices=["partner_print", "internal"],
+                    help="who the deck is for; drives naming, clearance and contact")
+    ap.add_argument("--base", default=str(BASE_DEFAULT),
+                    help="SoftServe deck base .pptx (default: the skill's asset)")
+    ap.add_argument("--fit-report", action="store_true",
+                    help="print the per-box text-fit estimate for every box")
+    ap.add_argument("--allow-overflow", action="store_true",
+                    help="exit 0 even when boxes overflow (review builds only)")
+    args = ap.parse_args(argv)
+
+    try:
+        spec = Spec.load(args.spec, channel=args.channel)
+    except SpecError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+    fit = FitLog()
+    try:
+        out = build(spec, Path(args.base), Path(args.out), fit)
+    except SpecError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+
+    print(f"built {out}  ({len(BUILDERS)} slides, channel={args.channel})")
+    print(fit.report(verbose=args.fit_report))
+    bad = fit.problems()
+    if bad and not args.allow_overflow:
+        return 1
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
