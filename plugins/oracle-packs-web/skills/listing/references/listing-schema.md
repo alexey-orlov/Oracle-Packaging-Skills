@@ -1,5 +1,11 @@
 # The `products[]` entry — schema, invariants, and where each key comes from
 
+> **Case.** Every string below is stored in **sentence case**. The site's live
+> theme (2026-09-18 rebrand) sets display type in sentence case and uppercases
+> only micro-type slots (`.eyebrow`, `.hero-badges li`, chips, buttons) in CSS,
+> so a stored capital is a shout that cannot be undone. `site/data/content-case.js`
+> exists only to re-case strings written *before* that rebrand — never add to it.
+
 The listing skill writes **one entry** of `window.SITE_CONTENT.products[]` in a
 practice site's `site/data/content.js`, plus the two things that travel with it:
 a `window.SITE_CONFIG.products["<slug>"]` switch block in `site/data/config.js`

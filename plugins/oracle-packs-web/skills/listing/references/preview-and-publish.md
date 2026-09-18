@@ -119,7 +119,7 @@ once removed `<header class="masthead">` and shipped a site with no sticky nav:
 mkdir -p "$ORACLE_SITE_ROOT/.work/publish"
 grep -v -x -F \
   -e '<!DOCTYPE html>' \
-  -e '<html lang="en" data-theme="dark">' \
+  -e '<html lang="en" data-theme="light" data-brand="ss26">' \
   -e '<head>' -e '</head>' -e '<body>' -e '</body>' -e '</html>' \
   -e '<meta charset="utf-8">' \
   -e '<meta name="viewport" content="width=device-width, initial-scale=1">' \

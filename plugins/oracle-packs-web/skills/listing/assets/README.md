@@ -28,8 +28,16 @@ before the gate runs:
 
 ```bash
 python3 ../tools/denylist-to-json.py --out <site-root>/tools/deny-list.json
-node ../tools/check-grammar.js --site-root <site-root>
+node <site-root>/tools/check-grammar.js
 ```
+
+Run **the site's own** `tools/check-grammar.js`, not this skill's copy under
+`tools/`. The site's gate has since grown a brand block the port does not have
+(retired teal in the CSS *and* in `assets/img/**`, non-brand heading weights,
+retired radius tokens, an over-spent orange accent, the `@font-face` set, the
+`content-case.js` load order, and the archived theme's integrity). The port
+would pass a listing the site rejects. Until the two are reconciled, the site's
+copy is the gate.
 
 The converter reads `shared/tools/denylist.txt` — the one list the practice keeps —
 so the names never diverge between the Python linters and this checker. The
