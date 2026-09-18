@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Oracle accelerator packs, packaging approach</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0B0F14; --panel:#141A22; --panel-2:#10161D;
+  --text:#E8EEF3; --muted:#8A97A6; --accent:#35CCBA;
+  --line:rgba(255,255,255,.10); --line-2:rgba(255,255,255,.06);
+  --font-display:Montserrat,"Helvetica Neue",Arial,sans-serif;
+  --font-body:"Open Sans","Helvetica Neue",Arial,sans-serif;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--bg);color:var(--text);
+  font-family:var(--font-body);font-size:15px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+section{min-height:900px;padding:54px 48px 46px;display:flex;flex-direction:column}
+.wrap{max-width:1344px;margin:0 auto;width:100%;display:flex;flex-direction:column;flex:1}
+.eyebrow{font-family:var(--font-body);font-weight:600;font-size:11px;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--accent);margin:0 0 12px}
+h1,h2{font-family:var(--font-display);font-weight:900;text-transform:uppercase;
+  letter-spacing:-.018em;line-height:.98;margin:0;color:var(--text)}
+h1{font-size:54px}
+h2{font-size:46px}
+.lead{margin:12px 0 0;color:var(--muted);font-size:16px;max-width:760px}
+.head{margin-bottom:30px}
+
+/* ---------- Screen 1: flow ---------- */
+.flow{display:grid;grid-template-columns:repeat(5,1fr);gap:30px;margin-bottom:30px}
+.stage{position:relative;background:var(--panel);border:1px solid var(--line);
+  border-radius:12px;padding:18px 16px 16px;display:flex;flex-direction:column}
+.stage::after{content:"";position:absolute;top:50%;right:-30px;width:30px;height:1px;
+  background:linear-gradient(90deg,rgba(53,204,186,.15),var(--accent),rgba(53,204,186,.15))}
+.stage:last-child::after{display:none}
+.stage .ico{color:var(--accent);margin-bottom:12px;display:block}
+.num{font-family:var(--font-display);font-weight:900;font-size:11px;letter-spacing:.14em;
+  color:var(--muted);margin-bottom:6px}
+.stage h3{font-family:var(--font-display);font-weight:900;text-transform:uppercase;
+  letter-spacing:-.01em;font-size:15px;line-height:1.15;margin:0 0 9px}
+.stage p{margin:0;color:var(--muted);font-size:12.5px;line-height:1.5}
+.stage ul{margin:0;padding:0;list-style:none;color:var(--muted);font-size:12.5px;line-height:1.45}
+.stage li{position:relative;padding-left:11px;margin-bottom:5px}
+.stage li::before{content:"";position:absolute;left:0;top:7px;width:4px;height:4px;
+  border-radius:50%;background:var(--accent);opacity:.75}
+.out{margin-top:auto;padding-top:11px;font-size:11px;font-weight:600;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--accent)}
+
+/* ---------- Screen 1: system panel ---------- */
+.system{background:var(--panel-2);border:1px solid var(--line);border-radius:12px;
+  padding:22px 24px 24px;margin-top:auto}
+.sys-label{font-size:10.5px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--muted);margin:0 0 12px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{background:var(--panel);border:1px solid var(--line);border-radius:999px;
+  padding:7px 13px;font-size:12px;color:var(--text);white-space:nowrap}
+.chip b{font-weight:600;color:var(--accent);font-family:var(--font-body)}
+.chip span{color:var(--muted);margin-left:6px;font-size:11.5px}
+.chip.ctx{background:transparent;color:var(--muted);border-color:var(--line-2)}
+.hub-row{display:flex;align-items:center;justify-content:center;gap:0;
+  margin:14px 0;position:relative}
+.hub-row::before{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:var(--line-2)}
+.hub{position:relative;background:var(--bg);border:1px solid var(--accent);border-radius:999px;
+  padding:8px 20px;font-family:var(--font-display);font-weight:900;font-size:12px;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.hub::before,.hub::after{content:"";position:absolute;left:50%;width:1px;height:13px;
+  background:var(--accent);opacity:.55}
+.hub::before{top:-14px} .hub::after{bottom:-14px}
+
+/* ---------- Screen 2: artifacts ---------- */
+.alt{background:#0E141B}
+.grid6{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:24px}
+.art{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+  padding:14px 14px 16px;display:flex;flex-direction:column}
+.art h3{font-family:var(--font-display);font-weight:900;text-transform:uppercase;
+  font-size:15px;letter-spacing:-.01em;margin:13px 0 2px;display:flex;
+  align-items:baseline;gap:8px;flex-wrap:wrap}
+.art h3 em{font-style:normal;font-family:var(--font-body);font-weight:400;
+  font-size:11px;letter-spacing:.04em;text-transform:none;color:var(--muted)}
+.art p{margin:5px 0 0;color:var(--muted);font-size:12.5px;line-height:1.45}
+.who{margin-top:auto;padding-top:10px;font-size:11px;color:var(--muted);
+  border-top:1px solid var(--line-2);margin-bottom:0}
+.who b{color:var(--text);font-weight:600}
+
+/* ---------- CSS thumbnails ---------- */
+.tn{height:116px;border-radius:7px;border:1px solid var(--line-2);overflow:hidden;
+  background:#0A0E13;padding:8px;display:flex;flex-direction:column;gap:5px}
+.r{display:flex;gap:4px;align-items:center}
+.b{background:rgba(232,238,243,.16);border-radius:2px;height:5px}
+.b.dim{background:rgba(232,238,243,.08)}
+.b.tl{background:rgba(53,204,186,.6)}
+/* 1 feature list */
+.tbl{display:flex;flex-direction:column;gap:4px}
+.tr{display:grid;grid-template-columns:1.1fr 1fr 1.7fr 22px;gap:5px;align-items:center}
+.tr .b{height:5px}
+.hd .b{background:rgba(53,204,186,.45)}
+.st{font-size:9px;color:var(--accent);text-align:right;letter-spacing:1px;line-height:1}
+.hd .st{font-size:7px;letter-spacing:0;color:rgba(53,204,186,.6)}
+/* 2 deck */
+.slides{display:grid;grid-template-columns:repeat(5,1fr);grid-template-rows:1fr 1fr;gap:5px;height:100%}
+.sl{background:rgba(232,238,243,.05);border:1px solid var(--line-2);border-radius:2px;padding:3px;
+  display:flex;flex-direction:column;gap:2px;justify-content:center}
+.sl.dark{background:#070A0E;border-color:rgba(53,204,186,.3);justify-content:flex-end}
+.sl .mini{height:3px;background:rgba(232,238,243,.18);border-radius:1px}
+.sl .mini.tl{background:rgba(53,204,186,.55)}
+.sl.tbl2{display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:3px;gap:2px;align-content:center}
+.sl.tbl2 i{background:rgba(232,238,243,.16);border-radius:1px;display:block}
+.ladder{display:flex;flex-direction:column;gap:2px;justify-content:center;align-items:center}
+.ladder i{display:block;height:3px;border-radius:1px;background:rgba(53,204,186,.5)}
+/* 3 one-pager */
+.page{width:78px;margin:0 auto;height:100%;background:#0A0E13;border:1px solid var(--line-2);
+  border-radius:3px;padding:5px;display:flex;flex-direction:column;gap:4px}
+.hero{height:13px;background:linear-gradient(90deg,rgba(53,204,186,.5),rgba(53,204,186,.14));border-radius:2px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.two div{display:flex;flex-direction:column;gap:2.5px}
+.two .b{height:3px}
+.three{display:grid;grid-template-columns:repeat(3,1fr);gap:3px}
+.three i{display:block;height:9px;background:rgba(53,204,186,.22);border-radius:2px}
+.pkg{display:grid;grid-template-columns:repeat(3,1fr);gap:3px}
+.pkg i{display:block;height:13px;background:rgba(232,238,243,.08);border:1px solid var(--line-2);border-radius:2px}
+.cta{margin-top:auto;height:7px;background:rgba(53,204,186,.45);border-radius:2px}
+/* 4 exec summary */
+.exec{flex:1;background:#0A0E13;border:1px solid var(--line-2);border-radius:3px;padding:7px;
+  display:flex;flex-direction:column;gap:6px}
+.exec .cols{display:grid;grid-template-columns:1fr 1fr;gap:8px;flex:1;align-items:center}
+.exec .cols>div{display:flex;flex-direction:column;gap:4px}
+.tier{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+.tier i{display:block;height:8px;background:rgba(232,238,243,.08);border-radius:2px;
+  border-bottom:2px solid rgba(53,204,186,.45)}
+/* 5 mini-site */
+.site{flex:1;background:#070A0E;border:1px solid var(--line-2);border-radius:3px;padding:7px;
+  display:flex;flex-direction:column;gap:6px}
+.tabs{display:flex;gap:5px}
+.tabs i{display:block;height:4px;width:26px;background:rgba(232,238,243,.12);border-radius:1px}
+.tabs i:first-child{background:rgba(53,204,186,.6)}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+.tiles i{display:block;height:17px;background:rgba(232,238,243,.06);
+  border:1px solid var(--line-2);border-radius:2px}
+.steps{display:flex;gap:4px;align-items:center;margin-top:auto}
+.steps i{display:block;height:5px;flex:1;background:rgba(232,238,243,.1);border-radius:1px}
+.steps i:nth-child(2){background:rgba(53,204,186,.5)}
+/* 6 demo */
+.app{flex:1;background:#0A0E13;border:1px solid var(--line-2);border-radius:3px;padding:7px;
+  display:flex;flex-direction:column;gap:6px}
+.kpi{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+.kpi i{display:block;height:22px;border-radius:2px;background:rgba(53,204,186,.14);
+  border:1px solid rgba(53,204,186,.35);position:relative}
+.kpi i::after{content:"▲";position:absolute;right:3px;bottom:2px;font-size:6px;color:var(--accent)}
+.kpi i:nth-child(2)::after{content:"▼"}
+.ctrl{height:11px;border-radius:2px;background:rgba(232,238,243,.06);
+  border:1px solid rgba(53,204,186,.55);box-shadow:0 0 0 2px rgba(53,204,186,.12)}
+.pill{margin-top:auto;align-self:flex-start;font-size:8px;letter-spacing:.06em;color:var(--accent);
+  border:1px solid rgba(53,204,186,.4);border-radius:999px;padding:2px 7px;line-height:1.4}
+
+/* ---------- Screen 2: components strip ---------- */
+.strip{background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-top:auto}
+.note{margin:12px 0 0;color:var(--muted);font-size:11.5px}
+.alt .head{margin-bottom:24px}
+
+/* ---------- Phone ---------- */
+@media (max-width:900px){
+  section{min-height:0;padding:40px 20px 34px}
+  h1{font-size:34px} h2{font-size:30px}
+  .lead{font-size:15px}
+  .flow{grid-template-columns:1fr;gap:12px}
+  .stage::after{display:none}
+  .grid6{grid-template-columns:1fr;gap:14px}
+  .system{margin-top:26px}
+  .hub-row::before{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ SCREEN 1 ============ -->
+<section>
+ <div class="wrap">
+  <div class="head">
+    <p class="eyebrow">Oracle accelerator packs · packaging approach</p>
+    <h1>How a pack gets made</h1>
+    <p class="lead">One delivered engagement becomes a repeatable pack. One signed-off spec feeds every artifact.</p>
+  </div>
+
+  <div class="flow">
+    <article class="stage">
+      <svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14h5l1.5 2.5h5L16 14h5"/><path d="M4.5 5.5 3 14v4.5h18V14l-1.5-8.5H4.5Z"/></svg>
+      <p class="num">01</p>
+      <h3>Collect the inputs</h3>
+      <p>SoW, PoC deck, demo recording, feature lists, call transcripts, sibling packs.</p>
+    </article>
+
+    <article class="stage">
+      <svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.2a2.6 2.6 0 1 1 3.2 2.6c-.5.2-.7.6-.7 1.1v.6"/><path d="M12 16.6h.01"/></svg>
+      <p class="num">02</p>
+      <h3>Agent asks</h3>
+      <p>A fixed question list: inputs, the delivered case, verticals, clearance of customer name and figures, PoV constraints. It skips whatever the context already answers.</p>
+    </article>
+
+    <article class="stage">
+      <svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.4 15.4 21 21"/></svg>
+      <p class="num">03</p>
+      <h3>Agent researches</h3>
+      <ul>
+        <li>The general workflow for the job across industries, and where the delivered case differs.</li>
+        <li>Vendor and competitor capability taxonomies, then the gap check.</li>
+        <li>Per step: what matters, what fails, which features are customer, engine, use case or industry specific.</li>
+      </ul>
+      <p class="out">Out: a structured research TLDR</p>
+    </article>
+
+    <article class="stage">
+      <svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 6.5 10 17l-5-4.6"/><path d="M4 19.5h16"/></svg>
+      <p class="num">04</p>
+      <h3>You decide</h3>
+      <p>Pick one of the proposed name, one-liner and problem-to-solution options, or send it back for more research. Then sign off the 12 shared components one at a time, each with a brief TLDR, its grounding and a choice. Confirm the whole brief.</p>
+    </article>
+
+    <article class="stage">
+      <svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 3 7.5 12 12l9-4.5L12 3Z"/><path d="m3 12 9 4.5L21 12"/><path d="m3 16.5 9 4.5 9-4.5"/></svg>
+      <p class="num">05</p>
+      <h3>Artifacts get built</h3>
+      <p>In order, with one review pause after each: feature list, sales deck, sales one-pager, executive summary, mini-site listing, interactive demo.</p>
+    </article>
+  </div>
+
+  <div class="system">
+    <p class="sys-label">What runs it</p>
+    <div class="chips">
+      <span class="chip"><b>spec</b><span>the signed-off brief</span></span>
+      <span class="chip"><b>feature-list</b><span>capability table</span></span>
+      <span class="chip"><b>deck</b><span>10 sales slides</span></span>
+      <span class="chip"><b>one-pager</b><span>A4 leave-behind</span></span>
+      <span class="chip"><b>exec-summary</b><span>single slide</span></span>
+      <span class="chip"><b>build</b><span>renders the files</span></span>
+      <span class="chip"><b>listing</b><span>mini-site page</span></span>
+      <span class="chip"><b>demo</b><span>guided walkthrough</span></span>
+    </div>
+
+    <div class="hub-row"><span class="hub">Pack spec</span></div>
+
+    <div class="chips">
+      <span class="chip ctx">Engagement context</span>
+      <span class="chip ctx">Naming and clearance rules</span>
+      <span class="chip ctx">Pack anatomy: the 12 components and where each appears</span>
+      <span class="chip ctx">PoV rules: 4 to 8 weeks, 10 cap</span>
+      <span class="chip ctx">Owner's coaching rules</span>
+      <span class="chip ctx">Oracle product catalog, canonical names</span>
+      <span class="chip ctx">Use-case roadmap map</span>
+      <span class="chip ctx">Spec schema</span>
+      <span class="chip ctx">Linters: clearance, naming, consistency</span>
+    </div>
+  </div>
+ </div>
+</section>
+
+<!-- ============ SCREEN 2 ============ -->
+<section class="alt">
+ <div class="wrap">
+  <div class="head">
+    <p class="eyebrow">The output</p>
+    <h2>What a pack is comprised of</h2>
+    <p class="lead">Six artifacts, the same 12 components in every one.</p>
+  </div>
+
+  <div class="grid6">
+
+    <article class="art">
+      <div class="tn">
+        <div class="tbl">
+          <div class="tr hd"><span class="b"></span><span class="b"></span><span class="b"></span><span class="st">●◐○</span></div>
+          <div class="tr"><span class="b dim"></span><span class="b dim"></span><span class="b"></span><span class="st">●</span></div>
+          <div class="tr"><span class="b dim"></span><span class="b dim"></span><span class="b"></span><span class="st">●</span></div>
+          <div class="tr"><span class="b dim"></span><span class="b dim"></span><span class="b"></span><span class="st">◐</span></div>
+          <div class="tr"><span class="b dim"></span><span class="b dim"></span><span class="b"></span><span class="st">○</span></div>
+          <div class="tr"><span class="b dim"></span><span class="b dim"></span><span class="b"></span><span class="st">●</span></div>
+          <div class="tr"><span class="b dim"></span><span class="b dim"></span><span class="b"></span><span class="st">◐</span></div>
+        </div>
+      </div>
+      <h3>Feature list <em>docx</em></h3>
+      <p>Every capability by area and category, each marked shipped, configurable or roadmap.</p>
+      <p class="who">Read by <b>partners' presales, delivery</b></p>
+    </article>
+
+    <article class="art">
+      <div class="tn">
+        <div class="slides">
+          <div class="sl dark"><i class="mini tl"></i><i class="mini"></i></div>
+          <div class="sl"><i class="mini"></i><i class="mini"></i></div>
+          <div class="sl tbl2"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          <div class="sl"><i class="mini"></i><i class="mini"></i></div>
+          <div class="sl ladder"><i style="width:60%"></i><i style="width:75%"></i><i style="width:90%"></i><i style="width:100%"></i></div>
+          <div class="sl"><i class="mini"></i><i class="mini"></i></div>
+          <div class="sl"><i class="mini tl"></i><i class="mini"></i></div>
+          <div class="sl"><i class="mini"></i><i class="mini"></i></div>
+          <div class="sl"><i class="mini"></i><i class="mini"></i></div>
+          <div class="sl"><i class="mini"></i><i class="mini tl"></i></div>
+        </div>
+      </div>
+      <h3>Sales deck <em>pptx, 10 slides</em></h3>
+      <p>The full story: problem, solution, architecture, products, KPIs, packages.</p>
+      <p class="who">Read by <b>Oracle and SoftServe sellers</b></p>
+    </article>
+
+    <article class="art">
+      <div class="tn">
+        <div class="page">
+          <div class="hero"></div>
+          <div class="two">
+            <div><span class="b dim"></span><span class="b dim"></span><span class="b dim"></span></div>
+            <div><span class="b dim"></span><span class="b dim"></span><span class="b dim"></span></div>
+          </div>
+          <div class="three"><i></i><i></i><i></i></div>
+          <div class="pkg"><i></i><i></i><i></i></div>
+          <div class="cta"></div>
+        </div>
+      </div>
+      <h3>Sales one-pager <em>one A4 page</em></h3>
+      <p>The leave-behind: problem and solution side by side, proof numbers, the three packages.</p>
+      <p class="who">Read by <b>Oracle and SoftServe sellers, then their customers</b></p>
+    </article>
+
+    <article class="art">
+      <div class="tn">
+        <div class="exec">
+          <div class="r"><span class="b tl" style="width:46%"></span></div>
+          <div class="cols">
+            <div><span class="b dim"></span><span class="b dim"></span><span class="b dim"></span></div>
+            <div class="ladder"><i style="width:55%"></i><i style="width:72%"></i><i style="width:88%"></i><i style="width:100%"></i></div>
+          </div>
+          <div class="tier"><i></i><i></i><i></i></div>
+        </div>
+      </div>
+      <h3>Executive summary <em>one slide</em></h3>
+      <p>The whole pack on a single slide, for a forward or an exec review.</p>
+      <p class="who">Read by <b>the economic buyer</b></p>
+    </article>
+
+    <article class="art">
+      <div class="tn">
+        <div class="site">
+          <div class="hero" style="height:16px"></div>
+          <div class="tabs"><i></i><i></i><i></i></div>
+          <div class="tiles"><i></i><i></i><i></i></div>
+          <div class="steps"><i></i><i></i><i></i><i></i></div>
+        </div>
+      </div>
+      <h3>Mini-site listing <em>product page</em></h3>
+      <p>Overview, technology and jumpstart tabs, with the metrics and the workflow.</p>
+      <p class="who">Read by <b>Oracle sellers, SoftServe sellers, end customers</b></p>
+    </article>
+
+    <article class="art">
+      <div class="tn">
+        <div class="app">
+          <div class="r"><span class="b" style="width:38%"></span></div>
+          <div class="kpi"><i></i><i></i><i></i></div>
+          <div class="ctrl"></div>
+          <span class="pill">STEP 3 OF 6</span>
+        </div>
+      </div>
+      <h3>Interactive demo <em>guided walkthrough</em></h3>
+      <p>Before and after on the product's own KPIs, then a drill-down into what changed.</p>
+      <p class="who">Read by <b>sellers on a live call, then the customer</b></p>
+    </article>
+
+  </div>
+
+  <div class="strip">
+    <p class="sys-label">The 12 shared components, in sign-off order</p>
+    <div class="chips">
+      <span class="chip">Problem ↔ solution</span>
+      <span class="chip">One-liner</span>
+      <span class="chip">Target ICP</span>
+      <span class="chip">Name</span>
+      <span class="chip">Verticals and framings</span>
+      <span class="chip">Capabilities and customization</span>
+      <span class="chip">Workflow with human-in-the-loop</span>
+      <span class="chip">Architecture</span>
+      <span class="chip">Required Oracle products</span>
+      <span class="chip">Optional Oracle products</span>
+      <span class="chip">KPIs for ROI</span>
+      <span class="chip">Service packages: PoV Jumpstart, Integration, Scaling</span>
+    </div>
+  </div>
+
+  <p class="note">Demo video and Oracle Marketplace listing are part of a pack's end state and are produced outside these skills.</p>
+ </div>
+</section>
+
+</body>
+</html>
