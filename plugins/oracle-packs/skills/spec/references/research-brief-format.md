@@ -161,8 +161,8 @@ words — the capability list never left what we built for the customer.
 
 ### § 8 Candidate options — 1–3 triads, one comparison table, ≤ 120 words per triad
 
-One table: a column per triad, headed `<letter> · <Name>` (one plain name, no customer vocabulary,
-no category label), and these rows in this order:
+One table: a column per triad, headed `<letter> · <Name>` (one plain, noun-led name — the thing, not the job —
+no customer vocabulary, no category label), and these rows in this order:
 
 | Row | What the cell holds |
 |---|---|

@@ -68,11 +68,11 @@ The order is load-bearing. The name is chosen *last of the four* because a name 
 
 ### 4 · Name
 
-**Definition.** One plain name, owner-set, from which the channel variants are derived by rule — never re-invented per artifact.
+**Definition.** One plain name, owner-set, from which the channel variants are derived by rule — never re-invented per artifact. **Noun-led (2026-09-22).** A name names the thing, not the job: a noun phrase a buyer would put on a purchase order ("Workforce optimization", "Damage assessment", "Account insights"), never a verb phrase or an imperative ("Repair or replace", "Measure the damage", "Decide faster"). The owner on a recommended "Repair or replace": "simple but not the best name for the application — it should be noun-led ideally, not verb-led; but as for simplicity and clarity, you're right". So the simplicity test stays — an Oracle rep needs no briefing, a buyer in any target industry would search it — and the form is a noun phrase: turn the job into its noun ("Repair-or-replace decisions", "Repairability assessment").
 
 **Good.** The rule (Alex, 2026-09-18): mini-site `Workforce Optimization` · internal exec slide `Workforce Optimization App` · external one-pager and sales deck `Workforce optimization`, with a small `Accelerator App by SoftServe` subheading where one is needed. The spec carries all four in `meta.name_variants`; a builder reads its channel's variant and nothing else.
 
-**Anti-patterns.** A name that drifts between artifacts ("Workforce Optimization Accelerator Pack" on one feature list, "Workforce Optimization App by SoftServe" on its successor). A name built on a vendor trademark without a usage-guidelines check. Casing decided per artifact. Internal acronyms in anything a partner reads.
+**Anti-patterns.** A name that drifts between artifacts ("Workforce Optimization Accelerator Pack" on one feature list, "Workforce Optimization App by SoftServe" on its successor). A name built on a vendor trademark without a usage-guidelines check. Casing decided per artifact. Internal acronyms in anything a partner reads. A verb-led name ("Repair or replace") — the job, not the product.
 
 ---
 
