@@ -1,6 +1,6 @@
 # Research brief format
 
-The structured TLDR the user reads **after** the generalization research and **before** he picks a
+The structured TLDR the user reads **after** the generalization research and **before** they pick a
 candidate option. Written by `/oracle-packs:spec` step 2 to `packs/<slug>/research-brief.md`, and
 referenced from `provenance.research_brief` in `pack-spec.yaml`.
 
@@ -15,13 +15,18 @@ Rewrite this file in place when the format changes. Never stack dated "UPDATE" s
 
 One decision: **which generalized pack we are building.** Everything in the brief either supports
 that choice or is cut. It is an internal working document, not a client artifact — internal
-framings, counts, taxonomy vocabulary and open risks belong here and are stripped later by the
-artifact skills.
+framings, counts and open risks belong here and are stripped later by the artifact skills.
+
+**Its reader is the owner**, who knows the delivered engagement and the pack and nothing about how
+this research was run. So the brief carries no step ids, no test ids, no file or key names and no
+packaging vocabulary: every heading and every line reads as `shared/references/talking-to-the-owner.md`
+requires. Findings are named by what they are — "the research on what the vendors already ship",
+"how this workflow runs in other industries" — never by the prompt that produced them.
 
 **Hard budget: a 10-minute read.** ~1,600 words of prose and table content, ten sections, no
 section longer than one screen. Alex's standing instruction on this compression: *"Too much text;
 less is more; condense to the essence of meaning, TLDR."* When it runs long, cut the least
-load-bearing section entirely rather than shaving every section — his own rule when a page budget
+load-bearing section entirely rather than shaving every section — their own rule when a page budget
 bit: *"cut last page with 'sources analyzed' so that it's minus 1 page."*
 
 ---
@@ -31,11 +36,30 @@ bit: *"cut last page with 'sources analyzed' so that it's minus 1 page."*
 Fixed order. A section with nothing in it prints its heading and a single "—" line saying what is
 missing and why; it is never silently dropped (absence is a finding).
 
+The `§ n` numbers below are this file's own ordering, so that you and the sign-off cards can refer
+to a section. **The brief prints plain titles and no numbers**, in this order:
+
+| This file | The heading the brief prints |
+|---|---|
+| § 1 | The answer |
+| § 2 | The workflow, generalized |
+| § 3 | Where the pack differs from what we built |
+| § 4 | The industries |
+| § 5 | What the other vendors ship |
+| § 6 | What happens when things go wrong |
+| § 7 | What is specific to the customer |
+| § 8 | The options |
+| § 9 | Still open |
+| § 10 | Sources |
+
+Anything that points at a section — inside the brief, in a card, in a message — names it by that
+title ("the research summary, section 'What is specific to the customer'"), never by its number.
+
 ### § Header — 6 lines, no prose
 
 `Pack (working title)` · `Delivered engagement + date` (internal name; clearance decides what may
-leave this file) · `Researched on` · `Status: research | options` · `Read: N sources` ·
-`Open questions: N`.
+leave this file) · `Researched on` · `Status: research done | choosing the option` ·
+`Read: N sources` · `Still open: N`.
 
 ### § 1 The answer — ≤ 120 words
 
@@ -51,7 +75,8 @@ systems, a KPI promise that differs per case, no market pull), and stop the brie
 
 ### § 2 The generalized workflow — table, ≤ 12 rows
 
-The spine. Steps in order, at the generality that passed T1–T2.
+The steps every industry shares, in order, at the breadth that passed the
+"general enough, but not too general" test in §2 of `generalization-method.md`.
 
 | # | Step | Actor | Input → output | HITL | Failure path |
 |---|---|---|---|---|---|
@@ -78,21 +103,24 @@ feature list's job):
 | Area | In the vendor accelerator pack | We built | Stays custom per engagement |
 |---|---|---|---|
 
-Close with two lines: **what the delivered case did that the pack will not** (customer quirks that
-failed T5) and **what was out of scope in the project but is in scope for the pack** (T8).
+Close with two lines: **what we built for the customer that the pack will not do** (the quirks
+that belong to that customer alone) and **what was out of scope in the project but is in scope for
+the pack**.
 
 ### § 4 Verticals — table, 3–5 rows
 
 | Vertical | Entities that differ | Framing: "Persona — what the system does; what they get" | What matters here | Status |
 |---|---|---|---|---|
 
-- `Entities that differ` is the T2 evidence — one phrase. A vertical that cannot fill it is a
-  re-label and does not belong in the table.
+- `Entities that differ` is the evidence that this really is a different business — one phrase. An
+  industry that cannot fill it is the same thing under another name and does not belong in the
+  table.
 - `Framing`: 15–30 words, business language, one concrete artefact, no product or vendor names.
 - `What matters here`: the two or three step-level differences that actually matter for this
   vertical, ≤ 20 words. The full step × vertical grid is an appendix, not this section.
 - `Status`: **proven** (delivered) · **plausible** (evidence, not delivered) · **roadmap**.
-- Budget: ~250 words. Fewer than three rows = the generalization failed T1; say so in §1.
+- Budget: ~250 words. Fewer than three rows means the pack has not widened beyond the one customer
+  it came from; say so, in those words, in the answer section.
 
 ### § 5 Vendor landscape and gaps — two tables, ≤ 250 words
 
@@ -108,7 +136,7 @@ failed T5) and **what was out of scope in the project but is in scope for the pa
 `Recommendation`: **adopt now · roadmap (○) · reject**. Gaps adopted from the market that the
 delivered case never had are labelled **cross-vertical extension** so they are never mistaken for
 delivered scope. Same-vendor overlap gets one explicit line: what the native product already does,
-and the boundary that keeps our claim honest (T4).
+and the boundary that keeps our claim honest.
 
 ### § 6 Failure paths and absences — list, ≤ 120 words
 
@@ -126,9 +154,10 @@ Per **area** (not per feature — the feature-level table is the feature list's 
 the feature names that fail that axis, or "—". `Verdict`: reusable · configurable · custom per
 engagement.
 
-Then three lines: the count of ● / ◐ / ○ rows the generalization produced; the areas that are
-entirely custom (these are priced scope); and, if there is **no ○ row at all**, a flagged warning
-that the generalization has not left the delivered scope (T9).
+Then three lines: how many capabilities are available, partial and on the roadmap (the words, not
+the glyphs, when this is said in a message); the areas that are built fresh for every customer
+(these are priced scope); and, if **nothing at all is on the roadmap**, a flagged warning in those
+words — the capability list never left what we built for the customer.
 
 ### § 8 Candidate options — 1–3 triads, one comparison table, ≤ 120 words per triad
 
@@ -199,9 +228,9 @@ These apply inside every section; they are the reason the brief can be trusted a
 - **Customer names** appear only where `clearance.customer_name_allowed` permits; otherwise the
   anonymized descriptor. This brief is internal, so it may hold the name — but every sentence that
   will travel into an artifact is written so it survives anonymization.
-- **Adjudication state is visible**: anything the model generated and the user has not yet accepted
-  is marked `(unadjudicated)`. The brief is allowed to contain unadjudicated material; it is not
-  allowed to look adjudicated.
+- **What the owner has not yet confirmed says so**: anything the research generated and they have not
+  accepted is marked `(awaiting your confirmation)`. The brief is allowed to contain material they have
+  not ruled on; it is not allowed to look as though they have.
 - **Register**: structured output by default — tables, numbered lists, bold captions with tight
   text. Prose only where structure cannot carry the meaning. Direct; density beats length; no
   hedging, no padding, no filler headers.
@@ -210,13 +239,16 @@ These apply inside every section; they are the reason the brief can be trusted a
 
 ## 4. What follows the brief
 
-The user answers the adjudication questions (`generalization-method.md` §5) and picks an option.
+The user answers the research questions put to them under the heading "Your call on what the
+research found" (`generalization-method.md` §5) and picks an option.
 Only then does the spec skill begin component sign-off — problem ↔ solution, one-liner, target ICP,
-name, then the rest, per `signoff-flow.md`. If he sends the research back instead, the brief is
+name, then the rest, per `signoff-flow.md`. If they send the research back instead, the brief is
 **rewritten in place** to current truth, never appended to.
 
-Every sign-off card cites this brief by section (`research-brief §4`, `§7`) as its grounding, so
-the brief is the standing evidence base for the whole spec, not a throwaway.
+Every sign-off card cites this brief as its grounding by the section's printed title — (the
+research summary, "The industries"), (the research summary, "What is specific to the customer") —
+never by a § number, so the brief is the standing evidence base for the whole spec, not a
+throwaway.
 
 ---
 

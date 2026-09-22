@@ -72,7 +72,7 @@ Brand fonts are licensed and are not shipped; the deck fit report uses metric st
 ```
 .claude-plugin/marketplace.json     the marketplace (two plugins)
 shared/                             single source, synced into each plugin by tools/sync-shared.sh
-  references/                       engagement context · naming and clearance · pack anatomy · PoV rules · review loop · slide-design · client-documents · research-standards · coaching rules
+  references/                       engagement context · naming and clearance · pack anatomy · PoV rules · review loop · talking to the owner · slide-design · client-documents · research-standards · coaching rules
   data/                             oracle-products.yaml (the only allowed product names) · roadmap-items.csv (+ L2 patterns, crosswalk, tracker) · regen script
   schema/pack-spec.md               the spec schema and template
   tools/                            lint_spec.py · lint_artifact.py · check_consistency.py · denylist.txt · tests/

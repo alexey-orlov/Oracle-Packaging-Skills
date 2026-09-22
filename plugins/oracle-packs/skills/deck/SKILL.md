@@ -13,8 +13,8 @@ user-invocable: true
 ## Preconditions and inputs
 
 - A confirmed, lint-clean `pack-spec.yaml`. Otherwise stop and send the user to `/oracle-packs:spec`.
-- Channel: `partner_print` (default; Oracle and SoftServe sellers) or `internal` (adds prices in full, named accounts and internal notes where the spec's clearance allows). Ask once with a widget if not given.
-- Read `shared/references/pack-anatomy.md`, this skill's `references/deck-anatomy.md` and `references/brand-tokens.md`, `shared/references/slide-design.md` (all rules), `shared/references/naming-and-clearance.md`, `shared/references/review-loop.md`.
+- Channel: `partner_print` (default) or `internal`. Ask once with a widget if not given, and ask it as "who will see this deck": "Oracle and SoftServe sellers" (default) or "our own team" (adds prices in full, named accounts and internal notes where the pack brief allows). Store the two values; never show them.
+- Read `shared/references/pack-anatomy.md`, this skill's `references/deck-anatomy.md` and `references/brand-tokens.md`, `shared/references/slide-design.md` (all rules), `shared/references/naming-and-clearance.md`, `shared/references/review-loop.md`, `shared/references/talking-to-the-owner.md` — every message, question and option the owner sees passes its reader's test.
 - Dependencies: Python 3 with `pyyaml`, `python-pptx`, `Pillow`; the brand base `assets/softserve-deck-base.pptx` ships with the skill. Brand fonts are licensed and may be absent on this machine: the fit report uses metric stand-ins, so trust the report, not the rendered glyph widths.
 
 ## Procedure
@@ -24,7 +24,7 @@ user-invocable: true
 3. **Render QA**: run `tools/render_probe.sh` to see which renderer this machine has, render a contact sheet, and look at every slide: peers equal geometry, no free-floating text, colour semantics per the rules, no empty containers pretending to be content.
 4. **Lint**: `python3 shared/tools/lint_artifact.py <pptx> --channel <channel> --spec <spec>` and `python3 shared/tools/check_consistency.py <spec> <pptx>`.
 5. **Editorial pass on the strongest model**: read every slide's text against the spec and the naming rules — prices match the spec, "proof of value" vs "proven" wording, tier names, the pack name variant for the channel, the integration claim states its tier, vendor names by catalog. This pass has caught a price slip and an overclaim on every previous deck; do not skip it.
-6. **Review pack**: the contact sheet, the pptx, a TLDR of layout decisions, the list of anything inferred or unconfirmed, and the open items. Then one rebuild round. The builder writes the whole deck from the spec every time — there is no per-slide flag — so a single-slide change is a single-line change in the spec (through `/oracle-packs:spec`'s fast path) followed by the same `build_deck.py` call, and only the changed slide is re-reviewed.
+6. **Review pack**, in the owner's words: the contact sheet, the pptx, a TLDR of the layout decisions, the list of anything inferred or unconfirmed, and the open items — each named as what it is on the slide, never as a spec key or a design rule's number. Then one rebuild round. The builder writes the whole deck from the spec every time — there is no per-slide flag — so a single-slide change is a single-line change in the spec (through `/oracle-packs:spec`'s fast path) followed by the same `build_deck.py` call, and only the changed slide is re-reviewed.
 
 ## Rules that bite on decks
 
@@ -38,3 +38,7 @@ user-invocable: true
 ## Definition of done
 
 Fit report clean, contact sheet reviewed, lint and consistency clean, editorial pass done, the owner's approval recorded in `packs/<slug>/decisions.md`, file delivered under `<Pack name> - Sales deck - Oracle.pptx`.
+
+## Self-check before closing
+
+- [ ] Every message, question, option and table the owner saw passes the reader's test: no method codes, no file or key names, no packaging vocabulary as vocabulary, reasons instead of rule names.

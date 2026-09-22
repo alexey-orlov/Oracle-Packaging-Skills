@@ -33,7 +33,7 @@ subset **plus** the justified confidence that the space was swept. Every step be
 splits into what the agent produces and what the user decides.
 
 Second rule, from the same session: **draft before you research.** Alex tells Vlad to sketch the
-maximally generalized step list himself first, then use research to validate and challenge it —
+maximally generalized step list themselves first, then use research to validate and challenge it —
 not to ask a model for a workflow from a blank page:
 
 > "I'd advise you, to get this workflow question sorted — which steps, which features are
@@ -75,8 +75,8 @@ Two standing counterweights to T1–T4, so the pack does not generalize itself i
 
 ## 3. The procedure
 
-Thirteen steps. Steps 5–7 are Alex's explicit **three-move process** (his "трёхходовка"), step 4
-is the up-front task he appends to it. Each step states what the agent does, what the user
+Thirteen steps. Steps 5–7 are Alex's explicit **three-move process** (their "трёхходовка"), step 4
+is the up-front task they append to it. Each step states what the agent does, what the user
 adjudicates, the output shape, and when to stop and ask.
 
 ### Step 0 — Gate: is this a pack at all?
@@ -110,7 +110,7 @@ adjudicates, the output shape, and when to stop and ask.
   step names a buyer would recognize, not the delivered product's screen names. Also draft the
   **scenario set**: the 3–5 *fundamentally different* cases you believe this job splits into,
   with the entity difference stated for each (T2).
-- **User adjudicates:** the draft is his — he may rewrite step names and the scenario set outright.
+- **User adjudicates:** the draft is their — they may rewrite step names and the scenario set outright.
 - **Output:** the step list + the scenario list, both one line each.
 - **Stop and ask when:** the delivered case supports fewer than 3 distinct scenarios.
 
@@ -241,7 +241,7 @@ Run this as **its own task, up front**, before the differentiation pass. Alex's 
   category label ("AI document platform") — that means step 7 has not produced a boundary yet.
 
 **Two hard constraints on this step.** The packaging promise is not a one-liner — Alex rejected
-his own: "'packaged from proof of value to enterprise scale' and alike things don't fit as a good
+their own: "'packaged from proof of value to enterprise scale' and alike things don't fit as a good
 product one-liner." And no counts, taxonomy or packaging vocabulary in the name or the one-liner;
 they state the job and the outcome in the reader's words.
 
@@ -364,26 +364,46 @@ Ask these through the question widget after the research and **before the option
 calls of their own** (at most four questions per call; never merged into the triad-pick widget or a
 sign-off card), each skipped when the context already answers it — the intake list (`intake-questions.md`) has already
 covered inputs, frame and clearance; these are the questions only the research can raise. Widget
-conventions are `signoff-flow.md`'s. Every question states what it blocks.
+conventions are `signoff-flow.md`'s.
 
-1. **Verticals to keep** (multi-select from the researched list, ≥ 3): which of these are real
-   scenarios we would sell into, and which are re-labels? *Blocks:* `verticals[]`, the vertical
-   framings, the differentiation grid's columns.
-2. **Differences that are real** (per-cell review of the widened grid, or "keep the ones marked
-   high-confidence"): which of the generated differences do you accept? *Blocks:* "what matters
-   here" cells, the feature list's vertical rows.
-3. **Failure paths in scope** (multi-select, per tier): which of these belong in the PoV, which in
-   Integration, which become OUT OF SCOPE lines? *Blocks:* `workflow.steps[].failure_path`, the
-   OUT OF SCOPE block on every artifact.
-4. **How far to generalize** (single choice + free text): keep the workflow at the level drafted ·
-   widen one level (name the boundary that keeps it honest) · narrow one level (name what we drop).
-   *Blocks:* the name, the one-liner, T3/T4.
-5. **Gaps from the vendor study**: adopt now · roadmap (○) · reject, per gap. *Blocks:*
-   `capabilities[]` and the cross-vertical extensions block.
-6. **Delivered-case exclusions**: for each thing that was out of scope in the engagement — is it
-   out of scope for the *pack* too, or only for that project? *Blocks:* T8, the scope lines.
-7. **Custom verdicts**: confirm each feature we have marked "custom per engagement" — each one is
-   priced scope. *Blocks:* `capabilities[].customization_scope`, the packages table.
+**The section title the owner sees is "Your call on what the research found"** — never
+"adjudication", and never a reference to this file or its numbering. Each widget is titled
+`Your call on the research · n of N · <question name>` (N = the questions actually asked after
+skipping), and the stage closes with a one-line "done, next" message. The question texts below are
+what they read, in these words; the *Internal* note after each is for you only and is never shown —
+each question carries instead a plain line on why it matters for the pack.
+
+1. **Which industries we really sell into** (multi-select from the researched list, ≥ 3): the
+   research proposes these. Which are genuinely different businesses we would sell into, and which
+   are the same thing under another name? *Why it matters:* it sets which industries the pack
+   claims and which ones the sales deck and the site lead with. *Internal:* `verticals[]`, the
+   vertical framings, the differentiation grid's columns.
+2. **Which of the differences between industries are real**: for each industry, the research listed
+   what it says makes that industry different. Which of those are real differences, and which are
+   padding? (Or: keep only the ones the research is confident about.) *Why it matters:* the
+   surviving ones become the "what matters here" line per industry and the industry rows of the
+   feature list; the rest disappear. *Internal:* the widened grid's cells, T7's adjudication.
+3. **What happens when things go wrong, and in which package** (multi-select, per package): at each
+   step, these are the ways it can fail. Which does the proof of value handle, which waits for the
+   Integration package, and which do we say plainly we do not cover? *Why it matters:* it fixes the
+   scope of the proof and the "not in scope" lines every document prints. *Internal:*
+   `workflow.steps[].failure_path`, the OUT OF SCOPE block on every artifact.
+4. **How broad the pack should be** (single choice + free text): keep it at the breadth drafted ·
+   go one step broader (and name the boundary that keeps the claim honest) · go one step narrower
+   (and name what we drop). *Why it matters:* it decides the name, the one-liner, and whether a
+   buyer reads the pack as a specific product or as a slogan. *Internal:* T3/T4.
+5. **What the vendors already ship that we do not** (per gap: build it now · put it on the roadmap
+   · leave it out): the research found these steps that competing products treat as part of the
+   job. *Why it matters:* each one either becomes a capability we sell, a roadmap line, or a gap a
+   buyer may raise. *Internal:* `capabilities[]` and the cross-vertical extensions block.
+6. **What was out of scope for the customer, but not for the pack**: for each thing the engagement
+   deliberately left out — is it out of scope for the pack too, or only for that one project?
+   *Why it matters:* the pack inherits the customer's exclusions by default, and that is usually
+   too narrow. *Internal:* T8, the scope lines.
+7. **What is built fresh for every customer**: confirm each feature we have marked as built per
+   customer — each one is work we have to price into the packages. *Why it matters:* it sets what
+   the packages cost and what "standard" means. *Internal:*
+   `capabilities[].customization_scope`, the packages table.
 8. **Option choice** (after the triads): pick one, blend, or send back for more research.
 
 ---
@@ -394,12 +414,12 @@ Each was actually rejected. Fix the class, not the instance.
 
 | # | Anti-pattern | Where it came from | The fix |
 |---|---|---|---|
-| A1 | **Counts, taxonomy or packaging vocabulary in the name or one-liner** — "packaged from proof of value to enterprise scale" | Alex rejected his own one-liner, 2026-09-14 | The one-liner states the job and the outcome in the buyer's words; the packaging promise is sales scaffolding and lives in the packages block |
+| A1 | **Counts, taxonomy or packaging vocabulary in the name or one-liner** — "packaged from proof of value to enterprise scale" | Alex rejected their own one-liner, 2026-09-14 | The one-liner states the job and the outcome in the buyer's words; the packaging promise is sales scaffolding and lives in the packages block |
 | A2 | **"Theoretically can also do this" features** | Lakehouse product research, 2026-08 — "Only items that are true essential uses / features of the product should be included" | Every feature evidence-linked to something delivered or shipped; speculative ones are ○ roadmap or absent |
 | A3 | **Widening that drifts from the real product** | Demo red-team, 2026-09-16 — generalize more "while sticking to the flow / interface / info architecture from real solution" | Widen the *content* (types, rules, verticals, validators); never change the step order, the screens or the information model |
 | A4 | **Generalizing into vagueness** | "Work-package variance analysis" → "Plan-vs-actual investigation", with the boundary kept | Every widening names the boundary that keeps the claim honest and differentiated (T4) |
 | A5 | **Keeping a customer-specific rule as if it were generic** | Rigid year-ahead work zones, atypical, baked into the algorithm (2026-07-07) | Make it configurable, label it customer-specific, or drop it from the spine (T5) |
-| A6 | **Technically-derived groupings a business buyer cannot place** | Alex on the use-case map, 2026-09-17: "they are broken down too much by the very technical detail … boundary unclear. I need better categorization" | Group where a cluster of business tasks in the stakeholder's mental model overlaps a technology pattern — his own stated reason for liking the groups he kept |
+| A6 | **Technically-derived groupings a business buyer cannot place** | Alex on the use-case map, 2026-09-17: "they are broken down too much by the very technical detail … boundary unclear. I need better categorization" | Group where a cluster of business tasks in the stakeholder's mental model overlaps a technology pattern — their own stated reason for liking the groups they kept |
 | A7 | **A column filled against a different definition than it was read with** | 2026-07-24: the "custom work" column read back as "even when this feature is perfect, we will still come and use a better model" — a false sentence | Define each column's semantics in one sentence *before* filling it, then read one filled row back as a sentence to the client and ask whether it is true |
 | A8 | **Binding a feature to a model or engine** | 2026-07-24: "I wouldn't write in the features that it's Llama" | Engine dependence is a specificity axis, never part of the feature name |
 | A9 | **Untested capability presented as delivered** | 2026-09-08: "Remove analytics block as it was not tested / was out of scope" | Status glyph backed by evidence; untested = ○ or absent |

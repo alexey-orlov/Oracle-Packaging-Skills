@@ -13,6 +13,7 @@ inside a skill.
 | `pack-anatomy.md` | The twelve components of a pack, their definitions, and the map of which component lands in which artifact. |
 | `pov-rules.md` | What a PoV Jumpstart is and is not: duration, scope, what it proves, and the pushback rules. |
 | `review-loop.md` | How the owner reviews and approves, so every skill behaves the same way: options with a recommendation, renders not descriptions, the one expected rebuild round, the open-items list, the fast path for a one-block rebuild, and the definition of done. |
+| `talking-to-the-owner.md` | The reader's test every message, question, option, card, table and document the owner sees must pass: who is reading, what is never said to them (method codes, file and key names, packaging vocabulary), the internal→plain glossary, how a question is put, and what stays internal. |
 | `slide-design.md` | The fourteen numbered design rules for decks, one-pagers and executive-summary slides. |
 | `client-documents.md` | Voice, de-AI typography and vocabulary, the summary-altitude rule, the living-documents rule, and persona-first marketing copy with its heading budgets. |
 | `research-standards.md` | Labelled claims, source tiers, named specifics, explicit gaps, no force-filled frameworks, answer first. Governs the generalization research and the feature list. |

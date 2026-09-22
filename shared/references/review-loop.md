@@ -10,7 +10,7 @@ _How every skill in this bundle behaves around the person who owns the pack, so 
 
 **Clarify when the requirement is vague — ask, don't guess.** A vague brief is the one case where a question costs less than a rebuild. Ask at most one or two tight questions, and only where a wrong guess forces a rebuild rather than an edit.
 
-**Put choices as a small set of concrete options with trade-offs, and recommend one.** Two or three options, each with a one-line business-level rationale and its grounding, and say which one you would take and why. The owner answers fast and frequently overrides the recommendation — that is the loop working, not a failed recommendation. Never present a single option as if it were the only one, and never present five.
+**Put choices as a small set of concrete options with trade-offs, and recommend one.** Two or three options, each with a one-line business-level rationale and its grounding, and say which one you would take and why. The owner answers fast and frequently overrides the recommendation — that is the loop working, not a failed recommendation. Never present a single option as if it were the only one, and never present five. **Put all of it in the owner's words, never the method's**: each option is an outcome for the pack, the rationale is the reason and not the name of a rule, and nothing carries a research step's id, a test's id, a file or key name or a status glyph used as a count. The reader's test is `talking-to-the-owner.md`.
 
 **Verify the owner's stated counts and lists against the source file.** "All three use cases" has turned out to be four. Check the roster, the count and the spelling against the source of truth before building around them, and say what you found.
 
@@ -34,7 +34,7 @@ _How every skill in this bundle behaves around the person who owns the pack, so 
 
 **Deliver where the owner can reach it.** The owner is often on a different machine than the one that did the work. Put the file in the shared location beside its source, attach it in the conversation, or publish the page and hand over the link — and say explicitly where it is. A document ships as both its editable form and a rendered twin.
 
-**Hand back an explicit open-items list, never buried.** Three buckets, in this order: (a) what still needs the owner's decision, (b) what was inferred and on what basis, (c) what has no source anywhere. Add the checks that could not be run and why. An artifact delivered without this list reads as finished when it is not.
+**Hand back an explicit open-items list, never buried.** Three buckets, in this order: (a) what still needs the owner's decision, (b) what was inferred and on what basis, (c) what has no source anywhere. Add the checks that could not be run and why. Write every line in plain words — what is missing and what it changes about the pack, not which key or check it belongs to. An artifact delivered without this list reads as finished when it is not.
 
 **Say what changed, what was decided differently, and why.** A short TLDR at the top. Where you deviated from the brief or from the recommendation, name the deviation and the reason; do not let it be discovered.
 
@@ -59,16 +59,16 @@ _How every skill in this bundle behaves around the person who owns the pack, so 
 An artifact is done when all of the following hold, in order:
 
 1. The artifact is built from the signed-off pack spec, and any required value it could not find sent the owner back to the spec rather than being invented.
-2. The clearance linter is green, the banned-vocabulary and deny-list sweeps are green, and any check that could not run is listed.
+2. The clearance linter is green, the banned-vocabulary and deny-list sweeps are green, and any check that could not run is listed. To the owner this is one plain line — "the automatic checks passed", or "one check found: <the finding, in plain words>" — never a tool name or a raw checker output.
 3. The artifact has been rendered and looked at — every changed slide, page or screen, at every width that matters for that medium.
-4. It has been delivered where the owner can reach it, in the forms he uses.
+4. It has been delivered where the owner can reach it, in the forms they use.
 5. The handover carries the TLDR, the deviations, the synthetic figures and the open-items list.
 6. What changed and why is recorded in the pack's own provenance, and any rule that moved has been rewritten in the reference file that owns it.
 
 ---
 
-## 6. What the owner supplies, and what he wants before approving
+## 6. What the owner supplies, and what they want before approving
 
 **Inputs only the owner can provide** — ask for them once, early, as a list, and treat each as a declared input rather than something to invent: the raw engagement material (statement of work, PoC deck, recordings, feature lists, transcripts, existing artifacts); customer-name and figure approvals; imagery rights and any brand assets; marketplace, success-story and video URLs; the contact and mailbox for each channel; the destination folder or site the artifact ships to; and any environment endpoint a build needs. Nothing on this list is ever guessed, and an artifact prints nothing that depends on an input still outstanding.
 
-**Before approving, the owner wants:** the running artifact to click through himself, a TLDR of what changed, the list of anything synthetic or inferred, and the decisions that remain his. Give him those four things in that order, and keep the message short enough to read on a phone.
+**Before approving, the owner wants:** the running artifact to click through themselves, a TLDR of what changed, the list of anything synthetic or inferred, and the decisions that remain their. Give them those four things in that order, and keep the message short enough to read on a phone.
