@@ -60,7 +60,7 @@ def _under_packs(*parts: str) -> str:
     return os.path.join(PACKS_DIR, *parts) if PACKS_DIR else ""
 
 
-DEFAULT_ROADMAP = _under_packs("Use case maps", "AI use case roadmap 2026-09-17.md")
+DEFAULT_ROADMAP = _under_packs("Use case maps", "AI use case roadmap 2026-09-22.md")
 DEFAULT_MAPPING = _under_packs(
     "Use case maps", "AI workflow patterns - AIDP-NVIDIA-OracleAI mapping.xlsx")
 DEFAULT_TRACKER = _under_packs("Oracle packages.xlsx")
@@ -262,21 +262,49 @@ def read_sheet(path: str, sheet_hint: str) -> list[list[str]]:
 # --------------------------------------------------------------------------
 # Source readers
 # --------------------------------------------------------------------------
+ROADMAP_HEADER = ("block", "item", "status")
+
+
+def _md_cells(line: str) -> list[str]:
+    return [c.strip() for c in line.strip().strip("|").split("|")]
+
+
 def read_roadmap(path: str) -> list[dict]:
-    """Parse the `Block | Item | Status` markdown table."""
-    items = []
+    """Parse the one `Block | Item | Status` markdown table in the roadmap.
+
+    Anchored on that exact header and stopped by the first non-table line.
+    The roadmap markdown also carries narrative summary tables (block counts,
+    the unpackaged remainder); shape-matching alone picked their rows up as use
+    cases, so the header is the contract. A file with no such header, or with
+    two of them, is a source problem and stops the run.
+    """
     with open(path, encoding="utf-8") as fh:
-        for line in fh:
-            line = line.strip()
-            if not line.startswith("|"):
-                continue
-            cells = [c.strip() for c in line.strip("|").split("|")]
-            if len(cells) != 3:
-                continue
-            block, item, status = cells
-            if block.lower() == "block" or set(block) <= set("-: "):
-                continue
-            items.append({"block": block, "item": item, "status": status})
+        lines = fh.read().splitlines()
+
+    starts = [i for i, ln in enumerate(lines)
+              if ln.strip().startswith("|")
+              and tuple(c.lower() for c in _md_cells(ln)) == ROADMAP_HEADER]
+    if not starts:
+        raise SystemExit(
+            f"no `| Block | Item | Status |` header found in {path} — the "
+            "roadmap markdown must carry exactly one such table")
+    if len(starts) > 1:
+        raise SystemExit(
+            f"{len(starts)} `| Block | Item | Status |` tables in {path} "
+            f"(lines {', '.join(str(i + 1) for i in starts)}) — expected one")
+
+    items = []
+    for ln in lines[starts[0] + 1:]:
+        if not ln.strip().startswith("|"):
+            break
+        cells = _md_cells(ln)
+        if len(cells) != 3:
+            raise SystemExit(
+                f"{path}: {len(cells)} cells in a roadmap row: {ln.strip()!r}")
+        block, item, status = cells
+        if set(block) <= set("-: "):      # the header separator
+            continue
+        items.append({"block": block, "item": item, "status": status})
     if not items:
         raise SystemExit(f"no roadmap rows parsed from {path}")
     return items

@@ -1,6 +1,6 @@
 # Roadmap extract — what these files are and how to use them
 
-**generated: 2026-09-18** · regenerate with `python3 shared/tools/regen_roadmap.py`
+**generated: 2026-09-22** · regenerate with `python3 shared/tools/regen_roadmap.py`
 
 Packs are mapped to items on SoftServe's Oracle AI use-case roadmap. The join
 in the source material is free text with drift and no ids. These files are the
@@ -17,7 +17,7 @@ written by the regeneration script.
 
 | File | Rows | Columns | What it is |
 |---|---|---|---|
-| `roadmap-items.csv` | 91 | `id,block,item,status,l1_pattern,l2_pattern` | The whole roadmap, one row per use case, with a minted stable id and the workflow-pattern taxonomy it sits under. All 91 items carry an L1/L2. |
+| `roadmap-items.csv` | 91 | `id,block,item,status,l1_pattern,l2_pattern` | The whole roadmap, one row per use case, with a minted stable id and the workflow-pattern taxonomy it sits under. All 91 items carry an L1/L2. `block` holds the current six-block grouping plus the two unpackaged families — see "The blocks" below. |
 | `roadmap-l2-patterns.csv` | 26 | `l1,l2,definition` | The 26 workflow sub-patterns and their definitions, verbatim from the source sheet. Definition shape: `<trigger> → <input> → <output>; human gate: …; agent acts: …`. |
 | `pack-crosswalk.csv` | 9 | `pack_slug,pack_name_current,roadmap_item_id,site_slug,tracker_name,older_names` | The curated pack ↔ roadmap join, resolving the name drift between the tracker, the mini-site and the map. |
 | `pack-tracker.csv` | 18 | `pack,artifact,status,due_date` | The per-pack artifact checklist as it stands in the tracker. Three packs × six artifacts. People columns are dropped on purpose. |
@@ -63,15 +63,44 @@ pack with no listing, mint it with the rule above and then leave it alone.
 
 ---
 
+## The blocks
+
+Since 2026-09-22 the map is grouped into **six blocks**, chosen so that each cuts
+on a single axis and no use case is a judgement call between two of them:
+
+| Block | Items | What puts a use case here |
+|---|---|---|
+| Enterprise knowledge & analytics | 18 | Someone asks; the agent answers from governed documents or a governed schema. Nothing written back. |
+| Deep research & investigation | 18 | A question too big for one answer — the agent plans, gathers across sources, returns an evidence set a person signs off. |
+| Transaction & process execution | 15 | The agent changes something in a system of record: a transaction, a queue item, a multi-week process. |
+| Document processing | 14 | An item arrives and is worked one by one — read, classified, checked against a reference, transformed at volume. |
+| Forecasting & optimization | 9 | The answer is computed, not retrieved: a score, a forecast, the next period's plan under constraints. |
+| Video & image intelligence | 4 | The input is pixels. |
+
+All 3 Available and all 6 WinP items sit inside these six. The remaining **13
+items carry a family name instead of a block** — real demand with no packaged
+offering behind it, kept on the map so nothing is silently dropped:
+`Content generation` (7) and `Monitoring & incident response` (6). A skill that
+renders "the blocks" should render the six and treat those two as a remainder,
+not as blocks seven and eight.
+
+The two are out on purpose. Content generation is a different business
+(marketing and enablement, not operations); monitoring splits across the blocks
+above by its own nature — the watching is analytics, the fixing is execution —
+and forcing it into one reintroduces exactly the boundary overlap the six-block
+cut removed.
+
 ## Volatility — what to trust
 
 - **Durable: the 91 items and their statuses.** Every competing re-grouping of
   the map opens with "same 91 items and statuses"; the item vocabulary survived
   a red-team pass and three slide variants.
-- **Volatile: the 7 block names and their membership.** Six competing 8-block
-  taxonomies were written within six minutes on 2026-09-17, each renaming or
-  dissolving several current blocks; the mini-site already refuses two of the
-  present names and uses its own category labels.
+- **Settling, not settled: the block names and their membership.** The six
+  above replaced seven different ones on 2026-09-22 and are the first grouping
+  the owner converged on rather than commissioned — but the seven they replaced
+  had themselves survived three slide variants, six competing 8-block
+  taxonomies were written within six minutes on 2026-09-17, and the mini-site
+  still uses its own category labels. Assume the names move again.
 - **Volatile: `status`.** It moves week to week as packages land.
 - **Cadence:** roughly weekly structural churn, daily during an active round.
 
@@ -90,7 +119,7 @@ can tell whether it is current. One line, in the artifact's own provenance or
 footer:
 
 ```
-Roadmap extract: 2026-09-18 (91 items) · source: AI use case roadmap 2026-09-17.md
+Roadmap extract: 2026-09-22 (91 items) · source: AI use case roadmap 2026-09-22.md
 ```
 
 Take the date from the `generated:` line at the top of this file and the row
@@ -107,12 +136,17 @@ regenerator at it with `ORACLE_PACKS_DIR`. Their state when this extract was gen
 
 | Source | mtime at generation | Feeds |
 |---|---|---|
-| `Use case maps/AI use case roadmap 2026-09-17.md` | 2026-09-17 17:38 | `roadmap-items.csv` (block, item, status) |
+| `Use case maps/AI use case roadmap 2026-09-22.md` | 2026-09-22 23:00 | `roadmap-items.csv` (block, item, status) |
 | `Use case maps/AI workflow patterns - AIDP-NVIDIA-OracleAI mapping.xlsx` | 2026-09-17 13:34 | `roadmap-items.csv` (l1/l2, via the `Card labels v2` tab) and `roadmap-l2-patterns.csv` (via `Patterns v2 (red-team 2026-09)`, column "L2 definition") |
-| `Oracle packages.xlsx` | 2026-09-15 18:55 | `pack-tracker.csv` (the `Packaging activities` tab only) |
+| `Oracle packages.xlsx` | 2026-09-18 13:03 | `pack-tracker.csv` (the `Packaging activities` tab only) |
 
 The roadmap markdown is the **primary** source: it is the already-cleaned
-version of the map and carries no customer names. The workbook is read for the
+version of the map and carries no customer names. It is dated per re-grouping,
+so `DEFAULT_ROADMAP` in the regeneration script moves with it; earlier dated
+files stay on the drive as the record of what a past artifact cited. Its use-case
+table is read by its `| Block | Item | Status |` header, and a run stops if the
+file has no such table or more than one — the file's other tables (block counts,
+the unpackaged remainder) are narrative and must not be parsed as use cases. The workbook is read for the
 taxonomy only — the fit glyphs, the examples, the NVIDIA/Oracle service
 columns, the red-team tab and both legend tabs are internal qualification IP
 and are deliberately not extracted. The tracker's `GTM` tab and its hidden
