@@ -91,13 +91,24 @@ footnotes; anything that must be read on a tinted panel uses `6B7076` or darker.
 
 | Role | Face | Fallback if the brand face is absent |
 |---|---|---|
-| Titles | `+mj-lt` (theme major latin = Azurio) | keep the theme reference — never hardcode the family |
+| Cover, titles | `+mj-lt` (theme major latin = Azurio) | keep the theme reference — never hardcode the family |
 | Body, labels, table cells | `Replica LL TT` | Helvetica Neue, Helvetica, Arial, sans-serif |
+| Status marks ● ◐ ○ ●● | `Apple Symbols`, with `a:sym` = `Segoe UI Symbol` | any one face that has all of them |
 | Small keys, numerals | `Roboto Mono` | Menlo, Consolas, monospace |
 
 The faces are **not shipped with this plugin** (licensing). A machine without
 them renders substitutes; the deck file is still correct, because the runs name
 the brand faces and PowerPoint resolves them wherever they are installed.
+
+The reference deck's cover is set entirely in `+mj-lt`; its content slides are
+`Replica LL TT` throughout. Neither brand face carries U+25CF / U+25D0 / U+25CB,
+so a renderer substitutes a *different* face per glyph and they come out at
+visibly different sizes (the owner, 2026-09-22). One symbol face for all of them
+fixes it by construction; `.pptx` has no font table, so the Windows equivalent
+is named on the run as `<a:sym typeface="Segoe UI Symbol"/>` — the counterpart
+of the `altName` the feature-list builder writes into Word's font table. Every
+deck run names its face and its size explicitly, including the running header;
+nothing is left to inherit from a host master.
 
 Sizes that hold up on this master: slide title 24–28 · section label 10.5 bold ·
 card heading 13–15 bold · body 9.5–12 · table values 10.5–11.5 · table glyphs
@@ -115,6 +126,16 @@ not prove that the real font fits, because the renderer substitutes. Any string
 that must stay on one line is checked in the builder, not in the render. When
 the master uppercases a string (titles), measure the uppercase form — lowercase
 under-reads by roughly 15 %.
+
+## Corners
+
+Structure is **square**. In the reference, cards, panels and diagram boxes are
+`roundRect` with adjustments of 4 000–12 000 — a 0.04–0.18 in radius on shapes
+several inches wide, which reads square at slide scale — and only chips and
+vendor badges are real pills (adjustment 50 000). The builders therefore draw
+square rectangles and reserve the pill (`adj = 0.5`) for chips and numeral
+badges, plus the gentle 0.10 the reference gives the proof slide's stat tiles.
+Per-slide counts: `reference-geometry.json`.
 
 ## Table idiom
 

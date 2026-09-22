@@ -1,0 +1,110 @@
+{
+  "_about": [
+    "Measured with python-pptx from the Workforce Optimization sales deck (10 slides,",
+    "13.333 x 7.5 in), the only complete reference deck in the estate. Read-only source;",
+    "nothing here is copied from it but numbers. `reference_slides` is what the file",
+    "actually contains; `deck_slides` is what lint_deck.py holds a built deck to, keyed by",
+    "this anatomy's slide numbers (see references/deck-anatomy.md for the slot mapping).",
+    "Re-measure and rewrite this file if the reference deck changes; never append to it."
+  ],
+  "measured": "2026-09-22",
+  "canvas_in": [13.333, 7.5],
+  "fonts_seen": ["+mj-lt", "Replica LL TT"],
+  "corner_radius": {
+    "_about": [
+      "prstGeom roundRect adjustment values in the reference, as the radius in inches.",
+      "Everything structural sits at 0.04-0.18 in on a shape inches wide: it reads square",
+      "at slide scale. Only chips and vendor badges are real pills (adj 50000)."
+    ],
+    "cards_and_panels_adj": [0.04, 0.05, 0.08, 0.10, 0.12],
+    "pill_adj": 0.5,
+    "note": "The builder draws structure with square corners and reserves the pill for chips and badges."
+  },
+  "reference_slides": {
+    "1": {"role": "cover", "rounded": 0, "pictures": 0, "tables": 0,
+          "fonts": ["+mj-lt"], "sizes": [14.0, 25.0, 44.0],
+          "prst": {"rect": 1}, "shapes": 3},
+    "2": {"role": "use case", "rounded": 6, "pictures": 0, "tables": 0,
+          "fonts": ["Replica LL TT"], "sizes": [9.0, 9.5, 11.5, 12.0, 14.0, 26.0],
+          "prst": {"roundRect": 6, "rect": 10}, "shapes": 18},
+    "3": {"role": "vertical applications", "rounded": 0, "pictures": 4, "tables": 0,
+          "fonts": ["Replica LL TT"], "sizes": [9.0, 11.0, 14.5, 24.0],
+          "prst": {"rect": 28}, "shapes": 30},
+    "4": {"role": "today / tomorrow", "rounded": 0, "pictures": 3, "tables": 0,
+          "fonts": ["Replica LL TT"], "sizes": [9.0, 11.0, 12.5, 13.0, 24.0],
+          "prst": {"rect": 12}, "shapes": 13},
+    "5": {"role": "proof and the seller quadrant", "rounded": 3, "pictures": 1, "tables": 0,
+          "fonts": ["Replica LL TT"],
+          "sizes": [8.0, 8.5, 9.0, 9.5, 11.0, 11.5, 19.0, 23.0],
+          "prst": {"rect": 27, "roundRect": 3}, "shapes": 31},
+    "6": {"role": "technology stack", "rounded": 10, "pictures": 0, "tables": 0,
+          "fonts": ["Replica LL TT"],
+          "sizes": [6.0, 7.5, 8.0, 9.0, 10.0, 10.5, 11.0, 11.5, 12.0, 15.0, 24.0],
+          "prst": {"rect": 13, "roundRect": 10, "straightConnector1": 1}, "shapes": 26},
+    "7": {"role": "architecture", "rounded": 7, "pictures": 0, "tables": 0,
+          "fonts": ["Replica LL TT"], "sizes": [9.0, 10.5, 12.0, 15.0, 24.0],
+          "prst": {"roundRect": 7, "rect": 8, "straightConnector1": 4, "bentConnector3": 1},
+          "shapes": 22},
+    "8": {"role": "service packages (no infra row)", "rounded": 0, "pictures": 0, "tables": 1,
+          "fonts": ["Replica LL TT"],
+          "sizes": [7.0, 9.0, 10.5, 11.0, 11.5, 12.0, 12.5, 18.0, 24.0], "shapes": 4},
+    "9": {"role": "service packages (with infra row)", "rounded": 0, "pictures": 0, "tables": 1,
+          "fonts": ["Replica LL TT"],
+          "sizes": [7.0, 9.0, 10.5, 11.0, 11.5, 12.0, 12.5, 18.0, 24.0], "shapes": 4},
+    "10": {"role": "service packages (detailed)", "rounded": 0, "pictures": 0, "tables": 1,
+           "fonts": ["Replica LL TT"],
+           "sizes": [7.0, 9.0, 10.0, 10.5, 12.0, 12.5, 16.0, 26.0], "shapes": 4}
+  },
+  "cover": {
+    "_about": "Reference slide 1, on the Title-AI photo layout. The base has no dark photo layout, so the cover is drawn on a full-bleed ink ground at the same geometry.",
+    "title_block_in": {"x": 0.55, "y": 2.30, "w": 5.70, "h": 2.35},
+    "title_pt": 44,
+    "one_liner_pt": 25,
+    "lower_line_in": {"x": 0.57, "y": 5.20, "w": 4.60, "h": 0.80},
+    "lower_line_pt": 14,
+    "dropped": "The tier line the reference carried on the lower block ('PROOF OF VALUE · ROLL-OUT · SCALING') — the owner asked for no tier line on the cover."
+  },
+  "vertical_icons": {
+    "_about": "Reference slide 3: one picture per card, centred in the card's blue panel.",
+    "card_in": {"w": 6.00, "h": 2.00},
+    "panel_w_in": 2.245,
+    "icon_in": {"w": 1.06, "h": 1.06},
+    "icons_per_card": 1
+  },
+  "image_slots": {
+    "_about": "Reference slide 4: the two before/after pictures.",
+    "left_in": {"x": 0.42, "y": 4.17, "w": 6.02, "h": 2.548},
+    "right_in": {"x": 6.89, "y": 4.17, "w": 6.02, "h": 2.548}
+  },
+  "table_type": {
+    "_about": "Reference slides 8-10. The builder's floors are set from these.",
+    "header_pt": 12.5,
+    "label_and_scope_pt": 10.5,
+    "price_pt": 11.5,
+    "timeline_pt": 11.0,
+    "glyph_pt": 18.0,
+    "detailed_prose_pt": 10.0,
+    "legend_pt": 9.0
+  },
+  "deck_slides": {
+    "_about": [
+      "Per anatomy slide: the most rounded shapes lint_deck.py accepts. Structure is",
+      "square; the allowance covers the pills (KPI chips, stat tiles, numeral badges,",
+      "vendor badges), so it scales with the spec where the pill count does."
+    ],
+    "1": {"role": "cover", "max_rounded": 0},
+    "2": {"role": "use case", "max_rounded": 4,
+          "note": "up to three KPI chips; the two cards and the anchor strip are square"},
+    "3": {"role": "vertical applications", "max_rounded": 0},
+    "4": {"role": "today / tomorrow", "max_rounded": 0},
+    "5": {"role": "proof", "max_rounded": 9,
+          "note": "three stat tiles plus up to six numbered step badges"},
+    "6": {"role": "why it sells", "max_rounded": 6,
+          "note": "no peer in the reference — it was a quadrant of reference slide 5; the allowance is the four numeral badges plus headroom"},
+    "7": {"role": "solution layers", "max_rounded": 6,
+          "note": "one vendor badge per layer; the ladder panels themselves are square"},
+    "8": {"role": "architecture", "max_rounded": 0},
+    "9": {"role": "service packages", "max_rounded": 0},
+    "10": {"role": "service packages (detailed)", "max_rounded": 0}
+  }
+}

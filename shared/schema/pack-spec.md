@@ -58,6 +58,7 @@ icp:                                      # component 3
   source: user:2026-09-18
 
 verticals:                                # component 5
+  # `icon:` is written by /oracle-packs:visuals when the user picks one — { file, file_white, name, source, licence }, paths relative to the pack folder; absent means the deck draws an empty container
   - name: Industrial equipment service
     framing: { problem: "...", solution: "..." }
     what_matters_here: "..."
@@ -170,6 +171,11 @@ packages:                                 # component 12 — PoV Jumpstart / Int
     - "Net-new OCI GPU consumption on top of the SaaS seat"
     - "Repeatable across similar accounts"
   target_oci_consumption: "..."           # optional; per tier when known
+
+deck:
+  images:                                 # written by /oracle-packs:visuals; each is { file, source, creator, licence, source_url }, file relative to the pack folder. A slot absent = the deck draws an empty container, never a stand-in
+    today: { file: visuals/today-A-....jpg, source: Pexels, creator: <photographer>, licence: Pexels License, source_url: <the page> }
+    tomorrow: { file: visuals/tomorrow-B-....jpg, source: Openverse / rawpixel, creator: <creator>, licence: CC0 1.0, source_url: <the page> }
 
 contacts:                                 # the three addresses: naming-and-clearance.md §3, "Contacts by channel"
   partner_print: { name: <alliances contact>, title: <their title>, email: <the alliances address> }

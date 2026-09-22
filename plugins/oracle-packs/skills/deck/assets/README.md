@@ -5,12 +5,23 @@
 | File | What it is |
 |---|---|
 | `softserve-deck-base.pptx` | 41 KB single-slide SoftServe shell: real master, theme, logo, one layout (`Title-1Column`). The deck is built on this. Never edit it in place — the builder copies it. |
-| `../references/brand-tokens.md` | colours, fonts + fallbacks, geometry constants, the base's layouts, the text-fit rule |
+| `../references/brand-tokens.md` | colours, fonts + fallbacks, geometry constants, corners, the base's layouts, the text-fit rule |
 | `../references/deck-anatomy.md` | the 10-slide anatomy: purpose, components, geometry, word budgets, design rules per slide |
+| `../references/reference-geometry.json` | the reference deck measured — rounded-shape, picture and table counts, fonts and sizes per slide, the cover block, the icon and picture slots, the table type floors. What `lint_deck.py` holds a build to. |
 | `../tools/build_deck.py` | the builder |
+| `../tools/lint_deck.py` | the deck linter — run it before anyone sees the deck |
 | `../tools/deckkit.py` | shared primitives (brand tokens, shapes, spec access, fit estimator) |
 | `../tools/render_probe.sh` | what can render a .pptx on this machine, and how |
 | `../tests/fixture-pack-spec.yaml` | anonymized Workforce optimization spec used to smoke-test both builders |
+| `../tests/test_lint_deck.sh` | builds the fixture, asserts the linter is clean, breaks a copy and asserts it is caught |
+
+**Icons live outside this folder.** The vertical-application icons come from the
+shared icon library at `shared/data/icons/` (`${CLAUDE_PLUGIN_ROOT}/shared/data/icons`,
+falling back to the repo's own `shared/data/icons` in a source checkout) — PNGs
+plus `map.yaml`, which carries each icon's keywords, what it depicts, where it
+came from and its licence. The one-pager and the mini-site listing draw from the
+same library, so an industry looks the same wherever it appears; do not copy
+icons into this skill.
 
 Brand fonts are **not** shipped (licensing). The deck names them; whoever opens
 it in PowerPoint sees them if they have them, and the fit check never depends on
@@ -44,27 +55,45 @@ Useful flags:
 - `--allow-overflow` — exit 0 anyway; for a review build you intend to fix.
 - `--base <pptx>` — build on a different shell.
 
-Smoke test:
+Check it:
 
 ```bash
-python3 tools/build_deck.py tests/fixture-pack-spec.yaml --out /tmp/deck-smoke --fit-report
+python3 tools/lint_deck.py <dir>/<slug>-sales-deck.pptx \
+  --spec <pack-spec.yaml> --channel partner_print
+```
+
+Exit 0 clean · 1 something failed, each finding on its own line · 2 the deck or
+the arguments cannot be read.
+
+Smoke test — build, lint, break, lint again:
+
+```bash
+PY=.venv/bin/python tests/test_lint_deck.sh
 ```
 
 Output: `<dir>/<slug>-sales-deck.pptx`, 10 slides.
 
 ## What "done" means
 
-1. **Fit report clean.** The builder exits non-zero if any box would overflow;
-   0 means every string fits its box on the stand-in metrics plus 6 %.
-2. **Contact sheet reviewed.** Run `tools/render_probe.sh --deck <the deck>`;
+1. **Fit report clean.** The builder exits non-zero if any box would overflow or
+   any detailed-table cell runs past its word budget; 0 means every string fits
+   its box on the stand-in metrics plus 6 %.
+2. **Deck linter clean.** `tools/lint_deck.py` — ten slides, the running header
+   on slides 2–10, no tier line on the cover, brand faces only, corners no
+   rounder than the reference's, an icon on every industry card, the
+   architecture slide naming the pack, the engine's products and a destination
+   with one arrow per source, table type at or above the floor.
+3. **Contact sheet reviewed.** Run `tools/render_probe.sh --deck <the deck>`;
    it reports which renderer exists here and prints the recipe. Render every
    slide, build a contact sheet, and look at it. A fit report is not a render
    and a render is not a fit report — you need both.
-3. **Linter clean.** The shared clearance linter passes: no customer name the
-   channel does not allow, no banned vocabulary, no invented price or tier.
-4. **Builder notes read.** Notes at the end of the report are the ones a report
-   cannot fail on: screenshot slots still empty, a table that had to scale below
-   100 %, a metric set dropped for the channel, a slide that failed to build.
+4. **Clearance linter clean.** `shared/tools/lint_artifact.py`: no customer name
+   the channel does not allow, no banned vocabulary, no invented price or tier.
+5. **Builder notes read.** Notes at the end of the report are the ones a report
+   cannot fail on: a picture slot still empty, an industry that fell back to the
+   neutral icon, a table that could not fit at the type floor, a metric set
+   dropped for the channel, a slide that failed to build. The architecture
+   summary printed after the report is for the owner, not the log.
 
 ## Gotchas
 

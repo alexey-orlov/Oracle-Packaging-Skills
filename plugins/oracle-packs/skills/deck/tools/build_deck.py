@@ -31,13 +31,43 @@ from pptx.dml.color import RGBColor                          # noqa: E402
 from pptx.util import Emu, Pt                                # noqa: E402
 
 from deckkit import (                                        # noqa: E402
-    C, CONTENT_W, DECK_TITLE_BOX, FONT_BODY, FitEntry, FitLog, MARGIN_L,
+    C, CONTENT_W, DECK_TITLE_BOX, FONT_BODY, FONT_TITLE, FitEntry, FitLog, MARGIN_L,
     Spec, SpecError, autofit_paras, autofit_pt, fmt_duration, fmt_price, inch,
     log_box, new_slide, open_base, panel, pick_layout, product_name, rect,
     stacked_height, textbox, wrap_count,
 )
 
 BASE_DEFAULT = _HERE.parent / "assets" / "softserve-deck-base.pptx"
+
+# The shared icon library — plugin copy first, then a source checkout, the same
+# two places deckkit looks for the product catalog.
+ICON_DIRS = [_HERE.parents[up] / "shared" / "data" / "icons" for up in (2, 4)
+             if len(_HERE.parents) > up]
+
+# The running header mirrors the mini-site lockup, so a seller who has seen the
+# site recognises the deck. `deck.running_header` in the spec still overrides.
+DEFAULT_HEADER = "Oracle AI & Data Solutions — {name}"
+HEADER_PT = 9.0                 # measured off the reference deck's header
+
+# The reference deck draws structure with square corners: its cards, panels and
+# diagram boxes carry a 0.04–0.12 in radius on shapes inches wide, which reads
+# square at slide scale. Only chips and badges are real pills (adj 50000). So
+# `rounded` is opt-in here, and PILL is the only radius the deck uses.
+PILL = 0.5
+STAT_TILE_ADJ = 0.10            # the reference's stat tiles, adj 10000
+
+# Neither brand face carries U+25CF / U+25D0 / U+25CB, so a renderer substitutes a
+# different face per glyph and they come out at different sizes (the owner,
+# 2026-09-22). One symbol face for all three fixes it by construction — the same
+# move the feature-list builder makes; `a:sym` names the Windows equivalent,
+# which is the closest a .pptx run gets to Word's fontTable altName.
+SYMBOL_FONT = "Apple Symbols"
+SYMBOL_ALT = "Segoe UI Symbol"
+
+# Type floors on the package tables: the table never shrinks below these, and a
+# table that will not fit at the floor is reported so the wording gets shortened.
+TABLE_FLOOR = {9: 11.0, 10: 10.5}
+DETAILED_CELL_WORDS = 12        # word budget per cell on slide 10
 
 # Vendor → (tint, bar) for the solution-layers ladder, per the R&D monthly deck.
 VENDOR_COLORS = [
@@ -69,9 +99,34 @@ def vendor_colors(vendor: str, i: int) -> tuple[str, str]:
             (C["orange_tint"], C["orange"]), (C["blue_tint_2"], C["blue_light"])][i % 4]
 
 
+def style_header(slide, text: str) -> None:
+    """Set the running header explicitly — face, size, colour, alignment.
+
+    The layout would supply all four, but a run that names nothing inherits
+    whatever the host master happens to define, and the header is the one string
+    on every slide: it is written out.
+    """
+    from pptx.enum.text import PP_ALIGN
+    for ph in slide.placeholders:
+        if ph.placeholder_format.idx != 34:
+            continue
+        tf = ph.text_frame
+        tf.word_wrap = True
+        tf.text = text
+        for p in tf.paragraphs:
+            p.alignment = PP_ALIGN.RIGHT
+            for r in p.runs:
+                r.font.size = Pt(HEADER_PT)
+                r.font.bold = False
+                r.font.name = FONT_BODY
+                r.font.color.rgb = RGBColor.from_string(C["muted"])
+        return
+
+
 def chip(slide, x, y, w, h, text, fill=C["panel_grey"], color=C["blue"], sz=9.5,
          line=None):
-    rect(slide, x, y, w, h, fill=fill, line=line, rounded=True, adj=0.25)
+    """A pill — the one shape the reference deck really rounds (adj 50000)."""
+    rect(slide, x, y, w, h, fill=fill, line=line, rounded=True, adj=PILL)
     textbox(slide, x + 0.08, y, w - 0.16, h,
             [{"t": text, "sz": sz, "b": True, "color": color, "align": "c"}],
             anchor="m")
@@ -80,10 +135,73 @@ def chip(slide, x, y, w, h, text, fill=C["panel_grey"], color=C["blue"], sz=9.5,
 def badge(slide, x, y, d, label, color=C["orange"]):
     """Outlined numeral badge — slide-design rule 8 (no heavy ink fills)."""
     rect(slide, x, y, d, d, fill=C["white"], line=color, line_pt=1.25,
-         rounded=True, adj=0.5)
+         rounded=True, adj=PILL)
     textbox(slide, x, y, d, d,
             [{"t": label, "sz": 9.5, "b": True, "color": color, "align": "c"}],
             anchor="m")
+
+
+# ---------------------------------------------------------------------------
+# the shared icon library
+# ---------------------------------------------------------------------------
+
+_ICON_MAP: dict | None = None
+
+
+def icon_library() -> dict:
+    """{"dir": Path, "fallback": str, "icons": [...]} — empty when unreachable."""
+    global _ICON_MAP
+    if _ICON_MAP is None:
+        _ICON_MAP = {}
+        for d in ICON_DIRS:
+            f = d / "map.yaml"
+            if not f.is_file():
+                continue
+            try:
+                import yaml
+                data = yaml.safe_load(f.read_text(encoding="utf-8")) or {}
+            except Exception:           # a broken library is not a crash
+                continue
+            _ICON_MAP = {"dir": d,
+                         "fallback": str(data.get("fallback") or "generic.png"),
+                         "icons": list(data.get("icons") or [])}
+            break
+    return _ICON_MAP
+
+
+def icon_for(name: str) -> tuple[Path | None, bool]:
+    """(file, matched) for a vertical's name. `matched` is False on the fallback."""
+    lib = icon_library()
+    if not lib:
+        return None, False
+    hay = str(name or "").lower()
+    best, best_len = None, 0
+    for row in lib["icons"]:
+        for kw in (row.get("keywords") or []):
+            k = str(kw).lower().strip()
+            if k and k in hay and len(k) > best_len:
+                best, best_len = row.get("file"), len(k)
+    path = lib["dir"] / str(best or lib["fallback"])
+    if not path.is_file():
+        return None, False
+    return path, bool(best)
+
+
+def place_image(slide, path, x, y, w, h):
+    """Fill the slot with the image, scaled to cover and cropped to the centre."""
+    from PIL import Image
+    with Image.open(path) as im:
+        iw, ih = im.size
+    slot = w / h
+    src = (iw / ih) if ih else slot
+    pic = slide.shapes.add_picture(str(path), inch(x), inch(y), inch(w), inch(h))
+    if src > slot:                       # too wide: trim the sides
+        keep = slot / src
+        pic.crop_left = pic.crop_right = (1 - keep) / 2
+    elif src < slot:                     # too tall: trim top and bottom
+        keep = src / slot
+        pic.crop_top = pic.crop_bottom = (1 - keep) / 2
+    return pic
 
 
 def arrow(slide, x, y, w, h, color=C["blue"], left=False):
@@ -161,38 +279,51 @@ def step_band(slide, y, steps, fit, slide_no, label="HOW IT RUNS"):
 
 
 def slide_01_cover(prs, layout, spec: Spec, fit: FitLog):
+    """The reference cover, rebuilt on the base.
+
+    The reference sets its cover on a dark photo layout the base does not carry,
+    so the ground is drawn; everything above it keeps the reference's own block —
+    a 5.70 in text column at x 0.55, the pack name at 44 pt over the one-liner at
+    25 pt, and one small line low on the slide. The reference used that low line
+    for the three tier names; the owner asked for no tier line on a cover, so it
+    carries the pack's subheading and who the pack is for instead.
+    """
     s = new_slide(prs, layout, title=None, header=None)
     rect(s, 0, 0, 13.34, 7.5, fill=C["ink"])
-    rect(s, 0, 2.05, 0.90, 0.045, fill=C["orange"])
 
-    tiers = " · ".join(t.get("name", "") for t in spec.tiers())
-    textbox(s, 0.55, 1.45, 8.00, 0.28,
-            [{"t": tiers.upper(), "sz": 11.5, "b": True, "color": C["blue_light"]}])
-    fit.add(1, "cover eyebrow", tiers.upper(), 11.5, 8.00, 0.28, bold=True, max_lines=1)
-
+    # The reference sets every run on its cover in the theme's title face; the
+    # content slides use the body face. Both are kept.
+    col_x, col_w = 0.55, 5.70
     name = spec.name()
-    pt = autofit_pt(name, 9.20, 1.05, 44, 30, bold=False, max_lines=2)
-    textbox(s, 0.55, 2.40, 9.20, 1.05,
-            [{"t": name, "sz": pt, "color": C["white"]}])
-    fit.add(1, "cover title", name, pt, 9.20, 1.05, max_lines=2)
+    pt = autofit_pt(name, col_w, 1.55, 44, 28, bold=False, max_lines=2)
+    lines = wrap_count(name, pt, col_w)
+    name_h = max(0.60, lines * pt * 1.22 / 72.0)
+    textbox(s, col_x, 2.30, col_w, name_h,
+            [{"t": name, "sz": pt, "color": C["white"], "font": FONT_TITLE}])
+    fit.add(1, "cover title", name, pt, col_w, name_h, max_lines=2)
+
+    one = spec.get("one_liner.full") or spec.get("one_liner.short") or ""
+    one_y = 2.30 + name_h + 0.14
+    one_h = max(0.40, 5.00 - one_y)
+    opt = autofit_pt(one, col_w, one_h, 25, 15, max_lines=5)
+    textbox(s, col_x, one_y, col_w, one_h,
+            [{"t": one, "sz": opt, "color": "D9E4EC", "font": FONT_TITLE}])
+    fit.add(1, "cover one-liner", one, opt, col_w, one_h, max_lines=5)
 
     sub = spec.subheading()
     if sub:
-        textbox(s, 0.55, 3.52, 9.20, 0.32,
-                [{"t": sub, "sz": 15, "color": C["blue_light"]}])
-        fit.add(1, "cover subheading", sub, 15, 9.20, 0.32, max_lines=1)
-
-    one = spec.get("one_liner.full") or spec.get("one_liner.short") or ""
-    pt = autofit_pt(one, 8.60, 1.20, 18, 13, max_lines=3)
-    textbox(s, 0.55, 4.10, 8.60, 1.20, [{"t": one, "sz": pt, "color": "D9E4EC"}])
-    fit.add(1, "cover one-liner", one, pt, 8.60, 1.20, max_lines=3)
+        spt = autofit_pt(sub, 4.60, 0.30, 14, 10, bold=True, max_lines=1)
+        textbox(s, 0.57, 5.20, 4.60, 0.30,
+                [{"t": sub, "sz": spt, "b": True, "color": C["white"],
+                  "font": FONT_TITLE}])
+        fit.add(1, "cover subheading", sub, spt, 4.60, 0.30, bold=True, max_lines=1)
 
     icp = spec.get("icp.line")
     if icp:
-        textbox(s, 0.55, 5.70, 8.60, 0.50,
+        textbox(s, 0.57, 5.62, col_w, 0.50,
                 [{"t": [("WHO IT IS FOR   ", {"color": C["orange"], "b": True, "sz": 9}),
-                        (icp, {"color": "AEB6BD", "sz": 10})]}])
-        fit.add(1, "cover icp", "WHO IT IS FOR   " + icp, 10, 8.60, 0.50, max_lines=3)
+                        (icp, {"color": "AEB6BD", "sz": 10})], "font": FONT_TITLE}])
+        fit.add(1, "cover icp", "WHO IT IS FOR   " + icp, 10, col_w, 0.50, max_lines=3)
     return s
 
 
@@ -210,14 +341,15 @@ def point_text(point) -> str:
 
 def slide_02_use_case(prs, layout, spec: Spec, fit: FitLog, header: str):
     s = new_slide(prs, layout, title=None, header=header)
+    style_header(s, header)
     content_title(s, "Use case", fit, 2)
 
     ps = spec.get("problem_solution", {}) or {}
     top, h = 1.92, 3.68
     panel(s, MARGIN_L, top, 6.02, h, fill=C["panel_grey"], accent=C["ink_soft"],
-          accent_w=0.10, line=None, rounded=True)
+          accent_w=0.10, line=None)
     panel(s, 6.89, top, 6.02, h, fill=C["blue_tint_2"], accent=C["blue"],
-          accent_w=0.10, line=None, rounded=True)
+          accent_w=0.10, line=None)
 
     textbox(s, 0.77, top + 0.18, 5.40, 0.30,
             [{"t": "PROBLEM", "sz": 14, "b": True, "color": C["ink"]}])
@@ -272,22 +404,35 @@ def slide_02_use_case(prs, layout, spec: Spec, fit: FitLog, header: str):
 
 def slide_03_verticals(prs, layout, spec: Spec, fit: FitLog, header: str):
     s = new_slide(prs, layout, title=None, header=header)
+    style_header(s, header)
     content_title(s, "Vertical applications", fit, 3)
 
     verticals = (spec.get("verticals") or [])[:4]
     if not verticals:
         fit.note("s3: no verticals in the spec — slide built as empty instances")
     cw, ch = 6.00, 2.00
+    icon_d = 1.06                       # the reference's icon, 1.06 x 1.06 in
     xs, ys = [MARGIN_L, 6.72], [2.48, 4.76]
     for i in range(4):
         x, y = xs[i % 2], ys[i // 2]
         v = verticals[i] if i < len(verticals) else None
         rect(s, x, y, cw, ch, fill=C["white"], line=C["hairline_alt"], line_pt=1.0)
         rect(s, x, y, 2.25, ch, fill=C["blue"] if v else C["panel_grey"])
-        textbox(s, x, y, 2.25, ch,
-                [{"t": str(i + 1), "sz": 40, "b": True,
-                  "color": C["white"] if v else C["hairline_alt"], "align": "c"}],
-                anchor="m")
+        name = str((v or {}).get("name", ""))
+        # An industry gets a picture, never a number: the reference puts one icon
+        # in the middle of each card's panel, and the library always resolves —
+        # to the neutral mark when nothing matches, and then we say so.
+        path, matched = icon_for(name) if v else (None, False)
+        if path:
+            place_image(s, path, x + (2.25 - icon_d) / 2, y + (ch - icon_d) / 2,
+                        icon_d, icon_d)
+            if not matched:
+                fit.note(f"s3: no icon matches the industry \"{name}\" — the neutral "
+                         f"mark is in its card; pick one from the icon library or "
+                         f"ask which picture it should carry")
+        elif v:
+            fit.note(f"s3: the icon library is not reachable — \"{name}\" has an "
+                     f"empty panel")
         rect(s, x + 2.25, y, 0.06, ch, fill=C["ink_soft"] if v else C["hairline"])
         if not v:
             continue
@@ -308,7 +453,9 @@ def slide_03_verticals(prs, layout, spec: Spec, fit: FitLog, header: str):
 
 def slide_04_today_tomorrow(prs, layout, spec: Spec, fit: FitLog, header: str):
     s = new_slide(prs, layout, title=None, header=header)
+    style_header(s, header)
     ps = spec.get("problem_solution", {}) or {}
+    images = spec.get("deck.images") or {}
     head = str(ps.get("reframe_question")
                or f"What if the work changed: {ps.get('reframe', 'review, not build')}?")
     pt = autofit_pt(head, 12.00, 0.45, 24, 17, bold=True, max_lines=1)
@@ -325,9 +472,12 @@ def slide_04_today_tomorrow(prs, layout, spec: Spec, fit: FitLog, header: str):
     if vcase:
         textbox(s, 0.43, 2.36, 8.00, 0.26, [{"t": vcase, "sz": 11, "color": C["muted"]}])
 
-    pairs = [("TODAY", C["ink"], str(ps.get("today") or ps.get("problem", "")), MARGIN_L),
-             ("TOMORROW", C["blue"], str(ps.get("tomorrow") or ps.get("solution", "")), 6.88)]
-    for label, fill, body, x in pairs:
+    pairs = [("TODAY", C["ink"], str(ps.get("today") or ps.get("problem", "")),
+              MARGIN_L, "today"),
+             ("TOMORROW", C["blue"], str(ps.get("tomorrow") or ps.get("solution", "")),
+              6.88, "tomorrow")]
+    missing = []
+    for label, fill, body, x, key in pairs:
         rect(s, x, 2.82, 6.02, 0.46, fill=fill)
         textbox(s, x, 2.82, 6.02, 0.46,
                 [{"t": label, "sz": 12.5, "b": True, "color": C["white"], "align": "c"}],
@@ -335,22 +485,36 @@ def slide_04_today_tomorrow(prs, layout, spec: Spec, fit: FitLog, header: str):
         pt = autofit_pt(body, 6.02, 0.92, 11, 8.5, max_lines=6)
         textbox(s, x, 3.38, 6.02, 0.92, [{"t": body, "sz": pt, "color": C["muted"]}])
         fit.add(4, f"{label.lower()} body", body, pt, 6.02, 0.92, max_lines=6)
-        # Screenshot slot — an empty instance of the same container (rule 3),
-        # never a bare gap; the skill drops the real screen in at review.
+        # The two picture slots. When the spec names a file, it fills the slot,
+        # scaled to cover and cropped to the centre. Otherwise the slot stays an
+        # empty instance of the same container (rule 3), never a bare gap, and
+        # the skill asks for the picture before the deck is shown.
+        src = images.get(key)
+        path = Path(str(src)).expanduser() if src else None
+        if path and not path.is_absolute():   # relative to the pack brief's folder
+            path = (getattr(spec, "spec_dir", Path(".")) / path).resolve()
+        if path and path.is_file():
+            place_image(s, path, x, 4.45, 6.02, 2.15)
+            continue
+        if src:
+            fit.note(f"s4: the {key} picture is set to \"{src}\", which is not a "
+                     f"file here — the slot is empty")
+        missing.append(key)
         slot = rect(s, x, 4.45, 6.02, 2.15, fill=C["panel_grey"], line=C["hairline_alt"])
         slot.line.dash_style = MSO_LINE_DASH_STYLE.DASH
-        cap = ("Before: the manual artefact" if label == "TODAY"
-               else "After: the product screen")
         textbox(s, x + 0.20, 4.45, 5.62, 2.15,
-                [{"t": cap, "sz": 9.5, "color": C["muted_light"], "align": "c"}],
-                anchor="m")
-    fit.note("s4: two screenshot slots are empty containers — drop the real "
-             "before/after screens in before review")
+                [{"t": "image to be chosen", "sz": 9.5,
+                  "color": C["muted_light"], "align": "c"}], anchor="m")
+    if missing:
+        fit.note("s4: " + (" and ".join(missing)) + " — the picture slot(s) are "
+                 "still empty; the slide wants the bad current experience on the "
+                 "left and the good future with the solution on the right")
     return s
 
 
 def slide_05_proof(prs, layout, spec: Spec, fit: FitLog, header: str):
     s = new_slide(prs, layout, title=None, header=header)
+    style_header(s, header)
     kpis = spec.kpis()
     headline = spec.get("deck.proof_headline") or (
         f"{spec.proof_word()} on real data at {spec.customer_label()}")
@@ -373,7 +537,8 @@ def slide_05_proof(prs, layout, spec: Spec, fit: FitLog, header: str):
     if show_stats:
         for i, k in enumerate(usable[:3]):
             x = MARGIN_L + i * (cw + gap)
-            rect(s, x, 2.10, cw, 0.80, fill=C["panel_grey"], rounded=True, adj=0.14)
+            rect(s, x, 2.10, cw, 0.80, fill=C["panel_grey"], rounded=True,
+                 adj=STAT_TILE_ADJ)
             fig = str(k.get("figure", ""))
             base = k.get("baseline")
             shown = f"{base} → {fig}" if base and k.get("show_baseline") else fig
@@ -428,6 +593,7 @@ def slide_05_proof(prs, layout, spec: Spec, fit: FitLog, header: str):
 
 def slide_06_why_it_sells(prs, layout, spec: Spec, fit: FitLog, header: str):
     s = new_slide(prs, layout, title=None, header=header)
+    style_header(s, header)
     content_title(s, "Why it sells for your account team", fit, 6,
                   sub=spec.get("deck.seller_lead"))
     claims = [str(c) for c in (spec.get("packages.why_it_sells_for_the_partner") or [])]
@@ -503,6 +669,7 @@ def slide_06_why_it_sells(prs, layout, spec: Spec, fit: FitLog, header: str):
 
 def slide_07_solution_layers(prs, layout, spec: Spec, fit: FitLog, header: str):
     s = new_slide(prs, layout, title=None, header=header)
+    style_header(s, header)
     content_title(s, "Solution layers", fit, 7,
                   sub=spec.get("deck.layers_sub")
                   or "How the pack is layered — from the infrastructure up to the customer's own configuration.")
@@ -520,7 +687,7 @@ def slide_07_solution_layers(prs, layout, spec: Spec, fit: FitLog, header: str):
         y = y0 + i * (rh + gap)
         tint, bar = vendor_colors(str(layer.get("vendor", "")), i)
         panel(s, 0.95, y, 11.45, rh, fill=tint, accent=bar, accent_w=0.06,
-              line=C["hairline"], rounded=True)
+              line=C["hairline"])
         name = str(layer.get("layer", ""))
         npt = autofit_pt(name, 3.10, rh - 0.20, 14, 10, bold=True, max_lines=2)
         textbox(s, 1.30, y, 3.10, rh, [{"t": name, "sz": npt, "b": True, "color": C["ink"]}],
@@ -561,75 +728,260 @@ def arch_label(entry, fallback: str) -> str:
     return str(node.get("data") or node.get("system") or fallback)
 
 
-def slide_08_architecture(prs, layout, spec: Spec, fit: FitLog, header: str):
+def layer_catalog_names(layer: dict) -> list[str]:
+    """The products a stack layer names, by their catalog names.
+
+    `catalog_id` may be one id or a list, and `catalog_ids` is accepted too; the
+    catalog supplies the display name so the slide never shows an id.
+    """
+    raw = layer.get("catalog_ids") or layer.get("catalog_id") or []
+    if isinstance(raw, (str, bytes)):
+        raw = [raw]
+    names = []
+    for cid in raw:
+        nm = product_name(str(cid)).strip()
+        if nm and nm not in names:
+            names.append(nm)
+    return names
+
+
+def arch_model(spec: Spec) -> dict:
+    """The diagram, derived from the pack brief — boxes and arrows, no drawing.
+
+    Naming rules: the app box is the pack's own name "by SoftServe"; the engine
+    box names the products it runs, never the layer's own label; the
+    infrastructure layer keeps its line. Flow rules: one labelled arrow per
+    input; one labelled arrow out to a destination box holding the outputs; and
+    an arrow back to a source only where that same system is also an output.
+    """
+    stack = spec.get("architecture.stack") or []
+    inputs = [arch_node(e) for e in (spec.get("architecture.inputs") or [])]
+    inputs = [n for n in inputs if n.get("system") or n.get("name")]
+    outputs = [arch_node(e) for e in (spec.get("architecture.outputs") or [])]
+    outputs = [n for n in outputs if n.get("system") or n.get("name")]
+
+    app = next((l for l in stack if "app" in str(l.get("layer", "")).lower()), None)
+    eng = next((l for l in stack if "engine" in str(l.get("layer", "")).lower()), None)
+    infra = next((l for l in stack if "infra" in str(l.get("layer", "")).lower()),
+                 stack[-1] if stack else {})
+
+    app_title = f"{spec.name()} by SoftServe"
+    app_sub = ""
+    if app:
+        items = ", ".join(str(i) for i in (app.get("items") or []))
+        app_sub = items or str(app.get("summary") or "")
+
+    eng_names = layer_catalog_names(eng or {})
+    if not eng_names and eng:
+        eng_names = [str(i) for i in (eng.get("items") or []) if str(i).strip()]
+    eng_title = " · ".join(eng_names)
+    eng_sub = str((eng or {}).get("summary") or (eng or {}).get("layer") or "")
+
+    out_systems = []
+    for n in outputs:
+        sysname = str(n.get("system") or n.get("name") or "").strip()
+        if sysname and sysname not in out_systems:
+            out_systems.append(sysname)
+    out_data = []
+    for n in outputs:
+        d = str(n.get("data") or "").strip()
+        if d and d not in out_data:
+            out_data.append(d)
+
+    # Write-back: a source system that is also a destination gets its own arrow
+    # home. Nothing else does — an arrow from the app back to a feed it never
+    # writes to is a claim the pack does not make.
+    writebacks = []
+    for i, n in enumerate(inputs):
+        sysname = str(n.get("system") or n.get("name") or "").strip()
+        match = next((o for o in outputs
+                      if str(o.get("system") or o.get("name") or "").strip().lower()
+                      == sysname.lower()), None)
+        if match:
+            writebacks.append((i, sysname, str(match.get("data") or "the result")))
+
+    return {
+        "sources": [{"system": str(n.get("system") or n.get("name") or ""),
+                     "data": str(n.get("data") or "")} for n in inputs],
+        "app": {"title": app_title, "sub": app_sub},
+        "engine": {"title": eng_title, "sub": eng_sub,
+                   "layer": str((eng or {}).get("layer") or "")},
+        "infrastructure": {
+            "title": str(infra.get("layer", "Infrastructure")),
+            "sub": ", ".join(str(i) for i in (infra.get("items") or []))
+                   or str(infra.get("summary") or "")},
+        "destination": {"systems": out_systems, "data": out_data},
+        "writebacks": writebacks,
+    }
+
+
+def arch_summary(model: dict) -> list[str]:
+    """The diagram in plain words, for the person who has to approve it."""
+    out = ["The architecture picture, in words:"]
+    if model["sources"]:
+        for srcbox in model["sources"]:
+            out.append(f"  - a box on the left for {srcbox['system']}")
+    else:
+        out.append("  - no data sources are named in the pack brief, so the left is empty")
+    out.append(f"  - the middle holds {model['app']['title']}"
+               + (f" — {model['app']['sub']}" if model["app"]["sub"] else ""))
+    if model["engine"]["title"]:
+        out.append(f"  - under it, the engine it runs on: {model['engine']['title']}")
+    if model["infrastructure"]["title"]:
+        out.append(f"  - and the line underneath: {model['infrastructure']['title']}"
+                   + (f" — {model['infrastructure']['sub']}"
+                      if model["infrastructure"]["sub"] else ""))
+    if model["destination"]["systems"]:
+        out.append("  - a box on the right for where the result goes: "
+                   + " · ".join(model["destination"]["systems"]))
+    else:
+        out.append("  - nothing is named as the destination for the result, so there "
+                   "is no box on the right — say where the result should go")
+    out.append("  Arrows:")
+    for srcbox in model["sources"]:
+        out.append(f"    {srcbox['system']} -> the app"
+                   + (f": {srcbox['data']}" if srcbox["data"] else ""))
+    if model["destination"]["systems"]:
+        out.append("    the app -> " + " · ".join(model["destination"]["systems"])
+                   + (": " + " · ".join(model["destination"]["data"])
+                      if model["destination"]["data"] else ""))
+    for _, sysname, data in model["writebacks"]:
+        out.append(f"    the app -> {sysname}: {data}  (written back into the "
+                   f"system it came from)")
+    return out
+
+
+def slide_08_architecture(prs, layout, spec: Spec, fit: FitLog, header: str,
+                          model: dict | None = None):
     s = new_slide(prs, layout, title=None, header=header)
+    style_header(s, header)
     content_title(s, "Architecture", fit, 8,
                   sub=spec.get("deck.architecture_sub")
                   or "Reference architecture for the pack implementation.")
-    inputs = spec.get("architecture.inputs") or []
-    outputs = spec.get("architecture.outputs") or []
-    stack = spec.get("architecture.stack") or []
+    m = model or arch_model(spec)
 
-    # left: sources
-    top, gap = 2.70, 0.30
-    n = max(1, min(len(inputs), 3))
-    bh = (3.10 - gap * (n - 1)) / n
-    for i in range(n):
-        src = arch_node(inputs[i]) if i < len(inputs) else {}
-        y = top + i * (bh + gap)
-        rect(s, 0.55, y, 2.95, bh, fill=C["blue"] if src else C["panel_grey"],
-             rounded=True, adj=0.10)
-        title = str(src.get("system") or src.get("name") or "Additional data sources")
-        data = str(src.get("data") or "")
-        tpt = autofit_pt(title, 2.65, 0.40, 13.5, 9, bold=True, max_lines=2)
-        paras = [{"t": title, "sz": tpt, "b": True, "color": C["white"], "align": "c"}]
-        if data:
-            paras.append({"t": data, "sz": 9.5, "color": C["white"], "align": "c",
-                          "space_before": 3})
-        paras = autofit_paras(paras, 2.65, bh - 0.16, default_sz=tpt)
-        textbox(s, 0.70, y, 2.65, bh, paras, anchor="m")
-        log_box(fit, 8, f"source {i+1}", 0.70, y, 2.65, bh - 0.16, paras, tpt)
+    # Three columns across the content band, reading left to right: where the
+    # data comes from, what runs, where the result goes. The two gaps are the
+    # arrow lanes.
+    band_top, band_bot = 2.62, 6.28
+    src_x, src_w = MARGIN_L, 2.55
+    lane1_x, lane1_w = 3.06, 1.12
+    con_x, con_w = 4.18, 5.02
+    lane2_x, lane2_w = 9.29, 1.12
+    dst_x, dst_w = 10.41, 2.50
 
-    # right: the platform container
-    cx, cy, cw, ch = 5.36, 2.55, 7.31, 3.70
-    infra = next((l for l in stack if "infra" in str(l.get("layer", "")).lower()),
-                 stack[-1] if stack else {})
-    rect(s, cx, cy, cw, ch, fill=C["white"], line=C["hairline_alt"], line_pt=1.5,
-         rounded=True, adj=0.04)
-    app = next((l for l in stack if "app" in str(l.get("layer", "")).lower()), None)
-    eng = next((l for l in stack if "engine" in str(l.get("layer", "")).lower()), None)
-    for j, (layer, fill, fg) in enumerate([(app, C["blue"], C["white"]),
-                                           (eng, C["panel_grey"], C["ink_soft"])]):
-        if not layer:
+    # --- the container: the app, the engine under it, the infrastructure line
+    cy, chh = band_top, band_bot - band_top
+    rect(s, con_x, cy, con_w, chh, fill=C["white"], line=C["hairline_alt"], line_pt=1.5)
+    box_x, box_w = con_x + 0.30, con_w - 0.60
+    app_y, eng_y, box_h = cy + 0.40, cy + 1.62, 0.98
+    for label, spec_box, fill, fg, y in [
+            ("app", m["app"], C["blue"], C["white"], app_y),
+            ("engine", m["engine"], C["panel_grey"], C["ink_soft"], eng_y)]:
+        if not spec_box["title"]:
             continue
-        y = cy + 0.42 + j * 1.15
-        rect(s, cx + 0.42, y, cw - 0.84, 0.92, fill=fill, rounded=True, adj=0.10)
-        nm = str(layer.get("layer", ""))
-        items = ", ".join(str(i) for i in (layer.get("items") or []))
-        body = str(layer.get("summary") or items)
-        paras = [{"t": nm, "sz": 14.5, "b": True, "color": fg, "align": "c"},
-                 {"t": body, "sz": 10, "color": fg, "align": "c", "space_before": 2}]
-        paras = autofit_paras(paras, cw - 1.20, 0.80, default_sz=14.5)
-        textbox(s, cx + 0.60, y, cw - 1.20, 0.92, paras, anchor="m")
-        log_box(fit, 8, f"platform box {j+1}", cx + 0.60, y, cw - 1.20, 0.80, paras, 14.5)
-    infra_name = str(infra.get("layer", "Infrastructure"))
-    infra_items = ", ".join(str(i) for i in (infra.get("items") or []))
-    paras = [{"t": infra_name, "sz": 14, "b": True, "color": C["ink"]},
-             {"t": infra_items, "sz": 10.5, "color": C["muted"], "space_before": 2}]
-    paras = autofit_paras(paras, cw - 0.84, 0.75, default_sz=14)
-    textbox(s, cx + 0.42, cy + 2.78, cw - 0.84, 0.75, paras)
-    log_box(fit, 8, "infra caption", cx + 0.42, cy + 2.78, cw - 0.84, 0.75, paras, 14)
+        rect(s, box_x, y, box_w, box_h, fill=fill)
+        tpt = autofit_pt(spec_box["title"], box_w - 0.36, 0.42, 14.5, 10.5,
+                         bold=True, max_lines=2)
+        paras = [{"t": spec_box["title"], "sz": tpt, "b": True, "color": fg,
+                  "align": "c"}]
+        if spec_box["sub"]:
+            paras.append({"t": spec_box["sub"], "sz": 10, "color": fg, "align": "c",
+                          "space_before": 2})
+        paras = autofit_paras(paras, box_w - 0.36, box_h - 0.14, default_sz=tpt)
+        textbox(s, box_x + 0.18, y, box_w - 0.36, box_h, paras, anchor="m")
+        log_box(fit, 8, f"{label} box", box_x + 0.18, y, box_w - 0.36,
+                box_h - 0.14, paras, tpt)
+    infra_paras = [{"t": m["infrastructure"]["title"], "sz": 14, "b": True,
+                    "color": C["ink"]}]
+    if m["infrastructure"]["sub"]:
+        infra_paras.append({"t": m["infrastructure"]["sub"], "sz": 10.5,
+                            "color": C["muted"], "space_before": 2})
+    infra_paras = autofit_paras(infra_paras, box_w, 0.80, default_sz=14)
+    textbox(s, box_x, cy + 2.78, box_w, 0.80, infra_paras)
+    log_box(fit, 8, "infrastructure line", box_x, cy + 2.78, box_w, 0.80,
+            infra_paras, 14)
 
-    # arrows in / out, each labelled (shape semantics, rule 7)
-    arrow(s, 3.62, 3.10, 1.60, 0.11, color=C["blue"])
-    textbox(s, 3.55, 2.66, 1.76, 0.40,
-            [{"t": arch_label(inputs[0], "inputs") if inputs else "inputs",
-              "sz": 8.5, "color": C["muted"], "align": "c"}], anchor="b")
-    arrow(s, 3.62, 3.72, 1.60, 0.11, color=C["blue_light"], left=True)
-    out_lbl = arch_label(outputs[0], "outputs") if outputs else "outputs"
-    textbox(s, 3.55, 3.88, 1.76, 0.46,
-            [{"t": out_lbl, "sz": 8.5, "color": C["muted"], "align": "c"}])
-    fit.add(8, "output arrow label", out_lbl, 8.5, 1.76, 0.46, max_lines=3)
+    # --- the source boxes, one per input, and their arrows in
+    sources = m["sources"][:3]
+    n = max(1, len(sources))
+    gap = 0.30
+    bh = (chh - gap * (n - 1)) / n
+    lanes = []                                  # (y of this source's centre)
+    for i in range(n):
+        srcbox = sources[i] if i < len(sources) else {"system": "", "data": ""}
+        y = band_top + i * (bh + gap)
+        rect(s, src_x, y, src_w, bh, fill=C["blue"] if srcbox["system"] else C["panel_grey"])
+        if not srcbox["system"]:
+            textbox(s, src_x + 0.16, y, src_w - 0.32, bh,
+                    [{"t": "data source to be named", "sz": 10,
+                      "color": C["muted_light"], "align": "c"}], anchor="m")
+            lanes.append(y + bh / 2)
+            continue
+        tpt = autofit_pt(srcbox["system"], src_w - 0.32, bh - 0.20, 13.5, 9.5,
+                         bold=True, max_lines=4)
+        paras = [{"t": srcbox["system"], "sz": tpt, "b": True, "color": C["white"],
+                  "align": "c"}]
+        textbox(s, src_x + 0.16, y, src_w - 0.32, bh, paras, anchor="m")
+        log_box(fit, 8, f"source box {i+1}", src_x + 0.16, y, src_w - 0.32,
+                bh - 0.20, paras, tpt)
+        lanes.append(y + bh / 2)
+
+    def arrow_label(x, y, w, text, key, below=False, h=0.44, max_lines=4):
+        ly = y + 0.10 if below else y - h - 0.06
+        textbox(s, x, ly, w, h,
+                [{"t": text, "sz": 8.5, "color": C["muted"], "align": "c"}],
+                anchor="t" if below else "b")
+        fit.add(8, key, text, 8.5, w, h, max_lines=max_lines)
+
+    wb_index = {i: (sysname, data) for i, sysname, data in m["writebacks"]}
+    for i, srcbox in enumerate(sources):
+        if not srcbox["system"]:
+            continue
+        cy_lane = lanes[i]
+        # Every input gets its own labelled arrow into the app.
+        ay = cy_lane - 0.05 if i in wb_index else cy_lane - 0.055
+        arrow(s, lane1_x, ay, lane1_w, 0.11, color=C["blue"])
+        arrow_label(lane1_x, ay, lane1_w,
+                    srcbox["data"] or "data in", f"arrow in {i+1}",
+                    h=max(0.44, min(0.78, bh / 2 - 0.06)), max_lines=6)
+        if i in wb_index:
+            # ...and one back, only because this system is also a destination.
+            _, data = wb_index[i]
+            by = cy_lane + 0.42
+            arrow(s, lane1_x, by, lane1_w, 0.11, color=C["blue_light"], left=True)
+            arrow_label(lane1_x, by + 0.11, lane1_w, data,
+                        f"write-back arrow {i+1}", below=True)
+
+    # --- the destination box and the arrow out
+    dst = m["destination"]
+    dh = 1.70
+    dy = max(band_top, app_y + box_h / 2 - dh / 2)   # level with the app box
+    if dst["systems"]:
+        # Same style as the source boxes: the systems around the pack are one
+        # kind of thing, whichever direction the data runs.
+        rect(s, dst_x, dy, dst_w, dh, fill=C["blue"])
+        text = " · ".join(dst["systems"])
+        tpt = autofit_pt(text, dst_w - 0.32, dh - 0.20, 13.5, 9.5, bold=True,
+                         max_lines=6)
+        paras = [{"t": text, "sz": tpt, "b": True, "color": C["white"], "align": "c"}]
+        textbox(s, dst_x + 0.16, dy, dst_w - 0.32, dh, paras, anchor="m")
+        log_box(fit, 8, "destination box", dst_x + 0.16, dy, dst_w - 0.32,
+                dh - 0.20, paras, tpt)
+        ay = app_y + box_h / 2 - 0.055
+        arrow(s, lane2_x, ay, lane2_w, 0.11, color=C["blue"])
+        arrow_label(lane2_x, ay, lane2_w,
+                    " · ".join(dst["data"]) or "the result", "arrow out",
+                    h=max(0.44, ay - band_top - 0.08), max_lines=6)
+    else:
+        slot = rect(s, dst_x, dy, dst_w, dh, fill=C["panel_grey"],
+                    line=C["hairline_alt"])
+        slot.line.dash_style = MSO_LINE_DASH_STYLE.DASH
+        textbox(s, dst_x + 0.16, dy, dst_w - 0.32, dh,
+                [{"t": "destination to be named", "sz": 10,
+                  "color": C["muted_light"], "align": "c"}], anchor="m")
+        fit.note("s8: the pack brief names nothing the result is written to, so the "
+                 "box on the right is empty — say which systems receive it")
 
     tiers = {t.get("id"): t.get("name", "") for t in spec.tiers()}
     notes = []
@@ -637,10 +989,10 @@ def slide_08_architecture(prs, layout, spec: Spec, fit: FitLog, header: str):
         integ = p.get("integration") or {}
         if integ:
             bits = [f"{tiers.get(k, k)}: {v}" for k, v in integ.items() if v]
-            notes.append(f"{p.get('name') or p.get('id')} — " + " · ".join(bits))
+            notes.append(f"{product_name(p)} — " + " · ".join(bits))
     if notes:
         footnote(s, "Integration by tier — " + "   |   ".join(notes), fit, 8,
-                 y=6.55, sz=8.5)
+                 y=6.48, sz=8.5)
     return s
 
 
@@ -673,8 +1025,30 @@ def _style_table(shape) -> None:
         tblPr.append(el)
 
 
+def _set_sym(run, typeface: str) -> None:
+    """Name the symbol face on the run, the .pptx counterpart of Word's altName.
+
+    `a:latin` carries Apple Symbols; `a:sym` names the face a Windows renderer
+    should reach for, so the three status glyphs still come from ONE face there.
+    """
+    from pptx.oxml.ns import qn
+    rPr = run._r.get_or_add_rPr()
+    for tag in (qn("a:sym"),):
+        for el in rPr.findall(tag):
+            rPr.remove(el)
+    el = rPr.makeelement(qn("a:sym"), {"typeface": typeface})
+    rPr.append(el)
+
+
+def cell_text(value) -> str:
+    """A cell is a string, or a (glyph, prose) pair set in two faces."""
+    if isinstance(value, tuple):
+        return "  ".join(x for x in value if x)
+    return str(value or "")
+
+
 def _cell(cell, text, sz, bold=False, color=C["ink"], fill=C["white"],
-          align="l", font=FONT_BODY):
+          align="l", font=FONT_BODY, sym=None):
     from pptx.enum.text import PP_ALIGN
     cell.fill.solid()
     cell.fill.fore_color.rgb = RGBColor.from_string(fill)
@@ -686,12 +1060,22 @@ def _cell(cell, text, sz, bold=False, color=C["ink"], fill=C["white"],
     p = tf.paragraphs[0]
     p.alignment = {"l": PP_ALIGN.LEFT, "c": PP_ALIGN.CENTER,
                    "r": PP_ALIGN.RIGHT}[align]
-    r = p.add_run()
-    r.text = str(text)
-    r.font.size = Pt(sz)
-    r.font.bold = bold
-    r.font.name = font
-    r.font.color.rgb = RGBColor.from_string(color)
+    # (glyph, prose) → two runs, the glyph in the symbol face; everything else is
+    # one run. Either way every run names its face and its size explicitly.
+    parts = ([(text[0], font, sym)] + ([(text[1], FONT_BODY, None)] if text[1] else [])
+             if isinstance(text, tuple)
+             else [(str(text), font, sym)])
+    first = True
+    for body, face, symface in parts:
+        r = p.add_run()
+        r.text = ("" if first else "  ") + str(body)
+        first = False
+        r.font.size = Pt(sz)
+        r.font.bold = bold
+        r.font.name = face
+        r.font.color.rgb = RGBColor.from_string(color)
+        if symface:
+            _set_sym(r, symface)
 
 
 def _package_rows(spec: Spec, detailed: bool, with_infra: bool):
@@ -701,7 +1085,7 @@ def _package_rows(spec: Spec, detailed: bool, with_infra: bool):
     rows.append(("Package scope",
                  [str(t.get("scope_line") or (t.get("what_you_get") or [""])[0] or "")
                   for t in tiers],
-                 {"sz": 10.0, "bold": True}))
+                 {"sz": 10.5 if detailed else 11.0, "bold": True}))
     if not detailed:
         svc, foot_s = [], False
         for t in tiers:
@@ -728,11 +1112,15 @@ def _package_rows(spec: Spec, detailed: bool, with_infra: bool):
                 tid = t.get("id")
                 prose = str(entry.get(tid, "") or "").strip()
                 g = _glyph(entry, tid)
-                cells.append(g if g == GLYPH_NONE or not prose else f"{g}  {prose}")
-            rows.append((area, cells, {"sz": 9.0, "bold": False, "align": "l"}))
+                # (glyph, prose): the glyph is set in the symbol face, the prose
+                # in the body face, so the three status marks stay one size.
+                cells.append((g, "" if g == GLYPH_NONE else prose))
+            rows.append((area, cells, {"sz": 10.5, "bold": False, "align": "l",
+                                       "glyph_prose": True}))
         else:
             rows.append((area, [_glyph(entry, t.get("id")) for t in tiers],
-                         {"sz": 15.0, "bold": True, "align": "c", "glyph": True}))
+                         {"sz": 18.0, "bold": True, "align": "c", "glyph": True,
+                          "label_sz": 11.0}))
     return rows
 
 
@@ -745,32 +1133,80 @@ def _build_table(s, spec: Spec, fit: FitLog, slide_no: int, detailed: bool,
     total_w = sum(colw)
     band = bottom - top
 
+    floor = TABLE_FLOOR.get(slide_no, 10.0)
+
+    def row_size(opt: dict, scale: float, label_col: bool = False) -> float:
+        """Point size for a cell, never below the slide's floor.
+
+        The glyphs are the exception: they are a pictogram at 18 pt, and shrinking
+        them is not a legibility problem. Everything the reader has to read stops
+        at the floor, and the table reports rather than going smaller.
+        """
+        if opt.get("header"):
+            base = 12.5
+        elif label_col:
+            base = opt.get("label_sz", opt.get("sz", 10.0))
+        else:
+            base = opt.get("sz", 10.0)
+        scaled = base * scale
+        if opt.get("glyph") and not label_col:
+            return max(scaled, floor)
+        return max(scaled, floor)
+
     def measure(scale: float) -> list[float]:
         heights = []
-        for i, (label, cells, opt) in enumerate(rows):
-            sz = (12.5 if opt.get("header") else opt.get("sz", 10.0)) * scale
+        for label, cells, opt in rows:
             need = 0.26
             for ci, txt in enumerate([label] + list(cells)):
-                if not txt:
+                body = cell_text(txt)
+                if not body:
                     continue
                 w = colw[ci] - 0.26
-                csz = sz if ci or not opt.get("header") else sz
-                lines = wrap_count(str(txt), csz, w, bool(opt.get("bold")))
+                csz = row_size(opt, scale, label_col=(ci == 0))
+                lines = wrap_count(body, csz, w, bool(opt.get("bold")))
                 need = max(need, lines * csz * 1.22 / 72.0 + 0.13)
             heights.append(max(0.33, need))
         return heights
 
+    # Shrink only until the floor bites; below that the wording is what gives.
     scale = 1.0
     heights = measure(scale)
-    while sum(heights) > band and scale > 0.80:
-        scale = round(scale - 0.04, 2)
+    while sum(heights) > band and scale > 0.70:
+        nxt = round(scale - 0.04, 2)
+        if measure(nxt) == heights:          # every size is already on the floor
+            break
+        scale = nxt
         heights = measure(scale)
     if sum(heights) > band:
-        fit.note(f"s{slide_no}: package table needs {sum(heights):.2f} in of "
-                 f"{band:.2f} in even at {int(scale*100)}% type — cut rows or wording")
+        fit.note(f"s{slide_no}: the packages table needs {sum(heights):.2f} in of the "
+                 f"{band:.2f} in it has, with the type already at its smallest "
+                 f"readable size — shorten the wording or drop a row")
         fit.entries.append(FitEntry(
-            slide_no, "package table", "(whole table)", 10 * scale, False,
+            slide_no, "packages table", "(whole table)", floor, False,
             total_w, band, need_h=sum(heights), lines=len(rows)))
+    elif sum(heights) < band - 0.02:
+        # Rule 1: a table half the height of its band is a half-empty slide. The
+        # type stays at or above the floor and the rows grow into the band.
+        grow = band / sum(heights)
+        heights = [h * min(grow, 1.9) for h in heights]
+
+    # Word budget on the detailed table: a cell a seller reads out loud, not a
+    # paragraph. Over budget is an overflow the wording fixes, never the type.
+    if detailed:
+        for ri, (label, cells, opt) in enumerate(rows):
+            if opt.get("header"):
+                continue
+            for ci, txt in enumerate(cells):
+                # the status mark is not a word the reader reads
+                body = (txt[1] if isinstance(txt, tuple) else cell_text(txt)).strip()
+                words = len(body.split())
+                if words > DETAILED_CELL_WORDS:
+                    fit.entries.append(FitEntry(
+                        slide_no, f"cell «{label[:24]}», column {ci + 1}",
+                        f"{words} words, more than the {DETAILED_CELL_WORDS} a cell "
+                        f"on this table carries: {body}",
+                        row_size(opt, scale), False, colw[ci + 1] - 0.26,
+                        heights[ri], need_h=heights[ri] * 2, lines=words))
 
     shape = s.shapes.add_table(len(rows), ncol, inch(MARGIN_L), inch(top),
                                inch(total_w), inch(sum(heights)))
@@ -780,7 +1216,7 @@ def _build_table(s, spec: Spec, fit: FitLog, slide_no: int, detailed: bool,
         tbl.columns[ci].width = Emu(inch(w))
     for ri, ((label, cells, opt), h) in enumerate(zip(rows, heights)):
         tbl.rows[ri].height = Emu(inch(h))
-        sz = (12.5 if opt.get("header") else opt.get("sz", 10.0)) * scale
+        sz = row_size(opt, scale)
         if opt.get("header"):
             _cell(tbl.cell(ri, 0), "", sz, fill=C["ink"])
             for ci, txt in enumerate(cells):
@@ -788,41 +1224,53 @@ def _build_table(s, spec: Spec, fit: FitLog, slide_no: int, detailed: bool,
                       fill=TIER_HEADER_FILL[min(ci, len(TIER_HEADER_FILL) - 1)],
                       align="c")
             continue
-        _cell(tbl.cell(ri, 0), label, sz * 0.86 if opt.get("glyph") else sz,
+        _cell(tbl.cell(ri, 0), label, row_size(opt, scale, label_col=True),
               bold=True, color=C["ink"], fill=C["white"])
+        symbolic = bool(opt.get("glyph") or opt.get("glyph_prose"))
         for ci, txt in enumerate(cells):
             _cell(tbl.cell(ri, ci + 1), txt, sz,
                   bold=bool(opt.get("bold")),
-                  color=C["ink"] if txt != GLYPH_NONE else C["muted_light"],
-                  fill=C["white"], align=opt.get("align", "l"))
+                  color=C["ink"] if cell_text(txt) != GLYPH_NONE else C["muted_light"],
+                  fill=C["white"], align=opt.get("align", "l"),
+                  font=SYMBOL_FONT if symbolic else FONT_BODY,
+                  sym=SYMBOL_ALT if symbolic else None)
     return sum(heights), scale
+
+
+def glyph_legend(slide, y, fit, slide_no, tail: str = "", sz: float = 8.5):
+    """The status key. The three marks come from the symbol face, like the cells."""
+    g = {"font": SYMBOL_FONT, "color": C["muted_light"], "sz": sz}
+    parts = [("◐", g), (" partial   ", {}), ("●", g), (" included   ", {}),
+             ("●●", g), (" multi-region / advanced   ", {}),
+             (GLYPH_NONE, g), (" not in this tier", {})]
+    if tail:
+        parts.append(("   " + tail, {}))
+    textbox(slide, MARGIN_L, y, CONTENT_W, 0.30,
+            [{"t": parts, "sz": sz, "color": C["muted_light"]}])
+    fit.add(slide_no, "status key", "".join(t for t, _ in parts), sz,
+            CONTENT_W, 0.30, max_lines=2)
 
 
 def slide_09_packages(prs, layout, spec: Spec, fit: FitLog, header: str):
     s = new_slide(prs, layout, title=None, header=header)
+    style_header(s, header)
     content_title(s, "Service packages", fit, 9)
     used, scale = _build_table(s, spec, fit, 9, detailed=False, with_infra=True,
                                top=1.98, bottom=6.58)
-    legend = ("◐ partial   ● included   ●● multi-region / advanced"
-              "   — not in this tier")
     star = any(fmt_price(t.get("services_price"))[1]
                or fmt_price(t.get("infra_price_monthly"))[1] for t in spec.tiers())
     note = "* Indicative; depends on usage and rule-set complexity." if star else ""
-    footnote(s, legend + ("   " + note if note else ""), fit, 9, y=6.66, sz=8.5)
-    if scale < 1.0:
-        fit.note(f"s9: table type scaled to {int(scale*100)}% to fit the band")
+    glyph_legend(s, 6.66, fit, 9, tail=note)
     return s
 
 
 def slide_10_packages_detailed(prs, layout, spec: Spec, fit: FitLog, header: str):
     s = new_slide(prs, layout, title=None, header=header)
+    style_header(s, header)
     content_title(s, "Service packages (detailed)", fit, 10)
     used, scale = _build_table(s, spec, fit, 10, detailed=True, with_infra=False,
                                top=2.05, bottom=6.62)
-    footnote(s, "◐ partial   ● included   ●● multi-region / advanced"
-                "   — not in this tier", fit, 10, y=6.70, sz=8.5)
-    if scale < 1.0:
-        fit.note(f"s10: table type scaled to {int(scale*100)}% to fit the band")
+    glyph_legend(s, 6.70, fit, 10)
     return s
 
 
@@ -842,15 +1290,18 @@ BUILDERS = [
 ]
 
 
-def build(spec: Spec, base: Path, out_dir: Path, fit: FitLog) -> Path:
+def build(spec: Spec, base: Path, out_dir: Path, fit: FitLog) -> tuple[Path, dict, str]:
     prs = open_base(base)
     layout = pick_layout(prs, "ShortTitle-Empty", "Title-1Column")
-    header_tpl = spec.get("deck.running_header") or "OCI AI Accelerators — {name}"
+    header_tpl = spec.get("deck.running_header") or DEFAULT_HEADER
     header = header_tpl.format(name=spec.name())
+    model = arch_model(spec)
     for i, (label, fn) in enumerate(BUILDERS, 1):
         try:
             if i == 1:
                 fn(prs, layout, spec, fit)
+            elif i == 8:
+                fn(prs, layout, spec, fit, header, model)
             else:
                 fn(prs, layout, spec, fit, header)
         except SpecError:
@@ -861,7 +1312,7 @@ def build(spec: Spec, base: Path, out_dir: Path, fit: FitLog) -> Path:
     slug = spec.get("meta.slug", "pack")
     out = out_dir / f"{slug}-sales-deck.pptx"
     prs.save(str(out))
-    return out
+    return out, model, header
 
 
 def main(argv=None) -> int:
@@ -888,15 +1339,20 @@ def main(argv=None) -> int:
     except SpecError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
+    spec.spec_dir = Path(args.spec).resolve().parent   # picture paths hang off it
     fit = FitLog()
     try:
-        out = build(spec, Path(args.base), Path(args.out), fit)
+        out, model, header = build(spec, Path(args.base), Path(args.out), fit)
     except SpecError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
 
     print(f"built {out}  ({len(BUILDERS)} slides, channel={args.channel})")
+    print(f"running header on slides 2-10: {header}")
     print(fit.report(verbose=args.fit_report))
+    print("")
+    for line in arch_summary(model):
+        print(line)
     bad = fit.problems()
     if bad and not args.allow_overflow:
         return 1

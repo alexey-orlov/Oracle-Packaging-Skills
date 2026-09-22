@@ -299,8 +299,7 @@ packages:
       name: PoV Jumpstart
       size_tag: S
       scope_line: >-
-        Prove the KPI gains on the customer's own data and rules; manual imports,
-        limited rule set.
+        Prove the KPI gains on the customer's own data and rules.
       duration_weeks: { target: 6, min: 4, max: 8, hard_cap: 10 }
       services_price: { value: 90000, currency: EUR, status: confirmed }
       infra_price_monthly: { value: 2000, currency: EUR, status: indicative }
@@ -312,8 +311,7 @@ packages:
       name: Integration
       size_tag: M
       scope_line: >-
-        Full setup and integration, live at one location: no manual work,
-        embedded in the dispatch workflow.
+        Live at one location, embedded in the dispatch workflow.
       duration_weeks: { min: 12, max: 20 }
       services_price: { range: [300000, 500000], currency: EUR, status: indicative }
       infra_price_monthly: { value: 25000, currency: EUR, status: indicative }
@@ -329,7 +327,7 @@ packages:
   capability_handling:
     - area: Optimization rules & guardrails
       pov: Foundational allocation with the recurring constraints — zones, skills, planned absences
-      integration: Advanced allocation with the full operational complexity — urgent jobs, crews, SLAs, parts coupling
+      integration: Full operational complexity — urgent jobs, crews, SLAs, parts coupling
       scaling: Multiple region-specific optimization-rule configurations
     - area: Re-optimization & feedback loop
       pov: ""
@@ -346,11 +344,11 @@ packages:
       scaling: Multiple region-specific integrations
     - area: Additional data sources & BI
       pov: ""
-      integration: Up to five typical integrations — booking, parts inventory, HR/WFM, forecasting, BI
+      integration: Up to five integrations — booking, parts, HR/WFM, forecasting, BI
       scaling: Multiple region-specific integration landscapes
     - area: Deployment
       pov: Sandboxed
-      integration: Enterprise-integrated — dedicated landing zone, IAM, observability
+      integration: Enterprise-integrated — landing zone, IAM, observability
       scaling: Enterprise-integrated, multi-zone
   why_it_sells_for_the_partner:
     - "A natural field-service cross-sell — the pack attaches to an application the account already runs"
@@ -376,7 +374,6 @@ contacts:
     email: RnDrequest@softserveinc.com
 
 deck:
-  running_header: OCI AI Accelerators — {name}
   vertical_case: "Vertical case: residential appliance & white-goods repair"
   seller_lead: What the pack gives an account exec that a custom project does not.
   cta: Ready to test the fit in one of your accounts?

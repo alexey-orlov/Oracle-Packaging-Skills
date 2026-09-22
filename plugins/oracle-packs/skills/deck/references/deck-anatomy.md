@@ -36,11 +36,27 @@ table, not three drafts of it.
 
 ## Standing furniture
 
-Slides 2–10 carry the running header (`OCI AI Accelerators — <pack name>`,
-9 pt, `6B7076`, right-aligned at 6.79, 0.31) and the slide-number placeholder;
-the cover carries neither. Content titles sit in the 0.39 / 1.40 / 11.80 × 0.95
-box, uppercased, 24–26 pt bold ink, **anchored to the top of that box** — anchor
-it to the middle and the first content band at y 1.92 collides with it.
+Slides 2–10 carry the running header — **`Oracle AI & Data Solutions — <pack
+name>`**, the same lockup as the mini-site, so a seller who has seen the site
+recognises the deck — set explicitly at 9 pt `Replica LL TT`, `6B7076`,
+right-aligned in the header placeholder at 6.79, 0.31. `deck.running_header`
+overrides the wording; the face, size, colour and alignment are written out on
+every slide rather than inherited. The cover carries no header and no page
+number. Content titles sit in the 0.39 / 1.40 / 11.80 × 0.95 box, uppercased,
+24–26 pt bold ink, **anchored to the top of that box** — anchor it to the middle
+and the first content band at y 1.92 collides with it.
+
+## Corners
+
+The reference draws structure **square**. Its cards, panels and diagram boxes
+are `roundRect` with adjustments of 4 000–12 000 — a 0.04–0.18 in radius on
+shapes several inches wide, which reads square at slide scale. The only real
+pills are its KPI chips and vendor badges (adjustment 50 000). So in the
+builder `rounded` is opt-in and only three things take it: chips, numeral
+badges, and the proof slide's stat tiles (the reference rounds those, gently).
+Cards, panels, source and platform boxes, the architecture container and the
+package tables are square. The per-slide counts the linter holds the deck to
+live in `reference-geometry.json`.
 
 Word budgets below are computed with the same estimator the builder uses
 (Helvetica-metric stand-in, +6 % safety, 1.22 line factor) and stated as the
@@ -51,25 +67,36 @@ of the maximum; a box filled to the brim reads as a wall.
 
 ## 1 — Cover
 
-**Purpose.** Name the pack, say the job it does, and show the tier ladder so the
-reader knows this is a productized offer, not a project pitch.
+**Purpose.** Name the pack and say the job it does, in the reference deck's own
+composition.
 
 **Components.** 4 name (external variant + `external_subheading` when the
-channel is partner_print) · 2 one-liner · 3 ICP · 12 tier names.
+channel is partner_print) · 2 one-liner · 3 ICP.
 
-**Layout.** The base has no dark title layout, so the cover is drawn: full-bleed
-ink `26282B` rectangle, a 0.90 × 0.045 in orange rule at y 2.05, then
+**No tier line.** The reference carried the three package names low on the
+cover; the owner's 2026-09-22 review dropped them. A cover names the pack and
+what it does — the packages are slides 9 and 10.
 
-| Element | x | y | w | h | size |
-|---|---|---|---|---|---|
-| Tier eyebrow (blue_light, bold) | 0.55 | 1.45 | 8.00 | 0.28 | 11.5 |
-| Pack name (white) | 0.55 | 2.40 | 9.20 | 1.05 | 30–44, autofit |
-| Subheading (blue_light) | 0.55 | 3.52 | 9.20 | 0.32 | 15 |
-| One-liner (`D9E4EC`) | 0.55 | 4.10 | 8.60 | 1.20 | 13–18, autofit |
-| "WHO IT IS FOR" + ICP | 0.55 | 5.70 | 8.60 | 0.50 | 9 / 10 |
+**Layout.** The reference sets its cover on a dark photo layout (`Title-AI`)
+the base does not carry, so the ground is drawn as a full-bleed ink `26282B`
+rectangle and everything above it keeps the reference's block: a **5.70 in text
+column at x 0.55**, the name over the one-liner, and one small line low on the
+slide. Every run on the cover is in the theme's title face (`+mj-lt`, Azurio),
+as the reference's is; the content slides use the body face.
 
-**Budgets.** Name ≤ 31 characters on one line at 44 pt (it shrinks to 30 pt for
-two lines) · one-liner ≤ 36 words · ICP ≤ ~40 words.
+| Element | x | y | w | size |
+|---|---|---|---|---|
+| Pack name (white) | 0.55 | 2.30 | 5.70 | 44, autofit to 28, ≤ 2 lines |
+| One-liner (`D9E4EC`) | 0.55 | under the name + 0.14 | 5.70 | 25, autofit to 15, down to y 5.00 |
+| Subheading (white, bold) | 0.57 | 5.20 | 4.60 | 14, autofit to 10, one line |
+| "WHO IT IS FOR" + ICP | 0.57 | 5.62 | 5.70 | 9 / 10 |
+
+Measured from the reference's own placeholders — title block 0.55 / 2.30 /
+5.70 × 2.35 at 44 pt over 25 pt, lower line 0.57 / 5.20 / 4.60 × 0.80 at 14 pt
+bold (see `reference-geometry.json`, `cover`).
+
+**Budgets.** Name ≤ 26 characters on one line at 44 pt in the 5.70 in column
+(two lines at 44, then it shrinks) · one-liner ≤ 30 words · ICP ≤ ~40 words.
 
 **Rules.** 8 — the dark ground is the one heavy ink fill in the deck; no other
 slide gets one. 13 — nothing internal on the cover.
@@ -115,9 +142,17 @@ with one concrete line.
 
 **Layout.** A 2 × 2 grid of identical 6.00 × 2.00 in cards at x 0.42 / 6.72,
 y 2.48 / 4.76. Inside each card: a 2.25 in full-height blue panel carrying the
-vertical's number in 40 pt white (the reference used an icon; the plugin ships
-none), a 0.06 in ink divider, then name (14.5 bold, 3.21 × 0.70 at +2.54/+0.24),
-a 0.55 × 0.04 rule, and the body (11 pt muted, 3.21 × 0.85 at +1.10).
+industry's **icon**, a 1.06 × 1.06 in picture centred in the panel (the
+reference's own measurement), a 0.06 in ink divider, then name (14.5 bold,
+3.21 × 0.70 at +2.54/+0.24), a 0.55 × 0.04 rule, and the body (11 pt muted,
+3.21 × 0.85 at +1.10).
+
+**Icons, never numerals.** The picture comes from the shared icon library at
+`shared/data/icons/` — white line art on a transparent ground, matched by
+keyword against the industry's name (`map.yaml`). Nothing matches → the neutral
+mark, and the builder names that industry on stdout so the skill can ask the
+owner which picture it should carry. A number in a card is a bug, and the
+linter fails on one.
 
 **Budgets.** Name ≤ 11 words over two lines · body ≤ 28 words.
 
@@ -137,17 +172,23 @@ problem / solution) · 2 one-liner · 5 the named vertical case.
 
 **Layout.** Headline (24 pt bold, 0.43 / 1.37 / 12.00 × 0.45), one-liner sub at
 1.96, vertical-case label at 2.36. Then two bands: `TODAY` (ink) and `TOMORROW`
-(blue) at 2.82, 6.02 × 0.46, bodies at 3.38 (6.02 × 0.92), and two
-**screenshot slots** at 4.45 (6.02 × 2.15) drawn as dashed grey containers with
-a caption.
+(blue) at 2.82, 6.02 × 0.46, bodies at 3.38 (6.02 × 0.92), and the two
+**picture slots** at 4.45 (6.02 × 2.15).
 
-**Budgets.** Headline one line ≤ 12 words · each body ≤ 54 words · captions 4–6
-words.
+**The two pictures.** `deck.images.today` and `deck.images.tomorrow` name the
+files — absolute, or relative to the pack brief's own folder. Each is scaled to
+cover its slot and cropped to the centre, so any aspect ratio lands cleanly.
+Without them the slot stays an empty instance of the same container (rule 3), a
+dashed grey box labelled **"image to be chosen"**, and the builder says which
+one is missing. The brief for the pictures is the reference's own pairing: the
+bad current experience on the left, the good future with the solution on the
+right.
 
-**Rules.** 3 — the screenshot slots are empty instances of the same container,
-so the slide is complete before the images exist; the builder prints a note
-telling you to drop the real before/after screens in before review. 5 — ink for
-today, blue for tomorrow.
+**Budgets.** Headline one line ≤ 12 words · each body ≤ 54 words.
+
+**Rules.** 3 — an empty slot is an empty instance of the same container, never a
+gap, so the slide is complete before the pictures exist. 5 — ink for today, blue
+for tomorrow.
 
 ---
 
@@ -234,15 +275,54 @@ actually lands, per tier.
 **Components.** 8 architecture inputs / stack / outputs · 9 and 10 the Oracle
 products with their per-tier `integration` claims.
 
-**Layout.** Left: up to three source boxes at x 0.55 (2.95 wide) stacked between
-y 2.70 and 5.80. Right: a hairline-outlined container at 5.36 / 2.55,
-7.31 × 3.70 holding the app box (blue) and the engine box (grey), each
-6.47 × 0.92, with the infrastructure layer named underneath inside the
-container. Two labelled arrows at x 3.55 cross the gap — in at y 3.10, out at
-3.72.
+**Layout.** Three columns across the content band (y 2.62 → 6.28), reading left
+to right — where the data comes from, what runs, where the result goes — with
+the two gaps as arrow lanes:
 
-**Budgets.** Source box ≤ 23 words · platform box ≤ 32 words · arrow label ≤ 8
-words · the integration footnote ≤ 79 words.
+| Column | x | w |
+|---|---|---|
+| Source boxes (blue, one per input, up to 3) | 0.42 | 2.55 |
+| arrow lane in | 3.06 | 1.12 |
+| Container (white, hairline outline) | 4.18 | 5.02 |
+| arrow lane out | 9.29 | 1.12 |
+| Destination box (blue) | 10.41 | 2.50 |
+
+Inside the container, boxes 4.42 wide: the app box (blue) at +0.40, the engine
+box (grey) at +1.62, each 0.98 tall, and the infrastructure line at +2.78.
+Everything is square.
+
+**Naming — the diagram is derived from the pack brief, not hard-coded.**
+
+- **The app box** is `<pack name> by SoftServe` (the channel's name variant),
+  with the app layer's items as its sub-line. Never a generic "accelerator
+  business app".
+- **The engine box** names the products the engine layer runs, by their catalog
+  names (`catalog_id`, one id or a list, resolved against
+  `shared/data/oracle-products.yaml`) — "NVIDIA cuOpt", or
+  "NVIDIA NeMo Agent Toolkit · NVIDIA AI-Q Blueprint". The layer's own label is
+  at most the small caption underneath. An unnamed "Agentic engine" is a bug.
+- **The infrastructure line** keeps the infrastructure layer's name and items.
+- **The destination box** lists the `architecture.outputs[]` systems, joined
+  with " · ", in the same style as the source boxes. Nothing named → an empty
+  container labelled "destination to be named", and the builder says so.
+
+**Flows.**
+
+- Every `architecture.inputs[]` box gets **its own labelled arrow into the app**;
+  the label is what that source sends.
+- One labelled arrow from the app to the destination box, labelled with what the
+  outputs carry.
+- **No arrow from the app back to a source** unless that same system also
+  appears in `architecture.outputs[]` — then it is a second, separately
+  labelled arrow (the write-back), and only then.
+
+**The summary.** The builder prints the whole diagram in plain words — boxes,
+then arrows — so the skill can put it to the owner without describing a picture
+nobody has opened yet.
+
+**Budgets.** Source box ≤ 8 words · destination box ≤ 12 words · app and engine
+box ≤ 24 words including the sub-line · arrow label ≤ 12 words · the integration
+footnote ≤ 79 words. All of them are in the fit report.
 
 **Rules.** 7 — an arrow carries a text label; a bidirectional relation is two
 labelled arrows, not one box. Every integration claim states its tier
@@ -263,17 +343,28 @@ duration · per-capability handling as glyphs.
 **Layout.** One table at x 0.42, y 1.98 → 6.58, 12.36 in wide: label column 2.92
 plus one column per tier. Rows: tier header · package scope · services price ·
 infrastructure price · timeline · one row per capability area. Header row is the
-orange tier ladder with white bold 12.5 pt; body rows are white. Row heights are
-measured from the text and, if the stack still exceeds the band, the whole table
-scales down in 4 % steps to 80 % — below that the builder stops scaling and
-reports that rows or wording must be cut.
+orange tier ladder with white bold 12.5 pt; body rows are white.
+
+**Type floor, 11 pt.** Sizes come from the reference — header 12.5, label and
+scope 11, prices 11.5, timeline 11, glyphs 18 — and **nothing on this slide goes
+below 11 pt**. Rows are measured from their text; if the stack exceeds the band
+the type scales down in 4 % steps until the floor bites, and then the builder
+reports that the wording has to be shortened or a row dropped. It never goes
+smaller. The other way round too (rule 1): when the rows are few the table does
+**not** sit half the height of its band with small type — the rows grow into the
+band and the type stays at or above the floor.
 
 **Glyphs.** `◐` partial · `●` included · `●●` multi-region / advanced · `—` not
 in this tier. Derived from `packages.capability_handling[]`: an empty or `—`
 cell is "not in this tier"; otherwise the tier default (pov `◐`, integration
-`●`, scaling `●●`). A `glyphs:` map on the entry overrides per tier.
+`●`, scaling `●●`). A `glyphs:` map on the entry overrides per tier. All three
+marks are set in **one symbol face** — Apple Symbols, with `a:sym` naming
+Segoe UI Symbol for Windows — because neither brand face carries them and a
+renderer that substitutes a different face per glyph draws them at visibly
+different sizes (the owner, 2026-09-22). The status key under the table uses the
+same face.
 
-**Budgets.** Label column ≤ 10 words · tier scope cell ≤ 19 words at 80 % type.
+**Budgets.** Label column ≤ 10 words · tier scope cell ≤ 12 words.
 
 **Rules.** 5 — the three tier headers are three tints of one hue, never three
 different colours. Prices carry a `*` and a footnote whenever
@@ -290,9 +381,13 @@ reads out in a scoping call.
 
 **Layout.** Table at 0.43 / 2.05 → 6.62, 12.49 wide, label column 2.55. Rows:
 tier header · scope · one row per capability area, each cell rendered as
-`<glyph>  <prose>` at 9 pt. Same scaling behaviour as slide 9.
+`<glyph>  <prose>` — the glyph in the symbol face, the prose in the body face,
+as two runs in one cell. Same sizing behaviour as slide 9, with a **10.5 pt
+floor**.
 
-**Budgets.** Detailed cell ≤ 26 words.
+**Budgets.** Every cell ≤ **12 words** — a line a seller reads out in a scoping
+call, not a paragraph. A longer cell is an overflow in the fit report, and it is
+fixed by shortening the wording in the pack brief, never by shrinking the type.
 
 **Rules.** 11 — every tier column gets the same rows; a capability with nothing
 in a tier shows `—`, which is a scope statement, not missing evidence.
@@ -323,7 +418,9 @@ only the base schema still builds.
 | `packages.capability_handling[].glyphs` | per-tier glyph override |
 | `packages.anchor_line` | slide 2 anchor strip (else built from required products) |
 | `packages.target_oci_consumption` | slide 6 consumption strip |
-| `deck.running_header` | `"OCI AI Accelerators — {name}"` by default |
+| `deck.running_header` | `"Oracle AI & Data Solutions — {name}"` by default |
+| `deck.images.today` / `deck.images.tomorrow` | the two pictures on slide 4; absolute, or relative to the pack brief's folder |
+| `architecture.stack[].catalog_id` (engine layer) | the products the engine box names |
 | `deck.vertical_case`, `deck.seller_lead`, `deck.cta`, `deck.proof_headline`, `deck.layers_sub`, `deck.architecture_sub` | the short editorial lines |
 
 ## Channels
@@ -338,9 +435,15 @@ print internal operating numbers (rule 13); those never reach a slide.
 
 ## Definition of done
 
-1. `build_deck.py … --fit-report` exits 0 — no box overflows.
-2. A contact sheet of all ten renders has been looked at (`tools/render_probe.sh`
+1. `build_deck.py … --fit-report` exits 0 — no box overflows, no cell over its
+   word budget.
+2. `lint_deck.py <deck> --spec <spec> --channel <channel>` exits 0 — ten slides,
+   the running header, no tier line on the cover, brand faces only, corners no
+   rounder than the reference's, an icon per industry, the architecture's names
+   and flows, table type at or above the floor.
+3. A contact sheet of all ten renders has been looked at (`tools/render_probe.sh`
    prints how to make one on this machine).
-3. The clearance linter passes on the built file.
-4. The builder's notes have been read and acted on — especially the screenshot
-   slots on slide 4 and any table that had to scale below 100 %.
+4. The clearance linter passes on the built file.
+5. The builder's notes have been read and acted on — especially the two picture
+   slots on slide 4, any industry that fell back to the neutral icon, and the
+   architecture summary.

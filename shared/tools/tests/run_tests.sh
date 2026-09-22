@@ -293,6 +293,22 @@ expect "absent components" "–"
 run_case "a missing spec is a usage error" 2 \
   "$PY" "$TOOLS/check_consistency.py" "$WORK/not-here.yaml" "$WORK/artifact-clean.md"
 
+# ----------------------------------------------------- the deck builder + linter
+# Lives with its skill (it needs python-pptx and the deck base), so it runs as a
+# sub-suite: its own assertions are printed, and it counts here as one result.
+DECK_TESTS="$TESTS/../../../plugins/oracle-packs/skills/deck/tests/test_lint_deck.sh"
+if [ -x "$DECK_TESTS" ]; then
+  say ""
+  say "deck builder and lint_deck.py"
+  LAST="$(PY="$PY" "$DECK_TESTS" 2>&1)"; got=$?
+  printf '%s\n' "$LAST" | sed 's/^/  /'
+  case "$got" in
+    0) ok "the deck sub-suite" ;;
+    2) say "  (skipped: $PY has no python-pptx / Pillow)" ;;
+    *) bad "the deck sub-suite failed" ;;
+  esac
+fi
+
 # --------------------------------------------------------------------- report
 say ""
 if [ "$FAIL" -eq 0 ]; then
