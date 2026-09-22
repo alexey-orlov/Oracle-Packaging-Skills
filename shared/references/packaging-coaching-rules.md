@@ -78,6 +78,16 @@ _Alex's rules, as given to Vlad in the 2026-07-24 productization sync, reviewing
 *Why:* "my discovery work de facto consisted of three steps… two are probably one skill, the third another. Do it as you go — our goal on the way out is to give birth from each engagement to these self-acceleration skills."
 *Governs:* the method itself; surfaces in 6 as an "artifact that accelerates the development" column.
 
+**20. A problem statement names the person and the things piling up on their desk — never an abstract activity.**
+*Why:* Alex on a generated problem line, *"Commercial teams work out what a development means for their accounts by hand — slowly, inconsistently"*: **"kind of waterish."** His own version of the same problem: *"Account managers can't keep up with all the market signals, internal insights and updates happening in their accounts."* The difference is not tone — it is that the second one names a **role** and the **concrete nouns that role deals with**, while the first names an activity and grades its quality. Category words standing in for the real objects ("a development", "second order", "the offer") are the tell.
+*Test:* could that person say this sentence about their own week? The solution line passes the same test from the other side — what that person does afterwards, not what the machinery does.
+*Governs:* 1, 2, 5 — and every artifact that reprints the problem line.
+
+**21. A workflow is five to seven steps. Finer operations are named inside a step, not promoted to one.**
+*Why:* Alex on a twelve-step workflow, 2026-09-22: **"too detailed… it should be grouped to 5-7 max."** Twelve steps is the engineering decomposition, and it buries the differentiator among the plumbing — the buyer cannot see which step is the product. Group until each step is something the buyer would recognize as a stage of their own process, and carry the sub-operations in a `covers:` line so nothing is lost.
+*Corollary:* give the pack's differentiating step its own place in the group rather than folding it into a neighbour — grouping is about altitude, not about hiding what is distinctive.
+*Governs:* 7 — and the feature-level view in 6, which is the same cut one level down.
+
 ---
 
 ## The process Alex prescribed

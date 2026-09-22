@@ -106,7 +106,7 @@ adjudicates, the output shape, and when to stop and ask.
 
 ### Step 2 — Draft the generalized workflow first
 
-- **Agent:** write the job's workflow at maximum generality as **6–12 numbered steps**, using
+- **Agent:** write the job's workflow at maximum generality as **5–7 numbered steps** (coaching rule 21 — twelve is the engineering decomposition and it buries the differentiator among the plumbing; name finer operations inside a step with a `covers:` line, and give the pack's differentiating step its own place in the group), using
   step names a buyer would recognize, not the delivered product's screen names. Also draft the
   **scenario set**: the 3–5 *fundamentally different* cases you believe this job splits into,
   with the entity difference stated for each (T2).
@@ -291,11 +291,15 @@ adjudication that follows each is never delegated. Ask each to return the stated
 
 **P1 · Domain workflow across industries**
 > You are researching how the job "<job in the buyer's words>" is done across industries today,
-> including without AI. Return the canonical workflow as 6–12 numbered steps with the names
+> including without AI. Return the canonical workflow as 8–12 numbered steps with the names
 > practitioners and vendors actually use. For each step: is it universal or industry-specific,
 > where the human decision sits, and the industry-standard term. Name sources with tiers; prefer
 > primary docs and case studies over marketing pages. Mark anything you cannot verify "—". Do not
 > describe our product; we are not in this research.
+
+*(The research prompt above deliberately asks for finer grain than the pack ships: you want the
+full operation list to adjudicate against, then group it to the 5–7 step spine at step 2. Do not
+carry the research's step count into `workflow.steps[]`.)*
 
 **P2 · Vendor taxonomy gap check** (Alex's own framing — keep it)
 > I see this job as these steps: <steps>. Look at these vendors: <3–5 named>. Find how each
