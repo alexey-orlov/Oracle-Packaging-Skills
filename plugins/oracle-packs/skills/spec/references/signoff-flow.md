@@ -14,6 +14,10 @@ Alternatives considered: <one line each, only real ones>
 
 Then one widget. The recommended option comes first and is labelled "(Recommended)". Two to four options, each with a one-line description; the free-text "Other" is always there and its answer is applied verbatim when it is a value.
 
+## The comparison card (when the options are alternatives of one kind)
+
+When a decision is a choice between alternatives of the same kind — candidate triads, names, metric sets, tier ladders, vertical framings — the card is **one table**: a column per option headed `<letter> · <name>`, a row per attribute (for triads: One-liner · Problem · Solution · Sells best in · Bets on · Leaves out · Risk), so the same row reads across the options. Never consecutive paragraphs, one per option. Every option the widget offers is a column; nothing pickable is left out of the table. Under it, one line: the recommendation with its reason, and the most likely alternative. The widget then carries only the pick: labels `<letter> · <name>`, one plain business-language line each (no research codes such as P2 or T4, no status-glyph counts, no restatement of the table), recommended first and labelled.
+
 ## Fixed order and what each card must contain
 
 | # | Component | The card must show | Ask when missing |
@@ -36,7 +40,7 @@ Then one widget. The recommended option comes first and is labelled "(Recommende
 - **Respect the owner's answer.** When the user picks an alternative or types free text, that is the value; do not re-argue it. When the free text is a direction ("more concrete", "shorter"), re-propose once.
 - **Contradictions surface before the widget.** If two inputs disagree (two prices, two durations, two metric sets), the card shows both with sources and the widget asks which is right.
 - **Write as you go.** Each confirmed value lands in `pack-spec.yaml` and `decisions.md` before the next card.
-- **One card at a time.** Never batch components into one widget; the order is the owner's.
+- **One decision per widget call.** Never batch components, and never attach a second question (an adjudication, a clarification, a research follow-up) to a decision widget — it gets its own card after this decision is recorded. The order is the owner's.
 
 ## The brief (after component 11)
 

@@ -360,8 +360,9 @@ adjudication that follows each is never delegated. Ask each to return the stated
 
 ## 5. Adjudication questions for the user
 
-Ask these through the question widget after the research and before the options, one screen, each
-skipped when the context already answers it — the intake list (`intake-questions.md`) has already
+Ask these through the question widget after the research and **before the options step, in widget
+calls of their own** (at most four questions per call; never merged into the triad-pick widget or a
+sign-off card), each skipped when the context already answers it — the intake list (`intake-questions.md`) has already
 covered inputs, frame and clearance; these are the questions only the research can raise. Widget
 conventions are `signoff-flow.md`'s. Every question states what it blocks.
 

@@ -130,24 +130,31 @@ Then three lines: the count of ● / ◐ / ○ rows the generalization produced;
 entirely custom (these are priced scope); and, if there is **no ○ row at all**, a flagged warning
 that the generalization has not left the delivered scope (T9).
 
-### § 8 Candidate options — 1–3 triads, ≤ 120 words each
+### § 8 Candidate options — 1–3 triads, one comparison table, ≤ 120 words per triad
 
-Per triad, in this order:
+One table: a column per triad, headed `<letter> · <Name>` (one plain name, no customer vocabulary,
+no category label), and these rows in this order:
 
-- **Name** — one plain name, no customer vocabulary, no category label.
-- **One-liner** — the job and the outcome in the buyer's words. Never the packaging promise.
-- **Problem ↔ solution** — two sentences; the solution stated as the change in what the person
-  does ("review the plan, not build it").
-- **Grounding** — which workflow steps and which verticals it covers, and what evidence backs it.
-- **Excludes** — the boundary that keeps it honest.
-- **Risk** — the one thing that would make this the wrong framing.
+| Row | What the cell holds |
+|---|---|
+| One-liner | The job and the outcome in the buyer's words. Never the packaging promise. |
+| Problem | The reader's pain, in the reader's words, one sentence. |
+| Solution | The change in what the person does ("review the plan, not build it"), one sentence. |
+| Sells best in | The vertical(s) it covers first, and the workflow steps it spans. |
+| Bets on | The differentiator and the evidence behind it (which findings, which competitor gap). |
+| Leaves out | The boundary that keeps it honest. |
+| Risk | The one thing that would make this the wrong framing. |
+
+Rows, not paragraphs, so the same attribute reads across the options. A blend of two triads is a
+column of its own or it is not an option.
 
 Close with a **recommendation and its reason in one sentence**, and the alternative the user is
 most likely to prefer instead. Options with a recommendation, never a menu without a view.
 
-The triads are then put to the user in the house proposal-card format and widget conventions of
-`signoff-flow.md` — recommended option first and labelled, free-text "Other" always present. This
-section is the written backing for that card, not a second format.
+The table is shown to the user as is (the comparison card of `signoff-flow.md`), followed by the
+pick widget whose options carry only the column label and one plain line — recommended option first
+and labelled, free-text "Other" always present. This section is the written backing for that card,
+not a second format.
 
 ### § 9 Open questions and gaps — ≤ 120 words
 
