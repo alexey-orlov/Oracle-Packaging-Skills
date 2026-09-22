@@ -430,6 +430,7 @@ architecture:                            # component 8
       catalog_id: nvidia-cuopt          # NVIDIA, not an Oracle product — carried here, not in oracle_products
     - layer: Infrastructure
       vendor: Oracle
+      catalog_id: [oci-dedicated-ai-cluster, oci-kubernetes-engine, oci-object-storage, oracle-autonomous-ai-database, oci-vcn, oci-iam]   # the platform's services, by catalog id; the platform itself is `oci` in oracle_products
       label: "Oracle · OCI dedicated AI cluster, Object Storage, IAM"
       items:
         - "OCI dedicated AI cluster, 4–8 NVIDIA A100 GPUs"
@@ -474,7 +475,7 @@ oracle_products:                         # components 9 and 10 — catalog ids, 
       The platform: a dedicated AI cluster of 4–8 NVIDIA A100 GPUs (A10 in the delivered PoC) runs
       the NVIDIA cuOpt solver, Kubernetes runs the app and the pre/post-processing services,
       Object Storage holds the period's data, Autonomous AI Database keeps plan versions, decisions
-      and KPI history, VCN and IAM carry networking and identity — each a row in architecture.stack
+      and KPI history, VCN and IAM carry networking and identity — each in the Infrastructure layer's catalog_id list
     note: >-
       Until 2026-09-22 these were seven required entries (oracle-fusion-field-service,
       oci-dedicated-ai-cluster — first coined as oci-compute-gpu —, oci-object-storage, oci-vcn —

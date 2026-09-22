@@ -104,7 +104,7 @@ architecture:                             # component 8
     - layer: Infrastructure
       vendor: Oracle
       items: [OCI Compute, OCI Object Storage]
-      catalog_id: oci-dedicated-ai-cluster  # optional on Oracle layers; the products themselves live below
+      catalog_id: [oci-dedicated-ai-cluster, oci-object-storage]  # one id or a list; the platform's services are named here, the platform itself once in oracle_products (`oci`)
   outputs:
     - { system: Oracle Fusion Field Service, data: "the approved plan, written back" }
 

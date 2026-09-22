@@ -40,6 +40,7 @@ Before sending anything the owner reads — a question, a widget title, an optio
 
 ## How a question is put
 
+- **Propose before you ask.** A question is the last resort. When the inputs or the research answer it, state the answer with its source and move on — the owner corrects what is wrong. Ask only where a wrong guess would force a rebuild rather than an edit. The run the owner rated best (2026-09-22) asked almost nothing and then put three complete alternative pack stories side by side; the run rated worst asked at every step.
 - **What we are deciding, in the pack's terms**; one line on why it matters for the pack — what it changes downstream, in plain words ("this decides which industries the sales deck leads with"); and what happens if they skip (the default, in plain words).
 - **Options are outcomes for the pack** ("lead with banking, logistics second"), never method states ("keep T3", "status ◐"). Each description carries the trade-off in one plain line; the argument lives in the card or table above, not in the option.
 - **Progress in plain terms**: "4 of 11 parts confirmed; next: the industries".

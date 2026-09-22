@@ -38,8 +38,9 @@ products:
 
   # ----------------------------------------------------------------------- oci
   # The platform as ONE entry. A pack lists `oci` once as required and names the
-  # services it uses in its `why`; the services themselves are rows in
-  # architecture.stack[].catalog_id, never separate required products
+  # services it uses in its `why`; the services themselves are listed in the
+  # Infrastructure layer's architecture.stack[].catalog_id (one id or a list),
+  # never separate required products
   # (owner's rule, 2026-09-22).
   - id: oci
     name: Oracle Cloud Infrastructure
