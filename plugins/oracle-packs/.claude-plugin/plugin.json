@@ -1,6 +1,6 @@
 {
   "name": "oracle-packs",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Oracle accelerator-pack packaging: /oracle-packs:spec (intake, research, generalization, component sign-off), then feature-list, deck, one-pager, exec-summary, or build (all, sequentially with review pauses).",
   "author": { "name": "Alex Orlov" }
 }

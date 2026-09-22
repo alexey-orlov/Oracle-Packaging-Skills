@@ -36,7 +36,7 @@ Follow `references/generalization-method.md` exactly. In short:
 4. **Vertical differentiation**: at least three scenarios × every step, with a "what matters here" cell; widen the prompt deliberately; then adjudicate real differences vs filler (that adjudication is a user question, not your call alone).
 5. **Failure path per step**; absence is a finding and becomes an out-of-scope line.
 6. **Feature specificity**: tag every feature customer / engine / use case / industry; reusable vs custom.
-7. **Placement**: the roadmap item (from the extract, by id), candidate Oracle products from the catalog with required / optional roles, KPI candidates with formulas and baselines.
+7. **Placement**: the roadmap item (from the extract, by id), candidate Oracle products from the catalog with required / optional roles — required only what the pack cannot run without (typically 1–3: the platform as one entry plus what the core executes on), optional only what a buyer would plausibly connect (2–4); a catalog sweep is cut — KPI candidates with formulas and baselines.
 8. **Red-team** the whole set: is this product really the answer; is the PoV feasible in 4–8 weeks; what is AI slop; remove or defend each item.
 
 Fan the sub-tasks 2–6 out to research agents with the prompts in the method file; each writes `packs/<slug>/research/<topic>.md`. Synthesize the **research brief** yourself in the exact format of `references/research-brief-format.md` (answer first, labeled claims, source tiers, ≤ 10 minutes to read) to `packs/<slug>/research-brief.md`. The "general enough but not too general" test in the method file must pass before you go on; if it does not, say which criterion fails and what extra research would fix it.

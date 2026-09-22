@@ -3,9 +3,14 @@
 # optional products from here, by `id`, so products are named and aggregated
 # identically across packs, artifacts and channels.
 #
-# required = the pack is built on it, or fully relies on it.
-# optional = could logically be used with it, as an additional data source or
-#            destination system.
+# required = only what the pack cannot run without: the platform as ONE entry
+#            (`oci`, its `why` naming the services it uses) plus the one or two
+#            products the core executes on. Typically 1-3. Infrastructure
+#            sub-services are not separate required entries; systems the pack
+#            reads from or writes to are optional (owner's rule, 2026-09-22).
+# optional = only what a typical buyer would plausibly connect as a source or
+#            destination, each with a concrete `why`; typically 2-4, never a
+#            catalog sweep.
 #
 # Names were verified against the vendor's own live product page on the
 # `fetched` date below. Re-verify before shipping: Oracle is mid-rebrand
@@ -30,6 +35,22 @@ naming_rules:
   - "OCI service pages drop the 'OCI' prefix in the H1 (H1 'Object Storage'); the service name still carries it. Write 'OCI Object Storage'."
 
 products:
+
+  # ----------------------------------------------------------------------- oci
+  # The platform as ONE entry. A pack lists `oci` once as required and names the
+  # services it uses in its `why`; the services themselves are rows in
+  # architecture.stack[].catalog_id, never separate required products
+  # (owner's rule, 2026-09-22).
+  - id: oci
+    name: Oracle Cloud Infrastructure
+    short: OCI
+    vendor: Oracle
+    family: oci
+    layer: infrastructure
+    what_it_is: Oracle's cloud platform — the tenancy every pack runs in; compute, GPU clusters, Kubernetes, storage, database, networking and identity are its services.
+    typical_role_in_a_pack: the-platform
+    aliases: ["OCI", "Oracle Cloud"]
+    verified: true
 
   # ---------------------------------------------------------------- oci-compute
   - id: oci-compute

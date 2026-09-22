@@ -136,3 +136,7 @@ Autonomous Data Warehouse → Autonomous AI Lakehouse, 23ai → 26ai, the GenAI 
 OCI Enterprise AI). Treat the `fetched` date as an expiry hint: **re-verify every `name` before a
 pack artifact goes to a customer or to Oracle**, and at minimum re-run the whole file quarterly.
 The `verified` flag records that a name was right once — not that it still is.
+
+## 2026-09-22 — `oci` umbrella entry
+
+Added `oci` (Oracle Cloud Infrastructure) as the platform entry. Owner's rule of the same day: a pack lists the platform once as required, names the services it uses in the `why`, and keeps the services as `architecture.stack[]` rows; systems the pack reads from or writes to are optional. `lint_spec.py` warns above 3 required (SPEC021) and 4 optional (SPEC022).

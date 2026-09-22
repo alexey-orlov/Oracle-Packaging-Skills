@@ -96,6 +96,7 @@ engagement, no cleared headline number**. The linter reads it as absent: no
 | SPEC017 | a `meta.name_variants` entry does not follow the channel rule (warning) |
 | SPEC018 | `oracle_products[]` carries a non-Oracle catalog entry — NVIDIA components belong in `architecture.stack[].catalog_id` |
 | SPEC019 / SPEC020 | `workflow.steps` has more than 7 steps — the pack's workflow is 5–7, grouped at the buyer's checkpoints, mechanics inside a step / fewer than 3 steps (warning) |
+| SPEC021 / SPEC022 | more than 3 required Oracle products / more than 4 optional (warnings) — required is only what the pack cannot run without, optional only what a buyer would plausibly connect |
 | SPEC900–902 | catalog absent / roadmap absent / a recommended key unfilled (warnings) |
 
 ## lint_artifact.py

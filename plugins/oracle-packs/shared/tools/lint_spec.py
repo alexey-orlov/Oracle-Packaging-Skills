@@ -50,6 +50,10 @@ Rule codes
     SPEC900  the Oracle product catalog was not found — ids not checked
     SPEC901  the roadmap extract was not found — roadmap id not checked
     SPEC902  a recommended key is missing (--strict only)
+    SPEC019  workflow has more than 7 steps (5-7, grouped at the buyer's checkpoints)
+    SPEC020  workflow has fewer than 3 steps (warning)
+    SPEC021  more than 3 required Oracle products (warning)
+    SPEC022  more than 4 optional Oracle products (warning)
 
 --strict    promotes SPEC900/901/902 and SPEC017 to findings: the completeness
             check, usable on a spec at any status. A `draft` stays clean under
@@ -434,6 +438,46 @@ class SpecLint:
                       "PoV runs up to %g weeks with no `justification` — the target band is "
                       "4-8 weeks; state why this one is longer or cut the scope" % top)
 
+    def check_workflow_steps(self):
+        workflow = self.spec.get("workflow")
+        if not isinstance(workflow, dict):
+            return
+        steps = workflow.get("steps")
+        if not isinstance(steps, list):
+            return
+        n = len(steps)
+        line = PL.lineno(workflow, "steps")
+        if n > 7:
+            self.fail("workflow", line, "SPEC019",
+                      "workflow has %d steps — the pack's workflow is 5-7 steps grouped at the "
+                      "buyer's checkpoints (where a human decides, an output appears or data "
+                      "changes hands); mechanics such as normalization, dedup, entity resolution "
+                      "or routing belong inside a step's description, not as steps" % n)
+        elif 0 < n < 3:
+            self.soft("workflow", line, "SPEC020",
+                      "workflow has %d step(s) — fewer than 3 hides the work; the target is "
+                      "5-7 steps" % n)
+
+    def check_product_counts(self):
+        products = self.spec.get("oracle_products")
+        if not isinstance(products, list):
+            return
+        roles = collections.Counter(str(p.get("role") or "required")
+                                    for p in products if isinstance(p, dict))
+        line = PL.lineno(self.spec, "oracle_products")
+        if roles["required"] > 3:
+            self.rep.warn(self.path, line, "SPEC021",
+                          "%d required Oracle products — required is only what the pack cannot "
+                          "run without: the platform as one entry (OCI, its `why` naming the "
+                          "services it uses) plus the one or two products the core executes on; "
+                          "systems the pack reads from or writes to are optional"
+                          % roles["required"])
+        if roles["optional"] > 4:
+            self.rep.warn(self.path, line, "SPEC022",
+                          "%d optional Oracle products — optional holds only what a typical "
+                          "buyer would plausibly connect as a source or destination, each with a "
+                          "concrete `why`; a catalog sweep is cut" % roles["optional"])
+
     def check_kpis(self):
         kpis = self.spec.get("kpis")
         if not isinstance(kpis, list):
@@ -669,6 +713,8 @@ def main() -> int:
     lint.check_roadmap(roadmap_ids)
     lint.check_packages()
     lint.check_kpis()
+    lint.check_workflow_steps()
+    lint.check_product_counts()
     lint.check_customer_names(deny)
     lint.check_name_variants()
 

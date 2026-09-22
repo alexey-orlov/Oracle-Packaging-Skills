@@ -77,7 +77,7 @@ capabilities:                             # component 6 — Area > Category > Fe
             source: ...
     customization_scope_area: "..."       # per-capability handling summary used in the packages table
 
-workflow:                                 # component 7
+workflow:                                 # component 7 — 5-7 steps (hard cap 7, min 3), grouped at the buyer's checkpoints; mechanics live inside a step's description, never as steps
   inputs: [ { system: Oracle Fusion Field Service, data: work orders, technicians, zones } ]
   steps:
     - n: 1
@@ -113,7 +113,7 @@ architecture:                             # component 8
 # but they belong in `architecture.stack[].catalog_id`, never in this list: a required/optional
 # roll-up across packs is an Oracle-consumption question. Both places take catalog ids only, and the
 # linter resolves both against shared/data/oracle-products.yaml.
-oracle_products:                          # components 9 and 10 — ids from shared/data/oracle-products.yaml only
+oracle_products:                          # components 9 and 10 — ids from shared/data/oracle-products.yaml only; required = only what the pack cannot run without (typically 1-3: the platform as one entry + what the core executes on); optional = only what a buyer would plausibly connect (2-4); never a catalog sweep
   - id: oci-dedicated-ai-cluster
     role: required                        # required = built on it or fully relies on it
     why: "Runs the optimization engine"

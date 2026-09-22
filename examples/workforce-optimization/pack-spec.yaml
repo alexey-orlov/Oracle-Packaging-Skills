@@ -454,19 +454,37 @@ oracle_products:                         # components 9 and 10 — catalog ids, 
   #
   # Every id below resolves to shared/data/oracle-products.yaml (catalog version 2026-09-18).
   # NVIDIA cuOpt is NOT here: it is the pack's engine and is named in architecture.stack[].catalog_id.
+  # Required is the platform alone (owner's rule, 2026-09-22): the seven required entries of the
+  # 2026-09-18 version — Fusion Field Service, the dedicated AI cluster, Object Storage, VCN, IAM,
+  # OKE, Autonomous AI Database — collapse into `oci`, the services staying in architecture.stack[],
+  # and Fusion Field Service moves to optional as the typical source and destination.
   # Three ids this example first coined have no catalog entry and are logged as catalog change
   # requests in shared/data/oracle-products.README.md; each uses the closest catalogued product.
   #
   # NOTE ON `role: optional`. No delivered WfO artifact lists optional Oracle products as such —
-  # the component has no reference in the estate (component-map-2026-09-17 §4). The four
-  # `optional` entries below are inferred from the pack's own named integration list (booking,
+  # the component has no reference in the estate (component-map-2026-09-17 §4). The three inferred
+  # `optional` entries below (HCM, SCM, Analytics) come from the pack's own named integration list (booking,
   # inventory, HR/WFM, demand forecasting, BI) mapped onto the Oracle products that would serve
-  # them; the booking system has no Oracle counterpart and stays customer-specific. All four
+  # them; the booking system has no Oracle counterpart and stays customer-specific. All three
   # need the owner's confirmation — see open_questions.
   #
-  - id: oracle-fusion-field-service
+  - id: oci
     role: required
-    why: "Source of work orders, technicians, zones and bookings, and destination of the approved plan"
+    why: >-
+      The platform: a dedicated AI cluster of 4–8 NVIDIA A100 GPUs (A10 in the delivered PoC) runs
+      the NVIDIA cuOpt solver, Kubernetes runs the app and the pre/post-processing services,
+      Object Storage holds the period's data, Autonomous AI Database keeps plan versions, decisions
+      and KPI history, VCN and IAM carry networking and identity — each a row in architecture.stack
+    note: >-
+      Until 2026-09-22 these were seven required entries (oracle-fusion-field-service,
+      oci-dedicated-ai-cluster — first coined as oci-compute-gpu —, oci-object-storage, oci-vcn —
+      first coined as oci-networking —, oci-iam, oci-kubernetes-engine,
+      oracle-autonomous-ai-database). OKE and the database come from the delivered PoC's technical
+      scope and sit on no published diagram.
+    source: one-pager-2026-07-17, deck-2026-07-13, site-2026-09-17, spec-doc-2026-09-16
+  - id: oracle-fusion-field-service
+    role: optional
+    why: "The typical source of work orders, technicians, zones and bookings, and destination of the approved plan — the delivered case's system; a buyer on another field-service system connects that one instead"
     integration:
       pov: "File export / import — the customer exports XLSX and imports the optimized plan"
       integration: "API write-back: in — staff, availability, booking data; out — optimized allocations (zones, visits); back — factual durations and times"
@@ -474,38 +492,8 @@ oracle_products:                         # components 9 and 10 — catalog ids, 
     name_note: >-
       Canonical vendor name is "Oracle Fusion Field Service" (the Jul-17 one-pager). The deck, the
       feature list and the mini-site still say "Oracle Field Service"; relabel at next rebuild.
+    note: "Moved from required to optional on 2026-09-22: the pack reads from and writes to it; it does not run on it."
     source: one-pager-2026-07-17, site-2026-09-17
-  - id: oci-dedicated-ai-cluster
-    role: required
-    why: "Runs the NVIDIA cuOpt solver — a dedicated AI cluster of 4–8 NVIDIA A100 GPUs (A10 in the delivered PoC)"
-    catalog_note: >-
-      The example first coined `oci-compute-gpu`. The catalog has no such id; `oci-dedicated-ai-cluster`
-      is what the artifacts mean by "OCI dedicated AI cluster". `oci-gpu-instances` is the alternative
-      when a pack sizes raw GPU shapes instead — see the catalog change request.
-    source: one-pager-2026-07-17, deck-2026-07-13, spec-doc-2026-09-16
-  - id: oci-object-storage
-    role: required
-    why: "Holds the period's data — inputs, plan versions and exports"
-    source: site-2026-09-17
-  - id: oci-vcn
-    role: required
-    why: "Tenancy networking for the dedicated cluster"
-    catalog_note: "The example first coined `oci-networking`; the catalog's networking entry is the VCN."
-    source: site-2026-09-17
-  - id: oci-iam
-    role: required
-    why: "Identity and access for the dispatcher UI and the cluster"
-    source: site-2026-09-17
-  - id: oci-kubernetes-engine
-    role: required
-    why: "Runs the app and the pre/post-processing services as containers"
-    note: "From the delivered PoC's technical scope; absent from every published architecture diagram."
-    source: spec-doc-2026-09-16
-  - id: oracle-autonomous-ai-database
-    role: required
-    why: "Persistence for plan versions, decisions and KPI history"
-    note: "Delivered PoC used Oracle Database 26ai; absent from every published architecture diagram."
-    source: spec-doc-2026-09-16
   - id: oracle-fusion-cloud-hcm
     role: optional
     why: "Could be the HR/WFM source for people availability, one of the five typical Integration-tier integrations"

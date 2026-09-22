@@ -37,13 +37,8 @@ Every id in this spec now resolves to the catalog, and `shared/tools/lint_spec.p
 
 | id in the spec | Product it stands for | Role | Grounding | Reconciliation |
 |---|---|---|---|---|
-| `oracle-fusion-field-service` | Oracle Fusion Field Service | required | Named on the Jul-17 one-pager | as coined |
-| `oci-dedicated-ai-cluster` | OCI dedicated AI cluster (4–8 NVIDIA A100) | required | One-pager architecture, deck slide 7 | was `oci-compute-gpu`; `oci-gpu-instances` is the alternative when a pack sizes raw shapes |
-| `oci-object-storage` | OCI Object Storage | required | Mini-site `technology.stack` | as coined |
-| `oci-vcn` | OCI Virtual Cloud Network | required | Mini-site `technology.stack` ("Object storage, networking and IAM") | was `oci-networking` |
-| `oci-iam` | OCI Identity and Access Management | required | Same line as above | as coined |
-| `oci-kubernetes-engine` | OKE / containers | required | Delivered PoC technical scope only; on no published diagram | as coined |
-| `oracle-autonomous-ai-database` | Oracle Database 26ai (persistence) | required | Delivered PoC technical scope only; on no published diagram | as coined |
+| `oci` | Oracle Cloud Infrastructure — the platform, one entry: the dedicated AI cluster (4–8 NVIDIA A100) for the solver, OKE for the app, Object Storage, Autonomous AI Database, VCN and IAM, each also a row in `architecture.stack` | required | One-pager architecture, deck slide 7, mini-site `technology.stack`, delivered PoC technical scope | Owner's rule 2026-09-22: required is only what the pack cannot run without, the platform as one entry. The 2026-09-18 version listed seven required ids: `oracle-fusion-field-service`, `oci-dedicated-ai-cluster` (was `oci-compute-gpu`; `oci-gpu-instances` is the alternative when a pack sizes raw shapes), `oci-object-storage`, `oci-vcn` (was `oci-networking`), `oci-iam`, `oci-kubernetes-engine`, `oracle-autonomous-ai-database` |
+| `oracle-fusion-field-service` | Oracle Fusion Field Service — the typical source and destination, with what happens at each tier | optional | Named on the Jul-17 one-pager | as coined; moved from required to optional on 2026-09-22 — the pack reads from and writes to it, it does not run on it |
 | `oracle-fusion-cloud-hcm` | HR/WFM source for people availability | optional | **Inferred** from the pack's "up to five integrations" list | was `oracle-fusion-hcm` |
 | `oracle-fusion-cloud-scm` | Spare-parts inventory **and** demand-forecast source | optional | **Inferred**, same list | was two ids, `oracle-fusion-inventory-management` and `oracle-fusion-demand-management`; both are Fusion SCM modules, so the entries merged |
 | `oracle-analytics-cloud` | BI destination for KPIs per plan version | optional | **Inferred**, same list | as coined; the catalog carries it `verified: false` (Oracle's page leads with "Oracle Analytics") |
