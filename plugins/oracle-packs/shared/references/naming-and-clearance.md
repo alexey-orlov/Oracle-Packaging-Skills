@@ -25,7 +25,7 @@ _The operative rules for what an artifact may call things and what it may disclo
 
 ## 2. Pack name by channel
 
-The pack has **one plain name**, set once by the owner in the spec. Channel variants are derived from it by a fixed rule, and nothing else varies:
+The pack has **one plain, noun-led name** — the thing, not the job ("Damage assessment", never "Repair or replace"; `pack-anatomy.md` §4) — set once by the owner in the spec. Channel variants are derived from it by a fixed rule, and nothing else varies:
 
 | Channel | Form | Example |
 |---|---|---|
