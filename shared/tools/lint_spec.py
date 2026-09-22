@@ -434,6 +434,26 @@ class SpecLint:
                       "PoV runs up to %g weeks with no `justification` — the target band is "
                       "4-8 weeks; state why this one is longer or cut the scope" % top)
 
+    def check_workflow_steps(self):
+        workflow = self.spec.get("workflow")
+        if not isinstance(workflow, dict):
+            return
+        steps = workflow.get("steps")
+        if not isinstance(steps, list):
+            return
+        n = len(steps)
+        line = PL.lineno(workflow, "steps")
+        if n > 7:
+            self.fail("workflow", line, "SPEC019",
+                      "workflow has %d steps — the pack's workflow is 5-7 steps grouped at the "
+                      "buyer's checkpoints (where a human decides, an output appears or data "
+                      "changes hands); mechanics such as normalization, dedup, entity resolution "
+                      "or routing belong inside a step's description, not as steps" % n)
+        elif 0 < n < 3:
+            self.soft("workflow", line, "SPEC020",
+                      "workflow has %d step(s) — fewer than 3 hides the work; the target is "
+                      "5-7 steps" % n)
+
     def check_kpis(self):
         kpis = self.spec.get("kpis")
         if not isinstance(kpis, list):

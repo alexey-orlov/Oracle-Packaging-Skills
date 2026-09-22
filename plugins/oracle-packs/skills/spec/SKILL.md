@@ -31,7 +31,7 @@ Inventory the inputs: list every file with what it is (SoW, deck, recording, fea
 Follow `references/generalization-method.md` exactly. In short:
 
 1. **Inventory the delivered case** as a step table: steps, actors, systems, data, human-in-the-loop points; per step the three lenses (what the Oracle/NVIDIA pack provided · what we implemented · what stays custom).
-2. **Domain workflow across industries**: how this job is generally done, canonical step names, where industries differ, how the delivered case differs from the general shape.
+2. **Domain workflow across industries**: how this job is generally done, canonical step names, where industries differ, how the delivered case differs from the general shape. The pack's own workflow is that list grouped to **5–7 steps** at the buyer's checkpoints; mechanics live inside a step's description, never as steps.
 3. **Vendor and competitor taxonomy study**: how three to five vendors structure capabilities for this job; direct competitors, indirect substitutes, same-vendor overlaps; the gap check — which steps we miss or over-split.
 4. **Vertical differentiation**: at least three scenarios × every step, with a "what matters here" cell; widen the prompt deliberately; then adjudicate real differences vs filler (that adjudication is a user question, not your call alone).
 5. **Failure path per step**; absence is a finding and becomes an out-of-scope line.

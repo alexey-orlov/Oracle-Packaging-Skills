@@ -77,7 +77,7 @@ capabilities:                             # component 6 — Area > Category > Fe
             source: ...
     customization_scope_area: "..."       # per-capability handling summary used in the packages table
 
-workflow:                                 # component 7
+workflow:                                 # component 7 — 5-7 steps (hard cap 7, min 3), grouped at the buyer's checkpoints; mechanics live inside a step's description, never as steps
   inputs: [ { system: Oracle Fusion Field Service, data: work orders, technicians, zones } ]
   steps:
     - n: 1

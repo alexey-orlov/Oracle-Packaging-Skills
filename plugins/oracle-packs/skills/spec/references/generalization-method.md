@@ -291,8 +291,9 @@ adjudication that follows each is never delegated. Ask each to return the stated
 
 **P1 · Domain workflow across industries**
 > You are researching how the job "<job in the buyer's words>" is done across industries today,
-> including without AI. Return the canonical workflow as 8–12 numbered steps with the names
-> practitioners and vendors actually use. For each step: is it universal or industry-specific,
+> including without AI. Return the canonical workflow as numbered steps with the names
+> practitioners and vendors actually use, as fine-grained as the job really is (often 8–12; the
+> pack groups them to 5–7 afterwards). For each step: is it universal or industry-specific,
 > where the human decision sits, and the industry-standard term. Name sources with tiers; prefer
 > primary docs and case studies over marketing pages. Mark anything you cannot verify "—". Do not
 > describe our product; we are not in this research.
@@ -300,6 +301,13 @@ adjudication that follows each is never delegated. Ask each to return the stated
 *(The research prompt above deliberately asks for finer grain than the pack ships: you want the
 full operation list to adjudicate against, then group it to the 5–7 step spine at step 2. Do not
 carry the research's step count into `workflow.steps[]`.)*
+
+**The pack's workflow is 5–7 steps.** The research returns the fine-grained list; the pack groups
+it at the buyer's checkpoints — where a human decides, where an output appears, where data changes
+hands — into five to seven steps (hard cap 7; fewer than 3 hides the work). Mechanics such as
+normalization, dedup, entity resolution, routing or outcome capture are what happens *inside* a
+step and are named in its description, never steps of their own (the owner, 2026-09-22, on a
+12-step workflow: "too detailed — group to 5–7 max"). `lint_spec.py` enforces the cap (SPEC019).
 
 **P2 · Vendor taxonomy gap check** (Alex's own framing — keep it)
 > I see this job as these steps: <steps>. Look at these vendors: <3–5 named>. Find how each
@@ -424,7 +432,7 @@ Each was actually rejected. Fix the class, not the instance.
 | A4 | **Generalizing into vagueness** | "Work-package variance analysis" → "Plan-vs-actual investigation", with the boundary kept | Every widening names the boundary that keeps the claim honest and differentiated (T4) |
 | A5 | **Keeping a customer-specific rule as if it were generic** | Rigid year-ahead work zones, atypical, baked into the algorithm (2026-07-07) | Make it configurable, label it customer-specific, or drop it from the spine (T5) |
 | A6 | **Technically-derived groupings a business buyer cannot place** | Alex on the use-case map, 2026-09-17: "they are broken down too much by the very technical detail … boundary unclear. I need better categorization" | Group where a cluster of business tasks in the stakeholder's mental model overlaps a technology pattern — their own stated reason for liking the groups they kept |
-| A7 | **A column filled against a different definition than it was read with** | 2026-07-24: the "custom work" column read back as "even when this feature is perfect, we will still come and use a better model" — a false sentence | Define each column's semantics in one sentence *before* filling it, then read one filled row back as a sentence to the client and ask whether it is true |
+| A7 | **A column or list filled against a different definition than it was read with** | 2026-07-24: the "custom work" column read back as "even when this feature is perfect, we will still come and use a better model" — a false sentence. 2026-09-22, the same failure on a list: `oracle_products` was filled from the delivered engagement's *technology stack* instead of against the schema's own definitions, producing 5 required and 7 optional where 1 and 3 were true — "the pack is built on OCI API Gateway" does not survive the read-back. Alex: "I doubt that we need that much… we only need essential products in required" | Define the column's or list's semantics in one sentence **before** filling it — for `oracle_products` the schema already states them (*required = built on it or fully relying on it · optional = a plausible additional source or destination*) — then read each filled item back as a sentence and keep it only if it is true. **Completeness is not the goal: an enumerated component is a short list of what earns its place, and infrastructure a deployment merely implies never does.** The pull is strongest when a source document hands you a ready-made list, which is exactly when to re-read the definition instead |
 | A8 | **Binding a feature to a model or engine** | 2026-07-24: "I wouldn't write in the features that it's Llama" | Engine dependence is a specificity axis, never part of the feature name |
 | A9 | **Untested capability presented as delivered** | 2026-09-08: "Remove analytics block as it was not tested / was out of scope" | Status glyph backed by evidence; untested = ○ or absent |
 | A10 | **Over-precision you cannot vouch for** | 2026-09-08: state "Filled / Partially filled / Not filled" plus a verification flag instead of itemizing | Graded status + verification flag; figures carry their status and caveat |

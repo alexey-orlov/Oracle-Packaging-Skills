@@ -96,11 +96,11 @@ The order is load-bearing. The name is chosen *last of the four* because a name 
 
 ### 7 · Workflow architecture
 
-**Definition.** Inputs → processing steps → outputs, with **human-in-the-loop marked per step** and a **failure path per step**. This is the product's behaviour, and it is the axis the mini-site and the interactive demo are both organized around.
+**Definition.** Inputs → processing steps → outputs, with **human-in-the-loop marked per step** and a **failure path per step**. This is the product's behaviour, and it is the axis the mini-site and the interactive demo are both organized around. **Five to seven steps** (hard cap 7; fewer than 3 hides the work), grouped at the buyer's checkpoints — where a human decides, where an output appears, where data changes hands. Mechanics such as normalization, dedup, entity resolution, routing or outcome capture are what happens inside a step, named in its description, never steps of their own (the owner, 2026-09-22, on a 12-step account-insights workflow: "too detailed — group to 5–7 max").
 
 **Good.** WfO: `Load the period's data` → `Set the rules` → `Solve the plan` → `Review, approve, measure`, four steps, each carrying the subset of features it exercises. The HITL detail is the point: the dispatcher compares the current and the optimized plan on a live map, approves or rejects **per zone** with an optional comment, re-runs, and nothing is exported until approval. The demo realizes the same four steps as five processing stages with a validation gate in front.
 
-**Anti-patterns.** A happy-path-only flow — every step needs its failure path ("missing fields → the row is flagged, not dropped; the dispatcher resolves it"), because the failure path is what a buyer's operations lead actually asks about. Steps named after system components rather than the work. Heavy AI work hidden behind a progress bar, which reads as ETL.
+**Anti-patterns.** A happy-path-only flow — every step needs its failure path ("missing fields → the row is flagged, not dropped; the dispatcher resolves it"), because the failure path is what a buyer's operations lead actually asks about. Steps named after system components rather than the work. More than seven steps — mechanics promoted to steps. Heavy AI work hidden behind a progress bar, which reads as ETL.
 
 ---
 

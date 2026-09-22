@@ -130,6 +130,21 @@ print("generated two broken spec variants")
 PYGEN
 [ $? -eq 0 ] || { say "run_tests: could not generate the broken variants"; exit 2; }
 
+# Variant C — a workflow of 8 steps: mechanics promoted to steps (SPEC019).
+"$PY" - "$FIX/pack-spec.valid.yaml" "$WORK" <<'PYSTEPS'
+import sys, copy, yaml
+src, work = sys.argv[1], sys.argv[2]
+spec = yaml.safe_load(open(src, encoding="utf-8"))
+steps = spec["workflow"]["steps"]
+while len(steps) < 8:
+    s = copy.deepcopy(steps[-1]); s["n"] = len(steps) + 1
+    s["name"] = "Mechanics promoted to a step %d" % s["n"]; steps.append(s)
+yaml.safe_dump(spec, open(work + "/pack-spec.broken-workflow.yaml", "w", encoding="utf-8"),
+               sort_keys=False, allow_unicode=True)
+print("generated the 8-step workflow variant")
+PYSTEPS
+[ $? -eq 0 ] || { say "run_tests: could not generate the workflow variant"; exit 2; }
+
 # ------------------------------------------- generated .docx / .pptx artifacts
 "$PY" - "$WORK" <<'PYOFFICE'
 import sys, zipfile
@@ -166,6 +181,7 @@ say "lint_spec.py"
 run_case "valid fixture is clean" 0 \
   "$PY" "$TOOLS/lint_spec.py" "$VALID" --catalog "$CAT" --roadmap "$ROAD"
 expect "valid fixture" "17 of 17 components complete"
+expect_absent "valid fixture" SPEC019 SPEC020
 
 run_case "valid fixture is clean under --strict" 0 \
   "$PY" "$TOOLS/lint_spec.py" "$VALID" --catalog "$CAT" --roadmap "$ROAD" --strict
@@ -180,6 +196,11 @@ run_case "broken variant B (packages and metrics)" 1 \
   --catalog "$CAT" --roadmap "$ROAD"
 expect "variant B" SPEC004 SPEC005 SPEC007 SPEC008 SPEC009 SPEC011 SPEC012 SPEC014 SPEC018
 expect "variant B" "architecture.stack[2].catalog_id"
+
+run_case "broken variant C (workflow of 8 steps)" 1 \
+  "$PY" "$TOOLS/lint_spec.py" "$WORK/pack-spec.broken-workflow.yaml" \
+  --catalog "$CAT" --roadmap "$ROAD"
+expect "variant C" SPEC019
 
 run_case "a missing spec is a usage error" 2 \
   "$PY" "$TOOLS/lint_spec.py" "$WORK/not-here.yaml"
