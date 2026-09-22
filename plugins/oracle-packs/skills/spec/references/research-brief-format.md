@@ -167,8 +167,8 @@ no category label), and these rows in this order:
 | Row | What the cell holds |
 |---|---|
 | One-liner | The job and the outcome in the buyer's words. Never the packaging promise. |
-| Problem | The reader's pain, in the reader's words, one sentence: a named role and a concrete situation with the nouns on their desk — a sentence that person could say about their own week (the tangibility test, `shared/references/pack-anatomy.md` §1). |
-| Solution | The change in what the person does ("review the plan, not build it"), one sentence — what they do afterwards, never the machinery ("resolved, reasoned, mapped, scored"). |
+| Problem | The reader's pain, in the reader's words, one sentence: a named role and a concrete situation with the nouns on their desk — a sentence that person could say about their own week (the tangibility test, `shared/references/pack-anatomy.md` §1) — and readable with zero context: the business named in the sentence, literal words, everything it refers to introduced, at most 30 words (the zero-context test, same section). |
+| Solution | The change in what the person does ("review the plan, not build it"), one sentence — what they do afterwards, never the machinery ("resolved, reasoned, mapped, scored") — readable with zero context in the same way. |
 | Sells best in | The vertical(s) it covers first, and the workflow steps it spans. |
 | Bets on | The differentiator and the evidence behind it (which findings, which competitor gap). |
 | Leaves out | The boundary that keeps it honest. |
