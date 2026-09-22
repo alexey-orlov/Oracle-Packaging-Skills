@@ -74,6 +74,7 @@ capabilities:                             # component 6 — Area > Category > Fe
             customization_scope: "Rule weights and constraint set per customer"
             specificity: [customer, engine, use_case, industry]   # four-axis tag; empty = generic
             tier_first_available: pov | integration | scaling
+            note: "file export / import at PoV; API write-back is Integration"  # → a footnote on the feature list
             source: ...
     customization_scope_area: "..."       # per-capability handling summary used in the packages table
 

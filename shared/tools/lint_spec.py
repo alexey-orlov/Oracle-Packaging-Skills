@@ -54,6 +54,13 @@ Rule codes
     SPEC020  workflow has fewer than 3 steps (warning)
     SPEC021  more than 3 required Oracle products (warning)
     SPEC022  more than 4 optional Oracle products (warning)
+    SPEC023  the capability tree is too fine for a one-page feature list
+             (warning): more than 6 areas, 14 categories or 40 features
+    SPEC024  a capabilities[] feature carries an unknown key, or has no status.
+             An unknown key is almost always an unquoted inline mapping whose
+             feature name contained a comma: `{ name: Repair, replace or refer,
+             status: ... }` parses as name="Repair" plus a junk key, so the row
+             silently loses everything after the comma. Valid YAML, wrong data.
 
 --strict    promotes SPEC900/901/902 and SPEC017 to findings: the completeness
             check, usable on a spec at any status. A `draft` stays clean under
@@ -458,6 +465,42 @@ class SpecLint:
                       "workflow has %d step(s) — fewer than 3 hides the work; the target is "
                       "5-7 steps" % n)
 
+    FEATURE_KEYS = {"name", "status", "tier_first_available",
+                    "customization_scope", "specificity", "source", "note"}
+
+    def check_capability_keys(self):
+        """SPEC024 (warning) — feature entries carry only known keys, and every one has a status.
+
+        A warning, not a finding: the damage it catches is usually in a feature's provenance
+        rather than in what the artifacts print, and a stale `source` list must not be able to
+        stop a build. It is still worth saying out loud, because the same YAML slip can truncate
+        a feature name and nothing else notices.
+        """
+        caps = self.spec.get("capabilities") or []
+        for area in caps:
+            if not isinstance(area, dict):
+                continue
+            for cat in area.get("categories") or []:
+                if not isinstance(cat, dict):
+                    continue
+                for feat in cat.get("features") or []:
+                    if not isinstance(feat, dict):
+                        continue
+                    name = feat.get("name") or "(unnamed)"
+                    extra = sorted(k for k in feat if k not in self.FEATURE_KEYS)
+                    if extra:
+                        self.rep.warn(self.path, PL.lineno(self.spec, "capabilities"),
+                                  "SPEC024",
+                                  "capability %r carries unknown key(s) %s \u2014 an inline "
+                                  "mapping whose name held a comma splits the name and the "
+                                  "row loses the rest; quote the name"
+                                  % (name, ", ".join(repr(k) for k in extra)))
+                    if not feat.get("status"):
+                        self.rep.warn(self.path, PL.lineno(self.spec, "capabilities"),
+                                  "SPEC024",
+                                  "capability %r has no status — the feature list will not "
+                                  "build until it does" % name)
+
     def check_product_counts(self):
         products = self.spec.get("oracle_products")
         if not isinstance(products, list):
@@ -477,6 +520,36 @@ class SpecLint:
                           "%d optional Oracle products — optional holds only what a typical "
                           "buyer would plausibly connect as a source or destination, each with a "
                           "concrete `why`; a catalog sweep is cut" % roles["optional"])
+
+    def check_capability_size(self):
+        """SPEC023 — the capability tree is sized for a feature list that fits one A4 page."""
+        caps = self.spec.get("capabilities")
+        if not isinstance(caps, list) or not caps:
+            return
+        areas = categories = features = 0
+        for area in caps:
+            if not isinstance(area, dict):
+                continue
+            areas += 1
+            for cat in area.get("categories") or []:
+                if not isinstance(cat, dict):
+                    continue
+                categories += 1
+                features += len(cat.get("features") or [])
+        over = []
+        if areas > 6:
+            over.append("%d areas (6 is the ceiling)" % areas)
+        if categories > 14:
+            over.append("%d categories (about 12)" % categories)
+        if features > 40:
+            over.append("%d features (about 30-35)" % features)
+        if over:
+            self.rep.warn(self.path, PL.lineno(self.spec, "capabilities"), "SPEC023",
+                          "the capability tree carries %s — the feature list is one A4 page, and "
+                          "a tree this fine will not fit it even with one row per category. Group "
+                          "at sign-off, not at build time: merge sibling features into one, fold "
+                          "a small category into its neighbour, shorten names"
+                          % ", ".join(over))
 
     def check_kpis(self):
         kpis = self.spec.get("kpis")
@@ -714,7 +787,9 @@ def main() -> int:
     lint.check_packages()
     lint.check_kpis()
     lint.check_workflow_steps()
+    lint.check_capability_keys()
     lint.check_product_counts()
+    lint.check_capability_size()
     lint.check_customer_names(deny)
     lint.check_name_variants()
 

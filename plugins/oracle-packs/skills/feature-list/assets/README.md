@@ -5,6 +5,48 @@ structure, geometry and brand tokens live in `../tools/build_feature_list.py` an
 `../references/feature-list-anatomy.md`. A `.dotx` would add a binary to review and a second place
 for the column widths to drift.
 
+## The wordmark
+
+| File | What it is |
+|---|---|
+| `softserve-wordmark-ink.png` | What the document embeds: the SoftServe wordmark in ink, trimmed to its bounding box on white, ~2400 px wide. `run.add_picture(..., width=Inches(1.0))` places it. |
+| `softserve-wordmark-ink.svg` | The source, copied from the practice mini-site (`site/assets/img/brand/softserve-wordmark-ink.svg`) so the provenance of the PNG is in the repo. |
+
+**To regenerate** (no SVG rasterizer is installed on the owner's Mac — QuickLook does the work):
+
+```sh
+qlmanage -t -s 2400 -o <tmp> softserve-wordmark-ink.svg      # → <tmp>/softserve-wordmark-ink.svg.png
+# QuickLook pads the render into a square; crop it back to the mark and keep a white ground:
+python3 - <<'PY'
+from PIL import Image, ImageChops, ImageOps
+im = Image.open("<tmp>/softserve-wordmark-ink.svg.png").convert("RGB")
+box = ImageChops.invert(im).getbbox()                         # the ink's own bounding box
+im.crop(box).save("softserve-wordmark-ink.png")
+PY
+```
+
+Keep it at least 1200 px wide: it is placed at 1.0 in, so anything smaller softens in print. If the
+file is ever missing the build does not silently drop the brand — it falls back to the word
+"SoftServe" set in the body face and says so on stderr.
+
+## Fonts
+
+The document asks for **Azurio** (the title) and **Replica LL TT** (everything else), the mini-site's
+two faces. On the owner's Mac they are installed in `/Library/Fonts/Managed/`. Nothing is shipped
+here: fonts are licensed, and the repo is not their distribution channel.
+
+The three status glyphs are set in a third face, **Apple Symbols**
+(`/System/Library/Fonts/Apple Symbols.ttf`). Neither brand face carries U+25CF / U+25D0 / U+25CB, so
+without this the renderer picks a different substitute per glyph and they come out at different
+sizes. Apple Symbols draws all three within 4% of each other; where it is absent the build falls
+back to per-glyph point sizes that look equal (● and ○ at 1.15× ◐) and says so on stderr.
+
+The builder writes an `altName` for each face into `word/fontTable.xml` after saving — Azurio →
+Georgia, Replica LL TT → Arial, Apple Symbols → Segoe UI Symbol — so a machine without them
+substitutes something sane instead of letting Word guess. The same font files are what make the one-page estimate exact: the height
+estimator measures text with the installed face through Pillow, and falls back to an average glyph
+width (saying so on stderr) when it cannot find them.
+
 ## Run it
 
 ```sh
@@ -23,15 +65,26 @@ python3 -m venv .venv
 | *(default)* | Adds the `Tier first available` column when every feature carries `tier_first_available`. |
 | `--tier-column` | Force the six-column layout even when some features have no tier. |
 | `--no-tier-column` | Force the five-column reference layout. |
+| `--fit one-page` *(default)* | Walk the fit ladder and guarantee one A4 page: a row per feature at 7.5pt → 7pt → compact (a row per category, features inline, status and tier columns dropped) at 7.5pt → 7pt. |
+| `--fit none` | One row per feature at 7.5pt over as many pages as it takes, header row repeating. |
+| `--check-pages` / `--no-check-pages` | Verify the real page count by exporting to PDF with Pages.app (default: on where Pages is installed; hard 90-second limit, and a failure is reported as "not verified", never as an error). |
 
-Writes `<slug>-feature-list.docx` into `--out`, and prints the area / category / feature counts and
-the status split so a miscount is visible without opening the file.
+Writes `<slug>-feature-list.docx` into `--out`, and prints the area / category / feature counts, the
+status split, the layout it used and the estimated fill — so a miscount or an unexpectedly tight
+page is visible without opening the file.
+
+| Exit | Meaning |
+|---|---|
+| 0 | written |
+| 1 | usage or spec error |
+| 2 | a pricing figure reached the page, which the feature list must never carry |
+| **3** | **the capability tree does not fit one A4 page even in compact mode at 7pt.** Nothing is written. The report names the counts, the largest areas and categories, and what to group. Take it to the owner: merge sibling features, fold small categories, shorten names — then fix the tree in the spec and rebuild. Never answer this with smaller type. |
 
 ## Dependencies
 
-`PyYAML` and `python-docx`. No browser, no Word, no LibreOffice — the document is written directly
-as Office Open XML. Fonts are not shipped: the document asks for **Arial**, which is present
-wherever Word is.
+`PyYAML` and `python-docx`; `Pillow` is optional and only makes the one-page estimate exact. No
+browser, no Word, no LibreOffice — the document is written directly as Office Open XML. Pages.app
+is used only to confirm the page count, and only when it is there.
 
 ## Test fixture
 
@@ -44,24 +97,38 @@ Both builders share one fixture, in the one-pager skill:
 
 It is an anonymized Workforce Optimization spec — no customer name, statuses arranged to exercise
 all three glyphs, and two features carrying notes so the footnote markers are exercised too.
-Expected: 4 areas / 13 categories / 38 features, 6 columns, 19 available · 6 partial · 13 roadmap.
+Expected: 4 areas / 13 categories / 38 features, 19 available · 6 partial · 13 roadmap. At 38
+features it does not fit one row per feature, so it lands on compact mode at 7.5pt (about two
+thirds of the page) — itself a demonstration that 38 features is a tree past its size.
 
 ## Done means
 
 1. **It builds**, exit 0, with the counts matching the spec's capability tree.
-2. **No pricing.** Exit 2 means a price reached the document; the feature list never carries one.
-3. **Opened in Word**, not only rendered in a previewer. Check: the Area and Category columns read
-   as continuous merged blocks; the header row repeats on page 2 and after; no feature name is
-   truncated; the three glyphs are distinguishable; every footnote marker has its line.
-4. **Statuses re-checked against the product**, not against the last version of this document.
+2. **One page.** The build printed the layout and the estimated fill, and — where Pages is
+   installed — verified the real page count. An exit 3 is not a build to be worked around; it is a
+   question for the owner about grouping.
+3. **No pricing.** Exit 2 means a price reached the document; the feature list never carries one.
+4. **The brand is right**: the wordmark lockup with `Oracle AI & Data Solutions` at the top, the
+   title in Azurio, everything else in Replica LL TT, and the two intro lines — the approved
+   one-liner, then who it is for. **Nothing in the page footer**: the spec version and build date
+   are in the file's properties (File > Properties), which the build fills in on every run.
+   The three status glyphs are the same size — three shapes, one size.
+5. **Footnotes are caveats**: at most three, each the caveat alone in 15 words or fewer, never the
+   feature name or a description repeated back. The build warns on stderr when the list drifts.
+6. **Opened in Word**, not only rendered in a previewer. Check: the Area and Category columns read
+   as continuous merged blocks; no feature name is truncated; the three glyphs are distinguishable;
+   every footnote marker has its line. (QuickLook does not honour vertical merges — continuation
+   cells looking separate there is the previewer, not the file.)
+7. **Statuses re-checked against the product**, not against the last version of this document.
    Feature lists rot faster than any other artifact in the pack, and a stale `available` is the one
    error that reaches a customer as a promise.
-5. **Reviewed by the owner** against the spec, then delivered.
+8. **Reviewed by the owner** against the spec, then delivered.
 
 ## A note on YAML
 
 `capabilities[]` is long and is usually written in YAML flow style (`- { name: ..., status: ... }`).
 An **unquoted flow value containing a comma is silently truncated at the comma** — `name: Dispatcher
-UI (map, table views)` becomes `Dispatcher UI (map`, with no error. Quote any feature name
-containing a comma, a colon or a brace. This bit the fixture during the build of this tool; the
-symptom is a feature name that looks fine in the spec and arrives half-length in the document.
+UI (map, table views)` becomes `Dispatcher UI (map`, with no error, and a two-item `source:` list
+turns its second item into a junk key. Quote any value containing a comma, a colon or a brace. This
+bit the fixture during the build of this tool; `lint_spec.py` now warns (SPEC024) when a feature
+carries a key it does not recognize, which is how the damage usually shows itself.

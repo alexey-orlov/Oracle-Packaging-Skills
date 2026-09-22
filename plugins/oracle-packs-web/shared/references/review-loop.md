@@ -30,7 +30,7 @@ _How every skill in this bundle behaves around the person who owns the pack, so 
 
 ## 3. Handing the artifact over
 
-**Show renders, not descriptions.** The review artifact is the built thing: a contact sheet of the rendered slides, the PDF, the live page, the clickable walkthrough. A description of what was built is not a deliverable and will be sent back. The owner reviews the running thing.
+**Show renders, not descriptions.** The review artifact is the built thing: a contact sheet of the rendered slides, the PDF, the live page, the clickable walkthrough. A description of what was built is not a deliverable and will be sent back. The owner reviews the running thing. **Open it beside the conversation, then ask** (the owner, 2026-09-22): in the Claude desktop app a text file opens in the Files pane and a render in the side panel *before* the approval question, so the owner answers while looking at it; internal pack material is never published as a claude.ai artifact — it leaves the machine.
 
 **Deliver where the owner can reach it.** The owner is often on a different machine than the one that did the work. Put the file in the shared location beside its source, attach it in the conversation, or publish the page and hand over the link — and say explicitly where it is. A document ships as both its editable form and a rendered twin.
 

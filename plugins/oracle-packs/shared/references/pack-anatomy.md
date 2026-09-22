@@ -92,6 +92,8 @@ The order is load-bearing. The name is chosen *last of the four* because a name 
 
 **Good.** The WfO feature list: 4 areas (Allocation rules · Review and approval workflow · KPIs and analytics · Integrations) → 13 categories → 38 features, with status merged down per category and customization scope merged down per area. The customization text is what makes the table sellable rather than a spec dump — *"Balancing optimization function with penalty / rewards, allocation rules weights tuning to achieve optimal allocation per customer"* tells a buyer exactly what the engagement configures for them.
 
+**Size.** The feature list is one A4 page — a requirement, not a preference (the owner, 2026-09-22) — so the tree is sized for it: **at most 6 areas, about 12 categories, about 25 features with one row per feature, up to about 50 in the compact layout with features inline per category, feature names of 8 words or fewer**. Past that the document cannot hold one row per feature and the build has to fall back to a row per category, which drops the status and tier columns. Group before that happens: merge sibling features into one, fold a small category into its neighbour, shorten names. The decision belongs at the capabilities sign-off, where the owner is looking at the tree, **not at build time**, where the only lever left is type size. `lint_spec.py` warns (SPEC023) above 6 areas / 14 categories / 40 features.
+
 **Derivation rule.** The mini-site's stage view (`technology.capabilities[]{stage, items[]}`) is **derived from this tree per pack** by mapping every feature to a workflow stage (component 7). The mapping is owned by the spec, not re-invented by the listing skill, and the derived view may drop features but may never add one.
 
 **Anti-patterns.** Two glyph systems in one estate (the delivered WfO feature list distinguishes "available" from "partial" by the **colour** of the same `●`, which is invisible in plain text, in print and to anyone reading a converted copy — the pack standard is `● ◐ ○`, three distinct glyphs). Features that are "theoretically also possible". A feature list with pricing on it. A status claimed at feature granularity when the source only supports it per category.
@@ -230,13 +232,16 @@ Slides 8, 9 and 10 are three alternates of one table; the deck ships all three a
 
 ### 3.3 Feature list — .docx
 
-1. All-caps kicker line: `SOFTSERVE × ORACLE ·`.
-2. **H1**: the internal name variant.
-3. **`App.`** — a single run-in bold paragraph: what the product does in one sentence, then the verticals it spans, numbered inline.
-4. **The capability matrix** — five columns: `Area | Category | Features | Current status | Standard customization scope`. `Area`, `Category`, `Current status` and `Standard customization scope` are merged down across their rows, so only the first row of a group carries text. Footnote markers (`*`, `**`, `***`) append inline to the status glyph.
-5. **Legend** — one line per glyph: `●` available out of the box, configuration may be required · `◐` partially implemented out of the box, major improvements on the roadmap · `○` roadmap.
+1. **The lockup**, as on the practice mini-site: the SoftServe wordmark, a hairline rule, `Oracle AI & Data Solutions`.
+2. **H1**: the internal name variant + " — Feature list", in the site's display face, over a hairline.
+3. **Two intro lines**: the approved one-liner (`one_liner.full`), then `For ` + who it is for (`icp.line`). Nothing else — no kicker, no eyebrow, no run-in definition label.
+4. **The capability matrix** — five columns: `Area | Category | Features | Current status | Standard customization scope`, plus an optional `Tier first available`. `Area`, `Category`, `Current status` and `Standard customization scope` are merged down across their rows, so only the first row of a group carries text. Footnote markers (`*`, `**`, `***`) append inline to the feature name.
+5. **Legend** — one line: `●` available · `◐` partial · `○` roadmap, each with its wording, all three set in one symbol face so they are the same size.
+6. **Footnotes** — the caveat alone, at most three, 15 words or fewer each: a tier caveat that changes what the buyer gets. Nothing else, and **no page footer** — the spec version and build date live in the file's properties.
 
-No pricing, ever. No tier columns. The matrix is the master that every other capability rendering derives from.
+**One A4 page**, guaranteed by the build: it estimates the height and walks a fit ladder (a row per feature at 7.5pt → 7pt → a row per category with the features listed inline → the same at 7pt), and where Pages is installed it verifies the real page count. A tree that fits none of those rungs is not built: the build reports what has to be grouped. So the page limit lands on the capability tree (§6), never on the type size.
+
+No pricing, ever. The matrix is the master that every other capability rendering derives from.
 
 ### 3.4 Executive summary — one slide, in the host deck's style
 

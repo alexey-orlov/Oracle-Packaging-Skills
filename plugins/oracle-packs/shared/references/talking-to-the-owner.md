@@ -60,6 +60,7 @@ The owner wants to know which workflow they are in, in plain conceptual terms, b
   6. **The whole brief** — one look at everything, then confirm, change or stop.
   After that the artifacts are built one at a time, each reviewed before the next (`/oracle-packs:build` shows its own map: artifact n of N).
 - **Every question title carries its place**: `<Stage> · <n> of <N> · <question name>` — "Before we start · 3 of 9 · Where the raw inputs are", "Your call on the research · 2 of 7 · Which differences between industries are real", "Confirm the pack · 4 of 11 · The name", "Artifacts · 2 of 6 · The sales deck". N counts the questions actually asked in that stage, after skipping, so the count never lies.
+- **Open what the stage produced beside the conversation before asking** — the research summary, the brief, each artifact — so the owner answers while looking at the thing, never at a description of it.
 - **Say when a stage ends**, in one line: "Stage 3 of 6 done — your call on the research. Next: the pack's story, one decision."
 - **All of a stage's questions are asked in that stage.** Everything only the owner can answer before the research starts is asked before the research starts; nothing is held back to interrupt them later.
 

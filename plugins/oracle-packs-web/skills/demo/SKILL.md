@@ -34,6 +34,11 @@ user-invocable: true
 
 Flow and design confirmed by the user; the value band leads; every number reconciles on undo; red-team and fidelity reports delivered; captures clean with no console logs; lint clean; synthetic figures listed; approval logged.
 
+## Showing it to the owner
+
+Everything the owner reviews is opened beside the conversation *before* the question is asked — the owner answers while looking at the thing, never at a description of it (`shared/references/review-loop.md` §3). In the Claude desktop app: a text file (the research summary, the pack brief, a spec) opens in the Files pane with the view-pane tool (`mcp__ccd_view__show_pane`, pane `file`, the path); a render (a page PNG, a PDF, an HTML page) opens in the side panel with the file-send tool (`SendUserFile`, `display: "render"`), with the editable file attached alongside (`display: "attach"`); then the widget. Never publish internal pack material as a claude.ai artifact — it leaves the machine; artifacts stay reserved for the mini-site demos. In a plain terminal with no panes, print the path and a text rendering, and say so. Here: the walkthrough is the one thing that may be published as an artifact (it is synthetic, customer-free by rule); open it there and hand over the link.
+
 ## Self-check before closing
 
 - [ ] Every message, question, option and table the owner saw passes the reader's test: no method codes, no file or key names, no packaging vocabulary as vocabulary, reasons instead of rule names.
+- [ ] Everything the owner reviewed was opened beside the conversation before the question was asked.

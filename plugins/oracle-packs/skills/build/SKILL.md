@@ -37,6 +37,10 @@ Run `python3 shared/tools/check_consistency.py <spec> <every produced file>`, th
 
 Copy the approved files to the delivery folder the user names (ask once; the owner's convention is the pack's own folder on the practice's shared drive, next to the earlier artifacts), keeping the pack's file-name pattern `<Pack name> - <Artifact> - Oracle.<ext>`. Append one line per artifact to `packs/<slug>/decisions.md` (date, channel, file, what changed on review). Close with: the files and where they are, what was decided differently from the pack brief and why, and the open items the owner still holds — named as parts of the pack, not as keys or steps.
 
+## Showing it to the owner
+
+Everything the owner reviews is opened beside the conversation *before* the question is asked — the owner answers while looking at the thing, never at a description of it (`shared/references/review-loop.md` §3). In the Claude desktop app: a text file (the research summary, the pack brief, a spec) opens in the Files pane with the view-pane tool (`mcp__ccd_view__show_pane`, pane `file`, the path); a render (a page PNG, a PDF, an HTML page) opens in the side panel with the file-send tool (`SendUserFile`, `display: "render"`), with the editable file attached alongside (`display: "attach"`); then the widget. Never publish internal pack material as a claude.ai artifact — it leaves the machine; artifacts stay reserved for the mini-site demos. In a plain terminal with no panes, print the path and a text rendering, and say so. Here: before each `Artifacts · n of N` widget, that artifact's render opens in the side panel and its editable file is attached.
+
 ## Self-check before closing
 
 - [ ] Spec confirmed and lint-clean before the first build.
@@ -45,3 +49,4 @@ Copy the approved files to the delivery folder the user names (ask once; the own
 - [ ] Nothing internal-only in a partner or customer cut (contract values, named accounts, capacity numbers).
 - [ ] Delivery paths and decisions logged.
 - [ ] Every message, question, option and table the owner saw passes the reader's test: no method codes, no file or key names, no packaging vocabulary as vocabulary, reasons instead of rule names.
+- [ ] Everything the owner reviewed was opened beside the conversation before the question was asked.
