@@ -16,7 +16,7 @@ Asked at the start of `/oracle-packs:spec`, one widget at a time, in this order.
 |---|---|---|
 | B1 | Which roadmap item does this pack map to? (offer the closest matches from `shared/data/roadmap-items.csv` by name similarity) | Propose the top three; if none fits, propose a new item and flag it for the roadmap owner. |
 | B2 | Which verticals do you expect to sell it in, first and second? | Research proposes three from the domain study. |
-| B3 | Which artifacts do you want at the end? (feature list · sales deck · sales one-pager · executive summary · mini-site listing · interactive demo) | All six, in that order. |
+| B3 | Which artifacts do you want at the end? Six choices, so this is **its own widget call with two multi-select questions** — never one question with the artifacts bundled into four options. Question 1 "Documents (oracle-packs)": Feature list (.docx) · Sales deck (.pptx) · Sales one-pager (.pdf) · Executive summary (.pptx). Question 2 "Web (oracle-packs-web)": Mini-site listing (products[] entry) · Interactive demo (HTML walkthrough). One artifact per option, every label in exactly this `<Artifact> (<format>)` form, each with a one-line description of what it is. | All six, in that order (the user skips, or ticks everything). |
 | B4 | Who is the internal contact for this pack (the person doing the packaging)? | Ask; never default to a name. Emails per channel come from `shared/references/naming-and-clearance.md`. |
 
 ## Block C — clearance and numbers (asked before the options step)
@@ -35,6 +35,7 @@ Sources for the walkthrough: a video, screenshots, a written overview, or a deta
 ## Rules for asking
 
 - One widget per question; two to four concrete options plus the free-text "Other"; when you have a recommendation, put it first and label it.
+- **One option = one choice, never a bundle.** The widget caps a question at four options. When a question has more than four concrete choices (B3 has six), split it into two or more questions in the same widget call, along a real boundary (which plugin builds it: documents vs web), all of them multi-select, with uniform option labels (`<Artifact> (<format>)`). Merging several choices into one option to fit the cap is a defect: the user can no longer take one of them without the others.
 - Every question carries one line of "why this matters" so the user can answer fast.
 - When an answer contradicts the inputs (a price, a date, a count), say so before moving on; the user decides which is right.
 - When something essential is missing and no default is safe, stop and ask; never fill the gap with an invention.

@@ -38,11 +38,13 @@ claude plugin install oracle-packs-web@oracle-packaging-skills   # only if you b
 
 Before either, run `tools/sync-shared.sh` so each plugin carries the current `shared/` copy (the release step; `--check` reports drift).
 
-**On the owner's Mac (done 2026-09-18):** the repo folder itself is registered as a local marketplace and both plugins are installed at user scope, so `/oracle-packs:…` and `/oracle-packs-web:…` work in every session. After editing the repo, refresh the installed copies:
+**On the owner's Mac (done 2026-09-18):** the repo folder itself is registered as a local marketplace (`source: directory`) and both plugins are installed at user scope, so `/oracle-packs:…` and `/oracle-packs-web:…` work in every session. Sessions do **not** read this repo: they read a snapshot copied into `~/.claude/plugins/cache/oracle-packaging-skills/<plugin>/<version>/`, and `claude plugin update` re-copies only when the `version` in the plugin's `.claude-plugin/plugin.json` is higher than the installed one — at the same version it reports "already at the latest version" and keeps the old snapshot (2026-09-22: four days of edits had reached no session this way). A release is therefore: bump `version` in **both** `plugins/*/.claude-plugin/plugin.json` (both, because `sync-shared.sh` touches both plugins), then
 
 ```bash
 tools/sync-shared.sh && claude plugin marketplace update oracle-packaging-skills && claude plugin update oracle-packs@oracle-packaging-skills && claude plugin update oracle-packs-web@oracle-packaging-skills
 ```
+
+then start a new session — a running one keeps the version it loaded (the old snapshot directory is kept, so a run in progress does not break). The snapshot is taken from the working tree, committed or not, while the `gitCommitSha` the plugin manager records is HEAD at that moment — commit before releasing if that provenance should mean anything.
 
 ## Requirements
 

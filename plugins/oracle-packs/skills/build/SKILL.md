@@ -18,7 +18,7 @@ user-invocable: true
 
 ## The order and the pauses
 
-Ask once, with a widget, which artifacts to build now (default: all six in this order) and for which channel the print artifacts are cut (default: `partner_print`; `internal` produces the internal variant with prices and named accounts where the spec allows):
+Ask once, in a single widget call with three questions — never one question with several artifacts bundled into an option (the widget caps a question at four options; there are six artifacts): (1) **Documents**, multi-select: Feature list (.docx) · Sales deck (.pptx) · Sales one-pager (.pdf) · Executive summary (.pptx); (2) **Web**, multi-select: Mini-site listing (products[] entry) · Interactive demo (HTML walkthrough); (3) **Channel** for the print artifacts: `partner_print` (default) or `internal` (the internal variant with prices and named accounts where the spec allows). One artifact per option, labels in that `<Artifact> (<format>)` form, each with a one-line description. Skipping the artifact questions means all six, in this order:
 
 1. **Feature list** → `/oracle-packs:feature-list`
 2. **Sales deck** → `/oracle-packs:deck`
