@@ -42,6 +42,14 @@ From the owner's review of a customer-facing site's home page: the copy "overemp
 counts and the scaffolding, not the essence" and used internal vocabulary ("workflow
 patterns", "packaged") as if it were customer language.
 
+- **A problem statement is tangible** (2026-09-22, on a pack's problem line *"Commercial teams
+  work out what a development means for their accounts by hand…"*: "kind of waterish"). It names
+  a role and a situation that person would describe in their own words, with the nouns on their
+  desk — *"Account managers can't keep up with all the market signals, internal insights and
+  updates happening in their accounts"* — never categories standing in for them ("a development",
+  "second order", "the offer"). Test: could that person say the sentence about their own week? The
+  solution line passes the same test from the other side — what they do afterwards, not the
+  machinery.
 - **Structure before copy — a page is an argument, not an inventory** (2026-09-16, from the
   review of a services page: "very poorly structured, too long, no grand narrative"). Before
   choosing components, settle audience → positioning (what this page offers that its sibling

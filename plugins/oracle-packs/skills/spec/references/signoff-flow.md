@@ -26,7 +26,7 @@ The numbers below are the running order the owner sees in every title (`Confirm 
 
 | # | Component | The card must show | Ask when missing |
 |---|---|---|---|
-| 1 | Problem ↔ solution | The reader's problem in the reader's words; the solution as a job reframe (what the app does for them, not the technology); one line on where the pack differs from what we built for the customer | Which pain is primary; whether the reframe is true for what we delivered |
+| 1 | Problem ↔ solution | The reader's problem in the reader's words — a named role and a concrete situation with the nouns on their desk, a sentence that person could say about their own week (the tangibility test, `shared/references/pack-anatomy.md` §1: "commercial teams work out what a development means for their accounts" fails; "account managers can't keep up with the market signals, internal insights and updates in their accounts" passes); the solution as a job reframe (what the app does for them, not the technology); one line on where the pack differs from what we built for the customer | Which pain is primary; whether the reframe is true for what we delivered |
 | 2 | One-liner | Full form and rep-sayable short form; the job and the outcome; no packaging vocabulary; and, in one plain line, whether any word we keep out of customer copy turned up in it | Whether the outcome claim is cleared |
 | 3 | Target ICP | One line: who, at what kind of company, with what pain; buyer roles; qualifying signals; disqualifiers | Company size band, the platform prerequisite |
 | 4 | Name | One plain name; how it is written for each audience, derived by rule; conflicts with existing packs or products | Nothing is invented here: if the user has a working name, propose to keep it |
