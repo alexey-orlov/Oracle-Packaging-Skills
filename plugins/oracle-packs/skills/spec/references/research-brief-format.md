@@ -166,7 +166,7 @@ no category label), and these rows in this order:
 
 | Row | What the cell holds |
 |---|---|
-| One-liner | The job and the outcome in the buyer's words, clear to a seller who has never worked in the industry. Never the packaging promise. |
+| One-liner | The job and the outcome in the buyer's words, clear to a seller who has never worked in the industry, answering of what · so what for the business · how in one clause, with no qualifier the delivered case alone explains. Never the packaging promise. |
 | Problem | The reader's pain, in the reader's words, one sentence: a named role and a concrete situation with the nouns on their desk — a sentence that person could say about their own week (the tangibility test, `shared/references/pack-anatomy.md` §1) — and readable with zero context by an Oracle or SoftServe seller who has never worked in the industry: the business named in the sentence, literal words, everything it refers to introduced, at most 30 words; if the pain is obvious only to insiders, one clause first says it exists and why it hurts (the zero-context test, same section). |
 | Solution | The change in what the person does ("review the plan, not build it"), one sentence — what they do afterwards, never the machinery ("resolved, reasoned, mapped, scored") — readable with zero context in the same way. |
 | Sells best in | The vertical(s) it covers first, and the workflow steps it spans. |
