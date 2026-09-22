@@ -106,7 +106,7 @@ adjudicates, the output shape, and when to stop and ask.
 
 ### Step 2 — Draft the generalized workflow first
 
-- **Agent:** write the job's workflow at maximum generality as **5–7 numbered steps** (coaching rule 21 — twelve is the engineering decomposition and it buries the differentiator among the plumbing; name finer operations inside a step with a `covers:` line, and give the pack's differentiating step its own place in the group), using
+- **Agent:** write the job's workflow at maximum generality as **5–7 numbered steps** (§4 below: the research returns the finer list, the pack groups it at the buyer's checkpoints — and the pack's differentiating step gets its own place in the group rather than being folded into a neighbour), using
   step names a buyer would recognize, not the delivered product's screen names. Also draft the
   **scenario set**: the 3–5 *fundamentally different* cases you believe this job splits into,
   with the entity difference stated for each (T2).
@@ -297,10 +297,6 @@ adjudication that follows each is never delegated. Ask each to return the stated
 > where the human decision sits, and the industry-standard term. Name sources with tiers; prefer
 > primary docs and case studies over marketing pages. Mark anything you cannot verify "—". Do not
 > describe our product; we are not in this research.
-
-*(The research prompt above deliberately asks for finer grain than the pack ships: you want the
-full operation list to adjudicate against, then group it to the 5–7 step spine at step 2. Do not
-carry the research's step count into `workflow.steps[]`.)*
 
 **The pack's workflow is 5–7 steps.** The research returns the fine-grained list; the pack groups
 it at the buyer's checkpoints — where a human decides, where an output appears, where data changes
