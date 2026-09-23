@@ -16,6 +16,7 @@ Dependencies: pyyaml, python-pptx, Pillow  (see plugins/oracle-packs/requirement
 from __future__ import annotations
 
 import argparse
+import re
 import sys
 from pathlib import Path
 
@@ -34,6 +35,12 @@ from deckkit import (                                         # noqa: E402
 )
 
 BASE_DEFAULT = (_HERE.parents[1] / "deck" / "assets" / "softserve-deck-base.pptx")
+
+# The family name on every print artifact, as the mini-site's lockup carries it.
+# "OCI AI Accelerators" is retired (2026-09-23): a brief that still holds it is
+# rewritten here rather than printed, and the run says so.
+HEADER_BRAND = "Oracle AI & Data Solutions"
+RETIRED_HEADER = re.compile(r"OCI\s+AI\s+Accelerators?|OCI\s+accelerators?", re.IGNORECASE)
 
 # The section-slides grid, measured from the Sep-11 deck and the Jul-17
 # executive summary (inches).
@@ -128,16 +135,26 @@ def block_layers(s, spec: Spec, fit: FitLog):
 def block_proof(s, spec: Spec, fit: FitLog):
     col = COL[2]
     x, w = col
+    # Business metrics only (`kind != technical`): the strip is what the slide claims
+    # about the buyer's business, and a proof criterion reads as such a claim here.
     kpis = spec.figured_kpis()
-    blocked = [k for k in spec.kpis() if k.get("channels") and spec.channel not in k["channels"]]
+    sales = spec.sales_kpis()
+    blocked = [k for k in sales
+               if k.get("channels") and spec.channel not in k["channels"]]
+    if spec.technical_kpis():
+        print("build_exec_summary: %d technical criterion(s) are kept off the proof strip — "
+              "they print on the PoV tier as the \"Proof accepted when …\" line."
+              % len(spec.technical_kpis()), file=sys.stderr)
     label = "PROOF OF VALUE" if not spec.customer_name_allowed() else \
         f"PROOF OF VALUE · {spec.get('meta.source_engagement.customer')}"
     sec_label(s, col, LABEL_Y_TOP, label.upper(), color=C["orange"])
     panel(s, x, PANEL_Y_TOP, w, PANEL_H_TOP, fill=C["panel_grey"],
           accent=C["orange"], line=C["hairline"])
-    if blocked or not kpis:
+    if blocked or not sales:
         # Peer claims are all-or-none (slide-design rule 11): show the empty
-        # instance of the container, never a partly-filled proof block.
+        # instance of the container, never a partly-filled proof block. This is
+        # the CLEARANCE state only — a metric set with no figure yet is a
+        # different thing and is drawn below (2026-09-23).
         textbox(s, x + 0.20, PANEL_Y_TOP, w - 0.40, PANEL_H_TOP,
                 [{"t": "Metric set not cleared for this channel.", "sz": 9,
                   "color": C["muted_light"], "align": "c"}], anchor="m")
@@ -147,13 +164,19 @@ def block_proof(s, spec: Spec, fit: FitLog):
             [{"t": spec.kpi_attribution(), "sz": 8, "color": C["muted"]}])
     fit.add(1, "proof attribution", spec.kpi_attribution(), 8, w - 0.40, 0.24,
             max_lines=1)
-    rows = kpis[:3]
-    rh = (PANEL_H_TOP - 0.44) / max(1, len(rows))
+    # No cleared figure yet: name the metrics where the figures will stand, as the
+    # deck and the one-pager do, and say once underneath that they are still coming.
+    rows = (kpis or sales)[:3]
+    caveat_h = 0.0 if kpis else 0.20
+    rh = (PANEL_H_TOP - 0.44 - caveat_h) / max(1, len(rows))
     for i, k in enumerate(rows):
         y = PANEL_Y_TOP + 0.40 + i * rh
-        fig = str(k.get("figure", ""))
-        base = k.get("baseline")
-        shown = f"{base} → {fig}" if base and k.get("show_baseline") else fig
+        if spec.has_figure(k):
+            fig = str(k.get("figure", ""))
+            base = k.get("baseline")
+            shown = f"{base} → {fig}" if base and k.get("show_baseline") else fig
+        else:   # the metric's name stands where its figure will
+            shown = str(k.get("chip") or k.get("name") or "").strip().rstrip("↑↓→ ")
         fpt = autofit_pt(shown, w - 0.40, 0.24, 12.5, 9, bold=True, max_lines=1)
         paras = [{"t": shown, "sz": fpt, "b": True, "color": C["blue"]},
                  {"t": str(k.get("label") or k.get("name", "")), "sz": 7.5,
@@ -161,6 +184,12 @@ def block_proof(s, spec: Spec, fit: FitLog):
         paras = autofit_paras(paras, w - 0.40, rh - 0.04, min_scale=0.75, default_sz=fpt)
         textbox(s, x + 0.20, y, w - 0.40, rh - 0.04, paras)
         log_box(fit, 1, f"proof stat {i+1}", x + 0.20, y, w - 0.40, rh - 0.04, paras, fpt)
+    if caveat_h:
+        note = "Measured in the proof of value; results to follow."
+        textbox(s, x + 0.20, PANEL_Y_TOP + PANEL_H_TOP - caveat_h, w - 0.40, caveat_h,
+                [{"t": note, "sz": 7, "color": C["muted_light"]}])
+        fit.add(1, "proof caveat", note, 7, w - 0.40, caveat_h, max_lines=1)
+        fit.note("proof strip names the metrics being measured — no cleared figure yet")
 
 
 def block_packages(s, spec: Spec, fit: FitLog):
@@ -182,6 +211,11 @@ def block_packages(s, spec: Spec, fit: FitLog):
                 [{"t": label, "sz": 10, "b": True, "color": C["ink"]}])
         fit.add(1, f"tier {i+1} name", label, 10, text_w, 0.20, bold=True, max_lines=1)
         scope = str(t.get("scope_line") or "")
+        # The technical criteria ride the PoV tier's own scope — the one place on this
+        # slide where "when is the proof done?" is the reader's question.
+        success = spec.pov_success_line()
+        if success and str(t.get("id") or "").strip() == "pov":
+            scope = (scope.rstrip(". ") + ". " + success).strip() if scope else success
         sh = rh - 0.28
         spt = autofit_pt(scope, text_w, sh, 8, 6, max_lines=3)
         textbox(s, x + 0.20, y + 0.26, text_w, sh,
@@ -274,7 +308,16 @@ def block_next_steps(s, spec: Spec, fit: FitLog):
 # ---------------------------------------------------------------------------
 
 def build_slide(prs, layout, spec: Spec, fit: FitLog, title: str | None):
-    header = spec.get("exec_summary.running_header") or "Oracle AI accelerator packs"
+    header = str(spec.get("exec_summary.running_header") or "").strip()
+    if header:
+        m = RETIRED_HEADER.search(header)
+        if m:
+            header = RETIRED_HEADER.sub(HEADER_BRAND, header)
+            print("build_exec_summary: the brief's running header still carries the retired "
+                  "'%s' lockup — rewritten to '%s'." % (m.group(0), HEADER_BRAND),
+                  file=sys.stderr)
+    else:
+        header = f"{HEADER_BRAND} — {spec.name()}"
     s = new_slide(prs, layout, title=title or spec.name(), header=header,
               title_pt=28, title_min_pt=16, title_box=TITLE_BOX)
     copy_slide_number(s, layout)
@@ -300,7 +343,10 @@ def build_slide(prs, layout, spec: Spec, fit: FitLog, title: str | None):
     block_capabilities(s, spec, fit)
     block_next_steps(s, spec, fit)
 
-    bits = [spec.kpi_caveat()]
+    # The caveat travels with the figures: with none printed there is nothing to
+    # qualify, and "figures are illustrative" under a strip of metric names reads as
+    # a hedge on claims the slide never made (2026-09-23).
+    bits = [spec.kpi_caveat()] if spec.figured_kpis() else []
     if star:
         bits.append("* Indicative; depends on usage and rule-set complexity.")
     # the print-ready sentence first; the long internal statement only as a fallback
@@ -310,7 +356,13 @@ def build_slide(prs, layout, spec: Spec, fit: FitLog, title: str | None):
               "divergence footnote is omitted (the internal note is never printed); add the line "
               "through the spec skill's proof card", file=sys.stderr)
     if div:
-        bits.append(f"Pack scope differs from the delivered engagement: {div}")
+        # A divergence line written as a full sentence stands alone; the run-in prefix
+        # is for a fragment. "…engagement: Not the first client's results" read as a
+        # sentence cut in half (2026-09-23).
+        line = str(div).strip()
+        standalone = bool(line) and line[:1].isupper() and line.endswith((".", "!", "?"))
+        bits.append(line if standalone
+                    else f"Pack scope differs from the delivered engagement: {line}")
     tail = " ".join(b for b in bits if b)
     textbox(s, 0.42, FOOTNOTE_Y, 12.50, 0.30,
             [{"t": tail, "sz": 8, "color": C["muted_light"]}])

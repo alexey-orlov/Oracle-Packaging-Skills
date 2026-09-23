@@ -102,6 +102,10 @@ engagement, no cleared headline number**. The linter reads it as absent: no
 | SPEC021 / SPEC022 | more than 3 required Oracle products / more than 4 optional (warnings) — required is only what the pack cannot run without, optional only what a buyer would plausibly connect |
 | SPEC023 | the capability tree is too fine for a one-page feature list (warning) — above 6 areas, 14 categories or 40 features, group at the capabilities sign-off |
 | SPEC024 | a `capabilities[]` feature carries an unknown key, or no status (warning) — usually an unquoted inline mapping whose value held a comma, which silently drops everything after it |
+| SPEC025 | no business metric in `kpis[]`, or a `kind` that is not `business` / `leading` / `technical` (warning) — sales artifacts print business metrics, so a set of proof criteria leaves every tile empty |
+| SPEC026 | a metric whose name reads as a proof criterion or a vanity count is not marked `kind: technical` (warning) — agreement, precision, recall, accuracy, latency, coverage, confidence, F1, throughput, "processed", "ingested", "onboarded", "surfaced", signals, documents, tokens, uptime |
+| SPEC027 | a `business` metric carries no `owner_role` (warning) — the buyer-side role who would sign the number off |
+| SPEC028 | a retired family name ("OCI AI Accelerators", "OCI accelerator") in `meta.eyebrow`, `deck.running_header`, `exec_summary.running_header` or `one_pager.eyebrow` — the family name is **Oracle AI & Data Solutions** |
 | SPEC900–902 | catalog absent / roadmap absent / a recommended key unfilled (warnings) |
 
 ## lint_artifact.py
@@ -129,6 +133,7 @@ become real instead of skipped.
 |---|---|
 | ART001 / ART002 / ART003 | a deny-listed customer name / a mark in an asset path or embedded media / an Oracle partner-standing claim |
 | ART101 / ART102 / ART103 / ART104 | a catalog `not_this` spelling, unless it sits inside an accepted longer name (the bare `cuOpt` inside `NVIDIA cuOpt`) / "AIDP" outside internal / a near-miss vendor spelling / the wrong pack-name variant for the channel |
+| ART105 | the retired family name ("OCI AI Accelerators", "OCI accelerator") anywhere in an artifact's text, on every channel — the family name is **Oracle AI & Data Solutions**; Oracle's own catalog product `OCI AI Accelerator Packs` is exempt |
 | ART201 / ART202 | a count, total or ceiling / a negation or gap ("so far", "yet") |
 | ART203 / ART204 / ART205 | packaging vocabulary / operating-model vocabulary / internal taxonomy |
 | ART206 | packaging vocabulary inside the pack's one-liner — **every** channel, internal included (needs `--spec`) |

@@ -262,6 +262,8 @@ oracle_products:
 
 kpis:
   - name: Planning cycle time
+    kind: business
+    owner_role: VP Field Service
     chip: Planning time ↓
     label: to optimize and approve a region's 4-week plan
     formula: Time from demand freeze to approved plan
@@ -274,6 +276,8 @@ kpis:
       otherwise: a proof of value at a global home-appliance manufacturer
     caveat: Illustrative proof-of-value result, measured before/after; not contractual.
   - name: Technician productivity
+    kind: business
+    owner_role: VP Field Service
     chip: Productivity ↑
     label: productivity gain on proof-of-value data across three markets
     formula: Jobs per technician per working day
@@ -284,6 +288,8 @@ kpis:
       otherwise: a proof of value at a global home-appliance manufacturer
     caveat: Productivity gain on proof-of-value data across three markets; illustrative, not contractual.
   - name: Avoided staffing cost
+    kind: business
+    owner_role: COO
     chip: Capacity utilization ↑
     label: estimated saving at full launch, valued as staffing avoided
     formula: Productivity gain valued at the cost of the staffing it avoids

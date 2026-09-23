@@ -118,6 +118,8 @@ oracle_products:
 
 kpis:
   - name: Planning cycle time
+    kind: business
+    owner_role: VP Field Service
     formula: "Time from demand freeze to approved plan"
     baseline: "~2 days manual"
     figure: "~30 min"

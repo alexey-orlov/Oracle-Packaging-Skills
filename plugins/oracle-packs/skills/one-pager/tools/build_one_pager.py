@@ -323,7 +323,7 @@ def build_context(spec: dict, channel: str, hero: Path | None) -> tuple[dict, li
             arrow = _arrow("down" if text.rstrip().endswith(("down", "↓")) else "up")
             chips.append({"label": re.sub(r"\s*(up|down|↑|↓)\s*$", "", text), "arrow": arrow})
     if not chips:
-        for kpi in (dig(spec, "kpis") or [])[:3]:
+        for kpi in sales_kpis(spec)[:3]:
             chip = str(kpi.get("chip") or "").strip()
             if chip:   # the deck's chip: its own arrow, or none at all
                 m = re.search(r"\s*([↑↓])\s*$", chip)
@@ -339,8 +339,12 @@ def build_context(spec: dict, channel: str, hero: Path | None) -> tuple[dict, li
         for index, box in enumerate(flow.get("platform", {}).get("boxes", [])):
             box["sep"] = index > 0
 
-    # --- proof strip: one metric set, attribution by channel
-    kpis = dig(spec, "kpis") or []
+    # --- proof strip: one metric set, business metrics only, attribution by channel
+    kpis = sales_kpis(spec)
+    if technical_kpis(spec):
+        print(f"build_one_pager: {len(technical_kpis(spec))} technical criterion(s) are kept "
+              f"off the proof strip and the chips — they print in the packages table as the "
+              f"PoV's \"Proof accepted when …\" line.", file=sys.stderr)
     stats, caveats = [], []
     for kpi in kpis:
         if not has_figure(kpi):
@@ -372,10 +376,9 @@ def build_context(spec: dict, channel: str, hero: Path | None) -> tuple[dict, li
         for kpi in kpis[:3]:
             chip = re.sub(r"\s*[↑↓]\s*$", "", str(kpi.get("chip") or kpi.get("name") or "")).strip()
             stats.append({"figure": chip, "prefix": None, "suffix": None, "text": True,
-                          "label": (kpi.get("one_pager_label") or kpi.get("label") or kpi.get("name", ""))
-                                   + " — measured in the proof of value"})
+                          "label": kpi.get("one_pager_label") or kpi.get("label") or kpi.get("name", "")})
         if not caveats:
-            caveats.append("Contracted proof of value; results to follow.")
+            caveats.append("Measured in the proof of value; results to follow.")   # once, under the strip, not per tile
     logo = op.get("proof_logo") if name_allowed else None
     if name_allowed and not logo:
         deck_logo = dig(spec, "deck.images.customer_logo", None)   # the deck's cleared logo: one file for both
@@ -385,14 +388,20 @@ def build_context(spec: dict, channel: str, hero: Path | None) -> tuple[dict, li
 
     # --- packages table
     tiers_raw = need(spec, "packages.tiers")
+    success = pov_success_line(spec)
     tiers, tier_ids = [], []
     for index, tier in enumerate(tiers_raw):
         tier_ids.append(tier.get("id") or f"tier{index}")
+        scope = ((op.get("tier_scope") or {}).get(tier.get("id") or "")   # the page's own shorter line, when the deck's costs a row
+                 or tier.get("scope_line") or (tier.get("what_you_get") or [None])[0])
+        # The technical acceptance criteria belong here, on the proof's own tier, and
+        # nowhere else on the page: they say when the proof of value is done.
+        if success and str(tier.get("id") or "").strip() == "pov":
+            scope = (str(scope).rstrip(". ") + ". " + success) if scope else success
         tiers.append({
             "name": tier.get("name") or tier.get("id", ""),
             "size_tag": tier.get("size_tag") if channel == "internal" or tier.get("show_size_tag", True) else None,
-            "scope_line": ((op.get("tier_scope") or {}).get(tier.get("id") or "")   # the page's own shorter line, when the deck's costs a row
-                           or tier.get("scope_line") or (tier.get("what_you_get") or [None])[0]),
+            "scope_line": scope,
             "th_class": TIER_TH_CLASS[index] if index < len(TIER_TH_CLASS) else TIER_TH_CLASS[-1],
         })
 
@@ -438,7 +447,7 @@ def build_context(spec: dict, channel: str, hero: Path | None) -> tuple[dict, li
     context = {
         "doc_title": f"{name} - Sales one-pager - Oracle",
         "hero_image": data_uri(hero) if hero else None,
-        "hero": {"eyebrow": op.get("eyebrow", dig(spec, "meta.eyebrow", "OCI AI Accelerators")),
+        "hero": {"eyebrow": eyebrow(op, spec),   # the family name as on the site; a retired one is refused
                  "name": name, "subheading": subheading,
                  "one_liner": (dig(spec, "one_liner.short") if op.get("sub") == "short" else None)
                               or need(spec, "one_liner.full")},   # `one_pager.sub: short` — the deck cover's line, when the full one costs a row
@@ -484,6 +493,27 @@ def _arrow(direction):
     return "&#8595;" if str(direction).lower() in ("down", "lower", "reduce", "↓") else "&#8593;"
 
 
+# The family name on every print artifact, as the mini-site's lockup carries it.
+# The default was already right; what was not is that a brief could override it with
+# the retired lockup, and the page then printed it (the owner, 2026-09-23). The
+# override still works for anything else — it just cannot reinstate a retired name.
+HEADER_BRAND = "Oracle AI & Data Solutions"
+RETIRED_HEADER = re.compile(r"OCI\s+AI\s+Accelerators?|OCI\s+accelerators?", re.IGNORECASE)
+
+
+def eyebrow(op: dict, spec: dict) -> str:
+    value = op.get("eyebrow", dig(spec, "meta.eyebrow",
+                                  dig(spec, "deck.running_header", HEADER_BRAND)))
+    text = str(value or "").strip() or HEADER_BRAND
+    m = RETIRED_HEADER.search(text)
+    if m:
+        rewritten = RETIRED_HEADER.sub(HEADER_BRAND, text)
+        print(f"build_one_pager: the brief's eyebrow carries the retired '{m.group(0)}' "
+              f"lockup — printed as '{rewritten}'. Fix it in the brief.", file=sys.stderr)
+        text = rewritten
+    return text
+
+
 
 # The spec writes `-` for "defined and measured per engagement, no cleared number"
 # (shared/schema/pack-spec.md). A `-` stat tile is an empty container reading as
@@ -504,6 +534,35 @@ def _fill_customer(text, who: str) -> str:
 def has_figure(kpi) -> bool:
     fig = str((kpi or {}).get("figure") or "").strip()
     return bool(fig) and fig.lower() not in EMPTY_FIGURES
+
+
+# `kind` decides where a metric may print (shared/schema/pack-spec.md): business on
+# the page's chips and proof strip, leading only beside its business metric, technical
+# never — a proof-of-value acceptance criterion belongs to the PoV package's success
+# line in the table below. Absent means business (2026-09-23).
+def kpi_kind(kpi) -> str:
+    value = str((kpi or {}).get("kind") or "").strip().lower()
+    return value if value in ("business", "leading", "technical") else "business"
+
+
+def sales_kpis(spec) -> list:
+    return [k for k in (dig(spec, "kpis") or []) if kpi_kind(k) != "technical"]
+
+
+def technical_kpis(spec) -> list:
+    return [k for k in (dig(spec, "kpis") or []) if kpi_kind(k) == "technical"]
+
+
+def pov_success_line(spec) -> str:
+    """"Proof accepted when: …" — the technical criteria, where the brief has any."""
+    bits = []
+    for kpi in technical_kpis(spec):
+        name = str(kpi.get("name") or "").strip()
+        figure = str(kpi.get("figure") or "").strip()
+        if not name:
+            continue
+        bits.append(f"{name} {figure}" if has_figure(kpi) else name)
+    return ("Proof accepted when: " + ", ".join(bits)) if bits else ""
 
 def architecture_model(spec, channel="partner_print"):
     """The pack's ONE architecture model — `packs/<slug>/architecture.json`.
@@ -551,7 +610,8 @@ def _flow_from_architecture(spec, channel="partner_print"):
     # -- the sources. The strip has one pipe in, so the sources after the first ride
     # the box's own line with what they send: an unnamed source is a dropped box.
     sources = model["sources"]
-    others = [f"{s['name']} — {s['data']}" if s["data"] else s["name"] for s in sources[1:]]
+    others = [f"{s['name']} — {s['data']}" if (s["data"] and notes_on) else s["name"]   # names only when the page's notes are off
+              for s in sources[1:]]
     source = {"name": sources[0]["name"],
               "note": ("with " + "; ".join(others)) if others else None}
 
@@ -560,7 +620,7 @@ def _flow_from_architecture(spec, channel="partner_print"):
     # the source box, as on the deck.
     writeback = next((d for d in model["destinations"] if d["writeback"]), None)
     only_receive = [d for d in model["destinations"] if not d["writeback"]]
-    destinations = [{"name": d["name"], "note": d["data"] or None}
+    destinations = [{"name": d["name"], "note": (d["data"] or None) if notes_on else None}   # the data rides the pipe's label already
                     for d in only_receive[:MAX_DEST_BOXES]]
     if len(only_receive) > MAX_DEST_BOXES:
         # Folded into the last box rather than dropped: the picture may be tight,

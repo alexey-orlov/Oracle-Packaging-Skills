@@ -130,6 +130,29 @@ print("generated two broken spec variants")
 PYGEN
 [ $? -eq 0 ] || { say "run_tests: could not generate the broken variants"; exit 2; }
 
+# Variant D — the metric set is proof criteria only: technical names, no `kind`, no
+# `owner_role`. SPEC025/026/027 must all fire, or a pack ships acceptance criteria as
+# its sales tiles (the DHL one-pager, 2026-09-23). The retired family name rides along
+# in the eyebrow, where SPEC028 has to refuse it.
+"$PY" - "$FIX/pack-spec.valid.yaml" "$WORK" <<'PYMETRICS'
+import sys, yaml
+src, work = sys.argv[1], sys.argv[2]
+spec = yaml.safe_load(open(src, encoding="utf-8"))
+spec["meta"]["eyebrow"] = "OCI AI Accelerators"
+spec["kpis"] = [
+    {"name": "Reviewer agreement", "formula": "Share of decisions two reviewers agree on",
+     "baseline": "not measured", "figure": "> 85%", "figure_status": "pov_result",
+     "attribution": {"otherwise": "proof of value"}, "caveat": "Illustrative, not contractual"},
+    {"name": "Documents processed", "formula": "Documents run through the pipeline",
+     "baseline": "-", "figure": "12,000", "figure_status": "pov_result",
+     "attribution": {"otherwise": "proof of value"}, "caveat": "Illustrative, not contractual"},
+]
+yaml.safe_dump(spec, open(work + "/pack-spec.technical-metrics.yaml", "w", encoding="utf-8"),
+               sort_keys=False, allow_unicode=True)
+print("generated the technical-metrics variant")
+PYMETRICS
+[ $? -eq 0 ] || { say "run_tests: could not generate the technical-metrics variant"; exit 2; }
+
 # Variant C — a workflow of 8 steps: mechanics promoted to steps (SPEC019).
 "$PY" - "$FIX/pack-spec.valid.yaml" "$WORK" <<'PYSTEPS'
 import sys, copy, yaml
@@ -182,6 +205,8 @@ run_case "valid fixture is clean" 0 \
   "$PY" "$TOOLS/lint_spec.py" "$VALID" --catalog "$CAT" --roadmap "$ROAD"
 expect "valid fixture" "17 of 17 components complete"
 expect_absent "valid fixture" SPEC019 SPEC020
+# the business-metric rule is silent on a set that already passes it
+expect_absent "valid fixture" SPEC025 SPEC026 SPEC027 SPEC028
 
 run_case "valid fixture is clean under --strict" 0 \
   "$PY" "$TOOLS/lint_spec.py" "$VALID" --catalog "$CAT" --roadmap "$ROAD" --strict
@@ -202,6 +227,12 @@ run_case "broken variant C (workflow of 8 steps)" 1 \
   --catalog "$CAT" --roadmap "$ROAD"
 expect "variant C" SPEC019
 
+run_case "broken variant D (proof criteria as the metric set)" 1 \
+  "$PY" "$TOOLS/lint_spec.py" "$WORK/pack-spec.technical-metrics.yaml" \
+  --catalog "$CAT" --roadmap "$ROAD"
+expect "variant D" SPEC025 SPEC026 SPEC027 SPEC028
+expect "variant D" "no business metric in the set" "Oracle AI & Data Solutions"
+
 run_case "a missing spec is a usage error" 2 \
   "$PY" "$TOOLS/lint_spec.py" "$WORK/not-here.yaml"
 
@@ -215,7 +246,7 @@ run_case "clean listing on customer_site" 0 \
 run_case "broken artifact on customer_site" 1 \
   "$PY" "$TOOLS/lint_artifact.py" "$WORK/artifact-broken.md" --channel customer_site \
   --spec "$VALID" --catalog "$CAT"
-expect "broken artifact" ART001 ART002 ART003 ART101 ART102 ART103 ART104 \
+expect "broken artifact" ART001 ART002 ART003 ART101 ART102 ART103 ART104 ART105 \
   ART201 ART202 ART203 ART204 ART205 ART301 ART302 ART401 ART402 ART403
 
 run_case "same artifact on the internal channel" 1 \
@@ -287,6 +318,18 @@ run_case "the catalog's own vendor spellings are clean" 0 \
   "$PY" "$TOOLS/lint_artifact.py" "$WORK/vendor-spelling-right.md" \
   --channel partner_print --spec "$VALID" --catalog "$CAT"
 expect_absent "right spellings" ART101 ART103
+
+# The retired family name is refused on EVERY channel, and Oracle's own catalog
+# product `OCI AI Accelerator Packs` is not it.
+cat > "$WORK/retired-header.md" <<'EOF'
+OCI AI Accelerators — Workforce optimization
+
+The pack aligns to Oracle's OCI AI Accelerator Packs pattern.
+EOF
+run_case "the retired family name is a finding on internal too" 1 \
+  "$PY" "$TOOLS/lint_artifact.py" "$WORK/retired-header.md" --channel internal \
+  --spec "$VALID" --catalog "$CAT"
+expect "retired header" ART105 "Oracle AI & Data Solutions"
 
 run_case "the case-only misspellings are still caught" 1 \
   "$PY" "$TOOLS/lint_artifact.py" "$WORK/vendor-spelling-wrong.md" \

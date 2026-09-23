@@ -711,7 +711,36 @@ class Spec:
         return bool(fig) and fig.lower() not in cls.EMPTY
 
     def figured_kpis(self) -> list[dict]:
-        return [k for k in self.kpis() if self.has_figure(k)]
+        return [k for k in self.sales_kpis() if self.has_figure(k)]
+
+    # ---- metric kinds --------------------------------------------------
+    # `kind` decides where a metric may print (shared/schema/pack-spec.md):
+    # business on the sales tiles and chips, leading only beside its business
+    # metric, technical never — a proof-of-value acceptance criterion belongs to
+    # the PoV package's success line. Absent means business, so a brief written
+    # before the key existed keeps every tile it had (2026-09-23).
+    @staticmethod
+    def kpi_kind(kpi: dict) -> str:
+        value = str((kpi or {}).get("kind") or "").strip().lower()
+        return value if value in ("business", "leading", "technical") else "business"
+
+    def sales_kpis(self) -> list[dict]:
+        """The metrics a sales artifact may print: everything but the technical ones."""
+        return [k for k in self.kpis() if self.kpi_kind(k) != "technical"]
+
+    def technical_kpis(self) -> list[dict]:
+        return [k for k in self.kpis() if self.kpi_kind(k) == "technical"]
+
+    def pov_success_line(self) -> str:
+        """"Proof accepted when: …" — the technical criteria, where the brief has any."""
+        bits = []
+        for k in self.technical_kpis():
+            name = str(k.get("name") or "").strip()
+            figure = str(k.get("figure") or "").strip()
+            if not name:
+                continue
+            bits.append(f"{name} {figure}" if self.has_text(figure) else name)
+        return ("Proof accepted when: " + ", ".join(bits)) if bits else ""
 
     def proof_word(self) -> str:
         """`Proven` only where a delivered result backs it (naming-and-clearance §3)."""
@@ -720,7 +749,7 @@ class Spec:
         return "Proven" if delivered else "Proof of value"
 
     def kpi_attribution(self) -> str:
-        for k in self.kpis():
+        for k in self.sales_kpis():
             att = k.get("attribution") or {}
             if self.customer_name_allowed() and att.get("named_when_allowed"):
                 return str(att["named_when_allowed"])
@@ -729,7 +758,7 @@ class Spec:
         return f"proof of value at {self.customer_label()}"
 
     def kpi_caveat(self) -> str:
-        for k in self.kpis():
+        for k in self.sales_kpis():
             if k.get("caveat"):
                 return str(k["caveat"])
         return "Figures are illustrative and subject to confirmation."

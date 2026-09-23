@@ -47,7 +47,9 @@ SLOTS_DEFAULT = HERE.parent / "assets" / "exemplar" / "slots.json"
 ICON_MAP_DEFAULT = HERE.parent / "assets" / "icons" / "map.yaml"
 
 HEADER_BRAND = "Oracle AI & Data Solutions"
-LEGACY_HEADER_PREFIXES = ("OCI AI Accelerators", "OCI AI accelerators")
+# The retired lockup, in every casing it has been written in, anywhere in the header —
+# the owner found it as "OCI accelerators" mid-string, not only as a prefix (2026-09-23).
+LEGACY_HEADER_RE = re.compile(r"OCI\s+AI\s+Accelerators?|OCI\s+accelerators?", re.IGNORECASE)
 
 TIER_ORDER = ("pov", "integration", "scaling")
 TIER_DEFAULT_GLYPH = {"pov": "◐", "integration": "●", "scaling": "●●"}
@@ -252,6 +254,19 @@ class Build:
         self.notes.append(msg)
         self.fit.note(msg)
 
+    def note_technical_routing(self) -> None:
+        """Say out loud that technical criteria were kept off the sales tiles."""
+        technical = self.spec.technical_kpis()
+        if not technical:
+            return
+        names = ", ".join(clean(k.get("name")) for k in technical if clean(k.get("name")))
+        msg = (f"metrics: {len(technical)} technical criterion(s) ({names}) are kept off the "
+               f"KPI chips and the proof tiles — they print on the service-packages slides as "
+               f"the PoV's \"Proof accepted when …\" line.")
+        if msg not in self.notes:
+            print("build_deck_v2: " + msg, file=sys.stderr)
+        self.note(msg)
+
     # -- fit logging against the exemplar's own text ----------------------
     def snapshot(self, slides) -> None:
         """Remember every slot's original text, before a single fill."""
@@ -388,8 +403,11 @@ class Build:
                   " ".join([lead_txt, first, rest]), para=0)
 
         chips = s["use_case.kpi_chips"]
-        labels = [clean(k.get("chip") or k.get("name")) for k in self.spec.kpis()]
+        # Business metrics only: a chip is a claim about the buyer's business, and a
+        # proof criterion ("reviewer agreement") reads as one when it sits in the row.
+        labels = [clean(k.get("chip") or k.get("name")) for k in self.spec.sales_kpis()]
         labels = [l for l in labels if l]
+        self.note_technical_routing()
         for i, chip in enumerate(chips):
             text_shape = ex.find_id(slide, chip["text"])
             if i < len(labels):
@@ -583,9 +601,12 @@ class Build:
         self.log(5, "proof.footnote", foot, foot_text)
 
     def fill_stats(self, slide, stats) -> None:
+        self.note_technical_routing()
         figured = self.spec.figured_kpis()
-        kpis = figured or self.spec.kpis()   # no figures yet: the strip names what the proof of value measures
-        restricted = [k for k in self.spec.kpis()
+        # Business metrics only; with no figure yet the strip names what the proof of
+        # value measures — still business metrics, never its acceptance criteria.
+        kpis = figured or self.spec.sales_kpis()
+        restricted = [k for k in self.spec.sales_kpis()
                       if k.get("channels") and self.spec.channel not in (k.get("channels") or [])]
         if restricted:
             for stat in stats:
@@ -1322,9 +1343,16 @@ class Build:
 
         needs_footnote = False
         scope_row = rows["scope"]
+        # Technical acceptance criteria never reach a sales tile; this is where they
+        # belong — the PoV's own scope, as the line that says when the proof is done.
+        success = self.spec.pov_success_line()
         for ci, tier in enumerate(tiers[:len(col_w) - 1], start=1):
             scope = clean(tier.get("scope_line")) or clean(
                 (tier.get("what_you_get") or [""])[0])
+            if success and str(tier.get("id") or "").strip() == "pov":
+                scope = (scope.rstrip(". ") + ". " + success).strip() if scope else success
+                self.note(f"s{slide_no}: the PoV column carries the proof's success line "
+                          f"({len(self.spec.technical_kpis())} technical criterion(s)).")
             cell = table.cell(scope_row, ci)
             if detailed:
                 ex.fill_cell(cell, scope)
@@ -1408,12 +1436,11 @@ def running_header(spec: Spec) -> tuple[str, str | None]:
     template = clean(spec.get("deck.running_header"))
     note = None
     if template:
-        for legacy in LEGACY_HEADER_PREFIXES:
-            if template.startswith(legacy):
-                template = HEADER_BRAND + template[len(legacy):]
-                note = (f"running header: the spec still carries the retired "
-                        f"'{legacy}' lockup — rewritten to '{HEADER_BRAND}'.")
-                break
+        m = LEGACY_HEADER_RE.search(template)
+        if m:
+            template = LEGACY_HEADER_RE.sub(HEADER_BRAND, template)
+            note = (f"running header: the spec still carries the retired "
+                    f"'{m.group(0)}' lockup — rewritten to '{HEADER_BRAND}'.")
     else:
         template = HEADER_BRAND + " — {name}"
     try:

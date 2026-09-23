@@ -526,6 +526,8 @@ kpis:                                    # component 11 — ONE metric set per p
   # taken from the customer study; attribution varies by approval and channel, figures do not).
   # The mini-site currently ships a different, anonymized, modeled set — see open_questions.
   - name: Planning cycle time
+    kind: business
+    owner_role: VP Field Service
     formula: "Elapsed time to optimize and approve a region's four-week plan, end to end including dispatcher review"
     baseline: "~2 days, planned by hand"
     figure: "~30 min"
@@ -538,6 +540,8 @@ kpis:                                    # component 11 — ONE metric set per p
     note: "Headline discipline (call-2026-07-09): the end-to-end figure, not the ~15-minute solve time."
     source: one-pager-2026-07-17, call-2026-07-09
   - name: Technician productivity
+    kind: business
+    owner_role: VP Field Service
     formula: "For each technician, total jobs ÷ days with at least one job; headline is the simple average across technicians, two decimals"
     baseline: "the customer's current plan for the same window, computed on the identical formula"
     figure: "up to +26%"
@@ -550,6 +554,8 @@ kpis:                                    # component 11 — ONE metric set per p
     note: "Pair any single-digit percentage with the sentence explaining why it is large at scale (call-2026-07-09)."
     source: one-pager-2026-07-17, spec-doc-2026-09-16
   - name: Estimated savings at full launch
+    kind: business
+    owner_role: COO
     formula: "Cost of the additional staffing avoided at the optimized productivity, extrapolated to full launch"
     baseline: "current staffing cost at the current plan"
     figure: "€190K / month"
@@ -564,6 +570,8 @@ kpis:                                    # component 11 — ONE metric set per p
       outcome, so `figure_status` is `modeled` rather than `pov_result`. Flagged for the owner.
     source: one-pager-2026-07-17
   - name: Capacity utilization
+    kind: business
+    owner_role: VP Field Service
     formula: "round(jobs ÷ (working days × 7) × 100), capped 0–100; the model assumes at most 7 jobs per technician per working day"
     baseline: "the current plan for the same window"
     figure: "-"
@@ -572,6 +580,8 @@ kpis:                                    # component 11 — ONE metric set per p
     note: "Defined and measured, no cleared headline figure. The schema's figure_status enum has no value for this state."
     source: spec-doc-2026-09-16, feature-list-2026-09-10
   - name: Customer wait time
+    kind: business
+    owner_role: VP Customer Service
     formula: "Booking date to appointment date in whole calendar days, averaged across jobs"
     baseline: "the current plan for the same window"
     figure: "-"
@@ -579,6 +589,8 @@ kpis:                                    # component 11 — ONE metric set per p
     caveat: "Computed identically on the current and the optimized plan; measured per engagement."
     source: spec-doc-2026-09-16
   - name: Travel reduction
+    kind: business
+    owner_role: VP Field Service
     formula: "Total planned travel across the period, current plan against optimized plan"
     baseline: "the current plan for the same window"
     figure: "-"
@@ -586,6 +598,8 @@ kpis:                                    # component 11 — ONE metric set per p
     caveat: "Computed identically on the current and the optimized plan; measured per engagement."
     source: feature-list-2026-09-10
   - name: Workload balance
+    kind: business
+    owner_role: VP Field Service
     formula: "Spread of jobs per technician across the period, current plan against optimized plan"
     baseline: "the current plan for the same window"
     figure: "-"

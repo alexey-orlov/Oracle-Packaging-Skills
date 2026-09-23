@@ -61,6 +61,23 @@ Rule codes
              feature name contained a comma: `{ name: Repair, replace or refer,
              status: ... }` parses as name="Repair" plus a junk key, so the row
              silently loses everything after the comma. Valid YAML, wrong data.
+    SPEC025  the metric set carries no business metric (warning): every metric
+             is marked `kind: technical`, or `kind` itself is not one of
+             business | leading | technical. Sales artifacts print business
+             metrics; a set with none leaves the deck's tiles, the one-pager's
+             proof strip and the site's metrics with nothing to say
+    SPEC026  a metric whose name reads as a proof criterion or a vanity count is
+             not marked `kind: technical` (warning) — "reviewer agreement",
+             "coverage", precision / recall / accuracy / latency, "documents
+             processed". Technical criteria belong to the PoV package's success
+             line, never to a sales tile
+    SPEC027  a `business` metric carries no `owner_role` (warning) — the
+             buyer-side role who would sign the number off is the test that the
+             metric is the business's rather than ours
+    SPEC028  a retired family name ("OCI AI Accelerator(s)", "OCI accelerator")
+             sits in meta.eyebrow, deck.running_header,
+             exec_summary.running_header or one_pager.eyebrow — the family name
+             on every print artifact is "Oracle AI & Data Solutions"
 
 --strict    promotes SPEC900/901/902 and SPEC017 to findings: the completeness
             check, usable on a spec at any status. A `draft` stays clean under
@@ -91,6 +108,27 @@ PROG = "lint_spec"
 STATUS_VALUES = ("draft", "research", "options", "signing-off", "confirmed", "built")
 CONFIRMED_STATUSES = ("confirmed", "built")
 FIGURE_STATUSES = ("pov_result", "delivered_result", "target", "modeled")
+
+# `kind` decides where a metric may be printed (shared/schema/pack-spec.md).
+# Absent means `business`: the default has to be the one sales artifacts print,
+# or a brief written before this key existed would silently lose its tiles.
+KPI_KINDS = ("business", "leading", "technical")
+DEFAULT_KPI_KIND = "business"
+
+# Names that read as a proof-of-value acceptance criterion or a vanity count
+# rather than as something the business is willing to improve. A match is not a
+# verdict — it asks for `kind: technical`, which is where such a metric belongs.
+TECHNICAL_NAME_RE = re.compile(
+    r"\bagreement\b|\bprecision\b|\brecall\b|\baccurac(?:y|ies)\b|\blatenc(?:y|ies)\b"
+    r"|\bcoverage\b|\bconfidence\b|\bcalibrat|\bcitation|\bF1\b|\bthroughput\b"
+    r"|\bprocessed\b|\bingested\b|\bonboarded\b|\bsurfaced\b|\bsignals?\b"
+    r"|\bdocuments?\b|\btokens?\b|\buptime\b", re.IGNORECASE)
+
+# The family name retired on 2026-09-23; the mini-site lockup is the only one.
+HEADER_BRAND = "Oracle AI & Data Solutions"
+RETIRED_HEADER_RE = re.compile(r"OCI\s+AI\s+Accelerators?|OCI\s+accelerators?", re.IGNORECASE)
+HEADER_KEYS = (("meta", "eyebrow"), ("deck", "running_header"),
+               ("exec_summary", "running_header"), ("one_pager", "eyebrow"))
 
 # The repo's written convention for an empty cell (`-`). A metric that is defined
 # and measured per engagement but carries no cleared headline figure says so with
@@ -608,6 +646,76 @@ class SpecLint:
                               "figures[%d] `%s` = %s contradicts kpis — one metric set per pack"
                               % (i, name, value))
 
+    def check_kpi_kinds(self):
+        """SPEC025-027 — the business-metric rule (warnings).
+
+        Warnings, not findings: the call on what the business is willing to improve is
+        the owner's, and a brief that has not had that conversation yet must still be
+        able to build. What the checks do is make the conversation unavoidable.
+        """
+        kpis = self.spec.get("kpis")
+        if not isinstance(kpis, list) or not kpis:
+            return
+        kinds, business_like = [], []
+        for i, kpi in enumerate(kpis):
+            if not isinstance(kpi, dict):
+                continue
+            line = PL.lineno(kpis, i)
+            name = str(kpi.get("name") or "").strip()
+            raw = kpi.get("kind")
+            kind = str(raw).strip().lower() if PL.is_filled(raw) else DEFAULT_KPI_KIND
+            if kind not in KPI_KINDS:
+                self.rep.warn(self.path, PL.lineno(kpi, "kind", line), "SPEC025",
+                              "kpis[%d].kind is `%s` — one of %s (absent means `%s`)"
+                              % (i, raw, " | ".join(KPI_KINDS), DEFAULT_KPI_KIND))
+                kind = DEFAULT_KPI_KIND
+            kinds.append(kind)
+            if kind == "business" and not TECHNICAL_NAME_RE.search(name):
+                business_like.append(name)
+            if kind != "technical" and TECHNICAL_NAME_RE.search(name):
+                self.rep.warn(self.path, PL.lineno(kpi, "name", line), "SPEC026",
+                              "kpis[%d] `%s` reads as a proof-of-value acceptance criterion, "
+                              "not as a business metric — mark it `kind: technical` (it then "
+                              "rides the PoV package's \"Proof accepted when …\" line and never "
+                              "a sales tile), or name the business outcome it serves instead: "
+                              "money, time, volume, risk or quality in the buyer's words"
+                              % (i, name or "(unnamed)"))
+            if kind == "business" and not PL.is_filled(kpi.get("owner_role")):
+                self.rep.warn(self.path, PL.lineno(kpi, "name", line), "SPEC027",
+                              "kpis[%d] `%s` has no owner_role — name the buyer-side role who "
+                              "would sign this number off (\"Head of claims\", \"COO\"); a "
+                              "metric nobody on their side owns is not a business metric"
+                              % (i, name or "(unnamed)"))
+        # "No business metric" covers both shapes: every metric marked `technical`, and
+        # every metric unmarked but reading as a proof criterion. The second is the one
+        # that shipped (the DHL one-pager, 2026-09-23) — nothing was marked at all.
+        if kinds and not business_like:
+            self.rep.warn(self.path, PL.lineno(self.spec, "kpis"), "SPEC025",
+                          "no business metric in the set (%d metric(s), kinds: %s) — every one "
+                          "is a technical criterion or reads as one. Sales artifacts print "
+                          "business metrics only, so the deck's stat tiles, the one-pager's "
+                          "proof strip and the site's metrics would have nothing to show. "
+                          "Derive the business outcomes these criteria serve — money, time, "
+                          "volume, risk or quality in the buyer's words — and put that set to "
+                          "the owner" % (len(kinds), ", ".join(sorted(set(kinds)))))
+
+    def check_retired_header(self):
+        """SPEC028 — the retired family name in a header the artifacts print."""
+        for key, sub in HEADER_KEYS:
+            node = self.spec.get(key)
+            if not isinstance(node, dict):
+                continue
+            value = node.get(sub)
+            if not PL.is_filled(value):
+                continue
+            m = RETIRED_HEADER_RE.search(str(value))
+            if not m:
+                continue
+            self.fail(key if key != "meta" else "meta", PL.lineno(node, sub), "SPEC028",
+                      "%s.%s is `%s` — `%s` is retired; the family name on every print artifact "
+                      "is \"%s\" (the mini-site lockup)"
+                      % (key, sub, value, m.group(0), HEADER_BRAND))
+
     def check_customer_names(self, deny):
         spec = self.spec
         targets = []
@@ -786,6 +894,8 @@ def main() -> int:
     lint.check_roadmap(roadmap_ids)
     lint.check_packages()
     lint.check_kpis()
+    lint.check_kpi_kinds()
+    lint.check_retired_header()
     lint.check_workflow_steps()
     lint.check_capability_keys()
     lint.check_product_counts()

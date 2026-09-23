@@ -1,17 +1,17 @@
 # The metrics
 
-**What this is.** **One metric set per pack.** Each metric: a name, a formula, a baseline, the figure, what kind of figure it is, who it is attributed to for each audience, and the caveat printed beside it.
+**What this is.** **One metric set per pack** — what the business will improve by employing the solution.
 
-**Checks the draft must pass**
+**The five tests**
 
-1. One set. If the inputs carry two, both go in front of the owner with their sources and one is confirmed — never both kept, never one quietly dropped.
-2. Every figure carries its kind — a delivered result · a proof-of-value result · a target · a modelled figure — and only a delivered result may be called proven. A target is never typeset as an outcome.
-3. Every figure is one the owner cleared. An uncleared one prints "results to follow", in those words.
-4. Every formula is computable and stated: what is counted, over what window, on what denominator, computed identically before and after.
-5. The figure is end to end, as the buyer experiences it — the review time included, not the engine's time alone.
-6. Attribution is set per audience: under the customer's name only where that is cleared for that audience, otherwise under the anonymous description. The figure never changes; only the name attached to it does.
-7. Every figure ships with its caveat; a small percentage ships with the sentence explaining why it is large at scale.
+1. **Business.** Already tracked, or fit for a quarterly review — money, time, volume, risk or quality, in the buyer's words: "cost per claim", "time from damage report to booked job", "planning cycle time". Fails — *technical*: reviewer agreement, confidence calibrated, coverage, precision, recall, accuracy, latency, F1, throughput; *vanity*: signals processed, documents ingested, users onboarded; *vague*: better decisions, more insight, visibility.
+2. **Direct lever.** The solution moves it directly, not through a chain of assumptions. Where only a proxy does, the proxy is `kind: leading`; the business metric stays the metric.
+3. **Outsider.** Someone outside the industry sees what it measures and why it matters; the industry's term may follow in brackets.
+4. **Owner.** A named buyer-side role would sign it off — that is `owner_role`.
+5. **Articulate when the inputs do not.** Proofs of value usually define only technical criteria. Derive the business metrics they serve, mark their figures `modeled` or "results to follow", keep the criteria as `kind: technical` for the PoV scope line, and propose that set to the owner. Never ship technical criteria as the metric set.
 
-**Good.** "~30 min to optimize and approve a region's four-week plan, down from ~2 days" · "up to +26% productivity on proof-of-value data across three countries", under "measured before and after on proof-of-value data; figures are illustrative, not contractual."
+**Hygiene.** One set (two in the inputs → the owner picks). Figure kind stated — delivered · proof-of-value · target · modelled; only delivered is "proven", uncleared prints "results to follow". Formulas computable and identical before/after; figures end to end, review included; attribution per audience; every figure ships its caveat.
 
-**Fills:** `kpis[]` — `name`, `formula`, `baseline`, `figure`, `figure_status`, `attribution`, `caveat`.
+**Good.** "2 days → 30 minutes to plan · up to +26% productivity · €190K/month saved". **Bad.** "Reviewer agreement ↑ · Confidence calibrated · Coverage ↑" — proof criteria, not outcomes.
+
+**Fills:** `kpis[]` — `name`, `kind`, `owner_role`, `formula`, `baseline`, `figure`, `figure_status`, `attribution`, `caveat`.

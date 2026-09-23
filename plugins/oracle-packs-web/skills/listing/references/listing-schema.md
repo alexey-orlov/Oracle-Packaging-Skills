@@ -63,7 +63,7 @@ never left out and it never renders an apology.
 | Key | Type | Contract |
 |---|---|---|
 | `problemSolution` | `{ problem: {title,text,icon}, solution: {title,text,icon} }` | The paired two-panel strip, first block on the tab. `text` 1–2 sentences per panel. `icon` is an icon-registry key. |
-| `metrics` | `[{ value, label, qualifier, icon }]` | 1–4 stat tiles; four is the designed shape. `value` is a string ≤ 20 chars **or `null`** — a `null` is a qualitative tile that keeps the row level. `qualifier` is the baseline or caveat, ≤ 14 words. |
+| `metrics` | `[{ value, label, qualifier, icon }]` | 1–4 stat tiles; four is the designed shape. **Business metrics only** — drawn from `kpis[]` where `kind != technical`; a proof-of-value acceptance criterion (reviewer agreement, coverage, precision) never becomes a tile, it belongs to the Jumpstart tab's scope. `value` is a string ≤ 20 chars **or `null`** — a `null` is a qualitative tile that keeps the row level. `qualifier` is the baseline or caveat, ≤ 14 words. |
 | `metricsNote` | string | **Mandatory.** One footnote under the metric row, carrying the disclaimer that travels with the figures. Where nothing is published it says **what the proof of value measures**, leading with the measure. A note opening on an absence is a build failure. |
 | `roi` | `{ icon, text }` | One callout band, 1–2 sentences. |
 | `features` | `[string]` | 6–8 items, each ≤ 12 words. Not a block of their own: each belongs to exactly one `steps[]` entry. |
@@ -234,7 +234,7 @@ rather than filling the gap itself.
 | `hero.image` | — | — | **an input**, not a derivation: imagery comes from the company's own corpus, never the web |
 | `tile.outcomes[3]` | `kpis[]` + `problem_solution.solution` | 11, 1 | three outcomes in the reader's words |
 | `overview.problemSolution` | `problem_solution` | 1 | `reframe` heads the solution panel |
-| `overview.metrics` + `metricsNote` | `kpis[]`, `figures` | 11 | `value` ← `figure`; `qualifier` ← `baseline`; `metricsNote` ← `caveat` + the channel's attribution rule. `figure_status` decides whether a figure may appear at all |
+| `overview.metrics` + `metricsNote` | `kpis[]` where `kind != technical`, `figures` | 11 | `value` ← `figure`; `qualifier` ← `baseline`; `metricsNote` ← `caveat` + the channel's attribution rule. `figure_status` decides whether a figure may appear at all; `kind` decides whether the metric may appear at all — `technical` criteria go to the Jumpstart tab's scope as "Proof accepted when …", never to a tile |
 | `overview.roi` | `kpis[]` + `problem_solution` | 11, 1 | one band, no new claim |
 | `overview.features` / `featuresDetail` / `featuresNote` | `capabilities[].categories[].features[]` | 6 | short form ≤ 12 words; long form verbatim; `status: partial` becomes the asterisked caveat |
 | `overview.steps` | `workflow.steps[]` | 7 | 3–5 steps; the human-in-the-loop step is never merged away; `image` ← a demo capture frame |

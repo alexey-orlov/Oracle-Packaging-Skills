@@ -1,16 +1,14 @@
 # The delivered case
 
-**What this is.** The pack's proof slide: the one engagement that was actually delivered, told in the reference deck's own composition — the customer's logo, a headline stating the outcome, three stat tiles, and four blocks labelled CONTEXT · SOLUTION · VALUE FOR ORACLE + NVIDIA · VALUE FOR CLIENT. It is the strongest slide in the deck, and it is strong only because it is specific. Nothing here is the pack's generalized copy repeated back.
+**What this is.** The pack's proof slide: the one engagement actually delivered, told in the reference deck's composition — the customer's logo, a headline stating the outcome, three stat tiles, and four blocks labelled CONTEXT · SOLUTION · VALUE FOR ORACLE + NVIDIA · VALUE FOR CLIENT. It is the deck's strongest slide, and only because it is specific about **their business**.
 
 **Checks the draft must pass**
 
-1. Every block is about the delivered engagement, not the pack: the customer's own sources, their scale, their team, what was actually built for them. A sentence that would survive unchanged in another pack has failed.
-2. Each of the four blocks is two to three sentences, the reference's altitude — enough for a specific, not a paragraph.
-3. The customer's name appears nowhere except as `{Customer}`, which the builder fills per audience (the name where clearance allows it, the anonymous description elsewhere).
-4. The headline states the delivered outcome where a figure is cleared; where none is, it states the scope and ends "results to follow". Never a claim the figures do not carry.
-5. The stat strip carries the cleared figures; with nothing cleared it names the three metrics being measured and their baselines. It is never left empty.
-6. Every figure on the slide carries what kind of figure it is and the caveat printed beside it.
+1. The four blocks speak about the customer's business — CONTEXT: their situation and the pain in it; SOLUTION: what they now do instead; the two value blocks: what each side gains. Their own sources, scale and team, never the pack's generalized copy. A sentence that would survive unchanged in another pack has failed.
+2. **No engagement mechanics in the four blocks**: weeks, phases, number of sources, contract status, team size, or "proof of value" used as a noun phrase. *Fails:* "a contracted proof of value on NVIDIA AI-Q over OCI". *Passes:* "DHL's account managers cover forty carriers each and learn of a customer's expansion from the trade press, weeks late." Status goes in the footnote, timeline on the packages slide.
+3. Two to three sentences per block — the reference's altitude, a specific, not a paragraph.
+4. The customer's name appears only as `{Customer}`, filled per audience by the builder.
+5. The headline states the delivered outcome where a figure is cleared; otherwise the scope, ending "results to follow". Never a claim the figures do not carry.
+6. The stat tiles carry business metrics only (the metrics card) — cleared figures, else the metrics being measured with their baselines, each with its figure kind and caveat. Never empty, never a technical acceptance criterion.
 
-**Good.** "{Customer} plan a residential appliance network across three markets — about 900 technicians, dispatched by a dozen planners against postcode coverage, skills and absences." **Bad.** "Field-service operators plan their mobile workforce by hand."
-
-**Fills:** `meta.source_engagement.context`, `meta.source_engagement.delivered`, `meta.source_engagement.divergence_line` (one print-ready sentence; the internal note never prints), `packages.value_for_partner`, `packages.value_for_client`, `deck.proof_headline`.
+**Fills:** `meta.source_engagement.context`, `.delivered`, `.divergence_line` (one print-ready sentence; the internal note never prints), `packages.value_for_partner`, `packages.value_for_client`, `deck.proof_headline`.

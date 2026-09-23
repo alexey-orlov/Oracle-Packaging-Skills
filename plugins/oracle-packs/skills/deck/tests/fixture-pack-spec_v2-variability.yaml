@@ -142,6 +142,8 @@ oracle_products:
 
 kpis:
   - name: Time to answer an obligation question
+    kind: business
+    owner_role: General Counsel
     chip: Answer time ↓
     label: to answer an obligation question across the estate
     baseline: ~3 days
@@ -152,11 +154,15 @@ kpis:
       otherwise: a proof of value at a European industrial group
     caveat: Illustrative proof-of-value result; not contractual.
   - name: Renewal coverage
+    kind: business
+    owner_role: General Counsel
     chip: Renewal coverage ↑
     label: of live contracts with a tracked renewal date
     figure: 98%
     figure_status: pov_result
   - name: Review effort
+    kind: business
+    owner_role: Head of Legal Operations
     chip: Review effort ↓
     label: of pages a reviewer opens, versus reading the estate
     figure: −70%

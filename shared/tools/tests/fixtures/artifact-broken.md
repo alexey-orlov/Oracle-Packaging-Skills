@@ -23,3 +23,5 @@ Delivery runs in pods, sized S / M / L.               <!-- ART204 · ART403 -->
 
 Jumpstart from €450K, then the Scale tier.
 <!-- ART402 bare Jumpstart · ART301 no disclaimer · ART302 not the PoV price · ART402 Scale -->
+
+OCI AI Accelerators — Workforce optimization                 <!-- ART105 retired family name -->

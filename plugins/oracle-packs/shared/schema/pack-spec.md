@@ -134,8 +134,24 @@ oracle_products:                          # components 9 and 10 — ids from sha
 # A metric that is defined and measured per engagement but carries no cleared headline number is
 # written `figure: "-"`, and then carries no figure_status, caveat or attribution — there is nothing
 # to qualify. Artifacts print "results to follow" for it.
+#
+# `kind` decides where a metric may be printed, and defaults to `business` when absent:
+#   business   what the buyer's business already tracks — money, time, volume, risk, quality, in
+#              their own words ("cost per claim", "planning cycle time"). The ONLY kind sales
+#              artifacts print on their tiles and chips: deck stat tiles and KPI chips, one-pager
+#              proof strip and chips, executive-summary proof strip, the site's metrics.
+#   leading    the proxy that moves first and predicts the business metric. May print as a second
+#              line under its business metric where the layout has one; never as a tile of its own.
+#   technical  a proof-of-value acceptance criterion (precision, recall, reviewer agreement,
+#              coverage, latency). NEVER on a sales artifact. The builders route it to the PoV
+#              package's success line instead — "Proof accepted when: …" on the deck's packages
+#              slide, the one-pager's packages table and the executive summary's tier strip.
+# `owner_role` is the buyer-side role who would sign the number off ("Head of claims", "COO").
+# Required on a business metric; it is the test that the metric is the business's, not ours.
 kpis:                                     # component 11 — ONE metric set per pack
   - name: Planning cycle time
+    kind: business | leading | technical  # optional; `business` when absent
+    owner_role: VP Field Service          # who on the buyer's side signs this number off
     formula: "Time from demand freeze to approved plan"
     baseline: "~2 days manual"
     figure: "~30 min"
@@ -203,6 +219,8 @@ open_questions:
 - `oracle_products[]` is Oracle-vendor only. A catalog entry whose `vendor` is NVIDIA belongs in `architecture.stack[].catalog_id`.
 - `packages.tiers[pov].duration_weeks.max` ≤ 8 by default; anything above 8 needs a `justification`; above 10 is rejected.
 - `kpis` is one set; the same metric may not appear twice with different figures. A figure of `-` means "measured per engagement, no cleared number" and is read as absent.
+- `kpis[].kind` is `business`, `leading` or `technical` (`business` when absent). A set with no business metric, and a metric whose name reads as a proof criterion or a vanity count without `kind: technical`, are warnings (SPEC025, SPEC026); a business metric with no `owner_role` is a warning too (SPEC027). Sales artifacts print `kind != technical`; technical criteria are routed to the PoV package's success line.
+- No retired family name — "OCI AI Accelerator(s)", "OCI accelerator(s)" — in `meta.eyebrow`, `deck.running_header`, `exec_summary.running_header` or `one_pager.eyebrow`. The family name on every print artifact is **Oracle AI & Data Solutions** (SPEC028).
 - `clearance.customer_name_allowed` decides attribution per channel; the builders never read the customer name unless the channel allows it.
 - No customer name inside `one_liner`, `problem_solution`, `verticals`, or `name`.
 ```

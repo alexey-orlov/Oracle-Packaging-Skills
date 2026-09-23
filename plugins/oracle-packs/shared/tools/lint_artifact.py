@@ -37,6 +37,11 @@ Rule codes
     ART102  "AIDP" outside the internal channel — write Oracle AI Data Platform
     ART103  a vendor product name close to, but not, the catalog's `name`/`short`
     ART104  the pack name is not the channel's variant from meta.name_variants
+    ART105  a retired family name ("OCI AI Accelerators", "OCI accelerator")
+            appears in the artifact's text — on EVERY channel. The family name
+            is "Oracle AI & Data Solutions", the mini-site's own lockup; the
+            old one still sits in the reference deck and in older briefs, so it
+            travels into a new artifact unless it is caught here (2026-09-23)
   vocabulary, customer-facing channels only (§4)
     ART201  a count, total, denominator or ceiling ("seven products", "5 of 7")
     ART202  a negation or absence ("so far", "yet", "not seeing")
@@ -134,6 +139,17 @@ TIER_RULES = [
 ]
 
 SIZE_TAG = re.compile(r"\bS\s*/\s*M\s*/\s*L\b|\b(?:size|tier)\s+tags?\s*[:=]\s*[SML]\b")
+
+# The retired family name, caught the way the retired tier names are (ART402):
+# one pattern over the extracted text, on every channel. "Oracle AI & Data
+# Solutions" is the lockup the mini-site ships and the only family name.
+#
+# The lookahead spares Oracle's own catalog entry `OCI AI Accelerator Packs`
+# (oci-ai-accelerator-packs), which is a real product an artifact may name. The
+# retired lockup never carries "Pack(s)" after it, so the two do not collide.
+HEADER_BRAND = "Oracle AI & Data Solutions"
+RETIRED_HEADER = re.compile(r"OCI\s+(?:AI\s+)?[Aa]ccelerators?\b(?!\s+[Pp]acks?\b)",
+                            re.IGNORECASE)
 
 # A vendor phrase runs on while the next token is capitalized or a connector.
 # No punctuation inside a token, so a sentence-ending "Service." stops it.
@@ -297,6 +313,7 @@ class ArtifactLint:
         self.check_assets(doc)
         self.check_partner_standing(doc)
         self.check_naming(doc)
+        self.check_retired_header(doc)
         self.check_vocabulary(doc)
         self.check_one_liner(doc)
         self.check_prices(doc)
@@ -430,6 +447,15 @@ class ArtifactLint:
                              "`%s` is not how the catalog spells it — write `%s` (vendor names "
                              "are volatile; re-verify against the vendor's own page before "
                              "shipping)" % (phrase, best["name"]), key=flat)
+
+    def check_retired_header(self, doc):
+        """ART105 — the retired family name, on every channel."""
+        for m in RETIRED_HEADER.finditer(doc.text):
+            self.hit(doc, "ART105", m.start(), m.end(),
+                     "`%s` is the retired family name — every print artifact carries `%s`, the "
+                     "mini-site's own lockup; fix it in the brief's header key, not in the "
+                     "artifact" % (PL.norm_ws(m.group(0)), HEADER_BRAND),
+                     key=PL.norm_ws(m.group(0)).lower())
 
     def check_vocabulary(self, doc):
         if not self.customer_facing:

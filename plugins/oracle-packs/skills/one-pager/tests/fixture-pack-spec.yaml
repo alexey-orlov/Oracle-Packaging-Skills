@@ -20,7 +20,7 @@ meta:
     internal_slide: Workforce Optimization App
     external: Workforce optimization
     external_subheading: Accelerator App by SoftServe
-  eyebrow: OCI AI Accelerators
+  eyebrow: Oracle AI & Data Solutions   # the family name; "OCI AI Accelerators" is retired (2026-09-23)
   roadmap_item_id: workforce-optimization
   roadmap_block: Data analysis & optimization
   source_engagement:
@@ -262,6 +262,8 @@ oracle_products:
 
 kpis:
   - name: Planning cycle time
+    kind: business
+    owner_role: VP Field Service
     chip_label: Planning cycle time
     direction: down
     formula: Time from demand freeze to an approved plan for one region
@@ -275,6 +277,8 @@ kpis:
     caveat: KPIs measured before/after on proof-of-value data; figures are illustrative, not contractual.
     source: one-pager 2026-07-17
   - name: Productivity gain
+    kind: business
+    owner_role: VP Field Service
     direction: up
     formula: Total jobs ÷ days with at least one job, averaged across technicians
     baseline: current manual plan for the same window
@@ -288,6 +292,8 @@ kpis:
     caveat: KPIs measured before/after on proof-of-value data; figures are illustrative, not contractual.
     source: one-pager 2026-07-17
   - name: Staffing cost avoided
+    kind: business
+    owner_role: COO
     direction: down
     formula: Avoided additional technician headcount valued at fully loaded cost
     baseline: planned hiring for the same demand
