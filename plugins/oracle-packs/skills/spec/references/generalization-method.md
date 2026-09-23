@@ -4,10 +4,16 @@ How `/oracle-packs:spec` turns **one delivered engagement** into a **generalized
 workflow research, the vendor study, the vertical differentiation, and the adjudication that
 stands between them and the candidate options.
 
-This runs as **step 2 of the spec skill** (`docs/PLAN.md` §3) — after intake, before options.
+This runs as **stage 2 of the spec skill** — after the first questions, before the pack's story.
 Its output is the research brief (`research-brief-format.md`), and then
 `workflow.steps[]`, `verticals[]`, `capabilities[]` and `meta.source_engagement` in
 `pack-spec.yaml`.
+
+**This file is read by the research agents, in their own context — never loaded into the
+conversation with the owner** (`cards/manifest.yaml` lists it under that step's `agents`). Its
+vocabulary is internal: no test or prompt id here, and no word from it, ever appears in anything
+the owner reads. What the owner is asked after the research is on `cards/research-review.md`; the
+candidate pack stories are on `cards/story.md`.
 
 Rewrite this file in place when the method changes. Never stack dated "UPDATE" sections.
 
@@ -366,55 +372,15 @@ step and are named in its description, never steps of their own (the owner, 2026
 
 ---
 
-## 5. Adjudication questions for the user
+## 5. What the owner rules on after the research
 
-Ask these through the question widget after the research and **before the options step, in widget
-calls of their own** (at most four questions per call; never merged into the triad-pick widget or a
-sign-off card), each skipped when the context already answers it — the intake list (`intake-questions.md`) has already
-covered inputs, frame and clearance; these are the questions only the research can raise. Widget
-conventions are `signoff-flow.md`'s.
-
-**The section title the owner sees is "Your call on what the research found"** — never
-"adjudication", and never a reference to this file or its numbering. Each widget is titled
-`Your call on the research · n of N · <question name>` (N = the questions actually asked after
-skipping), and the stage closes with a one-line "done, next" message. The question texts below are
-what they read, in these words; the *Internal* note after each is for you only and is never shown —
-each question carries instead a plain line on why it matters for the pack.
-
-1. **Which industries we really sell into** (multi-select from the researched list, ≥ 3): the
-   research proposes these. Which are genuinely different businesses we would sell into, and which
-   are the same thing under another name? *Why it matters:* it sets which industries the pack
-   claims and which ones the sales deck and the site lead with. *Internal:* `verticals[]`, the
-   vertical framings, the differentiation grid's columns.
-2. **Which of the differences between industries are real**: for each industry, the research listed
-   what it says makes that industry different. Which of those are real differences, and which are
-   padding? (Or: keep only the ones the research is confident about.) *Why it matters:* the
-   surviving ones become the "what matters here" line per industry and the industry rows of the
-   feature list; the rest disappear. *Internal:* the widened grid's cells, T7's adjudication.
-3. **What happens when things go wrong, and in which package** (multi-select, per package): at each
-   step, these are the ways it can fail. Which does the proof of value handle, which waits for the
-   Integration package, and which do we say plainly we do not cover? *Why it matters:* it fixes the
-   scope of the proof and the "not in scope" lines every document prints. *Internal:*
-   `workflow.steps[].failure_path`, the OUT OF SCOPE block on every artifact.
-4. **How broad the pack should be** (single choice + free text): keep it at the breadth drafted ·
-   go one step broader (and name the boundary that keeps the claim honest) · go one step narrower
-   (and name what we drop). *Why it matters:* it decides the name, the one-liner, and whether a
-   buyer reads the pack as a specific product or as a slogan. *Internal:* T3/T4.
-5. **What the vendors already ship that we do not** (per gap: build it now · put it on the roadmap
-   · leave it out): the research found these steps that competing products treat as part of the
-   job. *Why it matters:* each one either becomes a capability we sell, a roadmap line, or a gap a
-   buyer may raise. *Internal:* `capabilities[]` and the cross-vertical extensions block.
-6. **What was out of scope for the customer, but not for the pack**: for each thing the engagement
-   deliberately left out — is it out of scope for the pack too, or only for that one project?
-   *Why it matters:* the pack inherits the customer's exclusions by default, and that is usually
-   too narrow. *Internal:* T8, the scope lines.
-7. **What is built fresh for every customer**: confirm each feature we have marked as built per
-   customer — each one is work we have to price into the packages. *Why it matters:* it sets what
-   the packages cost and what "standard" means. *Internal:*
-   `capabilities[].customization_scope`, the packages table.
-8. **Option choice** (after the triads): pick one, blend, or send back for more research.
-
----
+The questions the research raises for the owner live on one card, `cards/research-review.md`,
+and are asked there: at most four, in one widget call, under the heading the owner sees,
+**"Your call on what the research found"**. This file does not restate them — the card is their
+only home. Everything a research agent produces that needs the owner's ruling (which industries
+are really different, which differences are real, which failures are in which package, how broad
+the pack should be, which vendor gaps we adopt, what the engagement left out that the pack should
+not) is written into the research summary so that card can pose it.
 
 ## 6. Anti-patterns
 

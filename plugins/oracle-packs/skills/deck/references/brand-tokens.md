@@ -10,9 +10,15 @@ families use a different canvas and none of this geometry transfers.
 
 `assets/softserve-deck-base.pptx` — a 41 KB single-slide shell derived from the
 full 26 MB EMEA template: real master, theme and logo, **one layout**
-(`Title-1Column`), one placeholder table slide, no media bloat. The builders
-open it, strip its slides and add their own, so the master, theme and fonts
-come along and nothing has to be re-derived.
+(`Title-1Column`), one placeholder table slide, no media bloat. A builder opens
+it, strips its slides and adds its own, so the master, theme and fonts come along
+and nothing has to be re-derived.
+
+**The sales deck no longer starts here.** `build_deck_v2.py` fills the exemplar
+deck (`assets/exemplar/wfo-sales-deck.pptx`), which brings its own master, theme,
+layouts — the dark `Title-AI` cover among them — and every geometry this page
+lists. The base is what the **legacy** builder (`build_deck.py`) and the
+executive-summary skill draw on, and what the tokens below are for.
 
 | Layout | Placeholders (idx) | Notes |
 |---|---|---|

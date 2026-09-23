@@ -1,89 +1,72 @@
 ---
 name: spec
-description: Turn one delivered Oracle + NVIDIA AI engagement into a generalized accelerator-pack specification — interactively. Locates the raw inputs, asks the predefined intake questions (skipping what the context already answers), runs the generalization research (domain workflow across industries, vendor and competitor taxonomies, vertical differentiation, failure paths, feature specificity), proposes name · one-liner · problem↔solution options with a structured research TLDR, then signs off the 12 shared components one at a time in the fixed order (problem↔solution → one-liner → target ICP → name → verticals → capabilities → workflow → architecture → Oracle products → KPIs → packages) and confirms the whole brief before any artifact is built. Use on /oracle-packs:spec, "package this case", "create a pack spec for X", "generalize the <customer> PoC into a pack", or before any pack artifact when no confirmed pack-spec.yaml exists.
+description: Turn one delivered Oracle + NVIDIA AI engagement into a generalized accelerator-pack specification — interactively, in six stages and at most twelve questions. Locates the raw inputs, asks only what the documents cannot answer, runs the generalization research, puts two or three complete pack stories (name, one-liner, problem, solution, buyer) side by side as one comparison table, drafts the rest of the pack in a single pass with a fresh-context reviewer per part, then confirms the whole brief as one table and hands over to the build. Use on /oracle-packs:spec, "package this case", "create a pack spec for X", "generalize the <customer> PoC into a pack", or before any pack artifact when no confirmed pack-spec.yaml exists.
 disable-model-invocation: false
 user-invocable: true
 ---
 
-# /oracle-packs:spec — the pack spec, signed off component by component
+# /oracle-packs:spec — the pack brief, in six stages
 
-> **Paths.** `shared/...` means `${CLAUDE_PLUGIN_ROOT}/shared/...` (each plugin carries a synced copy of the repo's `shared/` folder); `tools/...`, `assets/...` and `references/...` without a prefix are relative to this skill's own folder. In a plain-copy install the plugin folder sits at `.claude/skills/<plugin>/` and `${CLAUDE_PLUGIN_ROOT}` resolves to it.
+> **Paths.** `shared/...` means `${CLAUDE_PLUGIN_ROOT}/shared/...` (each plugin carries a synced copy of the bundle's `shared/`); `references/...` and `tools/...` are this skill's own folder.
 
+**Load only what the step needs.** `references/cards/manifest.yaml` lists, per step, exactly which files that step reads. Read those and nothing else — never the whole folder, never a card for a step you are not on, never a long reference a card already points to. Each card says what its part is, the three to six checks a draft must pass, and the spec keys it fills; the checks are the specification, not prose to paraphrase. Background, only if a term is unfamiliar: `shared/references/engagement-context.md` and `pack-anatomy.md`.
 
-You produce **one file the other skills trust**: `packs/<slug>/pack-spec.yaml`, valid against `shared/schema/pack-spec.md`, with every component confirmed by the user through the question widget. Nothing in it is invented: every value carries a source, and a gap is a question, not a guess.
+You produce one file the other skills trust: `packs/<slug>/pack-spec.yaml`, valid against `shared/schema/pack-spec.md`. Nothing in it is invented — every value carries a source, and a gap is a question, not a guess.
+
+**At most 12 questions in the whole run**, and fewer is better. Say the number in the map.
 
 ## 0. Before you start
 
-1. Read, in this order: `shared/references/engagement-context.md`, `shared/references/pack-anatomy.md`, `shared/references/naming-and-clearance.md`, `shared/references/packaging-coaching-rules.md`, `shared/references/review-loop.md`, `shared/references/talking-to-the-owner.md` — every message, question and option the owner sees passes its reader's test — and this skill's `references/generalization-method.md`, `references/research-brief-format.md`, `references/intake-questions.md`, `references/signoff-flow.md`. Load `shared/data/oracle-products.yaml` (the only allowed product names) and `shared/data/roadmap-items.csv` (the only allowed roadmap ids).
-2. Working folder: `packs/<slug>/` under the directory the user names (default: the current working directory). If `packs/<slug>/pack-spec.yaml` already exists, read it and resume at the first unconfirmed component; say so.
-3. Model split (as roles): the research fan-out, source extraction, catalog and roadmap lookups run on the mechanical model (Opus in the owner's setup); the research synthesis, every TLDR, every option and every component proposal, and the final consistency pass run on the strongest model available (Fable). Name the split once in your first status line. Never fan out more than four research agents at once, and have each write its output file within minutes so silence is visible (check the file's modification time, and take the work over when nothing moves).
+1. Working folder `packs/<slug>/`, under the directory the user names (default: the working directory). If a `pack-spec.yaml` is already there, read it, resume at the first unsettled part, and say so.
+2. Load `shared/data/oracle-products.yaml` (the only allowed product names) and `shared/data/roadmap-items.csv` (the only allowed roadmap ids) at the step that needs them, not before.
+3. Roles: research agents, extraction and lookups on the mechanical model; the synthesis, the story candidates and the final consistency pass on the strongest available. Name the split once. Never more than four research agents at once.
+4. **Show the map first** — one short message: the six stages below in the owner's words, how many questions each will actually ask after skipping, and the total. Every widget title then carries `<Stage> · n of N · <question name>`, and every stage ends with one line: what is done, what is next.
 
-## 1. Intake — ask, do not assume
+## 1. Before we start
 
-**Show the map first.** Before the first question, one short message with the six-stage map from `shared/references/talking-to-the-owner.md` ("Where we are"), in the owner's words, with the number of questions each stage will actually ask after skipping. From then on every widget title carries `<Stage> · n of N · <question name>`, and every stage ends with a one-line "done, next" message.
+Cards: `intake-a`, `intake-b`, `intake-c`. Inventory the inputs first — every file with what it is, text extracted where you can (python-docx, python-pptx, `pdftotext`, the transcript itself), written to `packs/<slug>/inventory.md`; a file you cannot open is reported as unreadable, never treated as absent. Then ask only what the inventory did not answer, **all of it in one or two widget calls**. Propose before you ask: state what you found and where, and let the owner correct it. Answers go to `packs/<slug>/intake.md`.
 
-Run the question list in `references/intake-questions.md` — stage 1, "Before we start", **all three blocks before any research runs**, titled `Before we start · n of N · <question name>` — one widget at a time, in order: **Block A** (locate the raw inputs, name the delivered case, find prior packaging work), **Block B** (roadmap item, verticals, artifacts wanted, internal contact), **Block C** (clearance of the customer name and logo per channel, cleared figures, PoV duration and price constraints, internal-only facts). Skip a question only when the answer is already in the context, and say where you found it. Write answers to `packs/<slug>/intake.md` as you go.
+## 2. Research
 
-Inventory the inputs: list every file with what it is (SoW, deck, recording, feature list, transcript, note), extract text where you can (python-docx, python-pptx, `pdftotext`, the transcript itself), and write `packs/<slug>/inventory.md`. A file you cannot open is reported as unreadable, never treated as absent.
+Card: `research`. No questions here. Fan the five topics out to agents, each reading its own prompt from `references/generalization-method.md` §4 — that file never enters this conversation. Report progress in plain words, check each agent's output file is actually growing, then read `references/research-brief-format.md` and synthesize `packs/<slug>/research-brief.md` yourself, opening it beside the conversation before the next question.
 
-## 2. Generalization research — the step that decides everything
+## 3. Your call on the research
 
-Follow `references/generalization-method.md` exactly. In short:
+Card: `research-review`. At most four questions, **one widget call**, only what the research genuinely raised. Where the research is confident and the owner has no stake in the answer, state it and move on.
 
-1. **Inventory the delivered case** as a step table: steps, actors, systems, data, human-in-the-loop points; per step the three lenses (what the Oracle/NVIDIA pack provided · what we implemented · what stays custom).
-2. **Domain workflow across industries**: how this job is generally done, canonical step names, where industries differ, how the delivered case differs from the general shape. The pack's own workflow is that list grouped to **5–7 steps** at the buyer's checkpoints; mechanics live inside a step's description, never as steps.
-3. **Vendor and competitor taxonomy study**: how three to five vendors structure capabilities for this job; direct competitors, indirect substitutes, same-vendor overlaps; the gap check — which steps we miss or over-split.
-4. **Vertical differentiation**: at least three scenarios × every step, with a "what matters here" cell; widen the prompt deliberately; then adjudicate real differences vs filler (that adjudication is a user question, not your call alone).
-5. **Failure path per step**; absence is a finding and becomes an out-of-scope line.
-6. **Feature specificity**: tag every feature customer / engine / use case / industry; reusable vs custom.
-7. **Placement**: the roadmap item (from the extract, by id), candidate Oracle products from the catalog with required / optional roles — required only what the pack cannot run without (typically 1–3: the platform as one entry plus what the core executes on), optional only what a buyer would plausibly connect (2–4); a catalog sweep is cut — KPI candidates with formulas and baselines.
-8. **Red-team** the whole set: is this product really the answer; is the PoV feasible in 4–8 weeks; what is AI slop; remove or defend each item.
+## 4. The pack's story
 
-Fan the sub-tasks 2–6 out to research agents with the prompts in the method file; each writes `packs/<slug>/research/<topic>.md`. Synthesize the **research brief** yourself in the exact format of `references/research-brief-format.md` (answer first, labeled claims, source tiers, ≤ 10 minutes to read) to `packs/<slug>/research-brief.md`. The "general enough but not too general" test in the method file must pass before you go on; if it does not, say which criterion fails and what extra research would fix it.
+Card: `story`. Two or three complete candidates — name, one-liner, problem, solution, who buys it — as **one comparison table**, every cell grounded in the research summary or the inputs, then one widget carrying only the pick. Free text that is a value is applied as given; a direction is re-proposed once. Log the choice in `packs/<slug>/decisions.md`.
 
-This is stage 2: report progress in plain words (which research is running, what it has produced so far), then present the research summary. Then stage 3, **Your call on the research** — the questions in section 5 of the method file, in widget calls of their own, titled `Your call on the research · n of N · <question name>` (N = the questions actually asked after skipping) — closed with the one-line "done, next" message.
+## 5. Everything else, drafted in one pass
 
-## 3. Options — one to three triads
+Cards, one per part as you write that part: `industries`, `capabilities`, `workflow`, `architecture`, `oracle-products`, `metrics`, `packages`. Draft all seven from the story, the research summary and each part's card, **asking nothing**.
 
-From the brief, propose **one to three candidate triads** (name · one-liner · problem · solution). Present the research TLDR first, then the triads **as one comparison table in chat** — one column per triad, headed `<letter> · <Name>`, one row per attribute in this order: One-liner · Problem · Solution · Sells best in · Bets on · Leaves out · Risk — so the same row reads across the options, every cell readable by someone with zero context (readable by an Oracle or SoftServe seller who has never worked in the industry: the business named, literal words, nothing referred to that the cell has not introduced; the zero-context test in `shared/references/pack-anatomy.md` §1); never as consecutive paragraphs. Every triad the user can pick is a column (a blend of two triads is offered only when it is written out as its own column). Under the table, one line: the recommendation with its reason, and the alternative the user is most likely to prefer. Then one widget — stage 4, titled `The pack's story · Which name, one-liner, problem and solution we build on` — with **only this question**: one option per column, labelled `<letter> · <Name>`, with a one-line description in plain business words (what it bets on, what it gives up — no research codes, no status-glyph counts, no restatement of the table), plus "Research further" (free text: what to research). The adjudication questions from the method file are asked before this step, never inside this widget. Loop until the user picks. Log the choice in `packs/<slug>/decisions.md`.
+Then the **reviewer pass**. For each part, one fresh-context subagent that receives only the drafted part, the inputs it was drawn from and that part's card — never this conversation — and returns pass or fail per check with a one-line reason. Fix every fail; at most two rounds. What still fails goes to the owner as an open item in plain words, and into `open_questions`.
 
-## 4. Sign-off — one component at a time, fixed order
+While drafting: when something essential is missing, ask rather than invent — a package without a price is marked to be confirmed with a footnote, a metric without a cleared figure prints "results to follow". Oracle and NVIDIA products by catalog id only. No customer name in any component text. Every integration claim states its tier. Each settled value is written into `pack-spec.yaml` immediately, with its source.
 
-Follow `references/signoff-flow.md`. This is stage 5 — every card and its widget titled `Confirm the pack · n of 11 · <the part, in the owner's words>` — and the order is fixed by the owner: **problem ↔ solution → one-liner → target ICP → name**, then verticals and their framings → capabilities, features and customization scope → workflow architecture with human-in-the-loop and failure paths → high-level architecture → required and optional Oracle products (catalog ids only) → key performance metrics (one set) → service-package table (PoV Jumpstart / Integration / Scaling: per-capability handling, timeframe, cost).
+## 6. The whole brief
 
-For every component: a very brief non-technical TLDR of the proposal, its grounding (source lines from the brief or the inputs), then the widget with the proposal as the first option and two or three real alternatives. When the user answers with free text, apply it verbatim where it is a value and re-propose where it is a direction. Write the confirmed value into `pack-spec.yaml` immediately, with `source: user:<date>`.
-
-Hard rules while signing off:
-- If something essential is missing (no figure, no price, no vertical evidence, no delivered scope), **ask** — never make it up. A tier without a price is `status: tbd` with a footnote; a metric without a cleared figure prints "results to follow".
-- PoV duration: propose within 4–8 weeks; above 8 requires a written justification; above 10 you push back with the reasons (scope too wide for a proof, integration work leaking into the PoV, unclear success metric) and offer a narrower PoV.
-- One metric set per pack. If the inputs carry two sets, put both in front of the user and confirm one; never keep both.
-- Names: Oracle and NVIDIA products only by catalog id; the pack name is one plain string, with channel variants derived per `naming-and-clearance.md`; no customer name inside any component text.
-- Integration claims state their tier (e.g. "file export / import in the PoV, API write-back in Integration").
-- Anything the user defers goes to `open_questions`; an artifact that depends on an open question prints nothing for it.
-
-## 5. The brief — confirm everything, then hand over
-
-Render the whole pack brief **as one table** — a row per part in the fixed order; columns: the part, in the owner's words · what we decided · status (confirmed by you / proposed, awaiting your OK / open). The rows: the name and how it is written for each audience · one-liner (full / short) · problem ↔ solution · who buys it, at what kind of company · the industries · capabilities per area with the available / partial / roadmap counts · workflow steps · architecture layers · Oracle products required / optional · the metrics and who they are attributed to · the three packages with durations and prices · who to contact · what may be named where · what is still open. Ask one widget, titled `The whole brief · Confirm, change or stop` (stage 6), with **exactly three options and no others**: confirm as is (Recommended) · make changes (free text) · stop here. Never add flow choices here ("build only the feature list", "confirm but stop before building", "anything else to change?"): which artifacts get built was settled in stage 1, and what happens after confirmation is fixed. Apply changes and re-render until confirmed. Then set `meta.status: confirmed` and run `python3 shared/tools/lint_spec.py packs/<slug>/pack-spec.yaml`, both silently, and report the result in one plain line ("the automatic checks passed", or what one of them found and what it means for the pack). Then hand over **at once, in the same session**: one line on what happens next — the artifacts the owner chose in stage 1, by name and in order, each reviewed before the next — and invoke `/oracle-packs:build packs/<slug>/pack-spec.yaml` through the Skill tool. Do not ask whether or how to proceed, and never build artifacts yourself inside this skill.
+Card: `brief`. One table, one widget — exactly confirm · change · stop. Then set the status, run `python3 shared/tools/lint_spec.py packs/<slug>/pack-spec.yaml` silently, report it in one plain line, and invoke `/oracle-packs:build packs/<slug>/pack-spec.yaml` at once, in the same session.
 
 ## Showing it to the owner
 
-Everything the owner reviews is opened beside the conversation *before* the question is asked — the owner answers while looking at the thing, never at a description of it (`shared/references/review-loop.md` §3). In the Claude desktop app: a text file (the research summary, the pack brief, a spec) opens in the Files pane with the view-pane tool (`mcp__ccd_view__show_pane`, pane `file`, the path); a render (a page PNG, a PDF, an HTML page) opens in the side panel with the file-send tool (`SendUserFile`, `display: "render"`), with the editable file attached alongside (`display: "attach"`); then the widget. Never publish internal pack material as a claude.ai artifact — it leaves the machine; artifacts stay reserved for the mini-site demos. In a plain terminal with no panes, print the path and a text rendering, and say so. Here: after the research, `packs/<slug>/research-brief.md` opens in the Files pane before the stage-3 questions; at stage 6 the brief table is shown in the conversation and `pack-spec.yaml` opens in the Files pane before the confirm widget.
+Everything the owner reviews is opened beside the conversation *before* the question, so they answer while looking at the thing (`shared/references/review-loop.md` §3). In the desktop app a text file opens in the Files pane (`mcp__ccd_view__show_pane`, pane `file`); a render opens in the side panel (`SendUserFile`, `display: "render"`) with the editable file attached. Internal pack material is never published as a claude.ai artifact. In a plain terminal, print the path and a text rendering, and say so. Here: the research summary before stage 3, `pack-spec.yaml` before the confirm question.
 
-## 6. Fast path
+## Fast path
 
-When the user asks for one thing ("re-propose the one-liner", "add a vertical", "change the PoV price"), skip to that component, re-run only the research it needs, re-confirm it, re-lint, and stop. Never re-run the whole flow for one field.
+When the user asks for one thing ("re-propose the one-liner", "add an industry", "change the price"), load that part's card only, redo it, re-lint, and stop. Never re-run the flow for one field.
 
-## 7. Definition of done and self-check
+## Done, and the self-check
 
-Done = `pack-spec.yaml` confirmed and lint-clean; `research-brief.md`, `intake.md`, `inventory.md`, `decisions.md` in the pack folder; the closing message lists the open questions and the artifacts to build next. Before you close, check:
+Done = `pack-spec.yaml` settled and lint-clean; `research-brief.md`, `intake.md`, `inventory.md`, `decisions.md` in the pack folder; the closing message lists the open items and the artifacts to build next. Before you close:
 
-- [ ] Every component has a `source`; the first four carry `user:` sources.
-- [ ] No customer name in any component text; clearance flags set per channel.
-- [ ] Products are catalog ids; the roadmap id exists in the extract; the extract version is recorded in `meta.generated_with`.
-- [ ] One metric set; every figure has a status and a caveat; attribution rule present.
-- [ ] PoV within the cap or justified; tier names are PoV Jumpstart / Integration / Scaling.
-- [ ] The research brief passes the "general enough but not too general" test and names its gaps.
-- [ ] You asked instead of inventing wherever the inputs were silent.
-- [ ] Every message, question, option and table the owner saw passes the reader's test: no method codes, no file or key names, no packaging vocabulary as vocabulary, reasons instead of rule names.
-- [ ] Everything the owner reviewed was opened beside the conversation before the question was asked.
-- [ ] The map was shown first; every question carried its stage, number and name; every stage ended with a "done, next" line; no question was asked outside the map, and every question stood alone.
+- [ ] Every part has a source; the story's parts carry `user:` sources.
+- [ ] No customer name in any component text; clearance set per audience.
+- [ ] Products are catalog ids; the roadmap id exists; the extract version is recorded.
+- [ ] One metric set; every figure has its kind and caveat; the proof is within its cap or justified.
+- [ ] Every part passed its card's checks, through the reviewer, and every remaining fail reached the owner.
+- [ ] Twelve questions or fewer, each in its stage, each standing alone.
+- [ ] Every message, question, option and table passed the reader's test in `references/cards/owner-language.md`.
+- [ ] Everything the owner reviewed was open beside the conversation before the question.

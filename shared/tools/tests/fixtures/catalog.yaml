@@ -33,3 +33,17 @@ products:
     vendor: NVIDIA
     aliases: ["cuOpt on OCI"]
     not_this: ["cuOpt", "Oracle cuOpt"]   # bare, without the vendor prefix
+  # The two entries whose `not_this` differs from the accepted spelling only in
+  # case — the catalog's own habit, and the one ART101 used to fire on.
+  - id: nvidia-nemo
+    name: NVIDIA NeMo
+    short: NeMo
+    vendor: NVIDIA
+    aliases: ["NeMo", "NVIDIA NeMo framework"]
+    not_this: ["Nemo", "NVIDIA Nemo"]
+  - id: nvidia-nim
+    name: NVIDIA NIM
+    short: NIM
+    vendor: NVIDIA
+    aliases: ["NIM", "NVIDIA NIM microservices"]
+    not_this: ["NIMs", "NVIDIA NIMS", "Nvidia NIM"]

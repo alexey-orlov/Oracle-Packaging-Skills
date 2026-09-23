@@ -180,21 +180,34 @@ def split_vendor_phrase(raw: str):
     return out
 
 
-def covered_by_good_name(text, match, longer_names):
+def covered_by_good_name(text, match, names):
     """True when this `not_this` match sits inside an accepted catalog name.
 
-    Some catalogs mark the bare form of a name `not_this` because the vendor
-    prefix is mandatory ("cuOpt" → "NVIDIA cuOpt"). Without this test every
-    correct use of the long name would also be reported as the short one.
+    Two catalog habits land here. Some entries mark the bare form `not_this`
+    because the vendor prefix is mandatory ("cuOpt" → "NVIDIA cuOpt"); some mark a
+    spelling that differs from the accepted one only in case ("NVIDIA Nemo"
+    against the catalog's own "NVIDIA NeMo", "Nemo" against "NeMo"). Both are the
+    same test — an accepted name occupies the match — and the relative length of
+    the two strings has nothing to do with it:
+
+    * a name that spans MORE than the match covers it whatever its case;
+    * a name that spans exactly the match has to match it letter for letter,
+      because the case IS the whole difference between the two spellings.
     """
-    if not longer_names:
+    if not names:
         return False
     start = max(0, match.start() - 80)
     window = text[start:match.end() + 80]
-    for name in longer_names:
+    for name in names:
         for gm in re.finditer(re.escape(name), window, re.IGNORECASE):
-            if start + gm.start() <= match.start() and start + gm.end() >= match.end():
-                return True
+            gs, ge = start + gm.start(), start + gm.end()
+            if gs > match.start() or ge < match.end():
+                continue
+            if gs == match.start() and ge == match.end():
+                if text[gs:ge] == name:        # written exactly as the catalog spells it
+                    return True
+                continue                        # same span, wrong case: a finding
+            return True
     return False
 
 
@@ -367,13 +380,14 @@ class ArtifactLint:
                     continue
                 wrong_spellings.add(PL.norm_loose(wrong))
                 # "cuOpt" is `not_this` because the vendor prefix is required, and it
-                # is also the tail of the correct "NVIDIA cuOpt". A wrong spelling
-                # that sits inside an occurrence of an accepted name is not a finding.
-                longer = [g for g in good_names
-                          if len(g) > len(wrong) and wrong.lower() in g.lower()]
+                # is also the tail of the correct "NVIDIA cuOpt"; "NVIDIA Nemo" is
+                # `not_this` for a capital letter the catalog's own "NVIDIA NeMo"
+                # has. A wrong spelling that sits inside an occurrence of an accepted
+                # name is not a finding, whichever of the two strings is longer.
+                containing = [g for g in good_names if wrong.lower() in g.lower()]
                 for m in re.finditer(r"(?<![\w-])%s(?![\w-])" % re.escape(wrong), doc.text,
                                      re.IGNORECASE):
-                    if covered_by_good_name(doc.text, m, longer):
+                    if covered_by_good_name(doc.text, m, containing):
                         continue
                     self.hit(doc, "ART101", m.start(), m.end(),
                              "`%s` is the spelling the catalog marks `not_this` — write `%s`"

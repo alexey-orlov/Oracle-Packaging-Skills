@@ -269,6 +269,30 @@ else
   expect ".pdf" ART900 "not evaluated"
 fi
 
+# A `not_this` spelling that differs from the catalog's own only in case
+# ("NVIDIA Nemo" against "NVIDIA NeMo", "Nvidia NIM" against "NVIDIA NIM") used to
+# fire ART101 on the correct spellings, so an artifact naming the products right
+# came back red. The right spellings are clean; the wrong ones are still caught.
+cat > "$WORK/vendor-spelling-right.md" <<'EOF'
+The extraction engine runs NVIDIA NeMo Agent Toolkit and NVIDIA NIM on OCI,
+with NVIDIA NeMo behind them. NeMo is the framework; NIM serves the models,
+and NVIDIA cuOpt does the optimization.
+EOF
+cat > "$WORK/vendor-spelling-wrong.md" <<'EOF'
+The engine runs NVIDIA Nemo and Nvidia NIM; Nemo is the framework and the
+NIMs serve the models.
+EOF
+
+run_case "the catalog's own vendor spellings are clean" 0 \
+  "$PY" "$TOOLS/lint_artifact.py" "$WORK/vendor-spelling-right.md" \
+  --channel partner_print --spec "$VALID" --catalog "$CAT"
+expect_absent "right spellings" ART101 ART103
+
+run_case "the case-only misspellings are still caught" 1 \
+  "$PY" "$TOOLS/lint_artifact.py" "$WORK/vendor-spelling-wrong.md" \
+  --channel partner_print --spec "$VALID" --catalog "$CAT"
+expect "wrong spellings" "ART101" "NVIDIA Nemo" "Nvidia NIM" "NIMs"
+
 run_case "a directory of artifacts" 1 \
   "$PY" "$TOOLS/lint_artifact.py" "$WORK" --channel customer_site \
   --spec "$VALID" --catalog "$CAT"
@@ -292,6 +316,21 @@ expect "absent components" "–"
 
 run_case "a missing spec is a usage error" 2 \
   "$PY" "$TOOLS/check_consistency.py" "$WORK/not-here.yaml" "$WORK/artifact-clean.md"
+
+# --------------------------------------------------------------- context_budget
+# The spec skill's own manifest must stay inside its per-step reading budget;
+# a card that grows past its share fails here, not in a live run.
+say ""
+say "context_budget.py"
+SPEC_MANIFEST="$TESTS/../../../plugins/oracle-packs/skills/spec/references/cards/manifest.yaml"
+if [ -f "$SPEC_MANIFEST" ]; then
+  run_case "the spec manifest is within budget" 0 \
+    "$PY" "$TOOLS/context_budget.py" "$SPEC_MANIFEST" --quiet
+  run_case "a missing manifest is a usage error" 2 \
+    "$PY" "$TOOLS/context_budget.py" "$WORK/no-manifest.yaml"
+else
+  bad "the spec manifest is missing: $SPEC_MANIFEST"
+fi
 
 # ----------------------------------------------------- the deck builder + linter
 # Lives with its skill (it needs python-pptx and the deck base), so it runs as a

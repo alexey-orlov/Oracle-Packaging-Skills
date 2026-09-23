@@ -1,0 +1,184 @@
+{
+  "_about": "Semantic slot -> shape id on the exemplar deck (wfo-sales-deck.pptx, 10 slides, 13.33 x 7.5 in). `ref` is the 1-based slide number in the exemplar; ids are p:cNvPr ids, stable for this file. build_deck_v2.py reads this map and never hard-codes geometry. Ambiguous shapes and the reasoning behind each resolution are documented in references/exemplar-builder.md.",
+  "_exemplar": "wfo-sales-deck.pptx",
+  "_sha256": "ca28fbcde835fee28d7ab0bfa2074b9f543c51c0013f5c0b07d73febc199e7e8",
+  "header": {
+    "slot": "running_header",
+    "id": 2,
+    "note": "placeholder idx=34 on every content slide (2-10); absent on the cover"
+  },
+  "slides": {
+    "cover": {
+      "ref": 1,
+      "layout": "Title-AI",
+      "slots": {
+        "cover.block": 4,
+        "cover.title": {"id": 3, "paragraph": 0},
+        "cover.one_liner": {"id": 3, "paragraph": 1},
+        "cover.tier_line": 2,
+        "cover.icp": 2,
+        "cover.photo": {"on": "layout", "layout": "Title-AI", "id": 5, "name": "Picture 4"}
+      },
+      "note": "The dark ground and the hero photo come from the Title-AI LAYOUT, not from slide shapes. Shape 3 is one placeholder holding BOTH the pack name (p0, 44 pt) and the one-liner (p1, 25 pt). Shape 2 carries the reference's tier ladder; the builder empties that text (no tier eyebrow, DECK-FIDELITY finding 2) and reuses the shape for the ICP line. `cover.photo` is the Workforce Optimization hero image on the layout — pack-specific, so it is replaced from `deck.images.cover` or removed, never inherited; the layout's own ink background (`solidFill tx1`) is the empty state."
+    },
+    "use_case": {
+      "ref": 2,
+      "slots": {
+        "title": 3,
+        "use_case.problem.card": 6,
+        "use_case.problem.accent": 7,
+        "use_case.problem.label": 8,
+        "use_case.problem.body": 9,
+        "use_case.solution.card": 10,
+        "use_case.solution.accent": 11,
+        "use_case.solution.label": 12,
+        "use_case.solution.body": 13,
+        "use_case.kpi_chips": [
+          {"box": 14, "text": 15},
+          {"box": 16, "text": 17},
+          {"box": 18, "text": 19}
+        ],
+        "use_case.anchor_strip.band": 20,
+        "use_case.anchor_strip": 21
+      },
+      "note": "Shape 9 paragraphs: p0 lead (bold clause + regular tail), p1 blank, p2 'This leads to the following challenges:', p3-p5 the bulleted named challenges (bold label + ': rest'). p3 is the bullet prototype. Shape 13: p0 bold reframe + regular body, p1 blank, p2 the second sentence."
+    },
+    "verticals": {
+      "ref": 3,
+      "slots": {
+        "title": 3,
+        "verticals": [
+          {"card": 6, "divider": 8, "name": 9, "rule": 10, "body": 11, "panel": 30, "icon": 31},
+          {"card": 12, "divider": 14, "name": 15, "rule": 16, "body": 17, "panel": 32, "icon": 33},
+          {"card": 18, "divider": 20, "name": 21, "rule": 22, "body": 23, "panel": 34, "icon": 35},
+          {"card": 24, "divider": 26, "name": 27, "rule": 28, "body": 29, "panel": 36, "icon": 37}
+        ]
+      },
+      "note": "Four identical 6.00 x 2.00 in cards. `icon` is a 1.06 in white PNG centred on the blue `panel`; the builder replaces it in place from assets/icons/map.yaml, or leaves the exemplar's icon and says so. `card`/`panel` are greyed for an unused slot (rule 3: empty container, never a gap)."
+    },
+    "today_tomorrow": {
+      "ref": 4,
+      "slots": {
+        "today_tomorrow.customer_logo": 17,
+        "today_tomorrow.headline": 7,
+        "today_tomorrow.subline": 8,
+        "today_tomorrow.vertical_case": 6,
+        "today.band": 9,
+        "today.label": 10,
+        "today.text": 11,
+        "tomorrow.band": 13,
+        "tomorrow.label": 14,
+        "tomorrow.text": 15,
+        "today.image": 3,
+        "tomorrow.image": 4
+      },
+      "note": "Shape 17 is the source customer's logo — removed unless clearance allows the customer name AND deck.images.customer_logo is given; the headline then moves to the left margin and widens to the content band (the only geometry the builder computes on this slide). TOMORROW's band is orange here, not blue: the exemplar's own choice, kept."
+    },
+    "proof": {
+      "ref": 5,
+      "slots": {
+        "proof.customer_logo": 30,
+        "proof.headline": 31,
+        "proof.stats": [
+          {"box": 33, "value": 34, "label": 35},
+          {"box": 36, "value": 37, "label": 38},
+          {"box": 39, "value": 40, "label": 41}
+        ],
+        "proof.blocks": [
+          {"bar": 45, "label": 46, "panel": 47, "body": 48},
+          {"bar": 49, "label": 50, "panel": 51, "body": 52},
+          {"bar": 53, "label": 54, "panel": 55, "body": 56},
+          {"bar": 57, "label": 58, "panel": 59, "body": 60}
+        ],
+        "proof.anchor_strip.band": 61,
+        "proof.anchor_strip": 62,
+        "proof.footnote": 63
+      },
+      "note": "Four quadrant blocks: [0] CONTEXT and [1] SOLUTION carry blue bars, [2] VALUE FOR ORACLE + NVIDIA and [3] VALUE FOR CLIENT carry ink bars. The deck keeps [0] and [1] here; blocks [2]/[3] are the composition the 'why it sells' slide is duplicated from."
+    },
+    "why_it_sells": {
+      "ref": 5,
+      "duplicate_of": "proof",
+      "slots": {
+        "why.headline": 31,
+        "why.cards": "proof.blocks (ink-bar pair first: 2, 3, then 0, 1)",
+        "why.consumption": "proof.anchor_strip",
+        "why.cta": "proof.footnote"
+      },
+      "note": "The anatomy's slide 6 has no reference slide of its own: on the reference it was the 'VALUE FOR ORACLE + NVIDIA' quadrant of slide 5. The builder duplicates slide 5, drops the stat strip and the customer logo, and fills the four quadrant blocks with packages.why_it_sells_for_the_partner (ink bars first, so the partner-value colour leads)."
+    },
+    "layers": {
+      "ref": 6,
+      "slots": {
+        "title": 3,
+        "layers.subline": 6,
+        "layers.value_arrow": 25,
+        "layers.value_label": 22,
+        "layers.rows": [
+          {"panel": 7, "name": 8, "divider": 9, "summary": null, "badge": null,
+           "cards": [{"box": 26, "title": 27, "body": 28}, {"box": 29, "title": 30, "body": null}],
+           "chips": [4, 5, 11]},
+          {"panel": 12, "name": 13, "divider": 14, "summary": 15, "badge": 16},
+          {"panel": 17, "name": 18, "divider": 19, "summary": 20, "badge": 21}
+        ]
+      },
+      "note": "Row 0 is the top of the ladder and carries the two white sub-cards (the pack / the tailored solution) plus one chip per tier; it has no summary textbox or vendor badge. Rows 1..n are the plain layer rows and row 1 is the clone prototype when the spec has more than three layers. The ladder band (top of row 0 to the bottom of the last row, 2.85 -> 6.71 in) and the 0.16 in gap are the exemplar's; row heights are distributed inside it."
+    },
+    "architecture": {
+      "ref": 7,
+      "slots": {
+        "title": 3,
+        "architecture.subline": 63,
+        "architecture.container": 17,
+        "architecture.app": 23,
+        "architecture.engine": 32,
+        "architecture.engine.text": 13,
+        "architecture.infra": 18,
+        "architecture.node_proto": 36,
+        "architecture.node_group": 33,
+        "architecture.arrow_in": 38,
+        "architecture.arrow_out": 45,
+        "architecture.arrow_elbow": 58,
+        "architecture.arrow_label_proto": 46,
+        "architecture.stray_rule": 19,
+        "architecture.engine_arrows": [40, 43]
+      },
+      "note": "Rebuilt inside the exemplar's frame. Shape 36 ('Additional datasources') is the node prototype — a plain rounded rectangle with a centred bold name over a small description, easier to clone than the equivalent group 33, which the builder deletes. Shape 32 is a group whose child 13 holds the engine text. 19 is a 0.012 in white bar left over from the reference's own editing; it renders as nothing and is deleted."
+    },
+    "packages": {
+      "ref": 9,
+      "slots": {
+        "title": 3,
+        "packages.table": 6,
+        "packages.footnote": 7
+      },
+      "table": {
+        "rows": {"header": 0, "scope": 1, "price_services": 2, "price_infra": 3, "timing": 4, "capability_first": 5},
+        "capability_proto": 5,
+        "glyph_cells": {"partial": [5, 1], "included": [5, 2], "advanced": [5, 3], "none": [6, 1]},
+        "label_col": 0
+      },
+      "note": "11 x 4 in the exemplar: header, package scope, services price, infrastructure price, timing, then six capability rows. Row 5 is the capability prototype; its cells carry the glyph runs the builder reuses (partial 11 pt, included/advanced 18 pt orange, 'not in this tier' an em dash in C2C7CC at 12 pt) — the glyph type never comes from code."
+    },
+    "packages_detailed": {
+      "ref": 10,
+      "slots": {
+        "title": 3,
+        "packages_detailed.table": 6,
+        "packages_detailed.footnote": 8
+      },
+      "table": {
+        "rows": {"header": 0, "scope": 1, "capability_first": 2},
+        "capability_proto": 2,
+        "glyph_cells": {"partial": [2, 1], "included": [2, 2], "advanced": [2, 3], "none": [3, 1]},
+        "label_col": 0
+      },
+      "note": "8 x 4: header, scope line, six capability rows whose cells are '<glyph>  <prose>' in one paragraph — the glyph is run 0 (16 pt) and the prose the last run (9 pt). Row 2 is the prototype."
+    }
+  },
+  "dropped": {
+    "ref": 8,
+    "why": "The reference carries three drafts of the same package table (8 without the infrastructure row, 9 with it, 10 in prose). A deck ships one table: 9 and 10 are kept, 8 is dropped."
+  },
+  "order": ["cover", "use_case", "verticals", "today_tomorrow", "proof", "why_it_sells", "layers", "architecture", "packages", "packages_detailed"]
+}

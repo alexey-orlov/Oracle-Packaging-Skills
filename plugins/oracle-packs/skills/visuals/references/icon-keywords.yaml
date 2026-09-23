@@ -1,0 +1,160 @@
+# Industry -> candidate icons. Read by tools/suggest_icons.py to turn a vertical's name into three
+# Tabler icon names worth proposing to the owner.
+#
+# How a row is matched: every word in `match` is looked for in the lower-cased vertical name (and
+# in the vertical's `what_matters_here` line when the tool is given the spec). The rows that match
+# are ranked by how specific the matched word is — a two-word phrase beats a single word, and a
+# single word beats a substring — and the top rows' icons are proposed in order, de-duplicated.
+#
+# `icons` is ordered best-first and every name must exist in Tabler's outline set: the tool checks,
+# and a name that has gone from the set is reported rather than silently dropped. Verified against
+# tabler-icons main on 2026-09-22.
+#
+# Adding an industry is adding a row. Keep `icons` to three or four: the owner is shown three, and
+# the fourth is what "search again" falls back to before a free-text search.
+
+version: 1
+verified: 2026-09-22
+
+fallback:
+  # Used when nothing matches — deliberately generic, so a miss looks like a miss rather than a
+  # confident wrong guess.
+  icons: [building, users, target]
+
+industries:
+
+  - id: logistics
+    match: [logistics, freight, haulage, shipping, courier, parcel, "supply chain", "last mile", warehouse, distribution]
+    icons: [truck, package, building-warehouse, ship]
+
+  - id: rail-transport
+    match: [rail, railway, train, transit, "public transport", metro, bus]
+    icons: [train, bus, road]
+
+  - id: aviation
+    match: [aviation, airline, airport, aerospace, aircraft, flight, "ground handling"]
+    icons: [plane, building-airport, plane-departure]
+
+  - id: maritime
+    match: [maritime, shipping line, port, terminal, vessel, marine, ocean freight]
+    icons: [ship, anchor, building-lighthouse]
+
+  - id: banking
+    match: [bank, banking, "financial services", lending, payments, credit union, retail bank]
+    icons: [building-bank, coin, credit-card]
+
+  - id: insurance
+    match: [insurance, insurer, underwriting, claims, actuarial, reinsurance]
+    icons: [shield-check, umbrella, file-certificate]
+
+  - id: private-equity
+    match: ["private equity", "asset management", "investment", fund, portfolio, "venture capital", holding]
+    icons: [chart-line, briefcase, building-skyscraper]
+
+  - id: manufacturing
+    match: [manufacturing, manufacturer, factory, plant, industrial, production, assembly, "shop floor"]
+    icons: [building-factory, tool, settings-automation]
+
+  - id: automotive
+    match: [automotive, "car maker", vehicle, fleet, dealership, "after-sales", tyre]
+    icons: [car, steering-wheel, engine]
+
+  - id: heavy-equipment
+    match: ["heavy equipment", machinery, "industrial equipment", "capital equipment", crane, excavator]
+    icons: [forklift, tool, settings-automation]
+
+  - id: energy
+    match: [energy, "oil and gas", "oil & gas", upstream, refinery, petrochemical, pipeline, drilling]
+    icons: [flame, barrel, bolt]
+
+  - id: renewables
+    match: [renewable, wind, solar, "clean energy", "green energy", battery, storage]
+    icons: [windmill, solar-panel, battery-charging]
+
+  - id: utilities
+    match: [utility, utilities, electric, grid, water, gas, wastewater, "distribution network", outage]
+    icons: [bolt, droplet, plug-connected]
+
+  - id: telecom
+    match: [telecom, telco, cable, broadband, network operator, mobile operator, fibre, fiber, "5g"]
+    icons: [antenna, router, wifi]
+
+  - id: technology
+    match: [software, "technology", saas, platform, "it services", "it equipment", data centre, data center, hosting]
+    icons: [server, device-desktop, cpu]
+
+  - id: healthcare
+    match: [healthcare, hospital, clinic, provider, patient, "health system", care, nursing]
+    icons: [stethoscope, building-hospital, heartbeat]
+
+  - id: medical-devices
+    match: ["medical device", diagnostics, imaging, "lab equipment", laboratory, biotech]
+    icons: [microscope, device-heart-monitor, test-pipe]
+
+  - id: pharma
+    match: [pharma, pharmaceutical, pharmaceuticals, drug, vaccine, "life sciences", "clinical trial"]
+    icons: [pill, vaccine, flask]
+
+  - id: retail
+    match: [retail, retailer, store, shop, ecommerce, "e-commerce", merchandising, grocery, supermarket]
+    icons: [building-store, shopping-cart, barcode]
+
+  - id: consumer-goods
+    match: ["consumer goods", cpg, fmcg, brand owner, packaged goods, household products]
+    icons: [box, shopping-bag, package]
+
+  - id: food-beverage
+    match: [food, beverage, brewing, dairy, restaurant, catering, "quick service"]
+    icons: [tools-kitchen-2, glass-full, meat]
+
+  - id: agriculture
+    match: [agriculture, agri, farming, farm, crop, livestock, agritech]
+    icons: [plant-2, tractor, wheat]
+
+  - id: mining
+    match: [mining, quarry, minerals, metals, smelting, extraction]
+    icons: [pick, mountain, diamond]
+
+  - id: chemicals
+    match: [chemical, chemicals, specialty chemicals, coatings, polymer]
+    icons: [flask, atom-2, barrel]
+
+  - id: construction
+    match: [construction, contractor, engineering & construction, infrastructure project, civil works, site]
+    icons: [crane, helmet, building-bridge]
+
+  - id: real-estate
+    match: ["real estate", property, facilities, "facility management", landlord, reit, building management]
+    icons: [building-estate, home, key]
+
+  - id: hospitality
+    match: [hospitality, hotel, resort, leisure, travel, tourism, guest]
+    icons: [bed, building-arch, luggage]
+
+  - id: public-sector
+    match: ["public sector", government, municipal, city, agency, defence, defense, military, citizen]
+    icons: [building-community, scale, license]
+
+  - id: education
+    match: [education, university, school, training, academic, campus, student]
+    icons: [school, book, certificate]
+
+  - id: media
+    match: [media, broadcast, publishing, entertainment, streaming, advertising, news]
+    icons: [device-tv, movie, microphone-2]
+
+  - id: professional-services
+    match: ["professional services", consulting, advisory, accounting, law firm, legal, staffing]
+    icons: [briefcase, users, presentation]
+
+  - id: field-service
+    match: ["field service", dispatch, technician, engineer, "on-site", maintenance, repair, install, service network]
+    icons: [tool, map-pin, users]
+
+  - id: appliance-repair
+    match: ["appliance repair", "white-goods", "white goods", appliance, "home repair", "in-home", "domestic appliance", residential]
+    icons: [wash-machine, home-cog, tool]
+
+  - id: equipment-service
+    match: ["equipment service", "asset service", uptime, spare parts, service contract, sla]
+    icons: [tool, server, clock-cog]
