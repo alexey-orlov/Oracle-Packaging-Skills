@@ -620,6 +620,7 @@ class Build:
             self.note("proof: a metric is not cleared for this channel — peer claims are "
                       "all or none (rule 11), so the whole stat strip is dropped.")
             return
+        filled: list[tuple] = []
         for i, stat in enumerate(stats):
             if i >= len(kpis):
                 ex.delete_ids(slide, [stat["box"], stat["value"], stat["label"]])
@@ -638,15 +639,22 @@ class Build:
             l = ex.by_id(slide, stat["label"])
             ex.fill_text(v, figure)
             ex.fill_text(l, label)
-            pt = None
-            for step in (16.0, 14.0):   # a metric name is longer than a figure: step down before it wraps
-                if self.text_height(v, [figure], ex.to_in(v.width)) <= ex.to_in(v.height) + 0.01:
-                    break
-                from pptx.util import Pt
-                for p in v.text_frame.paragraphs:
-                    for r in p.runs:
-                        r.font.size = Pt(step)
+            filled.append((i, v, l, figure, label))
+        # A metric name is longer than a figure: if any value needs a smaller size, every
+        # value takes it — the three boxes are peers (slide-design rule 2).
+        from pptx.util import Pt
+        pt = None
+        for step in (None, 16.0, 14.0):
+            if step is not None:
+                for _, v, _, _, _ in filled:
+                    for p in v.text_frame.paragraphs:
+                        for r in p.runs:
+                            r.font.size = Pt(step)
                 pt = step
+            if all(self.text_height(v, [fig], ex.to_in(v.width)) <= ex.to_in(v.height) + 0.01
+                   for _, v, _, fig, _ in filled):
+                break
+        for i, v, l, figure, label in filled:
             self.log(5, f"proof.stat[{i}].value", v, figure, pt=pt)
             self.log(5, f"proof.stat[{i}].label", l, label)
         if not figured:
