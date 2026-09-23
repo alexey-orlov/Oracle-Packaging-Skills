@@ -356,7 +356,8 @@ def run_checks(deck_path, exp, geometry, reference: bool = False):
         # write-back: its own source box is that box, and the second arrow is the
         # write-back — so the check is the same either way, the name is on a box.
         for system in exp["outputs"]:
-            if not any(mentions(t, system) for t in texts):
+            plain = re.sub(r"\s+[—–-]\s+", " ", system)   # "Any CRM — Oracle CX included" prints as name + second line
+            if not any(mentions(t, system) or mentions(t, plain) for t in texts):
                 fail.append(f"slide {ARCHITECTURE}: no box says where the result goes "
                             f"— \"{system}\" is in the pack brief's outputs and on no "
                             f"box on the slide")

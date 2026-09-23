@@ -787,7 +787,7 @@ class Build:
                 ex.fill_text(bd, clean(layer.get("vendor")))
                 self.log(7, f"layers[{i}].badge", bd, clean(layer.get("vendor")))
             for card in row.get("cards", []) or []:
-                self.fill_layer_card(slide, card, layer)
+                self.fill_layer_card(slide, card, layer, bottom=new_top + row_h)
             chips = row.get("chips") or []
             for ci, chip_id in enumerate(chips):
                 tiers = self.spec.tiers()
@@ -810,7 +810,8 @@ class Build:
                       f"{len(rows_cfg)} — rows cloned from the exemplar's own row and the band "
                       f"redistributed.")
 
-    def fill_layer_card(self, slide, card: dict, layer: dict) -> None:
+    def fill_layer_card(self, slide, card: dict, layer: dict,
+                        bottom: float | None = None) -> None:
         title = ex.find_id(slide, card.get("title"))
         body = ex.find_id(slide, card.get("body"))
         if title is not None and body is not None:
@@ -821,10 +822,25 @@ class Build:
                                   clean(layer.get("vendor")).upper()])
             own = [clean(x) for x in (layer.get("items") or []) if clean(x)]
             own = own[:1] + [x if x[:2].isupper() else x[0].lower() + x[1:] for x in own[1:]]
-            text = "; ".join(own) or clean(layer.get("summary")) or (
+            text = clean(layer.get("summary")) or "; ".join(own) or (   # the print-ready line first, as on every ladder row
                 f"The lists and rules {self.spec.name()} takes from each client")
             ex.fill_text(body, text)
-            self.log(7, "layers.card.pack", body, text)
+            # The exemplar's body is one line that grows to fit; give it the room the
+            # text needs inside its row, and step down to 8 pt only when 9 pt would
+            # leave the row — so the fit report measures the real box.
+            avail = ((bottom - ex.to_in(body.top) - 0.06) if bottom
+                     else ex.to_in(body.height))
+            pt = None
+            need = self.text_height(body, [text], ex.to_in(body.width))
+            if need > avail + 0.01:
+                from pptx.util import Pt
+                for p in body.text_frame.paragraphs:
+                    for r in p.runs:
+                        r.font.size = Pt(8)
+                pt = 8.0
+                need = self.text_height(body, [text], ex.to_in(body.width))
+            body.height = ex.inch(min(max(ex.to_in(body.height), need), max(avail, 0.15)))
+            self.log(7, "layers.card.pack", body, text, pt=pt)
         elif title is not None:
             ex.fill_lines(title, ["In every tier", "SOFTSERVE"])
 
@@ -1097,6 +1113,7 @@ class Build:
             # the data string is never printed twice. A second line appears only when
             # the catalog says what the system is.
             name, qualifier = split_lead(node["system"], (" — ", " - "))   # "Any CRM — Oracle CX included": the name is the box, the rest its second line
+            name = name.rstrip(" —-").strip()
             role = qualifier or self.system_role(node["system"])
             ex.fill_lines(box, [name] + ([role] if role else []))
             self.log(8, f"architecture.{node['role']}[{node['ix']}]", box,
