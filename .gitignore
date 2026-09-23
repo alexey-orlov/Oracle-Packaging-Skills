@@ -6,3 +6,6 @@ __pycache__/
 node_modules/
 .venv/
 packs/
+
+# the architecture model a test build writes beside its fixture spec (packs/ is already ignored)
+plugins/*/skills/*/tests/architecture.json

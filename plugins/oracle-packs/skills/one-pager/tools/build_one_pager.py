@@ -61,7 +61,11 @@ BUDGETS = {
     "solution.heading": 10,
     "solution.para": 38,
     "solution.chips": 12,
-    "data-flow": 40,
+    # Raised from 40 on 2026-09-23: the strip now carries EVERY source and every
+    # destination the deck draws (it used to drop destination-only systems), so the
+    # cap is measured on a two-source, two-destination picture, not the reference's
+    # single pipe. A pack of that shape lands near 63 words.
+    "data-flow": 70,
     "sell.bullets": 54,
     "sell.chips": 22,
     "proof.story": 48,
@@ -328,8 +332,10 @@ def build_context(spec: dict, channel: str, hero: Path | None) -> tuple[dict, li
                 chips.append({"label": kpi.get("chip_label") or kpi.get("name", ""), "arrow": _arrow(kpi.get("direction", "up"))})
 
     # --- data-flow line: explicit block, else derived from architecture
-    flow = op.get("data_flow") or _flow_from_architecture(spec)
+    flow = op.get("data_flow") or _flow_from_architecture(spec, channel)
     if flow:
+        if flow.get("destination") and not flow.get("destinations"):
+            flow["destinations"] = [flow.pop("destination")]   # an older explicit block
         for index, box in enumerate(flow.get("platform", {}).get("boxes", [])):
             box["sep"] = index > 0
 
@@ -499,45 +505,94 @@ def has_figure(kpi) -> bool:
     fig = str((kpi or {}).get("figure") or "").strip()
     return bool(fig) and fig.lower() not in EMPTY_FIGURES
 
-def _flow_from_architecture(spec):
-    """inputs -> [source] --data--> [platform boxes] --result--> per architecture.stack."""
-    arch = dig(spec, "architecture") or {}
-    inputs, outputs, stack = arch.get("inputs") or [], arch.get("outputs") or [], arch.get("stack") or []
-    if not inputs or not stack:
+def architecture_model(spec, channel="partner_print"):
+    """The pack's ONE architecture model — `packs/<slug>/architecture.json`.
+
+    Read when the pack has one (the reviewed picture the deck and the mini-site also
+    render); built from the brief and written there when it has not. This page never
+    derives its own node list: the strip below is the model at the deck's level of
+    detail — `name` and `line`, never `detail`, which belongs to the mini-site.
+    """
+    import importlib.util
+    here = Path(__file__).resolve().parent
+    for up in range(2, 6):
+        if len(here.parents) <= up:
+            break
+        candidate = here.parents[up] / "shared" / "tools" / "build_diagram.py"
+        if candidate.is_file():
+            spec_mod = importlib.util.spec_from_file_location("build_diagram", candidate)
+            module = importlib.util.module_from_spec(spec_mod)
+            spec_mod.loader.exec_module(module)
+            try:
+                return module.load_or_build(spec, SPEC_DIR / "pack-spec.yaml", channel=channel)
+            except module.DiagramError as err:
+                raise SpecError(f"the architecture picture cannot be drawn: {err}")
+    return None
+
+
+MAX_DEST_BOXES = 2          # what the strip's left column holds without crushing the boxes
+
+
+def _flow_from_architecture(spec, channel="partner_print"):
+    """The architecture strip: source box(es) left, every destination-only system
+    stacked under them, two labelled pipes, the OCI box right holding the app and
+    the engine.
+
+    This composition is the pack's reference picture — the deck and the mini-site are
+    the same model at their own scale, so the strip carries the same systems and the
+    same edge labels the deck does; only the descriptive lines get shorter. Nothing is
+    computed here but the layout.
+    """
+    model = architecture_model(spec, channel)
+    if not model or not model.get("sources") or not model.get("destinations"):
         return None
-    first = inputs[0] if isinstance(inputs[0], dict) else {"system": str(inputs[0])}
-    others = [str(i.get("system") if isinstance(i, dict) else i) for i in inputs[1:]]
     notes_on = dig(spec, "one_pager.data_flow_notes", True)
-    source = {"name": first.get("system", ""),
-              "note": ("with " + " and ".join(o for o in others if o)) if (others and notes_on) else None}   # every source the deck draws
-    boxes, platform_label = [], None
-    for layer in stack:
-        role = (layer.get("layer") or "").lower()
-        if "infrastructure" in role:
-            parts = [layer.get("vendor"), ", ".join(layer.get("items") or [])]
-            platform_label = layer.get("label") or "<br>".join(html.escape(p) for p in parts if p)
-        elif any(word in role for word in ("app", "engine", "business", "by softserve", "agentic")) \
-                or role == str(dig(spec, "meta.name", "")).lower():   # the application row and the engine row, as the deck draws them
-            boxes.append({"name": layer.get("name") or (layer.get("items") or [layer.get("layer", "")])[0],
-                          "note": (layer.get("summary") or ", ".join(str(x) for x in (layer.get("items") or [])))
-                                  if dig(spec, "one_pager.data_flow_notes", True) else None})   # a layer's `note` is internal and never prints; `one_pager.data_flow_notes: false` keeps names only
-    if not boxes:
-        return None
-    out_first = outputs[0] if outputs and isinstance(outputs[0], dict) else {}
-    out_system = str(out_first.get("system") or "").strip()
-    input_names = {str(i.get("system") if isinstance(i, dict) else i).strip().lower() for i in inputs}
-    destination = None
-    if out_system and out_system.lower() not in input_names:
-        # The result lands in a system the pack does not read: the return pipe ends in
-        # its own box under the source, never back in the feeds (the deck's rule).
-        name, _, qualifier = out_system.partition(" — ")
-        destination = {"name": name.strip(), "note": (qualifier.strip() or None) if notes_on else None}
+
+    # -- the sources. The strip has one pipe in, so the sources after the first ride
+    # the box's own line with what they send: an unnamed source is a dropped box.
+    sources = model["sources"]
+    others = [f"{s['name']} — {s['data']}" if s["data"] else s["name"] for s in sources[1:]]
+    source = {"name": sources[0]["name"],
+              "note": ("with " + "; ".join(others)) if others else None}
+
+    # -- the destinations. Every system that only receives gets its own box, with the
+    # data it receives on it; a system the pack also reads is a write-back and keeps
+    # the source box, as on the deck.
+    writeback = next((d for d in model["destinations"] if d["writeback"]), None)
+    only_receive = [d for d in model["destinations"] if not d["writeback"]]
+    destinations = [{"name": d["name"], "note": d["data"] or None}
+                    for d in only_receive[:MAX_DEST_BOXES]]
+    if len(only_receive) > MAX_DEST_BOXES:
+        # Folded into the last box rather than dropped: the picture may be tight,
+        # it may not be short of a system the deck draws.
+        extra = only_receive[MAX_DEST_BOXES:]
+        last = destinations[-1]
+        last["name"] += "".join(f" · {d['name']}" for d in extra)
+        last["note"] = "; ".join(x for x in [last["note"]] + [d["data"] for d in extra] if x)
+        print(f"build_one_pager: the strip holds {MAX_DEST_BOXES} destination boxes and the "
+              f"pack has {len(only_receive)}; "
+              + ", ".join(d["name"] for d in extra)
+              + " share the last box. Say so to the owner, or shorten the pack's outputs.",
+              file=sys.stderr)
+
+    # The return pipe carries the pack's primary result: the write-back where the pack
+    # has one (the pipe then ends in the source box), otherwise the first destination's.
+    primary = writeback or model["destinations"][0]
+
+    boxes = [{"name": model["app"]["name"],
+              "note": model["app"]["line"] if notes_on else None},
+             {"name": model["engine"]["name"],
+              "note": model["engine"]["line"] if notes_on else None}]
+    platform_label = "<br>".join(
+        html.escape(part) for part in
+        (model["platform"]["label"], ", ".join(model["platform"]["services"])) if part)
+
     return {
         "source": source,
-        "destination": destination,
-        "to_platform_label": first.get("data") or "source data",
-        "from_platform_label": out_first.get("data") or "results",
-        "platform": {"label": platform_label, "boxes": boxes[:2]},
+        "destinations": destinations,
+        "to_platform_label": sources[0]["data"],
+        "from_platform_label": primary["data"],
+        "platform": {"label": platform_label, "boxes": boxes},
     }
 
 

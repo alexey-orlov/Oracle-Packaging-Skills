@@ -30,7 +30,9 @@ user-invocable: true
 
 3. **Render and look at every slide.** *Card: `render-qa.md`.* `tools/render_probe.sh` says which renderer this machine has; make a contact sheet of all ten and read it by eye.
 
-4. **The diagram reviewer pass on slide 8.** *Card: `diagram-reviewer.md`.* A fresh-context subagent on `opus` gets the render, the spec's `architecture` component and the diagram rules — and nothing else. Fix every fail, re-render, stop when it passes or after three rounds.
+4. **The architecture picture on slide 8.** *Card: `diagram-reviewer.md`.* The picture is not drawn or reviewed here: `/oracle-packs:build` built the pack's one architecture model and had it reviewed once, and this slide renders it. Check that it still does.
+
+       python3 shared/tools/check_diagram.py packs/<slug>/architecture.json --deck <pptx>
 
 5. **Clearance, consistency and the editorial pass.** *Card: `clearance-and-editorial.md`.* Both scripts clean, then read every slide's text against the spec and the naming rules on the strongest model.
 
@@ -49,13 +51,13 @@ Everything the owner reviews is opened beside the conversation *before* the ques
 
 ## Definition of done
 
-Fit report clean, deck linter clean, contact sheet reviewed, the diagram reviewer passed on slide 8, clearance and consistency clean, the architecture put to the owner in words, editorial pass done, the approval recorded in `packs/<slug>/decisions.md`, the file delivered as `<Pack name> - Sales deck - Oracle.pptx`.
+Fit report clean, deck linter clean, contact sheet reviewed, the diagram check clean on slide 8, clearance and consistency clean, the architecture put to the owner in words, editorial pass done, the approval recorded in `packs/<slug>/decisions.md`, the file delivered as `<Pack name> - Sales deck - Oracle.pptx`.
 
 ## Self-check before closing
 
 - [ ] The automatic checks on the deck ran and came back clean, before the first render was shown.
 - [ ] The pictures were settled through the visuals step, or the empty slots are named as an open item.
-- [ ] Slide 8 went to a fresh-context reviewer that saw only the render, the brief's architecture and the diagram rules.
+- [ ] Slide 8 draws the pack's reviewed architecture model, and `check_diagram.py` says so — no second review of the picture here.
 - [ ] The architecture was put to the owner in plain sentences — every box, every arrow — not as "see slide 8".
 - [ ] Every industry card carries a picture; any that kept a stand-in is named for the owner to choose one.
 - [ ] The cover carries the family's picture — the linter's cover check passed on its own, without `--legacy-cover-ok`.

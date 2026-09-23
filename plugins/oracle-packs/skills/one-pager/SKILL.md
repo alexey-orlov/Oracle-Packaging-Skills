@@ -27,7 +27,8 @@ user-invocable: true
 3. **The automatic checks.** Card: `check`.
    `python3 shared/tools/lint_artifact.py <the pdf and the html> --channel <channel> --spec <spec>`
    `python3 shared/tools/check_consistency.py <spec> <the html>`
-   Both clean before anything is shown; the owner hears one plain line about them.
+   `python3 shared/tools/check_diagram.py packs/<slug>/architecture.json --one-pager <the html>`
+   All clean before anything is shown; the owner hears one plain line about them.
 4. **Editorial pass.** Card: `editorial`, on the strongest model with fresh eyes — the de-AI read of typography, voice, figures and altitude, per `shared/references/client-documents.md`.
 5. **Show it.** Card: `review-pack`. One rebuild round.
 6. **One change afterwards.** Card: `fast-path`. A single-block change is never a rerun of the flow.
@@ -35,6 +36,7 @@ user-invocable: true
 ## Rules that bite on one-pagers
 
 - The page is the deck condensed, never a second source of truth: a price, a duration or a figure here equals the spec, to the character.
+- The architecture strip renders the pack's one model (`packs/<slug>/architecture.json`), reviewed once in the build step — its composition is the reference the deck and the mini-site follow, it carries every system and edge label the deck does, and it is never drawn here from the brief.
 - The proof strip states its status once, carries its caveat, and names the customer only where the channel allows; otherwise the anonymized descriptor.
 - The packages table shows three tiers named from the spec, the capability rows with their marks, and prices with status and footnote; the infrastructure row says "indicative" when the spec does.
 - "Why it sells" is written for the partner's seller, in one card, and appears on no customer-facing artifact.
@@ -52,7 +54,7 @@ Everything the owner reviews is open beside the conversation *before* the questi
 ## Self-check before closing
 
 - [ ] One A4 page, from the tool, not from an estimate.
-- [ ] Both checkers exit 0 on this artifact's own channel and files.
+- [ ] All three checkers exit 0 on this artifact's own channel and files.
 - [ ] Every figure, price and duration matches the spec to the character.
 - [ ] Nothing the owner saw carries a rule code, file name, spec key or packaging vocabulary.
 - [ ] The render was open beside the conversation before the question was asked.

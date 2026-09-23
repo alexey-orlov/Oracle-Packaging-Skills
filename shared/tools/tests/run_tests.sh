@@ -317,6 +317,124 @@ expect "absent components" "–"
 run_case "a missing spec is a usage error" 2 \
   "$PY" "$TOOLS/check_consistency.py" "$WORK/not-here.yaml" "$WORK/artifact-clean.md"
 
+# ------------------------------------------------- the architecture model and its three renderers
+# One model, three pictures. The fixture's model must build clean; the deck slide, the
+# one-pager's strip and the generated site figure must all draw it; and a model with one
+# node renamed must fail against those same three artifacts — that failure is the whole
+# point of the check, so it is asserted, not assumed.
+say ""
+say "build_diagram.py / diagram_to_site.py / check_diagram.py"
+REPO="$(cd "$TESTS/../../.." && pwd)"
+DECK_FIX="$REPO/plugins/oracle-packs/skills/deck/tests/fixture-pack-spec.yaml"
+if [ ! -f "$DECK_FIX" ]; then
+  bad "the deck fixture is missing: $DECK_FIX"
+else
+  mkdir -p "$WORK/pack"
+  # The one-pager's capability matrix needs an explicit level per row; the deck fixture
+  # carries prose, so the shared copy these renderers build from gets the levels added.
+  "$PY" - "$DECK_FIX" "$WORK/pack/pack-spec.yaml" <<'EOF'
+import re, sys
+out = []
+for line in open(sys.argv[1], encoding="utf-8"):
+    out.append(line)
+    m = re.match(r"^(\s*)- area: ", line)
+    if m:
+        out.append(m.group(1) + "  levels: {pov: partial, integration: included, scaling: advanced}\n")
+open(sys.argv[2], "w", encoding="utf-8").writelines(out)
+EOF
+
+  run_case "the fixture's architecture model is valid" 0 \
+    "$PY" "$TOOLS/build_diagram.py" "$WORK/pack/pack-spec.yaml" --check
+  expect "the model" "Workforce optimization by SoftServe" "NVIDIA cuOpt" "Reviewer approves"
+
+  "$PY" "$TOOLS/build_diagram.py" "$WORK/pack/pack-spec.yaml" \
+        --out "$WORK/pack/architecture.json" >/dev/null 2>&1
+  MODEL="$WORK/pack/architecture.json"
+
+  # a source whose arrow says nothing is not a diagram the model will hand over
+  sed 's|^      data: technicians, availability, bookings, default allocations|      data: ""|' \
+      "$WORK/pack/pack-spec.yaml" > "$WORK/pack-spec.no-edge.yaml"
+  run_case "a source with no edge fails the model" 1 \
+    "$PY" "$TOOLS/build_diagram.py" "$WORK/pack-spec.no-edge.yaml" --check
+  expect "a source with no edge" "has no edge"
+
+  # the site figure, generated from the model and wrapped as diagrams.js is
+  SITE_TOOL="$REPO/plugins/oracle-packs-web/skills/listing/tools/diagram_to_site.py"
+  printf 'window.SITE_DIAGRAMS = {\n' > "$WORK/diagrams.js"
+  "$PY" "$SITE_TOOL" "$MODEL" --slug workforce-optimization 2>/dev/null >> "$WORK/diagrams.js"
+  printf '};\n' >> "$WORK/diagrams.js"
+  run_case "the generated site figure draws the model" 0 \
+    "$PY" "$TOOLS/check_diagram.py" "$MODEL" --site "$WORK/diagrams.js" --slug workforce-optimization
+
+  # the one-pager's strip (HTML only: the PDF step needs Chrome, the picture does not)
+  "$PY" "$REPO/plugins/oracle-packs/skills/one-pager/tools/build_one_pager.py" \
+        "$WORK/pack/pack-spec.yaml" --out "$WORK/op" --no-pdf >/dev/null 2>&1
+  OP="$WORK/op/workforce-optimization-one-pager-partner_print.html"
+  if [ -f "$OP" ]; then
+    run_case "the one-pager's strip draws the model" 0 \
+      "$PY" "$TOOLS/check_diagram.py" "$MODEL" --one-pager "$OP"
+  else
+    bad "the one-pager did not build from the fixture"
+  fi
+
+  # the deck's architecture slide (needs python-pptx, like the deck sub-suite)
+  DECK=""
+  if "$PY" -c "import pptx" >/dev/null 2>&1; then
+    "$PY" "$REPO/plugins/oracle-packs/skills/deck/tools/build_deck_v2.py" \
+          "$WORK/pack/pack-spec.yaml" --out "$WORK/deck" >/dev/null 2>&1
+    DECK="$WORK/deck/workforce-optimization-sales-deck.pptx"
+    if [ -f "$DECK" ]; then
+      run_case "the deck's architecture slide draws the model" 0 \
+        "$PY" "$TOOLS/check_diagram.py" "$MODEL" --deck "$DECK"
+    else
+      bad "the deck did not build from the fixture"
+      DECK=""
+    fi
+  else
+    say "  (deck slide skipped: $PY has no python-pptx)"
+  fi
+
+  # one node renamed: every artifact that still says the old name is drift
+  "$PY" - "$MODEL" "$WORK/architecture-renamed.json" <<'EOF'
+import json, sys
+model = json.load(open(sys.argv[1], encoding="utf-8"))
+model["sources"][0]["name"] = "Dispatch system of record"
+json.dump(model, open(sys.argv[2], "w", encoding="utf-8"), indent=2, ensure_ascii=False)
+EOF
+  set -- "$TOOLS/check_diagram.py" "$WORK/architecture-renamed.json" \
+         --site "$WORK/diagrams.js" --slug workforce-optimization
+  [ -f "$OP" ] && set -- "$@" --one-pager "$OP"
+  [ -n "$DECK" ] && set -- "$@" --deck "$DECK"
+  run_case "a renamed node fails the check" 1 "$PY" "$@"
+  expect "a renamed node" "Dispatch system of record"
+
+  # a renamed DESTINATION: the one-pager draws every destination the deck does, so it
+  # catches this too — the strip used to drop destination-only systems and the check
+  # used to allow it, which is exactly the drift the one-model rule exists to stop.
+  "$PY" - "$MODEL" "$WORK/architecture-renamed-dest.json" <<'EOF'
+import json, sys
+model = json.load(open(sys.argv[1], encoding="utf-8"))
+only = [d for d in model["destinations"] if not d["writeback"]]
+only[0]["name"] = "Analytics warehouse"
+json.dump(model, open(sys.argv[2], "w", encoding="utf-8"), indent=2, ensure_ascii=False)
+EOF
+  if [ -f "$OP" ]; then
+    run_case "a renamed destination fails on the one-pager" 1 \
+      "$PY" "$TOOLS/check_diagram.py" "$WORK/architecture-renamed-dest.json" --one-pager "$OP"
+    expect "a renamed destination" "Analytics warehouse" "BI"
+  fi
+  if [ -n "$DECK" ]; then
+    run_case "a renamed destination fails on the deck" 1 \
+      "$PY" "$TOOLS/check_diagram.py" "$WORK/architecture-renamed-dest.json" --deck "$DECK"
+  fi
+  run_case "a renamed destination fails on the site figure" 1 \
+    "$PY" "$TOOLS/check_diagram.py" "$WORK/architecture-renamed-dest.json" \
+    --site "$WORK/diagrams.js" --slug workforce-optimization
+
+  run_case "a missing model is a usage error" 2 \
+    "$PY" "$TOOLS/check_diagram.py" "$WORK/not-a-model.json" --site "$WORK/diagrams.js"
+fi
+
 # --------------------------------------------------------------- context_budget
 # EVERY skill's manifest must stay inside its per-step reading budget; a card that
 # grows past its share fails here, not in a live run. The loop finds the manifests

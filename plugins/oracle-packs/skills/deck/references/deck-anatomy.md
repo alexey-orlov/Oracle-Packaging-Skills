@@ -446,8 +446,8 @@ differs — an internal deck is not a licence to print internal operating number
    industry, the architecture's names and flows, table type at or above the
    reference's floor.
 3. A contact sheet of all ten renders has been looked at (`tools/render_probe.sh`
-   prints how to make one on this machine), and slide 8 has been through the
-   diagram reviewer.
+   prints how to make one on this machine), and `check_diagram.py` says slide 8
+   still draws the pack's architecture model (reviewed once, in `/oracle-packs:build`).
 4. The clearance linter and the consistency check pass on the built file.
 5. The builder's notes have been read and acted on — especially the picture slots
    on slides 1 and 4, any industry that fell back to the exemplar's own icon, and

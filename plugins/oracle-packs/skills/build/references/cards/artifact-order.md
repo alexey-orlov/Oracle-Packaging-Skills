@@ -1,21 +1,23 @@
 # The artifacts, in order
 
-**What this is.** The fixed build order and the skill that produces each artifact. The order is not a preference: the one-pager is condensed from the approved deck, and the pictures are chosen before the deck that places them.
+**What this is.** The build order and the skill that produces each artifact. It is not a preference: the one-pager is condensed from the approved deck, and the pictures are chosen before the deck that places them.
 
 1. **Feature list** → `/oracle-packs:feature-list`
-   ↳ then **Pictures** → `/oracle-packs:visuals` — before the deck: the icon for each industry, the cover photograph, and the two photos for today → tomorrow, proposed from openly licensed sources and chosen by the owner (the sheet opens in the side panel, then one widget per slot); a slot left unchosen stays an explicit empty container. It has its own place in the map, under "Pictures", right before the sales deck.
-2. **Sales deck** → `/oracle-packs:deck`
-3. **Sales one-pager** → `/oracle-packs:one-pager` — condensed from the deck, built after it on purpose
-4. **Executive summary** → `/oracle-packs:exec-summary`
-5. **Mini-site listing** → `/oracle-packs-web:listing` — the web plugin; tell the user to run it if the plugin is not installed
-6. **Interactive demo** → `/oracle-packs-web:demo` — asks for its sources first
+   ↳ then **Pictures** → `/oracle-packs:visuals` — before the deck: the icon per industry, the cover photograph and the two photos for today → tomorrow, from openly licensed sources, chosen by the owner (the sheet opens in the side panel, one widget per slot); an unchosen slot stays an explicit empty container. Its own place in the map.
+2. **The architecture picture** → `shared/tools/build_diagram.py` (card: `architecture-picture`) — built and reviewed ONCE, before the deck; the three artifacts are levels of detail on that one model.
+3. **Sales deck** → `/oracle-packs:deck`
+4. **Sales one-pager** → `/oracle-packs:one-pager` — condensed from the deck, built after it
+5. **Executive summary** → `/oracle-packs:exec-summary`
+6. **Mini-site listing** → `/oracle-packs-web:listing` — the web plugin; tell the user to run it if it is not installed
+7. **Interactive demo** → `/oracle-packs-web:demo` — asks for its sources first
 
 **Checks**
 
-1. The pictures are chosen before the deck is built, and appear in the owner's map under their own name.
-2. The one-pager is built after the deck has been approved, never beside it.
-3. Nothing starts before the previous artifact is approved (card: `per-artifact-review`) — the owner's feedback on the deck changes the one-pager.
-4. The map lists artifacts by name and format only, never by the skill or plugin that builds them.
-5. Artifacts the owner dropped are skipped, and what the owner sees is renumbered over what remains.
+1. The pictures are chosen before the deck is built, and appear in the map under their own name.
+2. The one-pager is built after the deck is approved, never beside it.
+3. The architecture picture is reviewed once, in its own step — never again inside the three artifact skills.
+4. Nothing starts before the previous artifact is approved (card: `per-artifact-review`) — deck feedback changes the one-pager.
+5. The map lists artifacts by name and format only, never by the skill that builds them.
+6. Artifacts the owner dropped are skipped, and what the owner sees is renumbered.
 
 **Reads:** the artifact set settled in `packs/<slug>/intake.md` or by the opening question (card: `plan-and-ask`).

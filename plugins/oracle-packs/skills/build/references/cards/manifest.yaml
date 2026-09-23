@@ -35,6 +35,13 @@ steps:
       - references/cards/per-artifact-review.md
       - references/cards/artifact-order.md
 
+  - id: architecture-picture
+    title: The architecture picture, built and reviewed once
+    session:
+      - references/cards/architecture-picture.md
+    agents:
+      - shared/references/architecture-diagram.md
+
   - id: consistency-gate
     title: The consistency gate
     session:

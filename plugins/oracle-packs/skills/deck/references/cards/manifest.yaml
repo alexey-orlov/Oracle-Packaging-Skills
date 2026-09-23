@@ -51,11 +51,9 @@ steps:
       - shared/references/slide-design.md
 
   - id: diagram-reviewer
-    title: The fresh-context review of slide 8
+    title: The architecture picture on slide 8 — checked, not re-reviewed
     session:
       - references/cards/diagram-reviewer.md
-    agents:
-      - shared/references/architecture-diagram.md
 
   - id: clearance-and-editorial
     title: Clearance, consistency and the editorial pass

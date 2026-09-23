@@ -1,40 +1,53 @@
-# The architecture diagram — derived from the spec, named, reviewed
+# The architecture diagram — one model, three levels, one reviewer pass
 
-_How the pack's architecture is drawn on the sales deck, the one-pager and the mini-site. One diagram, one set of rules, one reviewer pass. Rewritten to current truth — never appended with dated updates._
+_The deck, the one-pager and the mini-site draw the SAME picture, detailed to each level: built once, reviewed once, rendered three times. Rewritten to current truth, never appended._
 
-## Where it comes from
+## The model
 
-The diagram is **derived** from the spec's architecture component — `architecture.inputs[]` → the pack's app → the engine → the infrastructure → `architecture.outputs[]` — never drawn from a fixed set of three boxes. Every box and every arrow traces to a spec entry, and a box or arrow with no spec entry behind it does not exist.
+`shared/tools/build_diagram.py <pack-spec.yaml> --out packs/<slug>/architecture.json` derives it from the brief: `architecture.inputs[]`, `.stack[]`, `.outputs[]`, `oracle_products[]`, the catalog, `meta.name` in the channel's variant, and the workflow's human step. Also a library (`build_model(spec) -> dict`) the renderers call.
 
-## Naming rules (2026-09-22)
+```
+sources[]      {name, data, detail}     data = the arrow's label in
+platform       {label, services[]}      "Oracle Cloud Infrastructure"
+app            {name, line, detail}     name = "<pack> by SoftServe"
+engine         {name, line, detail}     name = catalog names, " · "-joined
+destinations[] {name, data, writeback}  writeback: also a source
+gate           {name, line} | null       the workflow's human step
+note           the one invariant
+```
 
-- **The app box carries the pack's name**, in the channel's variant, with "by SoftServe": "Account Insights by SoftServe", never a generic "Accelerator business app". Its sub-line is what the app does, from the app layer's items, in the owner's words.
-- **The engine box names the vendor products**, by their catalog names from `shared/data/oracle-products.yaml`: "NVIDIA NeMo Agent Toolkit · NVIDIA AI-Q Blueprint". The layer's role ("agentic engine") is at most a small caption; an unnamed engine tells the seller nothing.
-- **Sources and destinations are named systems**, in the buyer's words: "Signal feeds — news, filings, disclosures, commercial data feeds"; "Oracle Customer Experience (CX), or any CRM or sales system". The system of record the pack writes to is on the diagram when it is in `architecture.outputs[]`; a product named in the footnote but absent from the picture is a defect.
-- **Infrastructure is one line** naming the OCI services actually used, as the spec's architecture stack lists them.
+**Levels of detail are the contract.** `name` prints everywhere; `line` (≤ 8 words) on the deck and the one-pager; `detail` (≤ 25 words) on the mini-site only. **The systems are not a level**: all three name every source, the app, the engine and every destination; the printed two also carry every `data` string. Only the descriptive lines get shorter. A renderer that wants more shortens the model, never invents a second truth.
 
-## Flow rules
+## The rules the model enforces
 
-- **Every input box has a labelled arrow into the app**; a source box with no arrow is a defect ("Organization context — not pointing to anything").
-- **Every output has a destination box** with a labelled arrow from the app; outputs never point back at a source box unless that system is also an output (write-back) — and then it is a second, labelled arrow, not a reversal of the first.
-- **Arrow labels are the data**, not verbs: "news, filings, disclosures" in; "structured per-account records" out.
-- **Boxes of one role share one geometry** (slide-design rule 2): all source boxes equal, all destination boxes equal; the app and the engine differ from them in weight and shape, not tint alone (rule 5).
-- **No decoration**: no arrow, box or icon that carries no spec entry.
+`--check` (and the library) fails plainly when: a source has no edge (`architecture.inputs[].data` rides the arrow); an output has no destination (`architecture.outputs[].system` names its box); the engine would be unnamed (no `catalog_id`, no catalog product in `items` — an unnamed engine tells the seller nothing); the app box lacks the pack's name.
 
-## The reviewer pass — before the diagram reaches any artifact
+And by construction: **arrow labels are the data**, not verbs. **A system that is both input and output is ONE box with two arrows** (a write-back), never a reversed arrow. Sources and destinations are **named systems in the buyer's words**; infrastructure is **one line** of OCI services. **Nothing on the picture lacks a model entry.**
 
-The diagram is reviewed by a **fresh-context reviewer**: a subagent that receives only the rendered slide (PNG), the spec's architecture component and this file — never the build conversation — and returns the checklist below with a pass/fail and a one-line reason per item. The builder fixes every fail and re-renders; the loop stops when the reviewer passes or after three rounds, in which case the remaining fails are put to the owner in plain words.
+## The composition
 
-Checklist:
+**The one-pager's strip is the reference** (owner, 2026-09-23): source box(es) left, destination boxes under them, two labelled pipes, the OCI box right holding the app and the engine joined by ↔. CSS: `one-pager/assets/one-pager-template.html` (`.arch`).
+
+- **Deck** (`build_deck_v2.py::architecture()`): the model in the exemplar's frame — sources left, the platform container, destination-only systems right; the gate rides the subline.
+- **One-pager**: the strip above. Every destination-only system is its own box carrying what it receives; a write-back keeps the source box, and the return pipe carries its data. Beyond two boxes the extras share the last (`· <name>`) with a stderr note — never dropped.
+- **Mini-site** (`SITE_DIAGRAMS[slug]`): generated by `listing/tools/diagram_to_site.py <architecture.json> --slug <slug>`, never hand-written. Fixed slots — two sources, the group holding app and engine at `detail` level, one target, `note` for the invariant. The target is the gate, with the destinations on its second line ("into A · B"); with no gate it is the first destination and the others sit in its sub.
+
+Boxes of one role share one geometry (rule 2); app and engine differ in weight and shape, not tint (rule 5). No decoration.
+
+## One reviewer pass, not three
+
+Reviewed **once**, in `/oracle-packs:build`, after the feature list, before the deck — never again in the three artifact skills. A **fresh-context subagent** (`opus`) gets only the rendered one-pager strip (or, with no Chrome, the deck's slide), the spec's `architecture` component and this file — never the build conversation — and returns this checklist, pass/fail with a reason each. Fails are fixed in the model and re-rendered; stop on a pass or after three rounds, and put what still fails to the owner in plain words, never as a rule number.
 
 1. The app box shows the pack's name with "by SoftServe".
-2. The engine box names at least one catalog product; no box is an unnamed role.
+2. The engine box names a catalog product; no box is an unnamed role.
 3. Every source box has a labelled arrow into the app.
-4. Every output in the spec has a destination box with a labelled arrow from the app.
-5. No arrow runs from the app back to a source unless the spec lists that system as an output too.
-6. The system of record named in the footnote or the tiers is on the diagram.
-7. Boxes of one role share one geometry; the app and the engine are distinguishable by weight or shape.
-8. Every label is readable at the rendered size (no label under the artifact's floor) and none is truncated.
-9. Nothing on the diagram lacks a spec entry.
+4. Every output has a destination box with a labelled arrow from the app.
+5. No arrow runs from the app back to a source unless that system is an output too.
+6. The system of record named in the footnote or tiers is on the picture.
+7. Boxes of one role share one geometry; app and engine are distinguishable.
+8. Every label is readable at the rendered size, and none is truncated.
+9. Nothing on the picture lacks a model entry.
 
-The same rendered diagram, once passed, is the one the one-pager's architecture strip and the mini-site's architecture view are derived from — one picture, three places.
+## The check
+
+`shared/tools/check_diagram.py <architecture.json> [--deck <pptx>] [--one-pager <html>] [--site <diagrams.js> --slug <slug>]` reads the picture back out of each artifact: every artifact names **every** system, letter for letter; the deck and the one-pager carry **every** edge label too; no artifact draws a box the model has never heard of. It runs in the build's consistency gate and each artifact skill's check step. Exit 1 is drift: rebuild from the model, never patch the artifact.

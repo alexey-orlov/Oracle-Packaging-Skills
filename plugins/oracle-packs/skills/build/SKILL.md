@@ -27,11 +27,15 @@ Cards: `plan-and-ask`, `artifact-order`. Read `packs/<slug>/intake.md` before as
 
 Card: `per-artifact-review` (with `artifact-order` for what comes next). Run each artifact's own skill in the fixed order — feature list, pictures, sales deck, sales one-pager, executive summary, then the web plugin's mini-site listing and interactive demo. After each one: show its review pack, open its render beside the conversation, then one widget — approve, rebuild with changes, or stop. Never start the next artifact before the current one is approved.
 
-## 3. The consistency gate
+## 3. The architecture picture
+
+Card: `architecture-picture`. After the feature list and before the deck, once for the whole pack: build the model (`shared/tools/build_diagram.py`), render the one-pager's strip — the canonical picture — and put it to ONE fresh-context reviewer. The deck, the one-pager and the mini-site listing then render that reviewed model; none of them reviews the picture again, and none draws its own.
+
+## 4. The consistency gate
 
 Card: `consistency-gate`. After the last document artifact and before the web handoff: `check_consistency.py` across every produced file, then `lint_artifact.py` once per artifact on that artifact's own channel, then the sales deck's own shape check re-run on the approved file. All clean before the handoff. The owner hears one plain line about it.
 
-## 4. Delivery
+## 5. Delivery
 
 Card: `delivery`. Copy the approved files to the folder the owner names, keeping the pack's file-name pattern. Log one line per artifact in `packs/<slug>/decisions.md`. Close with the files and where they are, what was decided differently from the pack brief and why, and the open items the owner still holds.
 
@@ -48,7 +52,9 @@ Everything the owner reviews opens beside the conversation *before* the question
 - [ ] Spec confirmed and lint-clean before the first build.
 - [ ] Nothing the intake already settled was asked again.
 - [ ] Every artifact approved through a widget; no artifact built ahead of the previous approval.
+- [ ] The architecture picture was built once, reviewed once by a fresh-context reviewer, and rendered by all three artifacts from that one model.
 - [ ] Consistency matrix and per-artifact lint clean on each artifact's own channel, and the sales deck's own shape check clean.
+- [ ] `check_diagram.py` clean: the deck, the one-pager and the site figure all draw the model.
 - [ ] Nothing internal-only in a partner or customer cut (contract values, named accounts, capacity numbers).
 - [ ] Delivery paths and decisions logged; file names follow `<Pack name> - <Artifact> - Oracle.<ext>`.
 - [ ] Every message, question, option and table the owner saw passed the reader's test.

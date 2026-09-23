@@ -1,6 +1,6 @@
 # shared/tools — the linters every pack skill runs
 
-Four command-line tools and their shared library. They are the executable form of
+Six command-line tools and their shared library. They are the executable form of
 `shared/schema/pack-spec.md` and `shared/references/naming-and-clearance.md`: when
 a rule moves, those files are rewritten first and the tools follow in the same
 pass. A skill that produces an artifact is not done until the relevant tool here
@@ -16,8 +16,11 @@ prints that line. No tool writes into the repository; they read and report.
 lint_spec.py          validates a pack spec against the schema
 lint_artifact.py      clearance, naming, vocabulary, prices and figures per channel
 check_consistency.py  every artifact of a pack against its spec
+build_diagram.py      the pack's ONE architecture model, for all three pictures
+check_diagram.py      the deck, the one-pager and the site figure against that model
 denylist.txt          the customer names and marks that must never ship (internal)
 packlint.py           shared library — YAML with line numbers, text extraction, reporting
+context_budget.py     a skill's per-step reading budget against its cards manifest
 regen_roadmap.py      regenerates shared/data/roadmap-*.csv (owned separately)
 tests/run_tests.sh    the suite; fixtures in tests/fixtures/
 ```
@@ -154,6 +157,38 @@ artifacts omit by design — so the output is a matrix of artifact × component 
 | CON004 | a EUR figure matches no price in the spec |
 | CON005 | a KPI is printed with a figure the spec does not carry |
 
+## build_diagram.py
+
+```
+python3 shared/tools/build_diagram.py <spec> --out packs/<slug>/architecture.json
+python3 shared/tools/build_diagram.py <spec> --check        # rules only, writes nothing
+```
+
+The pack's architecture picture, derived once and rendered three times. It reads
+`architecture.inputs[]`, `.stack[]`, `.outputs[]`, `oracle_products[]`, the catalog,
+`meta.name` in the channel's variant and the workflow's human step, and writes a model
+of sources, platform, app, engine, destinations, gate and the one invariant. **Levels of
+detail are the contract**: `name` prints everywhere, `line` on the deck and the one-pager,
+`detail` only on the mini-site. It is also a library — `build_model(spec) -> dict` — which
+is how the deck and the one-pager builders consume it.
+
+Exit 1, with a plain message, when the picture cannot be drawn as the brief stands: a
+source with no edge, an output with no destination, an engine that would be unnamed, an
+app box without the pack's name. Rules: `shared/references/architecture-diagram.md`.
+
+## check_diagram.py
+
+```
+python3 shared/tools/check_diagram.py packs/<slug>/architecture.json \
+        --deck <pptx> --one-pager <html> --site <diagrams.js> --slug <slug>
+```
+
+Reads the picture back out of each artifact — the deck's architecture slide (found by its
+title), the one-pager's `.arch` strip, the site's `SITE_DIAGRAMS[slug]` — and asserts that
+every node name the artifact should carry is there **exactly**, that the arrow labels are on
+the deck and the one-pager, and that no artifact draws a box the model has never heard of.
+Exit 1 is drift: rebuild the artifact from the model, never edit the picture in the file.
+
 ## denylist.txt
 
 One entry per line, `#` comments allowed; plain entries match case-sensitively on
@@ -178,9 +213,11 @@ review hand-off:
    are `partner_print`, the listing is `customer_site`, the walkthrough is `demo`.
 3. `check_consistency.py <spec> <every artifact built so far>` — after the second
    artifact exists, and again at the end of `/oracle-packs:build`.
-4. Exit 1 is not a pass. Fix the artifact, or change the spec and rebuild from it —
+4. `check_diagram.py <architecture.json> --deck/--one-pager/--site <this artifact>` —
+   wherever the artifact carries the architecture picture.
+5. Exit 1 is not a pass. Fix the artifact, or change the spec and rebuild from it —
    never edit an artifact away from the spec to silence a finding.
-5. Hand the owner the `not evaluated:` lines together with the artifact.
+6. Hand the owner the `not evaluated:` lines together with the artifact.
 
 Run the suite after touching any rule: `shared/tools/tests/run_tests.sh`
 (`PY=.venv/bin/python` to point it at an interpreter that has PyYAML). It builds

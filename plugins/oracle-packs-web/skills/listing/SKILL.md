@@ -25,7 +25,7 @@ The listing is the only artifact end customers read directly. It carries the sam
 1. **Map the tile and the overview tab.** Cards: `entry-identity`, `entry-overview`, `entry-case-study`, plus `shared/references/anatomy/artifact-listing.md` for the section order. Fill every key from the spec; a slot with no fact behind it is filled qualitatively, never omitted.
 2. **Map the technology and Jumpstart tabs.** Cards: `entry-technology`, `entry-jumpstart`. The stage view is derived, not re-typed: `python3 tools/derive-stage-view.py <spec>`.
 3. **Write the copy** on the strongest model, then give it a mechanical pass. Cards: `copy-rules`, `claim-rules`, `exemplar-altitude`. The exemplar entry is long: a fresh-context agent reads it and returns the strings, or you open only the keys you are filling.
-4. **Insert.** Cards: `insert`, `switches`. `node tools/insert-product.mjs --content <site>/site/data/content.js --entry <entry file>`, then the figure in `diagrams.js` and the switch block in `config.js`.
+4. **Insert.** Cards: `insert`, `switches`. `node tools/insert-product.mjs --content <site>/site/data/content.js --entry <entry file>`, then the figure in `diagrams.js` and the switch block in `config.js`. The figure is **generated from the pack's architecture model, never written by hand** — `python3 tools/diagram_to_site.py packs/<slug>/architecture.json --slug <slug>` — so the site, the deck and the one-pager draw one picture.
 5. **Gates.** Cards: `gates`, `claim-rules`. `python3 tools/denylist-to-json.py --out <site>/tools/deny-list.json` **first** — the customer-name gate fails open, so an unconfigured deny-list warning is a failed gate. Then the site's own `node tools/check-grammar.js --site-root <site>`, a clean console on every route, the deny-list sweep, `python3 shared/tools/lint_artifact.py <entry file> --channel customer_site --spec <spec>`, and `check_consistency.py <spec> <entry file>`. The owner hears one plain line about all of it.
 6. **Preview.** Card: `preview`. Every changed screen at 1440 / 1280 / 1024 / 768 / 375, the H1 at 320, no horizontal overflow.
 7. **Review pack.** Card: `review-pack`. One rebuild round.
@@ -48,6 +48,7 @@ Done = entry inserted, three gates green, consistency clean, preview screenshots
 - [ ] Only the proof-of-value price is on the page, with its footnote; one duration everywhere.
 - [ ] No customer name or logo in copy, alt text, captions, file names or anything under the publish root.
 - [ ] The stage view was derived from the feature list, and drops features rather than adding any.
+- [ ] The architecture figure was generated from the pack's model, and `check_diagram.py` says the site still draws it.
 - [ ] Every heading is inside its budget on the rendered page at 375 px.
 - [ ] The open items were listed for the owner, not resolved by the builder.
 - [ ] Everything the owner reviewed was open beside the conversation before the question was asked.

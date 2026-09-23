@@ -30,11 +30,17 @@ from typing import Any, Sequence
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
+for _up in range(2, 6):                     # the plugin's synced shared/tools, or the bundle's
+    _shared = HERE.parents[_up] / "shared" / "tools" if len(HERE.parents) > _up else None
+    if _shared is not None and (_shared / "build_diagram.py").is_file():
+        sys.path.insert(0, str(_shared))
+        break
 
 from deckkit import (  # noqa: E402  (deliberate: import, never edit)
-    FitLog, Spec, SpecError, catalog, fmt_duration, fmt_price, product_name,
+    FitLog, Spec, SpecError, fmt_duration, fmt_price, product_name,
 )
 import exemplar as ex  # noqa: E402
+import build_diagram as diagram  # noqa: E402  (the one architecture model, shared by all three artifacts)
 
 EXEMPLAR_DEFAULT = HERE.parent / "assets" / "exemplar" / "wfo-sales-deck.pptx"
 SLOTS_DEFAULT = HERE.parent / "assets" / "exemplar" / "slots.json"
@@ -236,6 +242,7 @@ class Build:
         self.icons = icons
         self.notes: list[str] = []
         self.diagram: list[str] = []
+        self._diagram_model: dict | None = None
         self.orig: dict[tuple[int, int], list[str]] = {}
         self.pictures: list[str] = []      # slots the owner still has to choose
 
@@ -278,12 +285,6 @@ class Build:
             return stack[max(-len(stack), min(default_index, len(stack) - 1))]
         return {}
 
-    def engine_layer(self) -> dict:
-        for layer in self.stack():
-            if layer.get("catalog_id"):
-                return layer
-        return self.layer_like("engine", "optimiz", "model", "agent")
-
     def named(self, key: str, fallback: str = "") -> str:
         """A spec string with `{customer}` / `{Customer}` filled with what this channel
         may call the source customer (the name when cleared, the descriptor otherwise)."""
@@ -291,34 +292,6 @@ class Build:
         who = self.spec.customer_label()
         return (text.replace("{Customer}", who[0].upper() + who[1:] if who else "")
                     .replace("{customer}", who))
-
-    def engine_products(self, short: bool = False) -> list[str]:
-        """Catalog names of the engine layer's products — never an unnamed 'engine'.
-
-        An item that is plainly a catalog id but is not in the catalog is dropped
-        with a note: printing `nvidia-nemo-retriever` on a slide ships an id to a
-        seller.
-        """
-        layer = self.engine_layer()
-        names: list[str] = []
-        cat = catalog()
-        cid = layer.get("catalog_id")
-        for c in (cid if isinstance(cid, list) else ([cid] if cid else [])):   # a layer may name several products
-            names.append(product_name(str(c), short=short))
-        for item in layer.get("items", []) or []:
-            key = clean(item)
-            slug = key.lower().replace(" ", "-")
-            if key in cat or slug in cat:
-                nm = product_name(key if key in cat else slug, short=short)
-            elif re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)+", key):
-                self.note(f"architecture: `{key}` is not in the product catalog — left "
-                          f"off the engine box rather than printed as an id.")
-                continue
-            else:
-                nm = key
-            if nm and nm not in names:
-                names.append(nm)
-        return [n for n in names if n]
 
     # -- 1 cover ----------------------------------------------------------
     def cover(self, slide) -> None:
@@ -927,42 +900,40 @@ class Build:
     COLUMN_MIN_W = 1.90            # in, below this a system name stops reading
 
     def architecture(self, slide) -> None:
+        """Lay the pack's ONE architecture model into the exemplar's frame.
+
+        Nothing here derives a node list: `shared/tools/build_diagram.py` did that
+        once, for all three artifacts. This slide prints the model's `name` and
+        `line` levels; the `detail` level belongs to the mini-site.
+        """
         s = self.slots["slides"]["architecture"]["slots"]
+        model = self.diagram_model()
         ex.fill_text(ex.by_id(slide, s["title"]), "ARCHITECTURE")
         sub = ex.by_id(slide, s["architecture.subline"])
         sub_text = clean(self.spec.get("deck.architecture_sub")) or (
             f"Reference architecture for a {self.spec.name()} implementation")
+        gate = model.get("gate")
+        if gate:
+            # The human gate rides the subline as a small caption — the slide has no
+            # footnote of its own, and the invariant is what the buyer asks about.
+            tail = clean(f"{gate['name']} — {model.get('note') or gate.get('line', '')}")
+            long_form = f"{sub_text} · {tail}"
+            sub_text = long_form if len(long_form) <= 150 else f"{sub_text} · {gate['name']}"
         ex.fill_text(sub, sub_text)
         self.log(8, "architecture.subline", sub, sub_text)
 
         # What every box will say — decided before anything is placed, because the
         # platform's own geometry is laid out to what it has to hold.
         app = ex.by_id(slide, s["architecture.app"])
-        # the app layer is named after the pack ("<name> by SoftServe") since the naming rule of
-        # 2026-09-23; failing every word, it is the layer directly above the engine, never the first
-        app_layer = self.layer_like("app", "business", "by softserve", default_index=1)
-        app_name = f"{self.spec.name()} by SoftServe"
-        app_sub = clean(app_layer.get("summary")) or ", ".join(
-            clean(x) for x in (app_layer.get("items") or []))
+        app_name, app_sub = model["app"]["name"], model["app"]["line"]
 
         engine_text = ex.find_id(slide, s["architecture.engine.text"])
-        engine_layer = self.engine_layer()
-        # Always the catalog's full name: the short forms ("NeMo", "cuOpt") are the
-        # spellings naming-and-clearance marks `not_this` on their own.
-        products = self.engine_products()
-        engine_name = " + ".join(products) if products else clean(engine_layer.get("layer"))
-        engine_sub = clean(engine_layer.get("summary")) or clean(engine_layer.get("layer"))
-        if not products:
-            self.note("architecture: the engine layer names no catalog product "
-                      "(`catalog_id` / `items`) — the box falls back to the layer name.")
+        engine_name = model["engine"]["name"]
+        engine_sub = model["engine"]["line"]
 
-        infra_layer = self.layer_like("infra", default_index=-1)
         infra = ex.by_id(slide, s["architecture.infra"])
-        vendor = clean(infra_layer.get("vendor")) or "Oracle"
-        infra_name = (f"{vendor} Cloud Infrastructure" if vendor.lower().startswith("oracle")
-                      else f"{vendor} infrastructure")
-        infra_sub = ", ".join(clean(x) for x in (infra_layer.get("items") or [])) or \
-            clean(infra_layer.get("summary"))
+        infra_name = model["platform"]["label"]
+        infra_sub = ", ".join(model["platform"]["services"])
 
         plan = self.flow_plan()
         geom = self.reflow_platform(slide, s, plan,
@@ -987,36 +958,42 @@ class Build:
         ex.delete_ids(slide, [s["architecture.stray_rule"]])
         self.draw_flows(slide, s, plan, geom)
 
-    def system_role(self, system: str) -> str:
-        """What the spec says this system IS — the `why` of the product it names."""
-        hay = clean(system).lower()
-        if not hay:
-            return ""
-        for row in (self.spec.get("oracle_products") or []):
-            name = clean(product_name(row)).lower()
-            if name and (name in hay or hay in name):
-                return first_clause(row.get("why"), limit=72)
-        return ""
+    def diagram_model(self) -> dict:
+        """The pack's architecture model — read once, never re-derived here.
+
+        `packs/<slug>/architecture.json` when the pack has one (the reviewed
+        picture); otherwise built from the brief and written there, so the
+        one-pager and the mini-site render the very same nodes.
+        """
+        if self._diagram_model is None:
+            try:
+                self._diagram_model = diagram.load_or_build(
+                    self.spec.data, self.spec_path or "pack-spec.yaml",
+                    channel=self.spec.channel)
+            except diagram.DiagramError as err:
+                raise SpecError(f"the architecture picture cannot be drawn: {err}")
+            for warning in self._diagram_model.get("warnings") or []:
+                self.note(f"architecture: {warning}.")
+        return self._diagram_model
 
     def flow_plan(self) -> dict:
-        """Sources, destinations and what rides each arrow, straight from the spec.
+        """The model's sources and destination-only systems, in the deck's own words.
 
         A system that is both an input and an output is ONE box with two arrows (a
         write-back, rule: never a reversed arrow); a system that only receives is a
         destination and gets its own box on the right.
         """
-        sources: list[dict] = []
-        for row in (self.spec.get("architecture.inputs", []) or []):
-            sources.append({"system": clean(row.get("system")),
-                            "in": clean(row.get("data")), "out": ""})
+        model = self.diagram_model()
+        sources = [{"system": row["name"], "in": row["data"], "out": ""}
+                   for row in model["sources"]]
         dests: list[dict] = []
-        for row in (self.spec.get("architecture.outputs", []) or []):
-            system = clean(row.get("system"))
-            match = next((n for n in sources if n["system"].lower() == system.lower()), None)
+        for row in model["destinations"]:
+            match = next((n for n in sources
+                          if n["system"].lower() == row["name"].lower()), None)
             if match:
-                match["out"] = clean(row.get("data"))
+                match["out"] = row["data"]
             else:
-                dests.append({"system": system, "in": "", "out": clean(row.get("data"))})
+                dests.append({"system": row["name"], "in": "", "out": row["data"]})
         if not sources and not dests:
             raise SpecError("pack spec has no `architecture.inputs` or `architecture.outputs` "
                             "— the architecture slide has no flows to draw")
@@ -1178,18 +1155,11 @@ class Build:
 
         def place_box(node: dict, x: float, y: float) -> None:
             box = ex.clone_shape(slide, protos["node"], x, y, col_w, node_h)
-            # The box names the system; what flows travels on the arrow (rule 7), so
-            # the data string is never printed twice. A second line appears only when
-            # the catalog says what the system is.
-            name, qualifier = split_lead(node["system"], (" — ", " - "))   # "Any CRM — Oracle CX included": the name is the box, the rest its second line
-            name = name.rstrip(" —-").strip()
-            role = qualifier or self.system_role(node["system"])
-            ex.fill_lines(box, [name] + ([role] if role else []))
-            self.log(8, f"architecture.{node['role']}[{node['ix']}]", box,
-                     name, para=0)
-            if role:
-                self.log(8, f"architecture.{node['role']}[{node['ix']}].role", box,
-                         role, para=1)
+            # The box carries the model's `name` and nothing else: what flows travels
+            # on the arrow (rule 7), and a source's `detail` is the mini-site's level.
+            name = node["system"]
+            ex.fill_lines(box, [name])
+            self.log(8, f"architecture.{node['role']}[{node['ix']}]", box, name, para=0)
 
         def label(x: float, y: float, w: float, text: str, tag: str) -> None:
             """The data on the arrow, sitting just above its own line."""
@@ -1227,12 +1197,6 @@ class Build:
                                                       94000)))
                 ex.place_connector(cxn, gap_x1, y_node, gap_x2, y_app)
                 label(lab_x, y_node, lab_w, data, f"architecture.arrow.in[{a_ix}]")
-                self.diagram.append(
-                    f"  arrow {'→ app' if direction == 'in' else 'app →'}  "
-                    f"{node['system']}: {data}")
-            self.diagram.insert(len(self.diagram) - len(flows),
-                                f"  box  {node['system']}"
-                                + ("  (write-back)" if node["in"] and node["out"] else ""))
 
         # -- the right column: one box per destination-only system
         if dests:
@@ -1255,12 +1219,10 @@ class Build:
                 ex.place_connector(cxn, app_right, y_app, dest_x, centre)
                 label(lab_x_r, centre, lab_w_r, node["out"],
                       f"architecture.arrow.out[{i + 1}]")
-                self.diagram.append(f"  box  {node['system']}  (destination)")
-                self.diagram.append(f"  arrow app →  {node['system']}: {node['out']}")
 
-        self.diagram.insert(0, f"  box  {self.spec.name()} by SoftServe  (app)")
-        self.diagram.insert(1, "  box  " + (" + ".join(self.engine_products()) or "engine"))
-        self.diagram.insert(2, "  line infrastructure")
+        # The plain-sentence summary the review pack carries is the model's own:
+        # the slide and the summary cannot disagree, because both are the model.
+        self.diagram = diagram.describe(self.diagram_model()).splitlines()
 
     def refit_table(self, table, frame, col_w: list[float], slide_no: int,
                     footnote=None, grown: bool = False) -> None:
