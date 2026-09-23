@@ -564,15 +564,18 @@ class Build:
         blocks = s["proof.blocks"]
         customer = self.spec.customer_label()
         context = clean(self.spec.get("meta.source_engagement.delivered"))
+        if len(context) > 1 and not context[1].isupper():   # "… operator — a contracted proof …", not "— A contracted"; "OCI …" keeps its case
+            context = context[0].lower() + context[1:]
         context = f"{customer[0].upper() + customer[1:]} — {context}" if context else customer
         pack_does = clean(self.spec.get("problem_solution.solution"))
         steps = self.spec.get("workflow.steps", []) or []
         flow = "  →  ".join(f"{i + 1} {clean(st.get('name'))}" for i, st in enumerate(steps))
         hitl = [str(i + 1) for i, st in enumerate(steps) if st.get("human_in_the_loop")]
         if hitl and len(hitl) < len(steps):
-            flow += f"   ·   a person owns step{'s' if len(hitl) > 1 else ''} {', '.join(hitl)}."
+            which = hitl[0] if len(hitl) == 1 else ", ".join(hitl[:-1]) + " and " + hitl[-1]
+            flow += f"   ·   a person stays in the loop at step{'s' if len(hitl) > 1 else ''} {which}."
         elif hitl:
-            flow += "   ·   every step is reviewed by a person."
+            flow += "   ·   a person stays in the loop at every step."
         boundaries = " ".join(x for x in (
             clean(self.spec.get("meta.source_engagement.divergence_line"))       # the print-ready sentence (schema); the paragraph is internal
             or clean(self.spec.get("meta.source_engagement.divergence_from_pack")),
@@ -703,9 +706,11 @@ class Build:
         self.log(6, "why.cta", cta, question + " " + who)
 
         foot = ex.by_id(slide, s["proof.footnote"])
-        foot_text = "Tier names, timing and prices as on the service-packages slides" + (
-            "; figures indicative and subject to confirmation." if self.spec.figured_kpis() else ".")
-        ex.fill_text(foot, foot_text)
+        if self.spec.figured_kpis():   # the caveat travels with the figures; without them the line has nothing to say
+            ex.fill_text(foot, "Figures indicative and subject to confirmation; tiers, timing and "
+                               "prices on the service-packages slides.")
+        else:
+            ex.delete_shape(foot)
 
     # -- 7 solution layers -------------------------------------------------
     def layers(self, slide) -> None:
@@ -1345,7 +1350,8 @@ class Build:
                           glyph_protos.get(GLYPH_KIND.get(glyph, "included"), glyph_protos["included"]))
                 if detailed:
                     k = max(ex.distinct_runs(protos[0]), 2)
-                    texts = [glyph] + ["  "] * (k - 2) + [prose_text]
+                    texts = (([glyph, "  "] + [""] * (k - 3) + [prose_text]) if k >= 3
+                             else [glyph + "  ", prose_text])   # one spacer whatever the prototype's run count
                     ex.set_cell(cell, [(0, texts)], protos)
                     self.logc(slide_no, f"packages.cell[{ri}][{ci}]", cell,
                              prose_text, col_w[ci], ex.to_in(table.rows[r].height),
@@ -1358,7 +1364,8 @@ class Build:
         grown = len(table.rows) > rows_before
         self.refit_table(table, frame, col_w, slide_no, footnote=foot, grown=grown)
         if foot is not None:
-            legend = "◐ partial     ● included     ●● multi-region / advanced"
+            legend = (clean(self.spec.get("packages.capability_handling_legend")).replace(" · ", "     ")
+                      or "◐ partial     ● included     ●● multi-region / advanced")   # the spec's own legend, in the exemplar's spacing
             if needs_footnote:
                 # A grown table leaves room for one footnote line, not two.
                 legend += ("   ·   " if grown else "\n")

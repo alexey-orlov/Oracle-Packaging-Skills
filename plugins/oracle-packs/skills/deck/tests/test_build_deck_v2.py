@@ -219,6 +219,12 @@ def run_figureless(tmp: Path) -> None:
     first10 = len(t10.rows) - len(spec["packages"]["capability_handling"])
     check("● ●" not in t10.cell(first10, 1).text and "●●" not in t10.cell(first10, 1).text,
           f"detailed PoV cell doubles the glyph: {t10.cell(first10, 1).text[:40]!r}")
+    import re as _re
+    ragged = [t10.cell(r, c).text[:24] for r in range(first10, len(t10.rows)) for c in (1, 2, 3)
+              if t10.cell(r, c).text.strip() not in ("", "—")
+              and not _re.match(r"^(●●|●|◐)  \S", t10.cell(r, c).text)]
+    check(not ragged, f"detailed cells space their glyph unevenly: {ragged[:3]}")
+    check("stays in the loop" in t5, "the proof slide's flow line does not say where a person is in the loop")
 
 
 def main() -> int:
