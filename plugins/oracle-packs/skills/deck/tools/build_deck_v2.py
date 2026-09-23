@@ -741,7 +741,7 @@ class Build:
     def layers(self, slide) -> None:
         cfg = self.slots["slides"]["layers"]
         s = cfg["slots"]
-        ex.fill_text(ex.by_id(slide, s["title"]), "SOLUTION LAYERS")
+        ex.fill_text(ex.by_id(slide, s["title"]), "TECHNOLOGY STACK")   # the reference's own title
         sub = ex.by_id(slide, s["layers.subline"])
         sub_text = clean(self.spec.get("deck.layers_sub")) or (
             f"How {self.spec.name()} is layered — from the infrastructure it runs on "
@@ -754,6 +754,17 @@ class Build:
         if not stack:
             raise SpecError("pack spec has no `architecture.stack` — the solution-layers "
                             "slide has nothing to show")
+        # The ladder is the technology stack from the business application down
+        # (the reference: application · engine · infrastructure). A layer the spec
+        # places ABOVE the application — the client's own configuration — is the
+        # application row's "Tailored solution" card, never a row of its own.
+        app = self.layer_like("app", "business", "by softserve", default_index=0)
+        app_ix = next((i for i, l in enumerate(stack) if l is app), 0)
+        for layer in stack[:app_ix]:
+            self.note(f"solution layers: `{clean(layer.get('layer'))}` sits above the "
+                      f"application layer — it is the Tailored solution card, not a row "
+                      f"(the reference's ladder).")
+        stack = stack[app_ix:]
         # The exemplar's ladder band and gap; row heights are distributed inside it.
         top = ex.to_in(ex.by_id(slide, rows_cfg[0]["panel"]).top)
         last = ex.by_id(slide, rows_cfg[-1]["panel"])
@@ -787,8 +798,8 @@ class Build:
             panel = ex.by_id(slide, row["panel"])
             old_top, old_h = ex.to_in(panel.top), ex.to_in(panel.height)
             new_top = top + i * (row_h + gap)
-            dy = (new_top + row_h / 2) - (old_top + old_h / 2)
-            members = [row.get(k) for k in ("name", "divider", "summary", "badge")]
+            k = (row_h / old_h) if old_h else 1.0
+            members = [row.get(k_) for k_ in ("name", "divider", "summary", "badge")]
             for card in row.get("cards", []) or []:
                 members.extend(card.values())
             members.extend(row.get("chips", []) or [])
@@ -796,8 +807,16 @@ class Build:
                 if not isinstance(sid, int):
                     continue
                 shp = ex.find_id(slide, sid)
-                if shp is not None:
-                    shp.top = ex.inch(ex.to_in(shp.top) + dy)
+                if shp is None:
+                    continue
+                # A resized row resizes what it holds: offsets scale with the row,
+                # boxes, chips and dividers scale their height too; a text box keeps
+                # its height and auto-fits (2026-09-23: cards left at the reference's
+                # height poked out of a shorter band).
+                off = ex.to_in(shp.top) - old_top
+                shp.top = ex.inch(new_top + off * k)
+                if abs(k - 1.0) > 0.005 and getattr(shp, "shape_type", None) != 17:
+                    shp.height = ex.inch(ex.to_in(shp.height) * k)
             panel.top = ex.inch(new_top)
             panel.height = ex.inch(row_h)
 
@@ -819,6 +838,7 @@ class Build:
             for card in row.get("cards", []) or []:
                 self.fill_layer_card(slide, card, layer, bottom=new_top + row_h)
             chips = row.get("chips") or []
+            small_pt = None   # the caption size, taken from the first chip and shared by its peers
             for ci, chip_id in enumerate(chips):
                 tiers = self.spec.tiers()
                 chip = ex.find_id(slide, chip_id)
@@ -828,8 +848,26 @@ class Build:
                     ex.delete_shape(chip)
                     continue
                 tier = tiers[ci]
-                ex.fill_lines(chip, [clean(tier.get("name"))])
+                # The reference's chip: the tier's name and two small lines of scope.
+                scope = first_clause(tier.get("scope_line") or
+                                     (tier.get("what_you_get") or [""])[0])
+                if len(scope) > 40:   # two small lines: cut at a clause, never mid-phrase
+                    scope = scope[:40].rsplit(", ", 1)[0] if ", " in scope[:40] else scope[:40].rsplit(" ", 1)[0]
+                ex.fill_lines(chip, [clean(tier.get("name"))] + ([scope] if scope else []))
                 self.log(7, f"layers.chip[{ci}]", chip, clean(tier.get("name")))
+                paras = chip.text_frame.paragraphs
+                if scope and len(paras) > 1:
+                    # The reference's first chip holds its caption as a second, smaller
+                    # paragraph; the other two hold it after a soft break in one
+                    # paragraph, so their filled second paragraph would inherit the
+                    # name's size. Peers share one caption size: the first chip's.
+                    if small_pt is None:
+                        p0, p1 = ex.last_run_pt(paras[0]._p), ex.last_run_pt(paras[1]._p)
+                        small_pt = p1 if (p0 and p1 and p1 < p0) else 6.0
+                    from pptx.util import Pt
+                    for r in paras[1].runs:
+                        r.font.size = Pt(small_pt)
+                    self.log(7, f"layers.chip[{ci}].scope", chip, scope, para=1, pt=small_pt)
 
         arrow = ex.find_id(slide, s.get("layers.value_arrow"))
         if arrow is not None:
@@ -845,15 +883,16 @@ class Build:
         title = ex.find_id(slide, card.get("title"))
         body = ex.find_id(slide, card.get("body"))
         if title is not None and body is not None:
-            # The top row is the client's own configuration: this card lists what is
-            # configured per client (the layer's items) and the chip card names the
-            # tiers that carry it — the rows below already show what comes ready.
-            ex.fill_lines(title, ["Configured per client",
-                                  clean(layer.get("vendor")).upper()])
-            own = [clean(x) for x in (layer.get("items") or []) if clean(x)]
-            own = own[:1] + [x if x[:2].isupper() else x[0].lower() + x[1:] for x in own[1:]]
-            text = clean(layer.get("summary")) or "; ".join(own) or (   # the print-ready line first, as on every ladder row
-                f"The lists and rules {self.spec.name()} takes from each client")
+            # The reference's application row: the pack, pre-built and reusable, on
+            # the left card; the tailored solution and its tiers on the right one.
+            # The reference says "accelerator pack" / "packaged"; the print cut may not
+            # (packaging vocabulary stays internal), so the card keeps the reference's
+            # shape with the seller's words.
+            ex.fill_lines(title, ["Oracle AI accelerator", "ORACLE / SOFTSERVE-ENHANCED"])
+            summary = clean(layer.get("summary")) or ", ".join(
+                clean(x) for x in (layer.get("items") or []) if clean(x))
+            text = (f"Pre-built and reusable: {summary}" if summary
+                    else f"Pre-built and reusable for {self.spec.name()} use cases")
             ex.fill_text(body, text)
             # The exemplar's body is one line that grows to fit; give it the room the
             # text needs inside its row, and step down to 8 pt only when 9 pt would
@@ -872,7 +911,7 @@ class Build:
             body.height = ex.inch(min(max(ex.to_in(body.height), need), max(avail, 0.15)))
             self.log(7, "layers.card.pack", body, text, pt=pt)
         elif title is not None:
-            ex.fill_lines(title, ["In every tier", "SOFTSERVE"])
+            ex.fill_lines(title, ["Tailored solution", "SOFTSERVE"])
 
     # -- 8 architecture ----------------------------------------------------
     # The exemplar draws two columns: the systems the pack reads on the left, the

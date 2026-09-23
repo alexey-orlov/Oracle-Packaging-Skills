@@ -167,6 +167,22 @@ def run_variability(tmp: Path) -> None:
     layers = texts(slides[6])
     check("Extraction engine" in layers and "Infrastructure" in layers,
           "the ladder was not filled from architecture.stack[]")
+    # A resized ladder resizes what it holds: nothing pokes out of its row.
+    rows = [sp for sp in slides[6].shapes if sp.shape_type == 1
+            and sp.width / 914400 >= 9.0 and sp.height / 914400 >= 0.5]
+    poking = []
+    for sp in slides[6].shapes:
+        if sp in rows or sp.height <= 0:
+            continue
+        cy, cx = sp.top + sp.height / 2, sp.left + sp.width / 2
+        row = next((r for r in rows if r.top <= cy <= r.top + r.height
+                    and r.left <= cx <= r.left + r.width), None)
+        if row is None:
+            continue
+        over = max(row.top - sp.top, (sp.top + sp.height) - (row.top + row.height)) / 914400
+        if over > 0.02:
+            poking.append((sp.name, round(over, 2)))
+    check(not poking, f"shapes stick out of their ladder row: {poking[:3]}")
 
 
 def run_figureless(tmp: Path) -> None:
@@ -210,7 +226,8 @@ def run_figureless(tmp: Path) -> None:
           "a `-` consumption target does not keep the panel as an empty instance")
     check("indicative" not in t6, "the seller footnote mentions figures with none in the spec")
     t7 = texts(slides[6])
-    check("Configured per client" in t7, "the top layer's card does not say what is configured")
+    check("TECHNOLOGY STACK" in t7 and "Tailored solution" in t7 and "Oracle AI accelerator" in t7,
+          "the ladder slide does not carry the reference's title and cards")
     t8 = texts(slides[7])
     check("Any BI tool" in t8 and "Any BI tool — Obligation" not in t8,
           "a qualified destination is not split into name and second line")

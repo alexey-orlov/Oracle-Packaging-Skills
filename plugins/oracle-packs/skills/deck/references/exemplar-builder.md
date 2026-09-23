@@ -96,7 +96,11 @@ looking at it, then reading the shape's XML.
   anatomy says.
 - **The ladder's row 0 (ref 6) is not a peer of rows 1 and 2.** It carries two
   white sub-cards and three tier chips and has no summary box or vendor badge.
-  Rows 1..n are the plain rows, and row 1 is the clone prototype.
+  Rows 1..n are the plain rows, and row 1 is the clone prototype. Row 0 is the
+  *application* layer: the ladder starts at `architecture.stack[]`'s application
+  layer, and a layer the spec places above it (the client's own configuration) is
+  the "Tailored solution" card, never a row of its own — the reference has three
+  rows and the cards on the application row.
 - **The architecture engine (ref 7, shape 32) is a group**; its text lives in
   child 13. The source boxes are a group (33) and a plain rounded rectangle (36).
   36 is the node prototype — cloning a plain shape is safer than cloning a group,
@@ -128,7 +132,11 @@ Four places, each because the spec's shape differs from the reference's:
    first and last row; `n` rows are distributed inside it with the exemplar's
    0.16 in gap. With three layers this reproduces the reference exactly. Clones
    are inserted *above* the last row so infrastructure stays at the bottom and the
-   vendor tints keep their order.
+   vendor tints keep their order. A resized row resizes what it holds: offsets
+   scale with the row, boxes, chips and dividers scale their height, text boxes
+   keep theirs and auto-fit (2026-09-23: cards left at the reference's height
+   poked out of a shorter band; `lint_deck.py` now fails anything outside its
+   row, and a card without the reference's inset).
 2. **The architecture columns** (slide 8). System boxes are equal — one height
    for sources and destinations alike — stacked between the exemplar's node top
    and the container's bottom, each column centred in that band. With no
@@ -206,10 +214,16 @@ mapping (see `why_it_sells`).
 ## What was fixed downstream of this builder
 
 - **`lint_deck.py` is now measured from the exemplar** and passes on the exemplar
-  itself (`--reference`), on this builder's output and on the legacy builder's.
-  Its corner check counts only a real radius (adjustment over 20 000 — the
-  reference's structural boxes sit at 4 000–12 000) and fails any rounded shape
-  over 0.55 in tall; its destination check accepts a box per output system.
+  itself (`--reference`) and on this builder's output. Its corner check counts
+  only a real radius (adjustment over 20 000 — the reference's structural boxes
+  sit at 4 000–12 000) and fails any rounded shape over 0.55 in tall; its
+  destination check accepts a box per output system.
+- **The cover hero is a linter check, not only a builder rule.** The cover must
+  sit on the reference's own `Title-AI` photo layout with a picture reaching it,
+  so an ink-only cover cannot pass unnoticed. The legacy redraw builder fails it
+  by construction — the 41 KB shell has no photo layout — and only
+  `--legacy-cover-ok` demotes that one failure to a warning, on the documented
+  legacy path and never on a deck being delivered.
 - **`lint_artifact.py` ART101 no longer fires on correct spellings.** The catalog
   marks `NVIDIA Nemo` and `Nvidia NIM` `not_this` for a capital letter, and
   `covered_by_good_name` used to suppress only a match a *longer* accepted name
