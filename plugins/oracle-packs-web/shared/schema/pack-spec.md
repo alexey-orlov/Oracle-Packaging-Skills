@@ -21,6 +21,10 @@ meta:
     delivered: PoC, Jun 2026, cuOpt-based zone/technician allocation on Oracle Fusion Field Service data
     divergence_from_pack: "The pack generalizes the allocation rules; the delivered PoC hard-codes the customer's."
     divergence_line: "The pack generalizes the rules the proof of value hard-coded."   # ONE print-ready sentence
+    context: "{Customer}'s dispatchers plan the field force by hand …"   # optional; the proof slide's CONTEXT block
+    # `context`, `delivered`, `deck.proof_headline` and `deck.vertical_case` may carry `{customer}` /
+    # `{Customer}`: the deck fills it with what the channel may call the customer (the name where
+    # clearance.customer_name_allowed is true, clearance.anonymized_descriptor elsewhere).
     # divergence_from_pack is the internal statement and may run to a paragraph; `divergence_line` is what
     # a deck or executive-summary footnote prints. Without the short line the builders fall back to the long
     # one and the fit report reports the overflow, which is the honest failure, not a silent truncation.
@@ -171,6 +175,8 @@ packages:                                 # component 12 — PoV Jumpstart / Int
     - "Net-new OCI GPU consumption on top of the SaaS seat"
     - "Repeatable across similar accounts"
   target_oci_consumption: "..."           # optional; per tier when known
+  value_for_partner: "..."                # optional; the proof slide's VALUE FOR ORACLE + NVIDIA block (falls back to anchor_line)
+  value_for_client: "..."                 # optional; the proof slide's VALUE FOR CLIENT block (falls back to problem_solution.solution)
 
 deck:
   images:                                 # written by /oracle-packs:visuals; each is { file, source, creator, licence, source_url }, file relative to the pack folder. A slot absent = the deck draws an empty container, never a stand-in

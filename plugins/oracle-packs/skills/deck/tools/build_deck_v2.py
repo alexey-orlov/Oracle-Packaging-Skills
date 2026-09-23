@@ -284,6 +284,14 @@ class Build:
                 return layer
         return self.layer_like("engine", "optimiz", "model", "agent")
 
+    def named(self, key: str, fallback: str = "") -> str:
+        """A spec string with `{customer}` / `{Customer}` filled with what this channel
+        may call the source customer (the name when cleared, the descriptor otherwise)."""
+        text = clean(self.spec.get(key)) or fallback
+        who = self.spec.customer_label()
+        return (text.replace("{Customer}", who[0].upper() + who[1:] if who else "")
+                    .replace("{customer}", who))
+
     def engine_products(self, short: bool = False) -> list[str]:
         """Catalog names of the engine layer's products — never an unnamed 'engine'.
 
@@ -500,7 +508,7 @@ class Build:
 
         case = ex.by_id(slide, s["today_tomorrow.vertical_case"])
         verticals = self.spec.get("verticals", []) or []
-        case_text = clean(self.spec.get("deck.vertical_case")) or (
+        case_text = self.named("deck.vertical_case") or (
             f"Vertical case: {clean(verticals[0].get('name'))}" if verticals else "")
         ex.fill_text(case, case_text)
         self.log(4, "today_tomorrow.vertical_case", case, case_text)
@@ -554,7 +562,7 @@ class Build:
         self.place_logo(slide, ex.find_id(slide, s["proof.customer_logo"]),
                         headline_shape, images, slide_no=5)
 
-        headline = clean(self.spec.get("deck.proof_headline")) or clean(
+        headline = self.named("deck.proof_headline") or clean(
             self.spec.get("one_liner.short") or self.spec.get("one_liner.full"))
         ex.fill_text(headline_shape, headline)
         self.log(5, "proof.headline", headline_shape, headline)
@@ -562,29 +570,21 @@ class Build:
         self.fill_stats(slide, s["proof.stats"])
 
         blocks = s["proof.blocks"]
+        # The exemplar's four blocks, in its own words: the customer's situation, what
+        # was built for them, and the value to each side (WfO slide 5, kept verbatim
+        # at the owner's request — 2026-09-23).
         customer = self.spec.customer_label()
-        context = clean(self.spec.get("meta.source_engagement.delivered"))
-        if len(context) > 1 and not context[1].isupper():   # "… operator — a contracted proof …", not "— A contracted"; "OCI …" keeps its case
-            context = context[0].lower() + context[1:]
-        context = f"{customer[0].upper() + customer[1:]} — {context}" if context else customer
-        pack_does = clean(self.spec.get("problem_solution.solution"))
-        steps = self.spec.get("workflow.steps", []) or []
-        flow = "  →  ".join(f"{i + 1} {clean(st.get('name'))}" for i, st in enumerate(steps))
-        hitl = [str(i + 1) for i, st in enumerate(steps) if st.get("human_in_the_loop")]
-        if hitl and len(hitl) < len(steps):
-            which = hitl[0] if len(hitl) == 1 else ", ".join(hitl[:-1]) + " and " + hitl[-1]
-            flow += f"   ·   a person stays in the loop at step{'s' if len(hitl) > 1 else ''} {which}."
-        elif hitl:
-            flow += "   ·   a person stays in the loop at every step."
-        boundaries = " ".join(x for x in (
-            clean(self.spec.get("meta.source_engagement.divergence_line"))       # the print-ready sentence (schema); the paragraph is internal
-            or clean(self.spec.get("meta.source_engagement.divergence_from_pack")),
-            self.spec.kpi_caveat() if self.spec.figured_kpis() else "") if x)    # no figures, no figure caveat
+        context = self.named("meta.source_engagement.context") or (customer[0].upper() + customer[1:])
+        solution = self.named("meta.source_engagement.delivered")
+        for_partner = (self.named("packages.value_for_partner")
+                       or clean(self.spec.get("packages.anchor_line")) or self.anchor_fallback())
+        for_client = (self.named("packages.value_for_client")
+                      or clean(self.spec.get("problem_solution.solution")))
         content = [
             ("CONTEXT", context),
-            ("WHAT THE PACK DOES", pack_does),
-            ("HOW IT RUNS", flow),
-            ("WHAT IT DOES NOT CLAIM", boundaries),
+            ("SOLUTION", solution),
+            ("VALUE FOR ORACLE + NVIDIA", for_partner),
+            ("VALUE FOR CLIENT", for_client),
         ]
         for i, block in enumerate(blocks):
             label, text = content[i]
@@ -610,7 +610,8 @@ class Build:
         self.log(5, "proof.footnote", foot, foot_text)
 
     def fill_stats(self, slide, stats) -> None:
-        kpis = self.spec.figured_kpis()
+        figured = self.spec.figured_kpis()
+        kpis = figured or self.spec.kpis()   # no figures yet: the strip names what the proof of value measures
         restricted = [k for k in self.spec.kpis()
                       if k.get("channels") and self.spec.channel not in (k.get("channels") or [])]
         if restricted:
@@ -624,16 +625,32 @@ class Build:
                 ex.delete_ids(slide, [stat["box"], stat["value"], stat["label"]])
                 continue
             kpi = kpis[i]
-            figure = clean(kpi.get("figure"))
-            if kpi.get("show_baseline") and clean(kpi.get("baseline")):
-                figure = f"{clean(kpi['baseline'])} → {figure}"
-            label = clean(kpi.get("label") or kpi.get("formula") or kpi.get("name"))
+            if self.spec.has_figure(kpi):
+                figure = clean(kpi.get("figure"))
+                if kpi.get("show_baseline") and clean(kpi.get("baseline")):
+                    figure = f"{clean(kpi['baseline'])} → {figure}"
+                label = clean(kpi.get("label") or kpi.get("formula") or kpi.get("name"))
+            else:   # the metric's name where the figure will stand, and what it measures
+                figure = re.sub(r"\s*[↑↓→]+\s*$", "", clean(kpi.get("chip"))) or clean(kpi.get("name"))
+                label = (clean(kpi.get("label") or kpi.get("name"))
+                         + " — measured in the proof of value")
             v = ex.by_id(slide, stat["value"])
             l = ex.by_id(slide, stat["label"])
             ex.fill_text(v, figure)
             ex.fill_text(l, label)
-            self.log(5, f"proof.stat[{i}].value", v, figure)
+            pt = None
+            for step in (16.0, 14.0):   # a metric name is longer than a figure: step down before it wraps
+                if self.text_height(v, [figure], ex.to_in(v.width)) <= ex.to_in(v.height) + 0.01:
+                    break
+                from pptx.util import Pt
+                for p in v.text_frame.paragraphs:
+                    for r in p.runs:
+                        r.font.size = Pt(step)
+                pt = step
+            self.log(5, f"proof.stat[{i}].value", v, figure, pt=pt)
             self.log(5, f"proof.stat[{i}].label", l, label)
+        if not figured:
+            self.note("proof: no cleared figure — the stat strip names the metrics to be measured.")
 
     # -- 6 why it sells (duplicated from the proof slide) -------------------
     def why_it_sells(self, slide) -> None:

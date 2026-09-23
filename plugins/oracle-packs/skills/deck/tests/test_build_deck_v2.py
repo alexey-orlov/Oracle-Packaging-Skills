@@ -5,8 +5,10 @@
 
 Builds both test specs and asserts what "clone, don't redraw" means in the file:
 ten slides in the anatomy's order, the running header rewritten to the current
-lockup, no tier eyebrow, no inherited hero photo, the exemplar's own type sizes
-and rounded corners still in place, and an architecture rebuilt from the spec.
+lockup, no tier eyebrow, the family's cover hero still on the cover layout (it is
+kept unless `deck.images.cover` replaces it — the owner's rule, 2026-09-23), the
+exemplar's own type sizes and rounded corners still in place, and an architecture
+rebuilt from the spec.
 Stdlib + python-pptx only, no pytest required.
 """
 
@@ -198,8 +200,11 @@ def run_figureless(tmp: Path) -> None:
     check("First engagement" in t5 and "Figures from" not in t5,
           "the figure-less proof slide still attributes figures")
     check("illustrative" not in t5, "a figure caveat printed with no figures")
-    check("INTERNAL PARAGRAPH" not in t5 and "hard-coded" in t5,
-          "the proof slide prints the internal divergence paragraph, not the print-ready line")
+    check("INTERNAL PARAGRAPH" not in t5, "the proof slide prints the internal divergence paragraph")
+    check("SOLUTION" in t5 and "VALUE FOR CLIENT" in t5,
+          "the proof slide does not carry the exemplar's four blocks")
+    check("measured in the proof of value" in t5,
+          "a figure-less pack drops the stat strip instead of naming what is measured")
     t6 = texts(slides[5])
     check("OCI CONSUMPTION" in t6 and "To be defined" in t6,
           "a `-` consumption target does not keep the panel as an empty instance")
@@ -224,7 +229,6 @@ def run_figureless(tmp: Path) -> None:
               if t10.cell(r, c).text.strip() not in ("", "—")
               and not _re.match(r"^(●●|●|◐)  \S", t10.cell(r, c).text)]
     check(not ragged, f"detailed cells space their glyph unevenly: {ragged[:3]}")
-    check("stays in the loop" in t5, "the proof slide's flow line does not say where a person is in the loop")
 
 
 def main() -> int:
