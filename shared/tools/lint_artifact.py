@@ -415,9 +415,10 @@ class ArtifactLint:
                     # Experience (CX)" on the page is caught as "Oracle Customer
                     # Experience". When the text right after the phrase completes the
                     # canonical name, the artifact spells it in full (2026-09-23).
+                    canon = PL.norm_loose(best["name"])
                     tail = doc.text[start + len(phrase):start + len(phrase) + 40]
-                    if PL.norm_loose(phrase + tail).startswith(PL.norm_loose(best["name"])):
-                        continue
+                    if canon.startswith(flat + " ") and PL.norm_loose(phrase + tail).startswith(canon):
+                        continue   # a whole-word prefix completed by what follows — not "Field Services" for "Field Service"
                     # In an extracted document a rendered line break cuts a name in
                     # two ("Oracle Fusion Field" / "Service customer …"), and the cut
                     # is the extractor's, not the artifact's. A phrase that is a
