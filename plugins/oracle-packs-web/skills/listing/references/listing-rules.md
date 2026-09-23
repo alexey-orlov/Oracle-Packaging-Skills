@@ -1,5 +1,7 @@
 # Listing rules — the owner's standing rules, as checkable statements
 
+_Long form; the runtime cards are `references/cards/claim-rules.md`, `copy-rules.md`, `gates.md`, `preview.md` and `review-pack.md`._
+
 Every rule below was won in a review round on a live practice site. Each is
 written so it can be **checked**, not admired: a person or a script can hold the
 draft against it and say pass or fail. Where `tools/check-grammar.js` already

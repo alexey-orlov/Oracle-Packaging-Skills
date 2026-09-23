@@ -1,0 +1,80 @@
+# What /oracle-packs-web:listing loads, step by step.
+#
+# The rule the skill obeys: load only the file(s) listed for the step you are
+# on, never the whole folder. `session` files enter the conversation and are
+# charged to that step's budget; `agents` files are read by a subagent in its
+# own fresh context and are reported, not charged.
+#
+# Not listed anywhere, on purpose: the long references the cards replace
+# (`references/listing-schema.md`, `references/listing-rules.md`,
+# `references/preview-and-publish.md`) and the site's own code.
+#
+# Checked by: shared/tools/context_budget.py (see docs/CONTEXT-BUDGET.md).
+
+budget:
+  tokens_per_word: 1.35
+  start_up_tokens: 6000
+  step_tokens: 2000
+
+root: ../..                  # the listing skill folder; `shared/...` resolves to the bundle's shared folder
+
+steps:
+  - id: start-up
+    title: Before the first message
+    start_up: true
+    session:
+      - SKILL.md
+      - references/cards/owner-language.md
+      - references/cards/manifest.yaml
+
+  - id: map-the-entry
+    title: Map the spec onto the tile and the overview tab
+    session:
+      - shared/references/anatomy/artifact-listing.md
+      - references/cards/entry-identity.md
+      - references/cards/entry-overview.md
+      - references/cards/entry-case-study.md
+
+  - id: map-the-tabs
+    title: Map the technology and Jumpstart tabs
+    session:
+      - references/cards/entry-technology.md
+      - references/cards/entry-jumpstart.md
+
+  - id: write-the-copy
+    title: Write the strings
+    session:
+      - references/cards/copy-rules.md
+      - references/cards/claim-rules.md
+      - references/cards/exemplar-altitude.md
+    agents:
+      - assets/exemplar-product-entry.js
+      - shared/references/naming-and-clearance.md
+
+  - id: insert
+    title: Insert the entry, the figure and the switches
+    session:
+      - references/cards/insert.md
+      - references/cards/switches.md
+      - shared/references/architecture-diagram.md
+
+  - id: gates
+    title: The three gates, the lint and the consistency pass
+    session:
+      - references/cards/gates.md
+      - references/cards/claim-rules.md
+
+  - id: preview
+    title: Preview at every width
+    session:
+      - references/cards/preview.md
+
+  - id: review-pack
+    title: Show it to the owner
+    session:
+      - references/cards/review-pack.md
+
+  - id: publish
+    title: Publish, only when asked
+    session:
+      - references/cards/publish.md

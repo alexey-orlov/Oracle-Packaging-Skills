@@ -1,5 +1,9 @@
 # SoftServe deck brand tokens
 
+_Read by tools, not by the model. The measured constants `tools/build_deck.py`
+(the legacy redraw builder) and the executive-summary skill draw a slide with.
+The runtime card is `references/cards/render-qa.md`._
+
 Everything a builder needs to put a slide on the SoftServe EMEA master. Measured
 from the master, the Workforce optimization sales deck (Jul 2026) and the
 Oracle AI packages section slides (Sep 2026). Values are authoritative for the

@@ -1,3 +1,6 @@
+# Read by tools, not by the model: tools/suggest_icons.py loads this file. The runtime card is
+# references/cards/icons.md.
+#
 # Industry -> candidate icons. Read by tools/suggest_icons.py to turn a vertical's name into three
 # Tabler icon names worth proposing to the owner.
 #

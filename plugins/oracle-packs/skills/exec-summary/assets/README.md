@@ -62,9 +62,9 @@ when `--with-closing` found a `Close` layout.
 
 ## Gotchas
 
-- The builder always reads the spec on the **internal** channel: the executive
-  summary is the internal artifact and uses the internal name variant. Internal
-  naming is not a licence to print internal operating numbers — headcount,
+- The builder defaults to the **internal** channel (`--channel` overrides it): the
+  executive summary is usually the internal artifact and uses the internal name
+  variant. Internal naming is not a licence to print internal operating numbers — headcount,
   contract values and internal package costs stay off the slide.
 - The proof block is all-or-none. If any metric in the set is restricted away
   from this channel, the block renders as an empty instance of the same panel

@@ -25,7 +25,7 @@ _The operative rules for what an artifact may call things and what it may disclo
 
 ## 2. Pack name by channel
 
-The pack has **one plain, noun-led name** — the thing, not the job ("Damage assessment", never "Repair or replace"; `pack-anatomy.md` §4) — set once by the owner in the spec. Channel variants are derived from it by a fixed rule, and nothing else varies:
+The pack has **one plain, noun-led name** — the thing, not the job ("Damage assessment", never "Repair or replace"; `anatomy/name.md`) — set once by the owner in the spec. Channel variants are derived from it by a fixed rule, and nothing else varies:
 
 | Channel | Form | Example |
 |---|---|---|
@@ -66,13 +66,13 @@ The name never carries a vendor trademark inside it: Oracle asks partners not to
 
 **Internal-only facts never cross a channel boundary.** Contract and deal values; named customer accounts and their own customers; headcount, POD counts and capacity commitments; internal operating numbers; OKR text and internal targets; internal reference pricing and what another customer paid; superseded price sets still living in old files; reference-architecture detail that belongs to a customer; internal taxonomy names, roadmap ceilings and gap statements; internal deck filenames and paths in any publicly fetchable file. Also: the practice's other engagements are never named in an Oracle artifact.
 
-**Unreferenced is not unshipped.** Anything that must never ship lives **outside** the deployable or publishable root. A logo set once sat unreferenced inside a site's asset folder and was still downloadable by path from the link-shared build. After publishing, list what is actually live and confirm.
+**Unreferenced is not unshipped.** Anything that must never ship lives **outside** the deployable or publishable root — an unreferenced file inside it is still downloadable by path. After publishing, list what is actually live and confirm.
 
 **Demos invert one rule only.** Inside a walkthrough, vendor product names, screens and idioms are expected — matching the real product is the bar. Everything else stays synthetic: geography, identifiers, names, documents, and every companion number next to a cleared headline figure. List every synthetic figure for the owner when handing the demo over.
 
 ### The deny-list
 
-The linter carries a word-boundary deny-list of every customer name that has appeared anywhere in the practice's source material, and fails any artifact that contains one outside an allowed channel. It exists because these names are the single most likely thing to leak: they sit in the source SoWs, PoC decks, transcripts and spreadsheets that a pack is generalized from, and they survive copy-paste. The seed list covers the engagements the current packs derive from and the engagements named in the shared source files. **The list itself lives in `shared/tools/denylist.txt` and nowhere else** — not here, not in a readme, not in a skill: one file holds those names so that reading this reference never spreads them. It is **extended, never trimmed**, with every new engagement a pack is built from. Keep it in the linter's own data file rather than inline in an artifact skill, and keep a plain `grep -ri` sweep over the build output as the second, independent gate.
+The linter carries a word-boundary deny-list of every customer name that has appeared anywhere in the practice's source material, and fails any artifact that contains one outside an allowed channel. **The list itself lives in `shared/tools/denylist.txt` and nowhere else** — not here, not in a readme, not in a skill: one file holds those names so that reading this reference never spreads them. It is **extended, never trimmed**, with every new engagement a pack is built from. Keep it in the linter's own data file rather than inline in an artifact skill, and keep a plain `grep -ri` sweep over the build output as the second, independent gate.
 
 ### Contacts by channel
 

@@ -1,5 +1,9 @@
 # Sales deck — the 10-slide anatomy
 
+_Long form; the runtime cards are `references/cards/slides-1-5.md` and
+`references/cards/slides-6-10.md`. The measured geometry and word budgets here
+are the builder's and the linter's, not read at run time._
+
 The shape of an accelerator-pack sales deck, slide by slide: what each slide is
 for, which of the 12 pack components it carries, which exemplar slide it is
 filled from, what varies with the spec, what is removed, and how much text fits.
@@ -83,10 +87,11 @@ placeholder holds the pack name (paragraph 0, 44 pt) and the one-liner
 ("PROOF OF VALUE · ROLL-OUT · SCALING") — the owner's 2026-09-22 review dropped
 it. A cover names the pack and what it does; the packages are slides 9 and 10.
 That shape is reused for the ICP line, so the composition keeps its lower block.
-The reference pack's **hero photo** is removed too, unless `deck.images.cover`
-names one to swap in: it is that pack's picture, not this one's. Removed, the
-layout's own ink ground is the cover, an explicit empty state, and the build says
-which picture is still to choose.
+
+**Kept.** The **hero photo** is the pack family's shared picture and stays on the
+cover (it lives on the `Title-AI` layout, not on the slide). `deck.images.cover`
+swaps in a pack's own picture, centre-cropped to the frame. An ink-only cover is
+an unfinished state, never the default.
 
 **No subheading slot.** The exemplar's cover has nowhere for
 `meta.name_variants.external_subheading`, so it is **not printed on slide 1** and

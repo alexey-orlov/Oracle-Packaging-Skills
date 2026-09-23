@@ -206,9 +206,30 @@ def pick_icon(icons, name: str) -> Path | None:
 # Slide builders — each one fills an exemplar slide in place
 # --------------------------------------------------------------------------
 
+SPEC_PATH_HINT = None
+
+
+def _image_path(value, spec_path=""):
+    """A picture entry is a path string or the pictures step's record {file, source, ...}.
+
+    A relative file is resolved against the brief's own folder when the caller knows
+    where the brief is, and against the working directory otherwise.
+    """
+    if isinstance(value, dict):
+        value = value.get("file")
+    value = clean(value)
+    if not value:
+        return ""
+    p = Path(value).expanduser()
+    if not p.is_absolute() and spec_path:
+        p = Path(spec_path).resolve().parent / p
+    return str(p)
+
+
 class Build:
     def __init__(self, spec: Spec, prs, slots: dict, fit: FitLog, icons):
         self.spec = spec
+        self.spec_path = getattr(spec, "path", "") or ""   # set by main(); "" in library use
         self.prs = prs
         self.slots = slots
         self.fit = fit
@@ -337,7 +358,7 @@ class Build:
                 hero, area = shp, size
         if hero is None:
             return
-        path = clean((self.spec.get("deck.images", {}) or {}).get("cover"))
+        path = _image_path((self.spec.get("deck.images", {}) or {}).get("cover"), self.spec_path)
         if path and Path(path).is_file():
             ex.replace_picture(hero, path)
             self.note(f"cover: hero image replaced from `deck.images.cover` ({path}).")
@@ -353,6 +374,7 @@ class Build:
         protos = ex.paragraph_prototypes(body)
         lead, tail = split_lead(self.spec.need("problem_solution.problem"))
         points = [clean(p) for p in (self.spec.get("problem_solution.problem_points") or []) if clean(p)]
+        points = [f"{x['label']}: {x['text']}" if isinstance(x, dict) else x for x in (points or [])]  # the schema writes {label, text}; the exemplar splits on the first ":"
         specs: list[tuple[int, list[str]]] = [(0, [lead, tail] if tail else [lead])]
         if points:
             specs.append((1, [""]))
@@ -497,7 +519,7 @@ class Build:
             pic = ex.find_id(slide, s[key])
             if pic is None:
                 continue
-            path = clean(images.get(spec_key))
+            path = _image_path(images.get(spec_key), self.spec_path)
             if path and Path(path).is_file():
                 ex.replace_picture(pic, path)
             else:
@@ -511,7 +533,7 @@ class Build:
         """The source customer's logo: only when cleared AND supplied."""
         if logo is None:
             return
-        path = clean(images.get("customer_logo"))
+        path = _image_path(images.get("customer_logo"), self.spec_path)
         if self.spec.customer_name_allowed() and path and Path(path).is_file():
             ex.replace_picture(logo, path, cover=False)
             return
@@ -1407,6 +1429,7 @@ def main(argv=None) -> int:
 
     try:
         spec = Spec.load(args.spec, channel=args.channel)
+        spec.path = args.spec          # relative picture paths resolve against the brief's folder
     except SpecError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2

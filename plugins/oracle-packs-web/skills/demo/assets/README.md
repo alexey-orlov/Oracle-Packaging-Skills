@@ -1,5 +1,7 @@
 # `demo/assets/`
 
+_`reference-demo/` and `tour-engine.js` are code to copy from, not reading material: open the one file you are adapting, never the folder, and never into the conversation. The runtime card is `references/cards/build.md`._
+
 | Path | What it is |
 |---|---|
 | `reference-demo/` | A complete, delivered walkthrough — the fidelity yardstick and the parts bin. Its own `README.md` says what to look at. |

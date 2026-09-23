@@ -1,0 +1,60 @@
+# What /oracle-packs:feature-list loads, step by step.
+#
+# The rule the skill obeys: load only the file(s) listed for the step you are
+# on, never the whole folder. `session` files enter the conversation and are
+# charged to that step's budget; `agents` files are read by a subagent in its
+# own fresh context and are reported, not charged.
+#
+# references/feature-list-anatomy.md is the long form of what the builder
+# implements; it is not loaded at run time and appears in no list below.
+#
+# Checked by: shared/tools/context_budget.py (see docs/CONTEXT-BUDGET.md).
+
+budget:
+  tokens_per_word: 1.35
+  start_up_tokens: 6000
+  step_tokens: 2000
+
+root: ../..                  # the feature-list skill folder; `shared/...` resolves to the bundle's shared folder
+
+steps:
+  - id: start-up
+    title: Before the first message
+    start_up: true
+    session:
+      - SKILL.md
+      - ../spec/references/cards/owner-language.md    # the spec skill's card; one home, no copy
+      - references/cards/manifest.yaml
+
+  - id: build
+    title: Building the feature list
+    session:
+      - references/cards/build.md
+      - references/cards/statuses-and-wording.md
+      - shared/references/anatomy/artifact-feature-list.md
+
+  - id: does-not-fit
+    title: When it does not fit on one page
+    session:
+      - references/cards/does-not-fit.md
+      - shared/references/anatomy/capabilities.md
+
+  - id: footnotes
+    title: Footnotes
+    session:
+      - references/cards/footnotes.md
+
+  - id: check
+    title: The checks before showing it
+    session:
+      - references/cards/check.md
+
+  - id: review-pack
+    title: The review pack for the owner
+    session:
+      - references/cards/review-pack.md
+
+  - id: fast-path
+    title: One rebuild round, and the fast path
+    session:
+      - references/cards/fast-path.md

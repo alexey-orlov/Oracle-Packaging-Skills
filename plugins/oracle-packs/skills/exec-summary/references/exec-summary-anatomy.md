@@ -1,5 +1,7 @@
 # Executive summary — the one-slide anatomy
 
+_Read by tools, not by the model: the grid, the block geometry and the fit rule are implemented in `tools/build_exec_summary.py` and `tools/deckkit.py`. Kept out of every `session:` list. The runtime cards are `references/cards/build.md` and `references/cards/blocks.md`; the six blocks are `shared/references/anatomy/artifact-exec-summary.md`._
+
 One slide that puts a whole pack in front of an executive audience: what the
 problem and the solution are, who owns which layer, what it proved, what it
 costs, what it can do, and what happens next. `tools/build_exec_summary.py`

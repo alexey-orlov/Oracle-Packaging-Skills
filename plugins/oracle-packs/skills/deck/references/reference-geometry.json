@@ -1,5 +1,7 @@
 {
   "_about": [
+    "Read by tools, not by the model: tools/lint_deck.py loads this file. The runtime",
+    "card is references/cards/lint.md.",
     "Measured with python-pptx from the reference Workforce Optimization deck — the",
     "exemplar the builder fills, assets/exemplar/wfo-sales-deck.pptx (10 slides,",
     "13.333 x 7.5 in). `reference_slides` is what that file actually contains, slide",

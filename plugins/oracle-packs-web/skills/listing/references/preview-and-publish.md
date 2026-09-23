@@ -1,5 +1,7 @@
 # Preview, QA and publish a listing
 
+_Long form; the runtime cards are `references/cards/preview.md`, `gates.md` and `publish.md`._
+
 Written generically: every location and URL below is an **input the runner
 supplies once**, never a constant in this bundle.
 

@@ -1,5 +1,7 @@
 # `tour-engine.js` — the guided-walkthrough mechanics
 
+_Long form, read by the builder agent in its own context; the runtime card is `references/cards/build.md`._
+
 One module, plain ES5, no dependencies. It owns the callout, the click guard,
 the counter, the positioner and the end card. It owns nothing about the product
 being demonstrated.

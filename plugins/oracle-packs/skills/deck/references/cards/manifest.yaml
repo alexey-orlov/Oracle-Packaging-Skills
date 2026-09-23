@@ -1,0 +1,73 @@
+# What /oracle-packs:deck loads, step by step.
+#
+# The rule the skill obeys: load only the file(s) listed for the step you are
+# on, never the whole folder. `session` files enter the conversation and are
+# charged to that step's budget; `agents` files are read by a subagent in its
+# own fresh context and are reported, not charged.
+#
+# Not listed anywhere, on purpose: `references/deck-anatomy.md` (long form —
+# the runtime cards are slides-1-5.md and slides-6-10.md),
+# `references/reference-geometry.json` (read by tools/lint_deck.py),
+# `references/brand-tokens.md` and `references/exemplar-builder.md` (builder
+# documentation). See docs/CONTEXT-BUDGET.md.
+#
+# Checked by: shared/tools/context_budget.py.
+
+budget:
+  tokens_per_word: 1.35
+  start_up_tokens: 6000
+  step_tokens: 2000
+
+root: ../..                  # the deck skill folder; `shared/...` resolves to the bundle's shared folder
+
+steps:
+  - id: start-up
+    title: Before the first message
+    start_up: true
+    session:
+      - SKILL.md
+      - ../spec/references/cards/owner-language.md
+      - references/cards/manifest.yaml
+
+  - id: build
+    title: Building the ten slides
+    session:
+      - references/cards/build.md
+      - references/cards/slides-1-5.md
+      - references/cards/slides-6-10.md
+      # shared/references/anatomy/artifact-deck.md is cited from build.md but not
+      # loaded: it records the delivered reference deck's own order (three package
+      # tables, architecture on 7), which this skill's ten supersede.
+
+  - id: lint
+    title: The deck's own automatic check
+    session:
+      - references/cards/lint.md
+
+  - id: render-qa
+    title: Looking at the rendered slides
+    session:
+      - references/cards/render-qa.md
+      - shared/references/slide-design.md
+
+  - id: diagram-reviewer
+    title: The fresh-context review of slide 8
+    session:
+      - references/cards/diagram-reviewer.md
+    agents:
+      - shared/references/architecture-diagram.md
+
+  - id: clearance-and-editorial
+    title: Clearance, consistency and the editorial pass
+    session:
+      - references/cards/clearance-and-editorial.md
+
+  - id: review-pack
+    title: Putting it to the owner
+    session:
+      - references/cards/review-pack.md
+
+  - id: fast-path
+    title: The rebuild round
+    session:
+      - references/cards/fast-path.md

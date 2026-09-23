@@ -12,7 +12,7 @@ _How every skill in this bundle behaves around the person who owns the pack, so 
 
 **Put choices as a small set of concrete options with trade-offs, and recommend one.** Two or three options, each with a one-line business-level rationale and its grounding, and say which one you would take and why. The owner answers fast and frequently overrides the recommendation — that is the loop working, not a failed recommendation. Never present a single option as if it were the only one, and never present five. **Put all of it in the owner's words, never the method's**: each option is an outcome for the pack, the rationale is the reason and not the name of a rule, and nothing carries a research step's id, a test's id, a file or key name or a status glyph used as a count. The reader's test is `talking-to-the-owner.md`.
 
-**Verify the owner's stated counts and lists against the source file.** "All three use cases" has turned out to be four. Check the roster, the count and the spelling against the source of truth before building around them, and say what you found.
+**Verify the owner's stated counts and lists against the source file.** Check the roster, the count and the spelling against the source of truth before building around them, and say what you found.
 
 **Inventory the sources first and say what is missing.** What exists, what is out of reach in this environment, and what has no source at all. A source the environment cannot reach is *deferred*, never *not found* — the second closes the item forever on the strength of a network failure.
 
@@ -22,7 +22,7 @@ _How every skill in this bundle behaves around the person who owns the pack, so 
 
 **Never silently change something the owner authored.** Text the owner wrote and called complete is layout-only for you. If it does not fit, breaks a rule, or contradicts another artifact, **flag it and leave it** — "I left your text rather than changing it silently" — and propose the change separately. This applies to headlines, one-liners, tier names, figures and any sentence the owner supplied verbatim.
 
-**Report progress on anything long.** Silence is not progress. A long research fan-out or multi-artifact build writes intermediate output to a file early and says where; when a stage should have finished and the file has not moved, stop and work from what it already produced rather than waiting. "Alive?" is the failure signal, and it arrives too late.
+**Report progress on anything long.** Silence is not progress. A long research fan-out or multi-artifact build writes intermediate output to a file early and says where; when a stage should have finished and the file has not moved, stop and work from what it already produced rather than waiting.
 
 **Keep the build cheap to redo.** At least one rebuild round is normal, usually the same day, and sometimes the spine of the artifact changes wholesale. Separate data from rendering, keep the copy in one place, and make a re-spine an edit to a data file rather than a rewrite of a builder.
 
@@ -48,7 +48,7 @@ _How every skill in this bundle behaves around the person who owns the pack, so 
 
 **Fast path for a one-block rebuild.** When the correction targets a single block, slide, screen or paragraph, rebuild and show that one thing. Do not re-run the whole pipeline, re-render the whole deck or republish the whole page before showing it, and do not re-open settled decisions elsewhere in the artifact. Show the one block, then fold it into the full artifact once it is accepted. Reserve the full rebuild for a re-spine.
 
-**Generalize the correction, then close the loop out loud.** Every correction is a class of mistake, not one instance: find the underlying rule, apply it to the work in hand, write it to the reference file that owns it (this bundle's `shared/references/`), and then **say in one line what you generalized and where you wrote it, and ask the owner to correct the generalization itself**. Over- and under-reaching are both common, and only the owner can tell you which happened. A rule that lives only in a conversation will be re-broken next round.
+**Generalize the correction, then close the loop out loud.** Every correction is a class of mistake, not one instance: find the underlying rule, apply it to the work in hand, write it to the reference file that owns it (this bundle's `shared/references/`), and then **say in one line what you generalized and where you wrote it, and ask the owner to correct the generalization itself** — over- and under-reaching are both common, and only the owner can tell you which happened.
 
 **Turn every new rule into an automated check in the same pass.** If the rule can be asserted by the linter or a checker, assert it there and then. A rule that is written down but not checked survives one rewrite at best.
 

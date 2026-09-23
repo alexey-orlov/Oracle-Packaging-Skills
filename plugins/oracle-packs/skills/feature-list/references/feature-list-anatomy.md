@@ -1,5 +1,7 @@
 # Feature list — anatomy, columns, glyph legend
 
+_Long form; not loaded at run time. The measured geometry, colours, fit ladder and height model here are implemented inside `tools/build_feature_list.py` — they are not read from this file. The runtime cards are `references/cards/build.md`, `references/cards/does-not-fit.md`, `references/cards/statuses-and-wording.md` and `references/cards/footnotes.md`._
+
 The feature list follows the practice mini-site (its 2026-09-18 rebrand) and the owner's
 requirements of **2026-09-22**: the site's header lockup instead of a text kicker, the site's
 faces and styles, the approved one-liner plus one sentence saying who the pack is for, and
@@ -119,8 +121,8 @@ which rung it used and the estimated fill.
 If no rung fits, **nothing is written** and the build exits 3 with a plain report: the estimated
 height against the budget, the number of areas / categories / features, the three largest areas and
 five largest categories, and the instruction to group or generalize the capabilities. That report
-goes to the owner as it stands — the fix is a coarser capability tree (`shared/references/
-pack-anatomy.md` §6 sizes it: ≤ 6 areas, ~12 categories, 30–35 features), never smaller type.
+goes to the owner as it stands — the fix is a coarser capability tree
+(`shared/references/anatomy/capabilities.md` sizes it), never smaller type.
 
 `--fit none` restores the old behaviour — one row per feature at 7.5pt over as many pages as it
 takes, with the header row repeating. On macOS with Pages installed the build also **verifies** the

@@ -1,0 +1,46 @@
+# What /oracle-packs:build loads, step by step.
+#
+# The rule the skill obeys: load only the file(s) listed for the step you are
+# on, never the whole folder. `session` files enter the conversation and are
+# charged to that step's budget; `agents` files are read by a subagent in its
+# own fresh context and are reported, not charged.
+#
+# Checked by: shared/tools/context_budget.py (see docs/CONTEXT-BUDGET.md).
+
+budget:
+  tokens_per_word: 1.35
+  start_up_tokens: 6000
+  step_tokens: 2000
+
+root: ../..                  # the build skill folder; `shared/...` resolves to the bundle's shared folder
+
+steps:
+  - id: start-up
+    title: Before the first message
+    start_up: true
+    session:
+      - SKILL.md
+      - ../spec/references/cards/owner-language.md    # the spec skill's card; one home, no copy
+      - references/cards/manifest.yaml
+
+  - id: plan-and-ask
+    title: The map, and the one question
+    session:
+      - references/cards/plan-and-ask.md
+      - references/cards/artifact-order.md
+
+  - id: per-artifact-review
+    title: The review after each artifact
+    session:
+      - references/cards/per-artifact-review.md
+      - references/cards/artifact-order.md
+
+  - id: consistency-gate
+    title: The consistency gate
+    session:
+      - references/cards/consistency-gate.md
+
+  - id: delivery
+    title: Delivery and the closing message
+    session:
+      - references/cards/delivery.md

@@ -1,5 +1,7 @@
 # The `products[]` entry — schema, invariants, and where each key comes from
 
+_Long form; the runtime cards are `references/cards/entry-identity.md`, `entry-overview.md`, `entry-case-study.md`, `entry-technology.md`, `entry-jumpstart.md`, `insert.md` and `switches.md`._
+
 > **Case.** Every string below is stored in **sentence case**. The site's live
 > theme (2026-09-18 rebrand) sets display type in sentence case and uppercases
 > only micro-type slots (`.eyebrow`, `.hero-badges li`, chips, buttons) in CSS,

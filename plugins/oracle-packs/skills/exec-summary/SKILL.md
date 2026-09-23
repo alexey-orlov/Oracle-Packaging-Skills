@@ -7,41 +7,53 @@ user-invocable: true
 
 # /oracle-packs:exec-summary — one slide that stands alone
 
-> **Paths.** `shared/...` means `${CLAUDE_PLUGIN_ROOT}/shared/...` (each plugin carries a synced copy of the repo's `shared/` folder); `tools/...`, `assets/...` and `references/...` without a prefix are relative to this skill's own folder. In a plain-copy install the plugin folder sits at `.claude/skills/<plugin>/` and `${CLAUDE_PLUGIN_ROOT}` resolves to it.
+> **Paths.** `shared/...` means `${CLAUDE_PLUGIN_ROOT}/shared/...`; `tools/...`, `assets/...` and `references/...` are this skill's own folder.
 
+**Load only what the step needs.** `references/cards/manifest.yaml` lists, per step, exactly which files that step reads. Read those and nothing else — never the whole folder, never a card for a step you are not on, never a long reference a card already points to. Each card says what its part is, the checks a build must pass, and the spec keys it reads; the checks are the specification, not prose to paraphrase.
 
-## Preconditions and inputs
+## Preconditions
 
 - A confirmed, lint-clean `pack-spec.yaml`.
-- Channel: `internal` by default (the slide usually lands in an internal solutions-review or section deck; the pack name variant is the internal one, e.g. "Workforce Optimization App"); `partner_print` when the slide goes into a partner deck (external name variant, clearance rules apply). When you have to ask, ask it as "who will see this slide": "our own team" or "Oracle and SoftServe sellers" — store the two values, never show them.
-- Optional `--host-deck <pptx>`: build on that deck's master so the slide pastes in unchanged and renumbers itself; otherwise build on the shipped brand base.
-- Read this skill's `references/exec-summary-anatomy.md` (measured from the latest section-slides deck — the owner named it the reference), `shared/references/slide-design.md`, `shared/references/naming-and-clearance.md`, `shared/references/talking-to-the-owner.md` — every message, question and option the owner sees passes its reader's test.
-- Dependencies as for the deck skill (`pyyaml`, `python-pptx`, `Pillow`).
+- Channel: `internal` by default — the slide usually lands in an internal solutions-review or section deck and carries the internal name variant; `partner_print` when it goes into a partner deck, where the external variant and the clearance rules apply. When it has to be asked, ask it as "who will see this slide": "our own team", or "Oracle and SoftServe sellers". Store the two values; never show them.
+- Optional `--host-deck <pptx>`: build on that deck's own master, so the slide pastes in unchanged and renumbers itself. Without it, the shipped brand base.
+- Dependencies as for the deck skill: `pyyaml`, `python-pptx`, `Pillow`. Say what is missing instead of degrading silently.
 
 ## Procedure
 
-1. **Read the spec.** The slide compresses the deck: one line per component, the solution-layers ladder, the proof strip with the one metric set and the caveat, the tiers strip with durations and price status, planned next steps from `open_questions` and the tiers.
-2. **Build**: `python3 tools/build_exec_summary.py <spec> --out <dir> --fit-report [--channel internal|partner_print] [--host-deck <pptx>]`. The fit report must be clean; overflow is cut, not shrunk (`--allow-overflow` exists for review builds only and is never how a slide ships).
-3. **Render and look** (the deck skill's render probe), then lint and consistency checks.
-4. **Editorial pass on the strongest model**: the slide must read for someone who has not seen the deck; every number equals the spec; the status word appears once; internal-only facts (contract values, named accounts) appear only on an `internal` cut and are marked strippable.
-5. **Review pack** and one rebuild round — the pack in the owner's words: the rendered slide, what was compressed and what was dropped to make it fit, anything inferred, and the open items.
+1. **Build.** Cards: `build` and `blocks`, plus `shared/references/anatomy/artifact-exec-summary.md` for the six blocks. Read the spec, settle the channel, then:
+   `python3 tools/build_exec_summary.py <spec> --out <dir> --fit-report [--channel internal|partner_print] [--host-deck <pptx>]`
+   The fit report must be clean; overflow is cut, not shrunk (`--allow-overflow` is for review builds and is never how a slide ships).
+2. **The automatic checks.** Card: `check`. Render the slide and look at it (`../deck/tools/render_probe.sh` prints how), then:
+   `python3 shared/tools/lint_artifact.py <the pptx> --channel <channel> --spec <spec>`
+   `python3 shared/tools/check_consistency.py <spec> <the pptx>`
+   Both clean before anything is shown; the owner hears one plain line about them.
+3. **Editorial pass.** Card: `editorial`, on the strongest model with fresh eyes — the slide must read for someone who has not seen the deck, every number equal to the spec, the status word once, internal-only facts on the internal cut alone and marked strippable.
+4. **Show it.** Card: `review-pack`. One rebuild round.
+5. **One change afterwards.** Card: `fast-path`. A single-block change is never a rerun of the build.
 
-## Rules
+## Rules that bite on this slide
 
 - One slide, plus the host's closing slide only when asked.
-- The internal cut may carry package prices and named accounts where the spec allows; mark the slide "internal — strip prices before external use" in the notes.
-- No new visual language: use the host deck's own shapes and colours; reuse the deck's existing diagram rather than inventing one.
-- Deliver as a standalone pptx named `<Pack name> - Executive summary - Oracle.pptx`, and, when a host deck was given, also the slide number where it should be inserted.
+- The internal cut may carry the tier prices and named accounts where the spec allows; the notes then mark the slide internal, prices to be stripped before external use. Internal naming is still not a licence to print internal operating numbers — headcount, contract values, internal costs.
+- No new visual language: the host deck's own shapes and colours, and the deck's existing diagram rather than an invented one.
+- The proof block is all or none; an absent component is drawn as an empty panel, never dropped and never half-filled.
+- Deliver a standalone `<Pack name> - Executive summary - Oracle.pptx`, and, when a host deck was given, the slide number where it should be inserted.
 
-## Definition of done
+## Talking to the owner
 
-Built on the right master, fit and lint clean, consistent with the spec, review pack shown, approval logged.
+Every message, question and option passes the reader's test in `${CLAUDE_PLUGIN_ROOT}/skills/spec/references/cards/owner-language.md`, loaded at start-up.
 
 ## Showing it to the owner
 
-Everything the owner reviews is opened beside the conversation *before* the question is asked — the owner answers while looking at the thing, never at a description of it (`shared/references/review-loop.md` §3). In the Claude desktop app: a text file (the research summary, the pack brief, a spec) opens in the Files pane with the view-pane tool (`mcp__ccd_view__show_pane`, pane `file`, the path); a render (a page PNG, a PDF, an HTML page) opens in the side panel with the file-send tool (`SendUserFile`, `display: "render"`), with the editable file attached alongside (`display: "attach"`); then the widget. Never publish internal pack material as a claude.ai artifact — it leaves the machine; artifacts stay reserved for the mini-site demos. In a plain terminal with no panes, print the path and a text rendering, and say so. Here: the rendered slide opens in the side panel, the .pptx is attached.
+Everything the owner reviews is open beside the conversation *before* the question, so they answer while looking at the thing (`shared/references/review-loop.md` §3). Here: the rendered slide opens in the side panel (`SendUserFile`, `display: "render"`) with the .pptx attached, then the question. Internal pack material is never published as a claude.ai artifact. In a plain terminal, print the path and a text rendering, and say so.
 
 ## Self-check before closing
 
-- [ ] Every message, question, option and table the owner saw passes the reader's test: no method codes, no file or key names, no packaging vocabulary as vocabulary, reasons instead of rule names.
-- [ ] Everything the owner reviewed was opened beside the conversation before the question was asked.
+- [ ] The fit report exits 0, and the render was actually looked at.
+- [ ] Built on the right master — `--host-deck` whenever the slide has a destination deck.
+- [ ] Both checkers exit 0 on this artifact's own channel and file.
+- [ ] Every figure, price and duration matches the spec to the character.
+- [ ] Nothing the owner saw carries a rule code, file name, spec key or packaging vocabulary.
+- [ ] The render was open beside the conversation before the question was asked.
+- [ ] Any wording change went into the spec, not into the .pptx.
+- [ ] The decision is logged in `packs/<slug>/decisions.md`.

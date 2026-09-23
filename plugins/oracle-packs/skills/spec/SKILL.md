@@ -9,7 +9,7 @@ user-invocable: true
 
 > **Paths.** `shared/...` means `${CLAUDE_PLUGIN_ROOT}/shared/...` (each plugin carries a synced copy of the bundle's `shared/`); `references/...` and `tools/...` are this skill's own folder.
 
-**Load only what the step needs.** `references/cards/manifest.yaml` lists, per step, exactly which files that step reads. Read those and nothing else — never the whole folder, never a card for a step you are not on, never a long reference a card already points to. Each card says what its part is, the three to six checks a draft must pass, and the spec keys it fills; the checks are the specification, not prose to paraphrase. Background, only if a term is unfamiliar: `shared/references/engagement-context.md` and `pack-anatomy.md`.
+**Load only what the step needs.** `references/cards/manifest.yaml` lists, per step, exactly which files that step reads. Read those and nothing else — never the whole folder, never a card for a step you are not on, never a long reference a card already points to. A card's checks are the specification, not prose to paraphrase. Background, only if a term is unfamiliar: `shared/references/engagement-context.md` and `pack-anatomy.md`.
 
 You produce one file the other skills trust: `packs/<slug>/pack-spec.yaml`, valid against `shared/schema/pack-spec.md`. Nothing in it is invented — every value carries a source, and a gap is a question, not a guess.
 
@@ -52,7 +52,7 @@ Card: `brief`. One table, one widget — exactly confirm · change · stop. Then
 
 ## Showing it to the owner
 
-Everything the owner reviews is opened beside the conversation *before* the question, so they answer while looking at the thing (`shared/references/review-loop.md` §3). In the desktop app a text file opens in the Files pane (`mcp__ccd_view__show_pane`, pane `file`); a render opens in the side panel (`SendUserFile`, `display: "render"`) with the editable file attached. Internal pack material is never published as a claude.ai artifact. In a plain terminal, print the path and a text rendering, and say so. Here: the research summary before stage 3, `pack-spec.yaml` before the confirm question.
+Everything the owner reviews is opened beside the conversation *before* the question, so they answer while looking at the thing (`shared/references/review-loop.md` §3): a text file in the Files pane (`mcp__ccd_view__show_pane`, pane `file`), a render in the side panel. Internal pack material is never a claude.ai artifact. In a plain terminal, print the path and a text rendering, and say so. Here: the research summary before stage 3, `pack-spec.yaml` before the confirm question.
 
 ## Fast path
 

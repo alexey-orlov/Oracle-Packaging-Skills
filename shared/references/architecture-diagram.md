@@ -6,7 +6,7 @@ _How the pack's architecture is drawn on the sales deck, the one-pager and the m
 
 The diagram is **derived** from the spec's architecture component — `architecture.inputs[]` → the pack's app → the engine → the infrastructure → `architecture.outputs[]` — never drawn from a fixed set of three boxes. Every box and every arrow traces to a spec entry, and a box or arrow with no spec entry behind it does not exist.
 
-## Naming rules (the owner, 2026-09-22, on a diagram that said "Accelerator business app" and "Agentic engine")
+## Naming rules (2026-09-22)
 
 - **The app box carries the pack's name**, in the channel's variant, with "by SoftServe": "Account Insights by SoftServe", never a generic "Accelerator business app". Its sub-line is what the app does, from the app layer's items, in the owner's words.
 - **The engine box names the vendor products**, by their catalog names from `shared/data/oracle-products.yaml`: "NVIDIA NeMo Agent Toolkit · NVIDIA AI-Q Blueprint". The layer's role ("agentic engine") is at most a small caption; an unnamed engine tells the seller nothing.

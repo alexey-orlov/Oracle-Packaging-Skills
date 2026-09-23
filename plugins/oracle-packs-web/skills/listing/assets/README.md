@@ -1,5 +1,7 @@
 # `listing/assets/`
 
+_`exemplar-product-entry.js` is read by a fresh-context drafting agent, or opened key by key — never loaded whole into the conversation. The runtime card is `references/cards/exemplar-altitude.md`._
+
 | File | What it is |
 |---|---|
 | `exemplar-product-entry.js` | One complete `products[]` entry from a shipped practice site, plus its `config.js` switch block and its `diagrams.js` figure. **The spec, not a template.** |

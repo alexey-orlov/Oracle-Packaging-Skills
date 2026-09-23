@@ -1,0 +1,60 @@
+# What /oracle-packs:one-pager loads, step by step.
+#
+# The rule the skill obeys: load only the file(s) listed for the step you are
+# on, never the whole folder. `session` files enter the conversation and are
+# charged to that step's budget; `agents` files are read by a subagent in its
+# own fresh context and are reported, not charged.
+#
+# Checked by: shared/tools/context_budget.py (see docs/CONTEXT-BUDGET.md).
+
+budget:
+  tokens_per_word: 1.35
+  start_up_tokens: 6000
+  step_tokens: 2000
+
+root: ../..                  # the one-pager skill folder; `shared/...` resolves to the bundle's shared folder
+
+steps:
+  - id: start-up
+    title: Before the first message
+    start_up: true
+    session:
+      - SKILL.md
+      - ../spec/references/cards/owner-language.md
+      - references/cards/manifest.yaml
+
+  - id: build
+    title: Building the page
+    session:
+      - references/cards/build.md
+      - shared/references/anatomy/artifact-one-pager.md
+
+  - id: overflow
+    title: When the page runs to two
+    session:
+      - references/cards/overflow.md
+
+  - id: check
+    title: The automatic checks
+    session:
+      - references/cards/check.md
+
+  - id: editorial
+    title: The editorial pass
+    session:
+      - references/cards/editorial.md
+    agents:
+      - references/cards/editorial.md
+      - shared/references/client-documents.md
+      - shared/references/slide-design.md
+      - shared/references/naming-and-clearance.md
+
+  - id: review-pack
+    title: Showing the page
+    session:
+      - references/cards/review-pack.md
+
+  - id: fast-path
+    title: One change, not a rebuild
+    session:
+      - references/cards/fast-path.md

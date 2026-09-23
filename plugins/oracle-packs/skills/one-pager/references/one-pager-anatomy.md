@@ -1,5 +1,7 @@
 # Sales one-pager — anatomy, word budgets, CSS tokens, print rules
 
+_Read by tools, not by the model: the word budgets are implemented in `tools/build_one_pager.py` (which prints them on every build) and the CSS, grid and print rules in `assets/one-pager-template.html`. Kept out of every `session:` list. The runtime cards are `references/cards/build.md` and `references/cards/overflow.md`; the fixed section order is `shared/references/anatomy/artifact-one-pager.md`._
+
 Measured off the Workforce Optimization sales one-pager of **2026-07-17** — the HTML build source,
 not the PDF. That file is the reference for this artifact (Alex, 2026-09-18); `assets/one-pager-template.html`
 reproduces its anatomy and CSS with the content replaced by tokens.

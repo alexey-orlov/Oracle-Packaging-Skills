@@ -7,43 +7,54 @@ user-invocable: true
 
 # /oracle-packs:one-pager — one A4 page, always
 
-> **Paths.** `shared/...` means `${CLAUDE_PLUGIN_ROOT}/shared/...` (each plugin carries a synced copy of the repo's `shared/` folder); `tools/...`, `assets/...` and `references/...` without a prefix are relative to this skill's own folder. In a plain-copy install the plugin folder sits at `.claude/skills/<plugin>/` and `${CLAUDE_PLUGIN_ROOT}` resolves to it.
+> **Paths.** `shared/...` means `${CLAUDE_PLUGIN_ROOT}/shared/...`; `tools/...`, `assets/...` and `references/...` are this skill's own folder.
 
+**Load only what the step needs.** `references/cards/manifest.yaml` lists, per step, exactly which files that step reads. Read those and nothing else — never the whole folder, never a card for a step you are not on, never a long reference a card already points to. Each card says what its part is, the checks a build must pass, and the spec keys it reads; the checks are the specification, not prose to paraphrase.
 
-## Preconditions and inputs
+## Preconditions
 
-- A confirmed, lint-clean `pack-spec.yaml`; the sales deck approved first when running the full build (the one-pager condenses it; the owner's deck feedback applies here).
-- Channel `partner_print` (default) or `internal` — asked, when it has to be asked, as "who will see this one-pager": "Oracle and SoftServe sellers" or "our own team" (which adds prices in full and named accounts). Store the two values; never show them. Optional `--hero <image>`: an approved image from the owner; the template hides the hero when none is given. Never fetch imagery from the web.
-- Read `shared/references/pack-anatomy.md`, this skill's `references/one-pager-anatomy.md` (section order and word budgets measured from the reference), `shared/references/client-documents.md`, `shared/references/slide-design.md` (rule 9, compositional variety, is one-pager feedback), `shared/references/naming-and-clearance.md`, `shared/references/architecture-diagram.md` (the architecture strip follows its naming and flow rules and reuses the reviewed diagram), `shared/references/talking-to-the-owner.md` — every message, question and option the owner sees passes its reader's test.
-- Dependencies: Python 3 with `pyyaml` and `pypdf`; a headless Chrome or Chromium for the PDF (`CHROME_BIN`, else the macOS default, else on PATH). Say what is missing instead of degrading silently.
+- A confirmed, lint-clean `pack-spec.yaml`. In the full build, the sales deck is approved first: this page condenses it, and the owner's deck feedback applies here.
+- Channel `partner_print` (default) or `internal`. When it has to be asked, ask it as "who will see this one-pager": "Oracle and SoftServe sellers", or "our own team" (which carries prices in full and named accounts). Store the two values; never show them.
+- Optional `--hero <image>`: an approved image from the owner. Without it the hero renders with no photo. Never fetch imagery from the web.
+- Dependencies: Python 3 with `pyyaml` and `pypdf`, and headless Chrome or Chromium for the PDF (`CHROME_BIN`, then the macOS default, then PATH). Say what is missing instead of degrading silently.
 
 ## Procedure
 
-1. **Read the spec.** Content per block comes from named keys; the anatomy file says which. Cut by design what the partner already knows: no technology-stack section, no full feature matrix — the capability rows in the packages table are the summary.
-2. **Build**: `python3 tools/build_one_pager.py <spec> --out <dir> --channel <channel> [--hero <image>]`. The tool renders the HTML and prints to PDF; it fails when the PDF has more than one page and names the longest blocks.
-3. **Overflow means cuts, not smaller type.** Propose the cuts to the owner as a widget, using the word budgets to work out the ask but putting it to them in plain words: which block on the page — named as they would name it ("the problem paragraph", "the packages table") — and roughly how many words it has to lose, with what each cut costs. Apply the wording through the spec skill's fast path so every artifact stays consistent; rebuild.
-4. **Lint and consistency**: `lint_artifact.py <pdf and html> --channel <channel> --spec <spec>`, `check_consistency.py <spec> <html>`.
-5. **Editorial pass on the strongest model**: de-AI the typography and vocabulary (no em-dashes, no arrows in prose, "customers" not "users"), third person, no internal framings, no internal reference pricing, every figure caveated, the summary altitude reads as the whole offering, the pack name variant and subheading per channel.
-6. **Review pack**: the PDF page as an image, the HTML, which blocks are at or over length and by how much (in plain words, by the block's name on the page), anything inferred, open items. One rebuild round; a single-block change is the fast path.
+1. **Build.** Card: `build`, plus `shared/references/anatomy/artifact-one-pager.md` for the section order. Read the spec, settle the channel, then:
+   `python3 tools/build_one_pager.py <spec> --out <dir> --channel <channel> [--hero <image>]`
+   The tool renders the HTML, prints it to PDF and fails when the result is more than one page, naming the longest blocks.
+2. **Overflow.** Card: `overflow`. Only when the build exits 3. Overflow means cuts, not smaller type: put the cuts to the owner in plain words, by the block's name on the page, and apply the agreed wording through the spec skill's fast path so every artifact stays consistent. Rebuild.
+3. **The automatic checks.** Card: `check`.
+   `python3 shared/tools/lint_artifact.py <the pdf and the html> --channel <channel> --spec <spec>`
+   `python3 shared/tools/check_consistency.py <spec> <the html>`
+   Both clean before anything is shown; the owner hears one plain line about them.
+4. **Editorial pass.** Card: `editorial`, on the strongest model with fresh eyes — the de-AI read of typography, voice, figures and altitude, per `shared/references/client-documents.md`.
+5. **Show it.** Card: `review-pack`. One rebuild round.
+6. **One change afterwards.** Card: `fast-path`. A single-block change is never a rerun of the flow.
 
 ## Rules that bite on one-pagers
 
-- The one-pager is the deck condensed, never a second source of truth: a price, a duration or a figure here equals the spec, to the character.
-- The proof strip states its status once ("proof of value" / "proven"), carries the caveat, and names the customer only where the channel allows; otherwise the anonymized descriptor.
-- The packages table shows three tiers named from the spec, the capability rows with ◐ ● ●● cells, prices with status and footnote; the infrastructure row says "indicative" when the spec does.
-- "Why it sells" is written for the partner's seller, in one card; it never appears on customer-facing artifacts.
-- CTA + the channel's contact from the spec; an address is a link, never a filled button.
-- Deliver the PDF and the HTML twin (editable), under `<Pack name> - Sales one-pager - Oracle.pdf/.html`.
+- The page is the deck condensed, never a second source of truth: a price, a duration or a figure here equals the spec, to the character.
+- The proof strip states its status once, carries its caveat, and names the customer only where the channel allows; otherwise the anonymized descriptor.
+- The packages table shows three tiers named from the spec, the capability rows with their marks, and prices with status and footnote; the infrastructure row says "indicative" when the spec does.
+- "Why it sells" is written for the partner's seller, in one card, and appears on no customer-facing artifact.
+- The closing block carries the channel's contact; an address is a link, never a filled button.
+- Deliver the PDF and the editable HTML twin: `<Pack name> - Sales one-pager - Oracle.pdf` and `.html`.
 
-## Definition of done
+## Talking to the owner
 
-One page, lint and consistency clean, editorial pass done, review pack shown, approval logged in `packs/<slug>/decisions.md`.
+Every message, question and option passes the reader's test in `${CLAUDE_PLUGIN_ROOT}/skills/spec/references/cards/owner-language.md`, loaded at start-up.
 
 ## Showing it to the owner
 
-Everything the owner reviews is opened beside the conversation *before* the question is asked — the owner answers while looking at the thing, never at a description of it (`shared/references/review-loop.md` §3). In the Claude desktop app: a text file (the research summary, the pack brief, a spec) opens in the Files pane with the view-pane tool (`mcp__ccd_view__show_pane`, pane `file`, the path); a render (a page PNG, a PDF, an HTML page) opens in the side panel with the file-send tool (`SendUserFile`, `display: "render"`), with the editable file attached alongside (`display: "attach"`); then the widget. Never publish internal pack material as a claude.ai artifact — it leaves the machine; artifacts stay reserved for the mini-site demos. In a plain terminal with no panes, print the path and a text rendering, and say so. Here: the PDF opens in the side panel, the HTML twin is attached.
+Everything the owner reviews is open beside the conversation *before* the question, so they answer while looking at the thing (`shared/references/review-loop.md` §3). Here: the PDF page opens in the side panel (`SendUserFile`, `display: "render"`) with the HTML twin attached, then the question. Internal pack material is never published as a claude.ai artifact. In a plain terminal, print the path and a text rendering, and say so.
 
 ## Self-check before closing
 
-- [ ] Every message, question, option and table the owner saw passes the reader's test: no method codes, no file or key names, no packaging vocabulary as vocabulary, reasons instead of rule names.
-- [ ] Everything the owner reviewed was opened beside the conversation before the question was asked.
+- [ ] One A4 page, from the tool, not from an estimate.
+- [ ] Both checkers exit 0 on this artifact's own channel and files.
+- [ ] Every figure, price and duration matches the spec to the character.
+- [ ] Nothing the owner saw carries a rule code, file name, spec key or packaging vocabulary.
+- [ ] The render was open beside the conversation before the question was asked.
+- [ ] Any wording change went into the spec, not into the built file.
+- [ ] The decision is logged in `packs/<slug>/decisions.md`.

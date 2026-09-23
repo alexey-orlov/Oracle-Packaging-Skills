@@ -318,19 +318,36 @@ run_case "a missing spec is a usage error" 2 \
   "$PY" "$TOOLS/check_consistency.py" "$WORK/not-here.yaml" "$WORK/artifact-clean.md"
 
 # --------------------------------------------------------------- context_budget
-# The spec skill's own manifest must stay inside its per-step reading budget;
-# a card that grows past its share fails here, not in a live run.
+# EVERY skill's manifest must stay inside its per-step reading budget; a card that
+# grows past its share fails here, not in a live run. The loop finds the manifests
+# rather than listing them, so a new skill is covered the day it gets one.
 say ""
 say "context_budget.py"
-SPEC_MANIFEST="$TESTS/../../../plugins/oracle-packs/skills/spec/references/cards/manifest.yaml"
-if [ -f "$SPEC_MANIFEST" ]; then
-  run_case "the spec manifest is within budget" 0 \
-    "$PY" "$TOOLS/context_budget.py" "$SPEC_MANIFEST" --quiet
-  run_case "a missing manifest is a usage error" 2 \
-    "$PY" "$TOOLS/context_budget.py" "$WORK/no-manifest.yaml"
+REPO="$(cd "$TESTS/../../.." && pwd)"
+MANIFESTS="$(find "$REPO/plugins" -path '*/skills/*/references/cards/manifest.yaml' \
+             -not -path '*/plugins/*/shared/*' | sort)"
+if [ -z "$MANIFESTS" ]; then
+  bad "no skill manifests found under $REPO/plugins"
 else
-  bad "the spec manifest is missing: $SPEC_MANIFEST"
+  # Every skill named in the marketplace's plugins must have one — a skill that
+  # silently loses its manifest would otherwise just drop out of this loop.
+  SKILLS="$(find "$REPO/plugins" -path '*/skills/*/SKILL.md' \
+            -not -path '*/plugins/*/shared/*' | wc -l | tr -d ' ')"
+  FOUND="$(printf '%s\n' "$MANIFESTS" | wc -l | tr -d ' ')"
+  if [ "$SKILLS" = "$FOUND" ]; then
+    ok "every skill has a cards manifest ($FOUND of $SKILLS)"
+  else
+    LAST="$MANIFESTS"
+    bad "$FOUND manifests for $SKILLS skills — a skill is missing references/cards/manifest.yaml"
+  fi
+  for m in $MANIFESTS; do
+    label="$(basename "$(dirname "$(dirname "$(dirname "$m")")")")"
+    run_case "$label is within budget" 0 \
+      "$PY" "$TOOLS/context_budget.py" "$m" --quiet
+  done
 fi
+run_case "a missing manifest is a usage error" 2 \
+  "$PY" "$TOOLS/context_budget.py" "$WORK/no-manifest.yaml"
 
 # ----------------------------------------------------- the deck builder + linter
 # Lives with its skill (it needs python-pptx and the deck base), so it runs as a

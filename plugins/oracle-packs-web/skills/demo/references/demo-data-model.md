@@ -1,5 +1,7 @@
 # The demo data model
 
+_Long form, read by the builder agent in its own context; the runtime card is `references/cards/data-model.md`._
+
 One invariant runs through every walkthrough that has worked:
 
 > **Current state + named changes with additive KPI effects + a `flagsFor(applied)`

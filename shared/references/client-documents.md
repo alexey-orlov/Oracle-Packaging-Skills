@@ -38,34 +38,15 @@ stale the moment he edits; port his edits first, or build inside the edited file
 
 ## Marketing copy: persona first, scaffolding last (2026-09-16)
 
-From the owner's review of a customer-facing site's home page: the copy "overemphasized the
-counts and the scaffolding, not the essence" and used internal vocabulary ("workflow
-patterns", "packaged") as if it were customer language.
-
-- **A problem statement is tangible** (2026-09-22, on a pack's problem line *"Commercial teams
-  work out what a development means for their accounts by hand…"*: "kind of waterish"). It names
-  a role and a situation that person would describe in their own words, with the nouns on their
-  desk — *"Account managers can't keep up with all the market signals, internal insights and
-  updates happening in their accounts"* — never categories standing in for them ("a development",
-  "second order", "the offer"). Test: could that person say the sentence about their own week? The
-  solution line passes the same test from the other side — what they do afterwards, not the
-  machinery. And readable with zero context (2026-09-22, on a candidate table whose problem cells
-  read *"the call turns on two millimetres nobody measured"*: "hard to comprehend out of
-  context"): a reader outside the company with no briefing — for a pack, the Oracle or
-  SoftServe seller who will pitch it and has never worked in the industry — can restate it: name
-  the business in the sentence, use literal words, introduce everything you refer to, no
-  cleverness or ellipsis; if the pain is obvious only to insiders, one clause first says it exists
-  and why it hurts (the owner, 2026-09-22: "the Oracle rep should know the issue first — many
-  won't have that in their mental model").
-- **Structure before copy — a page is an argument, not an inventory** (2026-09-16, from the
-  review of a services page: "very poorly structured, too long, no grand narrative"). Before
+- **The problem and the solution lines are tangible and readable with zero context.** One home
+  for that rule, with its checks and its examples: `shared/references/anatomy/problem-solution.md`.
+- **Structure before copy — a page is an argument, not an inventory** (2026-09-16). Before
   choosing components, settle audience → positioning (what this page offers that its sibling
   pages don't) → three or four messages, each answering a reader problem → one screen per
   message, with a length target set up front ("a couple of screens"). A block that carries no
   message is cut or moved to the page that owns the detail; a page that repeats a sibling
   page's steps under different names is a structure bug, not a copy one.
-- **Headings are display lines, not sentences** (2026-09-16, on a heading that read *"From
-  Oracle's platforms to agents in production."*: "too long of a heading"). Uppercase display
+- **Headings are display lines, not sentences** (2026-09-16). Uppercase display
   type multiplies length, so budget from the rendered size before writing: an H1 is two to
   four words (≤ ~24 characters a line, two lines at most), an H2 five words or fewer (≤ ~30
   characters), and the argument moves into the lead. **Since SoftServe's 2026 rebrand the

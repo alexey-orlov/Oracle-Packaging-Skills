@@ -1,5 +1,7 @@
 # The interactive-demo playbook
 
+_Long form; the runtime cards are `references/cards/sources.md`, `flow.md`, `design.md`, `word-budgets.md`, `data-model.md`, `synthetic-data.md`, `build.md`, `red-team.md`, `qa.md`, `review-pack.md` and `handoff.md`._
+
 An interactive demo is a **guided walkthrough of what the pack sells**, built to
 the pack's own spec, running on synthetic data, in a UI a viewer recognizes as
 the real product. Everything below was paid for across three builds and eleven
