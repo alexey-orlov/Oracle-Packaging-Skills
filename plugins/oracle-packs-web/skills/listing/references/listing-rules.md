@@ -4,7 +4,7 @@ _Long form; the runtime cards are `references/cards/claim-rules.md`, `copy-rules
 
 Every rule below was won in a review round on a live practice site. Each is
 written so it can be **checked**, not admired: a person or a script can hold the
-draft against it and say pass or fail. Where `tools/check-grammar.js` already
+draft against it and say pass or fail. Where the site's own checker already
 asserts one, the line says **[checker]**.
 
 The standing discipline behind all of them: **turn every new owner rule into a
@@ -236,7 +236,7 @@ a numbered list. Expect a rebuild round.
 
 Run these in order; each is a yes/no.
 
-1. `node tools/check-grammar.js --site-root <site>` prints **OK**.
+1. The site's own checker (its manifest's `checker.run`, from the site root) prints **OK**.
 2. The deny-list sweep over the publish root returns nothing.
 3. The browser console is clean on the product's five tabs.
 4. Every heading is inside its budget **on the rendered page at 375 px**.

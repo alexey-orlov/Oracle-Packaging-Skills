@@ -19,9 +19,12 @@ Read it beside:
 - `../references/listing-schema.md` — the key-by-key contract, the invariants, and the map from each key back to the pack-spec component it comes from;
 - `../references/listing-rules.md` — the content, messaging and design rules every string obeys.
 
-Then validate with `../tools/check-grammar.js`. The checker is the acceptance
-gate, not a formality: it carries 300-plus assertions, most of which are a rule
-an owner won in a review round.
+When the site is newer than this skill (card `site`), the live entry for the
+site manifest's `exemplarProduct` outranks this file.
+
+Then validate with the site's own checker (the site manifest's `checker.run`).
+The checker is the acceptance gate, not a formality: it carries 300-plus
+assertions, most of which are a rule an owner won in a review round.
 
 **Generate its deny-list first.** The customer-name gate is the one assertion
 that fails *open*: with no deny-list configured the checker prints a warning and
@@ -33,13 +36,10 @@ python3 ../tools/denylist-to-json.py --out <site-root>/tools/deny-list.json
 node <site-root>/tools/check-grammar.js
 ```
 
-Run **the site's own** `tools/check-grammar.js`, not this skill's copy under
-`tools/`. The site's gate has since grown a brand block the port does not have
-(retired teal in the CSS *and* in `assets/img/**`, non-brand heading weights,
-retired radius tokens, an over-spent orange accent, the `@font-face` set, the
-`content-case.js` load order, and the archived theme's integrity). The port
-would pass a listing the site rejects. Until the two are reconciled, the site's
-copy is the gate.
+The site's checker is the only gate, and this skill keeps no copy of it. A port
+kept here once lagged the site's brand block (retired teal, non-brand heading
+weights, retired radius tokens, the `@font-face` set, the archived theme's
+integrity) and would have passed listings the site rejects.
 
 The converter reads `shared/tools/denylist.txt` — the one list the practice keeps —
 so the names never diverge between the Python linters and this checker. The

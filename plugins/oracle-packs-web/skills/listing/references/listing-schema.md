@@ -21,7 +21,7 @@ Read this with `assets/exemplar-product-entry.js` open. **The exemplar is the
 spec**: when a cell already carries an example, match its altitude, length and
 phrasing. The source documents are the evidence, not the template.
 
-Every string obeys `listing-rules.md`. `tools/check-grammar.js` is the gate.
+Every string obeys `listing-rules.md`. The site's own checker (`<site>/tools/check-grammar.js`, named in its `site.manifest.json`) is the gate; this skill keeps no copy.
 
 ---
 
@@ -201,7 +201,7 @@ or `loop` states the one invariant that keeps the workflow honest.
 
 ## 9 · Invariants a renderer relies on
 
-These hold for every entry, and `tools/check-grammar.js` asserts them.
+These hold for every entry, and the site's checker asserts them.
 
 - Every `slug` has a matching key in `SITE_CONFIG.products`.
 - `facet` is one of the site's technology facet ids; `category` one of its category ids.

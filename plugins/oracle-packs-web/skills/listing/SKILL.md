@@ -16,20 +16,21 @@ The listing is the only artifact end customers read directly. It carries the sam
 ## Preconditions
 
 - A confirmed, lint-clean `pack-spec.yaml` (`python3 shared/tools/lint_spec.py`). A required key the spec does not hold sends the user back to the spec skill; the gap is never filled here.
-- **The mini-site root** (`--site <path>`), which must contain `site/data/content.js`, `site/data/config.js`, `site/data/diagrams.js` and `tools/check-grammar.js`. Ask for it if it was not given; **never guess it**.
+- **The mini-site** (card: `site`): `--site <path>`, else `$ORACLE_SITE_ROOT`, else the session's own folder when it holds `site.manifest.json`, else ask; **never guess it**. The root must hold `site.manifest.json`: the site's own description of its paths, checker, preview and publish targets. Where the site and these cards differ, the site wins.
 - **Write every string in sentence case.** The live theme sets display type in sentence case and uppercases only micro-type slots in CSS, so a stored capital is a shout that cannot be undone. `site/data/content-case.js` re-cases pre-rebrand strings only: it is a one-time migration and **gets no new rows**.
 - Node 14+ for the checker and the inserter, Python 3 for the derivation tool and the deny-list converter. State what is missing rather than starting and failing halfway.
 
 ## The procedure
 
-1. **Map the tile and the overview tab.** Cards: `entry-identity`, `entry-overview`, `entry-case-study`, plus `shared/references/anatomy/artifact-listing.md` for the section order. Fill every key from the spec; a slot with no fact behind it is filled qualitatively, never omitted.
-2. **Map the technology and Jumpstart tabs.** Cards: `entry-technology`, `entry-jumpstart`. The stage view is derived, not re-typed: `python3 tools/derive-stage-view.py <spec>`.
-3. **Write the copy** on the strongest model, then give it a mechanical pass. Cards: `copy-rules`, `claim-rules`, `exemplar-altitude`. The exemplar entry is long: a fresh-context agent reads it and returns the strings, or you open only the keys you are filling.
-4. **Insert.** Cards: `insert`, `switches`. `node tools/insert-product.mjs --content <site>/site/data/content.js --entry <entry file>`, then the figure in `diagrams.js` and the switch block in `config.js`. The figure is **generated from the pack's architecture model, never written by hand** — `python3 tools/diagram_to_site.py packs/<slug>/architecture.json --slug <slug>` — so the site, the deck and the one-pager draw one picture.
-5. **Gates.** Cards: `gates`, `claim-rules`. `python3 tools/denylist-to-json.py --out <site>/tools/deny-list.json` **first** — the customer-name gate fails open, so an unconfigured deny-list warning is a failed gate. Then the site's own `node tools/check-grammar.js --site-root <site>`, a clean console on every route, the deny-list sweep, `python3 shared/tools/lint_artifact.py <entry file> --channel customer_site --spec <spec>`, and `check_consistency.py <spec> <entry file>`. The owner hears one plain line about all of it.
-6. **Preview.** Card: `preview`. Every changed screen at 1440 / 1280 / 1024 / 768 / 375, the H1 at 320, no horizontal overflow.
-7. **Review pack.** Card: `review-pack`. One rebuild round.
-8. **Publish only when asked.** Card: `publish`. The target URL is the owner's input, never assumed.
+1. **Read the site.** Card: `site`. Find the root, pull it, read its manifest, and compare its contract round with this skill's before anything is written.
+2. **Map the tile and the overview tab.** Cards: `entry-identity`, `entry-overview`, `entry-case-study`, plus `shared/references/anatomy/artifact-listing.md` for the section order. Fill every key from the spec; a slot with no fact behind it is filled qualitatively, never omitted.
+3. **Map the technology and Jumpstart tabs.** Cards: `entry-technology`, `entry-jumpstart`. The stage view is derived, not re-typed: `python3 tools/derive-stage-view.py <spec>`.
+4. **Write the copy** on the strongest model, then give it a mechanical pass. Cards: `copy-rules`, `claim-rules`, `exemplar-altitude`. The exemplar entry is long: a fresh-context agent reads it and returns the strings, or you open only the keys you are filling.
+5. **Insert.** Cards: `insert`, `switches`. `node tools/insert-product.mjs --content <site>/<paths.content> --entry <entry file>`, then the figure and the switch block at the manifest's `paths.diagrams` and `paths.config`. The figure is **generated from the pack's architecture model, never written by hand** — `python3 tools/diagram_to_site.py packs/<slug>/architecture.json --slug <slug>` — so the site, the deck and the one-pager draw one picture.
+6. **Gates.** Cards: `gates`, `claim-rules`. `python3 tools/denylist-to-json.py --out <site>/<paths.denyList>` **first** — the customer-name gate fails open, so an unconfigured deny-list warning is a failed gate. Then the site's own checker (the manifest's `checker.run`, from the site root), a clean console on every route, the deny-list sweep, `python3 shared/tools/lint_artifact.py <entry file> --channel customer_site --spec <spec>`, and `check_consistency.py <spec> <entry file>`. The owner hears one plain line about all of it.
+7. **Preview.** Card: `preview`. Every changed screen at the manifest's `preview.widths`, the H1 at `preview.h1Width`, no horizontal overflow.
+8. **Review pack.** Card: `review-pack`. One rebuild round.
+9. **Publish only when asked.** Card: `publish`. The target and every other publish value come from the site manifest's `publish` block, never from memory.
 
 **Fast path.** When the owner asks for one thing ("re-word the one-liner", "swap an industry"), load that part's card only, redo it, re-run the gates, and stop.
 
@@ -43,6 +44,7 @@ Everything the owner reviews is opened beside the conversation *before* the ques
 
 Done = entry inserted, three gates green, consistency clean, preview screenshots reviewed, approval logged in `packs/<slug>/decisions.md`, publish only on the owner's word.
 
+- [ ] The site was read first (manifest, git state, contract round), and where it is newer than this skill its rules were followed.
 - [ ] Every claim maps to a spec line carrying a `source`; an unsupported clause was dropped, not swapped.
 - [ ] No ceiling, total, denominator or negation anywhere; no sentence whose subject is an absence.
 - [ ] Only the proof-of-value price is on the page, with its footnote; one duration everywhere.

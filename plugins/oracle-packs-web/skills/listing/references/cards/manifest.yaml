@@ -7,7 +7,9 @@
 #
 # Not listed anywhere, on purpose: the long references the cards replace
 # (`references/listing-schema.md`, `references/listing-rules.md`,
-# `references/preview-and-publish.md`) and the site's own code.
+# `references/preview-and-publish.md`) and the site's own code. The site's
+# `site.manifest.json` is read at the `site` step; it lives in the site repo, so
+# it is not listed here.
 #
 # Checked by: shared/tools/context_budget.py (see docs/CONTEXT-BUDGET.md).
 
@@ -26,6 +28,11 @@ steps:
       - SKILL.md
       - references/cards/owner-language.md
       - references/cards/manifest.yaml
+
+  - id: site
+    title: Find the site and read what it says about itself
+    session:
+      - references/cards/site.md
 
   - id: map-the-entry
     title: Map the spec onto the tile and the overview tab

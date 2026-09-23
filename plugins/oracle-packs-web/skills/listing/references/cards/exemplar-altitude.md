@@ -1,8 +1,8 @@
 # The altitude to write at
 
-**What this is.** `assets/exemplar-product-entry.js` is one complete shipped entry — **the spec, not a template**. Where a key already carries an example, that cell's altitude, length and phrasing is the specification. The source documents are evidence; the exemplar is the register.
+**What this is.** `assets/exemplar-product-entry.js` is one complete shipped entry — **the spec, not a template**. Where a key already carries an example, that cell's altitude, length and phrasing is the specification. The source documents are evidence; the exemplar is the register. If the site is newer (card `site`), its live `exemplarProduct` entry outranks this file.
 
-**How to read it.** Never open the whole file into the conversation. Either hand the drafting to a fresh-context agent, which reads it and returns the strings, or open it and read **only the two or three keys you are filling**. Distilling to the register is the job — a dump of everything the research found fails the same task.
+**How to read it.** Never open the whole file into the conversation. A fresh-context agent reads it and returns the strings, or you read **only the two or three keys you are filling**. Distilling to the register is the job; a dump of everything the research found fails it.
 
 **The checks**
 

@@ -1,20 +1,21 @@
 # Preview, QA and publish a listing
 
-_Long form; the runtime cards are `references/cards/preview.md`, `gates.md` and `publish.md`._
+_Long form; the runtime cards are `references/cards/site.md`, `preview.md`, `gates.md` and `publish.md`._
 
-Written generically: every location and URL below is an **input the runner
-supplies once**, never a constant in this bundle.
+Written generically: no location or URL is a constant in this bundle. The site
+supplies its own in `site.manifest.json` at its root, and the runner supplies
+only the root.
 
-| Input | What it is | Suggested env var |
+| Input | What it is | Where it comes from |
 |---|---|---|
-| **site root** | The repo that contains `site/` | `ORACLE_SITE_ROOT` |
-| **publish root** | `<site root>/site` — the tree that actually goes live | — |
-| **preview target** | Where the site is previewed: a hosting URL, or the id/URL of a preview artifact on a hosted-preview platform | `ORACLE_SITE_PREVIEW` |
-| **demo preview target** | Where a standalone walkthrough is previewed (its own URL) | `ORACLE_DEMO_PREVIEW` |
+| **site root** | The repo that contains `site/` and `site.manifest.json` | `--site`, else `ORACLE_SITE_ROOT`, else a session opened in the site repo |
+| **publish root** | The tree that actually goes live | manifest `paths.publishRoot` |
+| **preview target** | Where the site is previewed | manifest `publish.target` |
+| **demo preview target** | Where a standalone walkthrough is previewed (its own URL) | manifest `publish.demoTargets` |
 | **Node** | Any version for the checker; ≥ 22 for the capture script | `NODE_BIN` |
 
-**Preflight, before any work:** print `node --version` and resolve the site
-root. State the requirement and what is missing rather than starting and failing
+**Preflight, before any work:** print `node --version`, resolve the site
+root and read its manifest (card `site`). State the requirement and what is missing rather than starting and failing
 halfway. A source the environment cannot reach is **deferred and retried** — it
 is never recorded as "not found", because that closes the item forever on the
 strength of a network failure.
@@ -56,9 +57,9 @@ Look at **every changed screen** at:
 - Screenshots taken after scrolling can come back black. Take each shot at scroll 0: hide the other sections from the console and force the reveal class on the block you are shooting, or resize the viewport tall.
 - A component moved to a new page **takes its wrapper, its modifier classes, the container width it was sized for and its breakpoints with it.** Moving a component breaks it quietly — a shipped hero once lost its wrapper and rendered an 84 px H1.
 
-Tab-by-tab for a new product: Overview · Technology · Jumpstart · Contacts ·
-For sellers — plus the catalog tile and the facet rail with this product's
-platform selected.
+Tab-by-tab for a new product: every tab its page renders (the site's
+START-HERE §3 names them) — plus the catalog tile and the facet rail with this
+product's platform selected.
 
 ---
 
@@ -66,12 +67,13 @@ platform selected.
 
 All three must be green. Nothing publishes on two out of three.
 
-**Gate 1 — the checker.**
+**Gate 1 — the site's own checker** (the manifest's `checker.run`; this skill
+keeps no copy).
 
 ```sh
 "$NODE_BIN" --check <each changed .js>
-"$NODE_BIN" tools/check-grammar.js --site-root "$ORACLE_SITE_ROOT"
-# → check-grammar: OK — N products, every grammar slot filled.
+"$NODE_BIN" "$ORACLE_SITE_ROOT/tools/check-grammar.js"
+# → check-grammar: OK — N products, every grammar slot filled, …
 ```
 
 Generate the deny-list before the gate, never by hand:
@@ -131,20 +133,23 @@ diff "$ORACLE_SITE_ROOT/site/index.html" "$ORACLE_SITE_ROOT/.work/publish/index.
 # exactly those lines should differ — no more, no fewer
 ```
 
-Adjust the `-e` list to the site's own `index.html`: the rule is "the document
-skeleton and the two meta lines the host already provides", not this exact set.
-Keeping the meta lines once shipped them twice inside `<body>`.
+The `-e` list is the manifest's `publish.wrapper.stripExactLines`, never this
+copy of it: the rule is "the document skeleton and the two meta lines the host
+already provides". Keeping the meta lines once shipped them twice inside `<body>`.
 
-Write the wrapper **under the working directory** (git-ignored `.work/`), not to
-a scratch path: a publisher that reads sources generally refuses paths outside
-the working tree.
+Where the wrapper goes depends on where the session runs. The Artifact tool
+reads sources only from the session's working folder and its scratchpad. In a
+session opened in the site repo, write it to the git-ignored `.work/publish/`.
+From any other folder, copy the wrapper and every file you publish into the
+scratchpad, keeping their paths under a copy of the publish root, and publish
+from that copy.
 
 ### 4b · Publish with a files map
 
-- **Target:** the existing preview target, passed as an input, so the same URL updates. Publishing without it creates a *second* page and the link you already shared goes stale.
+- **Target:** the manifest's `publish.target`, so the same URL updates; never one in `publish.neverPublishTo`. Publishing without it creates a *second* page and the link you already shared goes stale.
 - **Read before you write.** Read the live page once in the session before the first publish, or the publish is refused as "not built on the newer version".
 - **Root + files map:** root at the publish root; the map is published path → source path, for **every changed or added file**. Files not passed are kept; **new images must be passed explicitly**.
-- **Publish the full tree when another session may have changed renderer files.** A partial publish once shipped a new data file against an old renderer and broke the home page.
+- **Publish the full tree when another session may have changed renderer files.** A partial publish once shipped a new data file against an old renderer and broke the home page. The full tree is the manifest's `publish.fullTree`: what the target already lists plus the new files, never the whole folder, and never a path in `publish.neverInArtifact`. Fonts carry the types in `publish.contentTypes`.
 - **On a refusal:** read the live copies of the files you changed, diff them against local, treat the working tree as the merge, then publish again. Never force past a conflict.
 
 ### 4c · Confirm what is live
@@ -186,10 +191,10 @@ section numbers collide (read the last heading before numbering).
 ## 6 · One-screen checklist
 
 ```
-[ ] node --version printed; site root resolved; git pull done
+[ ] node --version printed; site root resolved; manifest read; git pull done
 [ ] node --check on every changed .js
 [ ] denylist-to-json.py → <root>/tools/deny-list.json written
-[ ] check-grammar.js --site-root <root>  → OK, and no deny-list warning
+[ ] the site's own checker → OK, and no deny-list warning
 [ ] console clean on every route
 [ ] deny-list sweep over the publish root → nothing
 [ ] every changed screen at 1440/1280/1024/768/375; H1 at 320; no h-overflow

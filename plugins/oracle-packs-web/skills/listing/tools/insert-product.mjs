@@ -232,4 +232,4 @@ writeFileSync(CONTENT, out, "utf8");
 if (CONFIG) { copyFileSync(CONFIG, CONFIG + ".bak"); writeFileSync(CONFIG, cfgOut, "utf8"); }
 console.log(summary);
 console.log("insert-product: backups at " + basename(CONTENT) + ".bak" + (CONFIG ? " and " + basename(CONFIG) + ".bak" : ""));
-console.log("insert-product: now run check-grammar.js --site-root <site-repo> before anything else.");
+console.log("insert-product: now run the site's own checker (site.manifest.json, checker.run) before anything else.");

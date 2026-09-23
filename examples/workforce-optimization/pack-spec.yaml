@@ -777,13 +777,13 @@ provenance:
       note: "Latest executive-summary style; WfO is slides 5–6. Read second-hand through component-map-2026-09-17."
       supplies: [contacts]
     - id: site-2026-09-17
-      path: "<owner-repo>/outputs/oracle-solutions-site/site/data/content.js"
+      path: "<site-repo>/site/data/content.js"
       kind: listing
       read: 2026-09-18
       note: "products[] slug workforce-optimization, lines 1751–2088."
       supplies: [icp, verticals, workflow, architecture, oracle_products, packages, clearance]
     - id: demo-2026-09-16
-      path: "<owner-repo>/outputs/oracle-solutions-site/site/demo/workforce-optimization/data.js"
+      path: "<site-repo>/site/demo/workforce-optimization/data.js"
       kind: demo
       read: 2026-09-17
       note: "Read second-hand through component-map-2026-09-17 and spec-doc-2026-09-16."

@@ -7,7 +7,7 @@
 
 WHY THIS EXISTS
     `shared/tools/denylist.txt` is the one list of customer names the practice
-    keeps, and `tools/check-grammar.js` needs the same names as JSON
+    keeps, and the site's `tools/check-grammar.js` needs the same names as JSON
     (`{"customerNames": [...], "bannedStrings": [[str, why], ...]}`). Kept by
     hand, the two drift, and the failure is silent in the worst direction: the
     checker prints a warning and passes, so an unconfigured deny-list is how a
