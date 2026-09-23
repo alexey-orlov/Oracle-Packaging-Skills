@@ -578,7 +578,7 @@ def slide_05_proof(prs, layout, spec: Spec, fit: FitLog, header: str):
     attribution = spec.kpi_attribution()
     # `divergence_line` is the print-ready sentence; `divergence_from_pack` is the
     # internal statement and overflows a two-line footnote by design.
-    div = se.get("divergence_line") or se.get("divergence_from_pack")
+    div = se.get("divergence_line")   # the one print-ready sentence; the internal note never prints
     tail = " ".join(x for x in [f"Source: {attribution}.", caveat,
                                 (f"Pack scope differs from the delivered engagement: {div}"
                                  if div else "")] if x)

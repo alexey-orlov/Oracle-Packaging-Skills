@@ -13,4 +13,4 @@
 
 **Good.** "{Customer} plan a residential appliance network across three markets — about 900 technicians, dispatched by a dozen planners against postcode coverage, skills and absences." **Bad.** "Field-service operators plan their mobile workforce by hand."
 
-**Fills:** `meta.source_engagement.context`, `meta.source_engagement.delivered`, `meta.source_engagement.divergence_line` (one print-ready sentence on where the pack differs from what was delivered — the internal note never prints), `packages.value_for_partner`, `packages.value_for_client`, `deck.proof_headline`.
+**Fills:** `meta.source_engagement.context`, `meta.source_engagement.delivered`, `meta.source_engagement.divergence_line` (one print-ready sentence; the internal note never prints), `packages.value_for_partner`, `packages.value_for_client`, `deck.proof_headline`.
