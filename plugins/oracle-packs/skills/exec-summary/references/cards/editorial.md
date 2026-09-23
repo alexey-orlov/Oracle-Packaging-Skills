@@ -6,7 +6,7 @@
 
 1. It reads for someone who has not seen the sales deck and does not know the delivered case: no term used before it is introduced, no sentence that only lands if you already know the story.
 2. Every number equals the spec, and the status word ("proof of value" / "proven") appears exactly once on the slide.
-3. Internal-only facts — the tier prices in full, named accounts — appear only on the internal cut and only where the spec allows them, and the notes mark the slide internal, prices to be stripped before external use.
+3. Prices and the customer's name follow the channel table in `shared/references/naming-and-clearance.md` for the cut being built: internal and partner cuts carry every tier's price, the partner cut each with its disclaimer; the notes name the cut and say what it carries.
 4. Internal naming is not a licence to print internal operating numbers: headcount, contract values and internal costs stay off the slide on every channel.
 5. Third person; "customers", not "users"; no internal framings ("we packaged this", "the practice"), no packaging vocabulary as vocabulary; no em-dashes and no arrows in prose (the ladder and the problem-to-solution lead are the slide's own devices).
 6. Nothing is invented to fill a panel. An empty panel with one grey line is the correct rendering of an absent component (`shared/references/slide-design.md`); the title is the channel's name variant, on one line.

@@ -1,16 +1,18 @@
 # What goes in the six blocks
 
-**What this is.** The slide compresses the deck to one line per component: use case (problem → solution, verticals under it), solution layers and proof of value across the top row; service packages, the area-and-category tree and planned next steps below; a footnote along the bottom.
+**What this is.** One line per component: six blocks, a footnote, speaker notes behind.
 
-**What fits.** Problem and solution ≈ 75 words together, verticals ≈ 20 · layer name ≤ 5 words, four rungs the shape, six the maximum · proof figure ≤ 20 characters, caption ≤ 10 words · tier scope ≤ 18 words · about 10 category rows · next-step title ≤ 6 words, detail ≤ 10. Past these the fit report fails.
+**What fits.** Problem and solution ≈ 75 words together, verticals ≈ 20 · layer name ≤ 5 words, three rungs the shape · proof figure ≤ 20 characters, caption ≤ 10 words · tier scope ≤ 18 words · about 10 category rows · next-step title ≤ 6 words, detail ≤ 10. Past these the fit report fails.
 
 **Checks**
 
-1. One line per component, and it reads for someone who has not seen the deck: every term it uses, it introduces.
-2. The proof strip carries **business metrics only** (`kind != technical`); technical criteria ride the PoV tier's scope as "Proof accepted when …". The set is all or none: a figure restricted away from this channel empties the panel to one grey line, never half-filled. **No cleared figure is a different state** — the strip names the metrics being measured, where the figures will stand, under one line: "Measured in the proof of value; results to follow."
-3. The tree carries areas and categories only; feature names belong on the feature list. Above about ten rows, trim areas or categories rather than shrink them.
-4. Up to four planned next steps. With none, the panel is still drawn, empty with one grey line — an absent component is an empty container, never a dropped block.
-5. The tiers strip carries each tier's scope, price with its status, and duration; an indicative price gets its footnote.
-6. The footnote carries the price footnote and any stated divergence, two lines at most. The metric caveat travels with the figures — with none printed, it is dropped. A divergence line that is a full sentence stands alone; only a fragment takes the "Pack scope differs…" run-in.
+1. Every line reads for someone who has not seen the deck; every term is introduced.
+2. The ladder starts at the application layer, as on the deck; the client's own configuration above it is not a rung.
+3. Proof strip: **business metrics only**; technical criteria ride the PoV tier's scope as "Proof accepted when …". All or none: restricted from this channel, one grey line. No cleared figure: each tile names its metric in label type (as VERTICALS), never figure type, over one line, "To be measured in the proof of value; results to follow." A header naming the customer is the attribution; nothing repeats it.
+4. The tree carries areas and categories only; above about ten rows, trim rather than shrink.
+5. Up to four next steps; none → an empty panel with one grey line.
+6. Tier rows: scope, price with its status, duration; an indicative price gets its footnote; a missing value is one grey label-sized line ("Services price: to be defined"), never price type.
+7. Footnote: the price footnote and any divergence, two lines at most; the metric caveat only where figures print.
+8. The notes name the cut (internal: prices shown come off before external use) and where the customer may be named.
 
-**Reads:** `problem_solution`, `verticals[].name`, `architecture.stack[]`, `kpis[]` (`kind`, `figure`), `packages.tiers[]`, `capabilities[]`, `exec_summary.next_steps[]`, `clearance.*`.
+**Reads:** `problem_solution`, `verticals[].name`, `architecture.stack[]`, `kpis[]`, `packages.tiers[]`, `capabilities[]`, `exec_summary.next_steps[]`, `clearance.*`.

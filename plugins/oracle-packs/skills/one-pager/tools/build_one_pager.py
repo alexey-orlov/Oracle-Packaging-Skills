@@ -211,13 +211,18 @@ def as_points(raw):
     return points
 
 
+# An absent price or duration is one grey label-sized line, never the value's own type:
+# "to be defined" set in bold price type read as a price (the DHL one-pager, 2026-09-23).
+TBD = '<span class="tbd">to be defined</span>'
+
+
 def money(block, footnote_mark="*"):
-    """{value|range, currency, status, footnote} -> '~&euro;2K*' / '&euro;300&ndash;500K' / 'to be defined'."""
+    """{value|range, currency, status, footnote} -> '~&euro;2K*' / '&euro;300&ndash;500K' / TBD."""
     if not isinstance(block, dict):
         return html.escape(str(block)) if block else ""
     status = (block.get("status") or "").lower()
     if status == "tbd" or ("value" not in block and "range" not in block):
-        return "to be defined"
+        return TBD
     sym = CURRENCY.get((block.get("currency") or "EUR").upper(), (block.get("currency") or "") + "&nbsp;")
     approx = "~" if status in ("indicative", "estimate") else ""
     mark = f'<sup class="fnmark">{footnote_mark}</sup>' if block.get("footnote") or status in ("indicative", "estimate") else ""
@@ -251,7 +256,7 @@ def duration(tier):
     if low and high and low != high:
         return f"{low}&ndash;{high} weeks"
     single = target or low or high
-    return f"{single} weeks" if single else "to be defined"
+    return f"{single} weeks" if single else TBD
 
 
 def level_for(entry, tier_id, label):
@@ -378,7 +383,7 @@ def build_context(spec: dict, channel: str, hero: Path | None) -> tuple[dict, li
             stats.append({"figure": chip, "prefix": None, "suffix": None, "text": True,
                           "label": kpi.get("one_pager_label") or kpi.get("label") or kpi.get("name", "")})
         if not caveats:
-            caveats.append("Measured in the proof of value; results to follow.")   # once, under the strip, not per tile
+            caveats.append("To be measured in the proof of value; results to follow.")   # once, under the strip, not per tile; the same words as the executive summary
     logo = op.get("proof_logo") if name_allowed else None
     if name_allowed and not logo:
         deck_logo = dig(spec, "deck.images.customer_logo", None)   # the deck's cleared logo: one file for both

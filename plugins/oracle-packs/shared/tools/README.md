@@ -158,7 +158,7 @@ artifacts omit by design — so the output is a matrix of artifact × component 
 |---|---|
 | CON001 | the one-liner differs from `one_liner.full` / `.short` |
 | CON002 | a tier is named something the spec does not |
-| CON003 | a duration in weeks matches no tier's `duration_weeks` |
+| CON003 | a duration in weeks matches no tier's `duration_weeks` — except a figure inside one of the spec's own `exec_summary.next_steps`, or the engagement's own length (stated in `meta.source_engagement`) in a sentence about the engagement; never when that sentence names a tier |
 | CON004 | a EUR figure matches no price in the spec |
 | CON005 | a KPI is printed with a figure the spec does not carry |
 

@@ -61,19 +61,33 @@ stack autofits down to 70 % before it is reported as overflowing.
 
 ### SOLUTION LAYERS (col 2, top)
 
-One row per `architecture.stack[]` entry, `(1.86 − 0.06 × (n−1)) / n` tall, tint
-and bar by vendor (the fixed ladder in `../deck/references/brand-tokens.md`). Layer name 10 pt bold
-left, vendor 7.5 pt muted right. A right-aligned "▲ business value" sits on the
-label row. **Budget:** layer name ≤ 5 words; four rungs is the shape, six is the
-practical maximum.
+The ladder starts at the application layer, as the sales deck's does
+(`../deck/tools/build_deck_v2.py`, `layers`): the first `architecture.stack[]` entry
+whose name contains "app", "business" or "by softserve" (else the first entry) is the
+top rung, and a layer listed above it — the client's own configuration — is not a rung
+(on the deck it is the application row's Tailored-solution card); the builder notes
+each one it leaves out. One row per rung, `(1.86 − 0.06 × (n−1)) / n` tall, tint and
+bar by vendor (the fixed ladder in `../deck/references/brand-tokens.md`). Layer name
+10 pt bold left, vendor 7.5 pt muted right. A right-aligned "▲ business value" sits
+on the label row. **Budget:** layer name ≤ 5 words; three rungs (application, engine,
+infrastructure) is the shape, five the practical maximum.
 
 ### PROOF OF VALUE (col 3, top)
 
-The attribution line (8 pt muted) then up to three stats: figure 12.5 pt blue
+The label reads `PROOF OF VALUE · <customer>` when the channel's
+`clearance.customer_name_allowed` is true and `meta.source_engagement.customer` is
+set, else `PROOF OF VALUE`. A label that names the customer is the attribution, so
+nothing under it repeats it; otherwise the panel opens with the attribution line
+(8 pt muted, the anonymous descriptor). Then up to three stats: figure 12.5 pt blue
 bold (with `baseline → figure` when `show_baseline`), caption 7.5 pt muted.
-The label reads `PROOF OF VALUE` or `PROOF OF VALUE · <customer>` when
-`clearance.customer_name_allowed.internal` is true.
 **Budget:** figure ≤ 20 characters; caption ≤ 10 words.
+
+**No cleared figure yet** (business metrics whose `figure` is empty or `-`): each tile
+names its metric (the `chip` without its arrow, else the `name`) in the in-panel label
+style — 8 pt bold blue, as the `VERTICALS` label — never in figure type, where a
+reader looks for a number; the caption follows when it differs from the name, and
+one line under the three tiles (7 pt `8A9095`) reads "To be measured in the proof of
+value; results to follow."
 
 **Peer claims are all or none** (slide-design rule 11). If any metric in the set
 is restricted away from this channel, the block is drawn as an *empty instance*
@@ -83,9 +97,12 @@ half-filled proof block.
 ### SERVICE PACKAGES (col 1, bottom)
 
 One row per tier, `(1.92 − 0.09 × (n−1)) / n` tall: tier name + size tag 10 pt
-bold, scope sentence 6–8 pt muted below, price 12 pt blue right-aligned,
+bold, scope sentence 6–8 pt muted below, services price 12 pt blue right-aligned,
 duration 8.5 pt muted underneath. A price with `status: indicative` gets a `*`
-and the footnote. **Budget:** scope ≤ 18 words.
+and the footnote. A value the brief does not state (`status: tbd`, or no key) is
+the anatomy's absence idiom, one grey line per missing value in its own slot —
+"Services price: to be defined", "Duration: to be defined", 8 pt `8A9095`,
+right-aligned — never "To be defined" in price type. **Budget:** scope ≤ 18 words.
 
 ### CAPABILITIES (col 2, bottom)
 
@@ -104,8 +121,24 @@ drawn empty with one grey line (rule 3).
 
 ### Footnote
 
-Caveat + the price footnote + `divergence_from_pack`, 8 pt `8A9095`, two lines
-maximum.
+The metric caveat (only where figures print) + the price footnote +
+`meta.source_engagement.divergence_line`, 8 pt `8A9095`, two lines maximum. The
+internal `divergence_from_pack` note never prints.
+
+### Speaker notes
+
+Every build writes notes that name the cut, each clause derived from what the slide
+printed and from `clearance`:
+
+- **internal** — "Internal cut, for the internal solutions review."; when a tier
+  price is on the slide, that it comes off before any external use; and the channels
+  the customer may be named on (everywhere else it appears as the anonymized
+  descriptor), or that it may be named on none.
+- **partner_print** — one line: "External cut: no prices" (or "tier prices
+  included") and "the customer is named only where cleared", as it is here or not.
+
+The shipped base's notes master carries no placeholders, so the builder adds the
+notes body placeholder itself; a host deck's own notes master is used as it is.
 
 ## Naming and channel
 
@@ -141,11 +174,13 @@ correct, not a failure.
 `architecture.stack[]`, `packages.tiers[]`.
 
 **Optional:** `verticals[].name` · `capabilities[].area` and
-`categories[].name` · `kpis[]` with `figure`, `label`, `baseline`,
+`categories[].name` · `kpis[]` with `figure`, `chip`, `label`, `baseline`,
 `show_baseline`, `attribution`, `caveat`, `channels` ·
-`packages.tiers[].scope_line` · `exec_summary.goal` (renders as an orange `GOAL`
-lead before the one-liner) · `exec_summary.next_steps[].{title,detail}` ·
-`exec_summary.running_header` · `exec_summary.closing_line`.
+`packages.tiers[].scope_line|services_price|duration_weeks` ·
+`meta.source_engagement.customer` and `clearance.*` (the proof label and the notes) ·
+`exec_summary.goal` (renders as an orange `GOAL` lead before the one-liner) ·
+`exec_summary.next_steps[].{title,detail}` · `exec_summary.running_header` ·
+`exec_summary.closing_line`.
 
 ## Definition of done
 

@@ -27,14 +27,14 @@ user-invocable: true
    `python3 shared/tools/lint_artifact.py <the pptx> --channel <channel> --spec <spec>`
    `python3 shared/tools/check_consistency.py <spec> <the pptx>`
    Both clean before anything is shown; the owner hears one plain line about them.
-3. **Editorial pass.** Card: `editorial`, on the strongest model with fresh eyes — the slide must read for someone who has not seen the deck, every number equal to the spec, the status word once, internal-only facts on the internal cut alone and marked strippable.
+3. **Editorial pass.** Card: `editorial`, on the strongest model with fresh eyes — the slide must read for someone who has not seen the deck, every number equal to the spec, the status word once, prices and the customer's name as the clearance table allows for this cut, the notes naming it.
 4. **Show it.** Card: `review-pack`. One rebuild round.
 5. **One change afterwards.** Card: `fast-path`. A single-block change is never a rerun of the build.
 
 ## Rules that bite on this slide
 
 - One slide, plus the host's closing slide only when asked.
-- The internal cut may carry the tier prices and named accounts where the spec allows; the notes then mark the slide internal, prices to be stripped before external use. Internal naming is still not a licence to print internal operating numbers — headcount, contract values, internal costs.
+- Prices and the customer's name follow the channel table in `shared/references/naming-and-clearance.md`, per cut: internal and partner cuts carry every tier's price, the partner cut each with its disclaimer; the notes name the cut and what it carries, so the slide never travels as another channel's cut. Naming is still not a licence to print internal operating numbers — headcount, contract values, internal costs.
 - No new visual language: the host deck's own shapes and colours, and the deck's existing diagram rather than an invented one.
 - The proof block is all or none; an absent component is drawn as an empty panel, never dropped and never half-filled.
 - Deliver a standalone `<Pack name> - Executive summary - Oracle.pptx`, and, when a host deck was given, the slide number where it should be inserted.

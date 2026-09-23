@@ -22,7 +22,11 @@ Exit codes
 Rule codes
     CON001  the one-liner differs from spec one_liner.full / .short
     CON002  a tier is named something other than PoV Jumpstart / Integration / Scaling
-    CON003  a duration in weeks matches no tier's duration_weeks in the spec
+    CON003  a duration in weeks matches no tier's duration_weeks in the spec. Not a
+            tier duration, so not checked: a figure inside one of the spec's own
+            exec_summary.next_steps, and the source engagement's own length (a
+            duration meta.source_engagement states) in a sentence about the
+            engagement — unless that sentence names a tier
     CON004  a EUR figure matches no price the spec carries
     CON005  a KPI figure differs from the spec's figure for that KPI
     CON900  a file was skipped (unsupported format, or pdftotext missing) — warning
@@ -59,10 +63,51 @@ LEGACY_TIER = re.compile(r"(?<!PoV )\bJumpstart\b|\bQuick ?Start\b|\bPoC package
 WEEKS = re.compile(r"\b(\d{1,2})\s*(?:[-–—]|to)\s*(\d{1,2})\s*weeks?\b"
                    r"|\b(\d{1,2})\s*weeks?\b", re.IGNORECASE)
 
+# The spec states the engagement's own length in any form, "a 12-week proof of value"
+# included — so the compound adjective counts when reading the spec.
+SPEC_WEEKS = re.compile(r"\b(\d{1,2})\s*(?:[-–—]|to)\s*(\d{1,2})[\s-]*weeks?\b"
+                        r"|\b(\d{1,2})[\s-]*weeks?\b", re.IGNORECASE)
+
+# What makes a sentence about the source engagement rather than about a tier.
+ENGAGEMENT_WORDS = (r"\bengagements?\b", r"\bcontracted\b", r"\bdeliver(?:ed|y)\b",
+                    r"\bpilot\b", r"\bproof of concept\b", r"\bPoC\b")
+
+SENTENCE_END = re.compile(r"[.!?](?=\s|$)")
+
 FIGURE = re.compile(r"[~≈<>]?\s?\d+(?:[.,]\d+)?\s*(?:%|×|x\b|pp\b|bps\b|h\b|hrs?\b|hours?\b"
                     r"|min(?:utes)?\b|days?\b|weeks?\b|months?\b|FTE\b)", re.IGNORECASE)
 
 PRESENT, DIFFERS, ABSENT = "✓", "✗", "–"
+
+
+def statement(doc, start, end):
+    """The statement a match belongs to: its paragraph where the extractor gives one per
+    line (.pptx, .docx, .pdf), else its sentence, which may wrap across source lines."""
+    text = doc.text
+    if doc.kind != "text":
+        s = text.rfind("\n", 0, start) + 1
+        e = text.find("\n", end)
+        return text[s:len(text) if e < 0 else e]
+    s = text.rfind("\n\n", 0, start)
+    s = 0 if s < 0 else s + 2
+    e = text.find("\n\n", end)
+    e = len(text) if e < 0 else e
+    ends = [m.end() for m in SENTENCE_END.finditer(text, s, start)]
+    if ends:
+        s = ends[-1]
+    m = SENTENCE_END.search(text, end, e)
+    return text[s:m.end() if m else e]
+
+
+def _strings(node):
+    if isinstance(node, dict):
+        for value in node.values():
+            yield from _strings(value)
+    elif isinstance(node, list):
+        for value in node:
+            yield from _strings(value)
+    elif isinstance(node, str):
+        yield node
 
 
 class Consistency:
@@ -77,6 +122,13 @@ class Consistency:
         self.tiers = self._tiers()
         self.prices = self._prices()
         self.kpis = self._kpis()
+        # CON003 reads a week figure as a tier duration. Two kinds are not one: the
+        # spec's own planned next steps, and the source engagement's own length in a
+        # sentence about the engagement. The DHL executive summary's next step "12 weeks"
+        # failed the check although no tier claimed it (2026-09-23).
+        self.engagement_weeks = self._engagement_weeks()
+        self.next_steps = self._next_steps()
+        self.engagement_marker = self._engagement_marker()
         # A KPI figure can be money ("€190K / month"). It is a figure, not a price:
         # CON005 owns it, and CON004 must not read it as a tier price the spec lost.
         self.figure_values = set()
@@ -129,6 +181,51 @@ class Consistency:
                         except (TypeError, ValueError):
                             pass
         return values
+
+    def _engagement_weeks(self):
+        """Every duration meta.source_engagement states, as (lo, hi) in weeks."""
+        out = set()
+        for text in _strings(PL.dig(self.spec, "meta", "source_engagement", default={})):
+            for m in SPEC_WEEKS.finditer(text):
+                lo, hi = m.group(1) or m.group(3), m.group(2) or m.group(3)
+                out.add((float(lo), float(hi)))
+        return out
+
+    def _next_steps(self):
+        """One pattern per planned next step as the spec writes it (title, detail or line)."""
+        out = []
+        steps = PL.dig(self.spec, "exec_summary", "next_steps", default=[])
+        for step in steps if isinstance(steps, list) else []:
+            parts = [step.get("title"), step.get("detail")] if isinstance(step, dict) else [step]
+            for part in parts:
+                words = PL.norm_ws(str(part or "")).split()
+                if words:
+                    out.append(re.compile(r"\s+".join(re.escape(w) for w in words),
+                                          re.IGNORECASE))
+        return out
+
+    def _engagement_marker(self):
+        names = [PL.dig(self.spec, "meta", "source_engagement", "customer"),
+                 PL.dig(self.spec, "clearance", "anonymized_descriptor")]
+        alts = list(ENGAGEMENT_WORDS) + [re.escape(PL.norm_ws(str(n)))
+                                         for n in names if PL.is_filled(n)]
+        return re.compile("|".join(alts), re.IGNORECASE)
+
+    def not_a_tier_duration(self, doc, m, lo, hi, step_spans):
+        """A week figure that belongs to a planned next step or to the source engagement.
+
+        Never when its statement names a tier: "PoV Jumpstart runs 12 weeks" is a tier
+        claim even where 12 weeks is the engagement's length — the very drift CON003 is
+        for. Otherwise: inside one of the spec's own next steps, or the engagement's own
+        length in a statement that speaks of the engagement.
+        """
+        unit = statement(doc, m.start(), m.end())
+        if any(re.search(r"(?<![\w-])%s(?![\w-])" % re.escape(t["name"]), unit)
+               for t in self.tiers if t["name"]):
+            return False
+        if any(s <= m.start() and m.end() <= e for s, e in step_spans):
+            return True
+        return (lo, hi) in self.engagement_weeks and bool(self.engagement_marker.search(unit))
 
     def _kpis(self):
         out = []
@@ -206,6 +303,8 @@ class Consistency:
     def check_duration(self, doc):
         if not any(t["lo"] is not None for t in self.tiers):
             return ABSENT
+        step_spans = [(s.start(), s.end()) for rx in self.next_steps
+                      for s in rx.finditer(doc.text)]
         state = ABSENT
         for m in WEEKS.finditer(doc.text):
             lo = m.group(1) or m.group(3)
@@ -213,6 +312,8 @@ class Consistency:
             try:
                 lo, hi = float(lo), float(hi)
             except (TypeError, ValueError):
+                continue
+            if self.not_a_tier_duration(doc, m, lo, hi, step_spans):
                 continue
             ctx = PL.context(doc.text, m.start(), m.end(), 120).lower()
             pov_context = "pov" in ctx or "jumpstart" in ctx or "proof of value" in ctx

@@ -628,7 +628,7 @@ class Build:
             else:   # the metric's name where the figure will stand, and what it measures
                 figure = re.sub(r"\s*[↑↓→]+\s*$", "", clean(kpi.get("chip"))) or clean(kpi.get("name"))
                 label = (clean(kpi.get("label") or kpi.get("name"))
-                         + " — measured in the proof of value")
+                         + " — to be measured in the proof of value")   # the same words as the one-pager and the executive summary
             v = ex.by_id(slide, stat["value"])
             l = ex.by_id(slide, stat["label"])
             ex.fill_text(v, figure)

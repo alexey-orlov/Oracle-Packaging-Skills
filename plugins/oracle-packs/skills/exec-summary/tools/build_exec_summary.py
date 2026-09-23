@@ -7,8 +7,9 @@
 
 Six blocks on the section-slides grid: one-liner, problem -> solution,
 solution-layers ladder, proof strip with caveat, tiers strip, planned next
-steps. With --host-deck the slide is built on that deck's own master, so it
-pastes into the host unchanged; without it, on the shipped SoftServe base.
+steps — and speaker notes that say which cut the slide is. With --host-deck the
+slide is built on that deck's own master, so it pastes into the host unchanged;
+without it, on the shipped SoftServe base.
 
 Dependencies: pyyaml, python-pptx, Pillow  (see plugins/oracle-packs/requirements.txt)
 """
@@ -56,6 +57,24 @@ VENDOR_TINTS = [
     ("nvidia", (C["blue_tint"], C["blue_light"])),
     ("oracle", ("EEF1F3", "6B7680")),
 ]
+
+# The ladder starts at the application layer, as the sales deck's does
+# (deck/tools/build_deck_v2.py, `layers`): a layer the spec places above it — the
+# client's own configuration — is the deck's "Tailored solution" card, never a rung.
+# Same words and the same fallback as the deck, so the two ladders cannot disagree.
+APP_LAYER_WORDS = ("app", "business", "by softserve")
+
+# The in-panel label (the VERTICALS label): a name that stands where a figure would,
+# so that nobody reads it as a number (2026-09-23).
+LABEL = {"sz": 8, "b": True, "color": C["blue"]}
+# The anatomy's idiom for absence: one grey line, label-sized, saying what is missing.
+ABSENT = {"sz": 8, "color": C["muted_light"], "align": "r"}
+
+FIGURELESS_CAVEAT = "To be measured in the proof of value; results to follow."
+
+# Who may be named where, in the words the notes use.
+CHANNEL_WORDS = (("internal", "the internal cut"), ("partner_print", "partner print"),
+                 ("customer_site", "the customer site"), ("demo", "the demo"))
 
 
 def tints(vendor: str, i: int):
@@ -106,6 +125,14 @@ def block_use_case(s, spec: Spec, fit: FitLog):
     log_box(fit, 1, "use case", bx, PANEL_Y_TOP + 0.12, bw, bh, paras, 9.5)
 
 
+def ladder(stack: list) -> tuple[list, list]:
+    """(rungs, above): the stack from the application layer down, and what sits above it."""
+    names = [re.sub(r"\s+", " ", str((l or {}).get("layer") or "")).strip().lower()
+             for l in stack]
+    app = next((i for i, n in enumerate(names) if any(w in n for w in APP_LAYER_WORDS)), 0)
+    return stack[app:], stack[:app]
+
+
 def block_layers(s, spec: Spec, fit: FitLog):
     col = COL[1]
     x, w = col
@@ -114,6 +141,10 @@ def block_layers(s, spec: Spec, fit: FitLog):
     if not stack:
         raise SpecError("pack spec has no `architecture.stack` — the "
                         "high-level architecture component is not signed off")
+    stack, above = ladder(stack)
+    for layer in above:
+        fit.note(f"solution layers: `{layer.get('layer')}` sits above the application layer — "
+                 f"not a rung, as on the deck's ladder")
     n = len(stack)
     gap = 0.06
     rh = (PANEL_H_TOP - gap * (n - 1)) / n
@@ -145,8 +176,9 @@ def block_proof(s, spec: Spec, fit: FitLog):
         print("build_exec_summary: %d technical criterion(s) are kept off the proof strip — "
               "they print on the PoV tier as the \"Proof accepted when …\" line."
               % len(spec.technical_kpis()), file=sys.stderr)
-    label = "PROOF OF VALUE" if not spec.customer_name_allowed() else \
-        f"PROOF OF VALUE · {spec.get('meta.source_engagement.customer')}"
+    customer = str(spec.get("meta.source_engagement.customer") or "").strip()
+    named = spec.customer_name_allowed() and bool(customer)
+    label = f"PROOF OF VALUE · {customer}" if named else "PROOF OF VALUE"
     sec_label(s, col, LABEL_Y_TOP, label.upper(), color=C["orange"])
     panel(s, x, PANEL_Y_TOP, w, PANEL_H_TOP, fill=C["panel_grey"],
           accent=C["orange"], line=C["hairline"])
@@ -160,39 +192,56 @@ def block_proof(s, spec: Spec, fit: FitLog):
                   "color": C["muted_light"], "align": "c"}], anchor="m")
         fit.note("proof block left empty — the metric set is not cleared here")
         return
-    textbox(s, x + 0.20, PANEL_Y_TOP + 0.10, w - 0.40, 0.24,
-            [{"t": spec.kpi_attribution(), "sz": 8, "color": C["muted"]}])
-    fit.add(1, "proof attribution", spec.kpi_attribution(), 8, w - 0.40, 0.24,
-            max_lines=1)
-    # No cleared figure yet: name the metrics where the figures will stand, as the
-    # deck and the one-pager do, and say once underneath that they are still coming.
+    # The header already names a cleared customer; a line under it saying "proof of
+    # value at <Customer>" is the same attribution twice (the DHL slide, 2026-09-23).
+    # Only a header that cannot name the customer keeps the attribution line.
+    top = PANEL_Y_TOP + 0.12
+    if not named:
+        attribution = spec.kpi_attribution()
+        textbox(s, x + 0.20, PANEL_Y_TOP + 0.10, w - 0.40, 0.24,
+                [{"t": attribution, "sz": 8, "color": C["muted"]}])
+        fit.add(1, "proof attribution", attribution, 8, w - 0.40, 0.24, max_lines=1)
+        top = PANEL_Y_TOP + 0.40
+    # No cleared figure yet: each tile names its metric where the figure will stand,
+    # as the deck and the one-pager do — in the label style, never in figure type where
+    # a reader looks for a number — and one line underneath says the figures are coming.
     rows = (kpis or sales)[:3]
     caveat_h = 0.0 if kpis else 0.20
-    rh = (PANEL_H_TOP - 0.44 - caveat_h) / max(1, len(rows))
+    rh = (PANEL_Y_TOP + PANEL_H_TOP - 0.04 - caveat_h - top) / max(1, len(rows))
     for i, k in enumerate(rows):
-        y = PANEL_Y_TOP + 0.40 + i * rh
+        y = top + i * rh
+        caption = str(k.get("label") or k.get("name") or "").strip()
         if spec.has_figure(k):
             fig = str(k.get("figure", ""))
             base = k.get("baseline")
             shown = f"{base} → {fig}" if base and k.get("show_baseline") else fig
+            fpt = autofit_pt(shown, w - 0.40, 0.24, 12.5, 9, bold=True, max_lines=1)
+            head = {"t": shown, "sz": fpt, "b": True, "color": C["blue"]}
         else:   # the metric's name stands where its figure will
             shown = str(k.get("chip") or k.get("name") or "").strip().rstrip("↑↓→ ")
-        fpt = autofit_pt(shown, w - 0.40, 0.24, 12.5, 9, bold=True, max_lines=1)
-        paras = [{"t": shown, "sz": fpt, "b": True, "color": C["blue"]},
-                 {"t": str(k.get("label") or k.get("name", "")), "sz": 7.5,
-                  "color": C["muted"]}]
+            fpt = LABEL["sz"]
+            head = {"t": shown, **LABEL, "space_after": 1}
+        paras = [head]
+        if caption and caption.lower() != shown.lower():
+            paras.append({"t": caption, "sz": 7.5, "color": C["muted"]})
         paras = autofit_paras(paras, w - 0.40, rh - 0.04, min_scale=0.75, default_sz=fpt)
         textbox(s, x + 0.20, y, w - 0.40, rh - 0.04, paras)
         log_box(fit, 1, f"proof stat {i+1}", x + 0.20, y, w - 0.40, rh - 0.04, paras, fpt)
     if caveat_h:
-        note = "Measured in the proof of value; results to follow."
         textbox(s, x + 0.20, PANEL_Y_TOP + PANEL_H_TOP - caveat_h, w - 0.40, caveat_h,
-                [{"t": note, "sz": 7, "color": C["muted_light"]}])
-        fit.add(1, "proof caveat", note, 7, w - 0.40, caveat_h, max_lines=1)
+                [{"t": FIGURELESS_CAVEAT, "sz": 7, "color": C["muted_light"]}])
+        fit.add(1, "proof caveat", FIGURELESS_CAVEAT, 7, w - 0.40, caveat_h, max_lines=1)
         fit.note("proof strip names the metrics being measured — no cleared figure yet")
 
 
-def block_packages(s, spec: Spec, fit: FitLog):
+def absent_line(s, fit: FitLog, x, y, w, text: str, label: str) -> None:
+    """One grey label-sized line saying what is missing — never the value's own type."""
+    textbox(s, x, y, w, 0.18, [{"t": text, **ABSENT}])
+    fit.add(1, label, text, ABSENT["sz"], w, 0.18, max_lines=1)
+
+
+def block_packages(s, spec: Spec, fit: FitLog) -> tuple[bool, bool]:
+    """Draw the tier rows; returns (an indicative price needs the footnote, a price is shown)."""
     col = COL[0]
     x, w = col
     sec_label(s, col, LABEL_Y_BOT, "SERVICE PACKAGES")
@@ -201,7 +250,7 @@ def block_packages(s, spec: Spec, fit: FitLog):
     gap = 0.09
     rh = (PANEL_H_BOT - gap * (n - 1)) / n
     price_w, text_w = 1.55, w - 1.55 - 0.40
-    star = False
+    star = shown = False
     for i, t in enumerate(tiers):
         y = PANEL_Y_BOT + i * (rh + gap)
         shade = [C["blue"], C["blue_light"], C["hairline_alt"]][min(i, 2)]
@@ -221,16 +270,30 @@ def block_packages(s, spec: Spec, fit: FitLog):
         textbox(s, x + 0.20, y + 0.26, text_w, sh,
                 [{"t": scope, "sz": spt, "color": C["muted"]}])
         fit.add(1, f"tier {i+1} scope", scope, spt, text_w, sh, max_lines=3)
-        price, foot = fmt_price(t.get("services_price"))
-        star = star or foot
-        textbox(s, x + w - price_w - 0.18, y + 0.07, price_w, 0.24,
-                [{"t": price + ("*" if foot else ""), "sz": 12, "b": True,
-                  "color": C["blue"], "align": "r"}])
-        fit.add(1, f"tier {i+1} price", price, 12, price_w, 0.24, bold=True, max_lines=1)
-        textbox(s, x + w - price_w - 0.18, y + 0.32, price_w, 0.18,
-                [{"t": fmt_duration(t.get("duration_weeks")), "sz": 8.5,
-                  "color": C["muted"], "align": "r"}])
-    return star
+        # The price and the duration where the brief states them. A missing one is one
+        # grey line naming what is missing: "To be defined" set in blue price type read
+        # as a price, and stacked twice in one cell it read as two (2026-09-23).
+        px = x + w - price_w - 0.18
+        price, foot = fmt_price(t.get("services_price"), tbd="")
+        if price:
+            shown = True
+            star = star or foot
+            textbox(s, px, y + 0.07, price_w, 0.24,
+                    [{"t": price + ("*" if foot else ""), "sz": 12, "b": True,
+                      "color": C["blue"], "align": "r"}])
+            fit.add(1, f"tier {i+1} price", price, 12, price_w, 0.24, bold=True, max_lines=1)
+        else:
+            absent_line(s, fit, px, y + 0.09, price_w, "Services price: to be defined",
+                        f"tier {i+1} price")
+        duration = fmt_duration(t.get("duration_weeks"), tbd="")
+        if duration:
+            textbox(s, px, y + 0.32, price_w, 0.18,
+                    [{"t": duration, "sz": 8.5, "color": C["muted"], "align": "r"}])
+            fit.add(1, f"tier {i+1} duration", duration, 8.5, price_w, 0.18, max_lines=1)
+        else:
+            absent_line(s, fit, px, y + 0.32, price_w, "Duration: to be defined",
+                        f"tier {i+1} duration")
+    return star, shown
 
 
 def block_capabilities(s, spec: Spec, fit: FitLog):
@@ -307,6 +370,69 @@ def block_next_steps(s, spec: Spec, fit: FitLog):
 
 # ---------------------------------------------------------------------------
 
+def _and(items: list[str]) -> str:
+    return items[0] if len(items) == 1 else ", ".join(items[:-1]) + " and " + items[-1]
+
+
+def notes_body(prs, slide):
+    """The notes text frame, created when the master gives the notes page none.
+
+    The shipped base's notes master carries no placeholders, so python-pptx makes a
+    notes page with nothing to write into. The standard body placeholder is added with
+    its own geometry (the default notes-page layout, scaled to this deck's notes size),
+    so PowerPoint shows the text in the notes pane.
+    """
+    notes = slide.notes_slide
+    if notes.notes_text_frame is not None:
+        return notes.notes_text_frame
+    from pptx.oxml import parse_xml
+    from pptx.oxml.ns import nsdecls
+    size = prs.part._element.find(
+        "{http://schemas.openxmlformats.org/presentationml/2006/main}notesSz")
+    cx = int(size.get("cx")) if size is not None else 6858000
+    cy = int(size.get("cy")) if size is not None else 9144000
+    sp = parse_xml(
+        f'<p:sp {nsdecls("p", "a")}><p:nvSpPr>'
+        f'<p:cNvPr id="{notes.shapes._next_shape_id}" name="Notes Placeholder"/>'
+        f'<p:cNvSpPr><a:spLocks noGrp="1"/></p:cNvSpPr><p:nvPr><p:ph type="body" idx="1"/></p:nvPr>'
+        f'</p:nvSpPr><p:spPr><a:xfrm><a:off x="{cx // 10}" y="{int(cy * 0.48)}"/>'
+        f'<a:ext cx="{cx * 8 // 10}" cy="{int(cy * 0.39)}"/></a:xfrm></p:spPr>'
+        f'<p:txBody><a:bodyPr/><a:lstStyle/><a:p/></p:txBody></p:sp>')
+    notes.shapes._spTree.append(sp)
+    return notes.notes_text_frame
+
+
+def speaker_notes(prs, slide, spec: Spec, prices_shown: bool, fit: FitLog) -> str:
+    """Say which cut this is, in the notes, so the slide cannot travel as the wrong one.
+
+    Internal: the internal cut; tier prices, where the slide shows any, come off before
+    external use; where the customer may be named. Otherwise the shorter external note.
+    Every clause is derived from what this build printed and from the clearance, so the
+    note cannot claim a price or a name the slide does not carry.
+    """
+    descriptor = str(spec.get("clearance.anonymized_descriptor") or "an enterprise customer")
+    customer = str(spec.get("meta.source_engagement.customer") or "").strip()
+    cleared = [words for ch, words in CHANNEL_WORDS
+               if customer and bool(spec.get(f"clearance.customer_name_allowed.{ch}", False))]
+    if spec.channel == "internal":
+        lines = ["Internal cut, for the internal solutions review."]
+        if prices_shown:
+            lines.append("The tier prices on this slide come off before any external use.")
+        lines.append(f"The customer is named on {_and(cleared)} only; everywhere else it "
+                     f"appears as \"{descriptor}\"." if cleared else
+                     f"The customer is not cleared to be named on any channel; it appears "
+                     f"as \"{descriptor}\".")
+    else:
+        prices = "tier prices included" if prices_shown else "no prices"
+        here = ("as it is here" if spec.customer_name_allowed() and customer
+                else f"so here it appears as \"{descriptor}\"")
+        lines = [f"External cut: {prices}; the customer is named only where cleared, {here}."]
+    text = "\n".join(lines)
+    notes_body(prs, slide).text = text
+    fit.note("speaker notes: " + " ".join(lines))
+    return text
+
+
 def build_slide(prs, layout, spec: Spec, fit: FitLog, title: str | None):
     header = str(spec.get("exec_summary.running_header") or "").strip()
     if header:
@@ -339,9 +465,10 @@ def build_slide(prs, layout, spec: Spec, fit: FitLog, title: str | None):
     block_use_case(s, spec, fit)
     block_layers(s, spec, fit)
     block_proof(s, spec, fit)
-    star = block_packages(s, spec, fit)
+    star, prices_shown = block_packages(s, spec, fit)
     block_capabilities(s, spec, fit)
     block_next_steps(s, spec, fit)
+    speaker_notes(prs, s, spec, prices_shown, fit)
 
     # The caveat travels with the figures: with none printed there is nothing to
     # qualify, and "figures are illustrative" under a strip of metric names reads as

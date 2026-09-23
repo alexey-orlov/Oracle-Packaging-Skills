@@ -360,6 +360,52 @@ expect "absent components" "–"
 run_case "a missing spec is a usage error" 2 \
   "$PY" "$TOOLS/check_consistency.py" "$WORK/not-here.yaml" "$WORK/artifact-clean.md"
 
+# CON003 reads a week figure as a tier duration. A planned next step and the source
+# engagement's own length are not tier claims: the DHL executive summary's next step
+# "Run the contracted 12 weeks … engagement" failed it although no tier said 12
+# (2026-09-23). They pass; a wrong tier duration still fails, and so does the
+# engagement's length printed against a tier — the drift the check exists for.
+"$PY" - "$VALID" "$WORK" <<'PYWEEKS'
+import sys, yaml
+src, work = sys.argv[1], sys.argv[2]
+spec = yaml.safe_load(open(src, encoding="utf-8"))
+spec["meta"]["source_engagement"]["delivered"] = (
+    "PoC over 10 weeks, Jun 2026, zone and technician allocation on field-service data")
+spec["exec_summary"] = {"next_steps": [
+    {"title": "Repeat the proof of value in a second region",
+     "detail": "the same 10 weeks, on that region's own data"},
+    "Hold the partner readout within 2 weeks of the go / no-go"]}
+yaml.safe_dump(spec, open(work + "/pack-spec.engagement-weeks.yaml", "w", encoding="utf-8"),
+               sort_keys=False, allow_unicode=True)
+print("generated the engagement-weeks variant")
+PYWEEKS
+cat > "$WORK/weeks-engagement.md" <<'EOF'
+Planned next steps
+
+Repeat the proof of value in a second region
+the same 10 weeks, on that region's own data
+
+Hold the partner readout within 2 weeks of the go / no-go
+
+The first engagement ran 10 weeks on live field-service data.
+EOF
+cat > "$WORK/weeks-wrong-tier.md" <<'EOF'
+PoV Jumpstart runs 14 weeks on the customer's own data.
+EOF
+cat > "$WORK/weeks-engagement-on-a-tier.md" <<'EOF'
+PoV Jumpstart runs 10 weeks, as the first engagement did.
+EOF
+WEEKS_SPEC="$WORK/pack-spec.engagement-weeks.yaml"
+run_case "the engagement's weeks in a next step and an engagement line pass" 0 \
+  "$PY" "$TOOLS/check_consistency.py" "$WEEKS_SPEC" "$WORK/weeks-engagement.md"
+expect_absent "next-step and engagement weeks" CON003
+run_case "a wrong tier duration still fails" 1 \
+  "$PY" "$TOOLS/check_consistency.py" "$WEEKS_SPEC" "$WORK/weeks-wrong-tier.md"
+expect "a wrong tier duration" CON003 "14 weeks"
+run_case "the engagement's length printed against a tier still fails" 1 \
+  "$PY" "$TOOLS/check_consistency.py" "$WEEKS_SPEC" "$WORK/weeks-engagement-on-a-tier.md"
+expect "the engagement's length on a tier" CON003 "10 weeks"
+
 # ------------------------------------------------- the architecture model and its three renderers
 # One model, three pictures. The fixture's model must build clean; the deck slide, the
 # one-pager's strip and the generated site figure must all draw it; and a model with one
@@ -477,6 +523,23 @@ EOF
   run_case "a missing model is a usage error" 2 \
     "$PY" "$TOOLS/check_diagram.py" "$WORK/not-a-model.json" --site "$WORK/diagrams.js"
 fi
+
+# ------------------------------------------ the figure-less metric caveat, one wording
+# Where no cleared figure stands, the deck's proof tiles, the one-pager's strip and the
+# executive summary all say "to be measured in the proof of value"; the one-pager and
+# the executive summary add "results to follow." One wording in three builders, so the
+# artifacts of one pack cannot disagree on tense (2026-09-23).
+say ""
+say "the figure-less metric caveat"
+for f in deck/tools/build_deck_v2.py one-pager/tools/build_one_pager.py \
+         exec-summary/tools/build_exec_summary.py; do
+  run_case "$(basename "$f") says 'to be measured in the proof of value'" 0 \
+    grep -q -i "to be measured in the proof of value" "$TESTS/../../../plugins/oracle-packs/skills/$f"
+done
+for f in one-pager/tools/build_one_pager.py exec-summary/tools/build_exec_summary.py; do
+  run_case "$(basename "$f") adds 'results to follow.'" 0 \
+    grep -q "in the proof of value; results to follow." "$TESTS/../../../plugins/oracle-packs/skills/$f"
+done
 
 # --------------------------------------------------------------- context_budget
 # EVERY skill's manifest must stay inside its per-step reading budget; a card that
