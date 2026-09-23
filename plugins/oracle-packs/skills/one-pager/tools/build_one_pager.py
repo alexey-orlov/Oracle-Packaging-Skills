@@ -507,8 +507,9 @@ def _flow_from_architecture(spec):
         return None
     first = inputs[0] if isinstance(inputs[0], dict) else {"system": str(inputs[0])}
     others = [str(i.get("system") if isinstance(i, dict) else i) for i in inputs[1:]]
+    notes_on = dig(spec, "one_pager.data_flow_notes", True)
     source = {"name": first.get("system", ""),
-              "note": ("with " + " and ".join(o for o in others if o)) if others else None}   # every source the deck draws
+              "note": ("with " + " and ".join(o for o in others if o)) if (others and notes_on) else None}   # every source the deck draws
     boxes, platform_label = [], None
     for layer in stack:
         role = (layer.get("layer") or "").lower()
@@ -530,7 +531,7 @@ def _flow_from_architecture(spec):
         # The result lands in a system the pack does not read: the return pipe ends in
         # its own box under the source, never back in the feeds (the deck's rule).
         name, _, qualifier = out_system.partition(" — ")
-        destination = {"name": name.strip(), "note": qualifier.strip() or None}
+        destination = {"name": name.strip(), "note": (qualifier.strip() or None) if notes_on else None}
     return {
         "source": source,
         "destination": destination,
