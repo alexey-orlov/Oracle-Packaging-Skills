@@ -409,7 +409,11 @@ def _read_pdf(path: str):
     if proc.returncode != 0:
         return None, "pdftotext failed on %s: %s" % (path, proc.stderr.decode("utf-8", "replace").strip())
     text = proc.stdout.decode("utf-8", "replace")
-    return Doc(path, text.splitlines(), kind="pdf"), None
+    # `-layout` keeps two columns on one line, separated by a run of spaces; a
+    # vendor phrase must not be read across that gap ("Oracle Customer" left,
+    # "Agent Toolkit" right, 2026-09-23), so the gap becomes a separator.
+    lines = [re.sub(r" {3,}", " | ", line) for line in text.splitlines()]
+    return Doc(path, lines, kind="pdf"), None
 
 
 def extract(path: str):
