@@ -153,29 +153,38 @@ class Consistency:
         self.matrix.append((doc.path, states))
 
     def check_one_liner(self, doc):
-        if not self.one_liners:
+        """The full or the short variant, verbatim, is the spec's one-liner.
+
+        Every place the one-liner opens is checked against BOTH variants before
+        anything is reported: a cover that prints the short line is right, and
+        the window is cut for the longest variant so the full line fits it too.
+        """
+        variants = [v for v in self.one_liners if len(PL.norm_loose(v).split()) >= 4]
+        if not variants:
             return ABSENT
-        state = ABSENT
-        for text in self.one_liners:
+        span = int(max(len(v) for v in variants) * 1.6) + 40
+        seen, differs, present = set(), [], False
+        for text in variants:
             words = PL.norm_loose(text).split()
-            if len(words) < 4:
-                continue
             anchor = re.compile(r"\s+".join(re.escape(w) for w in words[:4]), re.IGNORECASE)
-            m = anchor.search(doc.text)
-            if not m:
-                continue
-            window = doc.text[m.start():m.start() + int(len(text) * 1.6) + 40]
-            if PL.norm_loose(window).startswith(PL.norm_loose(text)):
-                return PRESENT
-            line, label = doc.where(m.start())
+            for m in anchor.finditer(doc.text):
+                if m.start() in seen:
+                    continue
+                seen.add(m.start())
+                window = doc.text[m.start():m.start() + span]
+                if any(PL.norm_loose(window).startswith(PL.norm_loose(v)) for v in variants):
+                    present = True
+                else:
+                    differs.append((m.start(), window))
+        for start, window in differs:
+            line, label = doc.where(start)
             got = PL.norm_ws(window)
             if len(got) > 120:
                 got = got[:117] + "..."
             self.rep.fail(doc.path, line, "CON001",
                           "the one-liner reads `%s`; the spec says `%s`%s"
-                          % (got, PL.norm_ws(text), label))
-            state = DIFFERS
-        return state
+                          % (got, " / ".join(PL.norm_ws(v) for v in variants), label))
+        return DIFFERS if differs else (PRESENT if present else ABSENT)
 
     def check_tiers(self, doc):
         state = ABSENT
