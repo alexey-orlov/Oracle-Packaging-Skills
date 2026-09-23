@@ -294,8 +294,9 @@ class Build:
         layer = self.engine_layer()
         names: list[str] = []
         cat = catalog()
-        if layer.get("catalog_id"):
-            names.append(product_name(str(layer["catalog_id"]), short=short))
+        cid = layer.get("catalog_id")
+        for c in (cid if isinstance(cid, list) else ([cid] if cid else [])):   # a layer may name several products
+            names.append(product_name(str(c), short=short))
         for item in layer.get("items", []) or []:
             key = clean(item)
             slug = key.lower().replace(" ", "-")

@@ -118,8 +118,8 @@ architecture:
     - layer: Extraction engine
       vendor: NVIDIA
       summary: Retrieval, extraction and ranking over the whole estate
-      items: [nvidia-nemo-agent-toolkit, nvidia-nim, nvidia-nemo]
-      catalog_id: nvidia-nemo-agent-toolkit
+      items: [nvidia-nemo]
+      catalog_id: [nvidia-nemo-agent-toolkit, nvidia-nim]   # a list: the box must name every product
     - layer: Infrastructure
       vendor: Oracle
       summary: OCI compute with GPUs, object storage and IAM
