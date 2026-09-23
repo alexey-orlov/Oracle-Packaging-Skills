@@ -82,7 +82,18 @@ All icons in a pack come from one set, at one weight, prepared the same way. Fou
 
 ---
 
-## 4. What is recorded, and where
+## 4. The customer's logo
+
+The delivered customer's own mark is the one picture here that is **not** found — it is given. The `customer_logo` slot is of kind `supplied`: the owner hands over a file from the engagement materials, and nothing else is accepted.
+
+- **Never searched for, on any source.** A company's mark is a trademark, not an openly licensed picture, and a copy lifted off a search result or a brand-resources page carries no right to use it. None of the licences above applies to it, so the licence gate does not run.
+- **What permits the use is the clearance, not a licence.** The logo is asked for only where `clearance.customer_name_allowed` is true for some audience, and the record says, in those words, that it is used under the customer's clearance recorded in the pack brief. Clearance is revocable: a logo already in a pack goes out again when it is withdrawn.
+- **No stand-in.** Not a lookalike, not a redrawn version, not an industry icon in its place. With no file, the deck removes the slot and moves the headline — an explicit absence, which is the standing rule.
+- Recorded through `apply_choice.py` like every other picture, so the file, the brief key, the credits row and the decision move together; its sidecar is written beside the copy, since the owner's file arrives without one.
+
+---
+
+## 5. What is recorded, and where
 
 Every candidate downloaded carries a `.json` sidecar beside it; every **chosen** file gets a row in `packs/<slug>/visuals/credits.md`:
 
@@ -100,6 +111,6 @@ A picture with no such row is not in the pack. This is also what makes a later q
 
 ---
 
-## 5. When a source cannot be reached
+## 6. When a source cannot be reached
 
 A network failure, a missing key or a rate limit is **deferred**, never "nothing found". The second closes the item forever on the strength of a timeout, and a slot silently marked hopeless never gets its picture. Say which source, what it needs, and that the picture is still open — then retry. The tools encode this: exit code 3 means deferred, and a search whose only answering source came back empty while others were unreachable also exits 3 rather than pretending the world is empty.

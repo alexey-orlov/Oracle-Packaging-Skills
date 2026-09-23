@@ -1,6 +1,6 @@
 {
   "name": "oracle-packs-web",
-  "version": "0.1.26",
+  "version": "0.1.27",
   "description": "Oracle accelerator-pack web artifacts from a signed-off pack spec: /oracle-packs-web:listing (mini-site product entry) and /oracle-packs-web:demo (interactive walkthrough).",
   "author": {
     "name": "Alex Orlov"

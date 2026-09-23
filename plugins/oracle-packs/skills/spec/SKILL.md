@@ -40,7 +40,7 @@ Card: `story`. Two or three complete candidates — name, one-liner, problem, so
 
 ## 5. Everything else, drafted in one pass
 
-Cards, one per part as you write that part: `industries`, `capabilities`, `workflow`, `architecture`, `oracle-products`, `metrics`, `packages`. Draft all seven from the story, the research summary and each part's card, **asking nothing**.
+Cards, one per part as you write that part: `industries`, `capabilities`, `workflow`, `architecture`, `oracle-products`, `metrics`, `packages`, and `proof` — the delivered case, the one the deck's proof slide is built from. Draft all eight from the story, the research summary and each part's card, **asking nothing**.
 
 Then the **reviewer pass**. For each part, one fresh-context subagent that receives only the drafted part, the inputs it was drawn from and that part's card — never this conversation — and returns pass or fail per check with a one-line reason. Fix every fail; at most two rounds. What still fails goes to the owner as an open item in plain words, and into `open_questions`.
 

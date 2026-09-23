@@ -97,10 +97,14 @@ python3 tools/build_deck.py <pack-spec.yaml> --out <dir> [--channel …] [--base
 
 It redraws every slide on `softserve-deck-base.pptx` from measurements. Use it
 only where the exemplar is not available — an install that stripped the 15 MB
-asset, or a machine building from the base alone. It produces the same anatomy
-and passes the same linter, but it re-derives hundreds of design decisions that
-the exemplar otherwise supplies for free, and every fidelity finding in
-`docs/DECK-FIDELITY.md` came from exactly that.
+asset, or a machine building from the base alone. It produces the same anatomy,
+but it re-derives hundreds of design decisions that the exemplar otherwise
+supplies for free, and every fidelity finding in `docs/DECK-FIDELITY.md` came
+from exactly that. The shell carries no photo layout, so its cover is ink only
+and **fails the deck linter's cover check by design**; `lint_deck.py
+--legacy-cover-ok` demotes that one failure to a loud warning so the rest can
+still be checked, and such a deck is never delivered as final — set
+`deck.images.cover`, or build with the exemplar builder.
 
 ## What "done" means
 
@@ -108,11 +112,12 @@ the exemplar otherwise supplies for free, and every fidelity finding in
    any detailed-table cell runs past its word budget; 0 means every string fits
    its box on the stand-in metrics plus 6 %.
 2. **Deck linter clean.** `tools/lint_deck.py` — ten slides, the running header on
-   slides 2–10, no tier line on the cover, the exemplar's own faces, no rounded
-   card and no more pills than the exemplar's slide carries, an icon on every
-   industry card, the architecture slide naming the pack, the engine's products
-   and every destination with one arrow per source, table type at or above the
-   exemplar's own floor.
+   slides 2–10, no tier line on the cover, the family's hero on the cover (the
+   exemplar's own photo title layout, with a picture on it), the exemplar's own
+   faces, no rounded card and no more pills than the exemplar's slide carries, an
+   icon on every industry card, the architecture slide naming the pack, the
+   engine's products and every destination with one arrow per source, table type
+   at or above the exemplar's own floor.
 3. **Contact sheet reviewed.** Run `tools/render_probe.sh --deck <the deck>`; it
    reports which renderer exists here and prints the recipe. Render every slide,
    build a contact sheet, and look at it. A fit report is not a render and a

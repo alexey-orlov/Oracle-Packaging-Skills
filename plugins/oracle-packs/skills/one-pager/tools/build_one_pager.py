@@ -307,7 +307,7 @@ def build_context(spec: dict, channel: str, hero: Path | None) -> tuple[dict, li
 
     op = dig(spec, "one_pager", {}) or {}          # optional per-artifact overrides
     ps = need(spec, "problem_solution")
-    reframe = ps.get("reframe")
+    reframe = op.get("reframe") or ps.get("reframe")   # the page's own short form, when the deck's would wrap
 
     # --- solution chips: explicit, else the KPI names with a direction arrow
     chips = []
@@ -320,7 +320,12 @@ def build_context(spec: dict, channel: str, hero: Path | None) -> tuple[dict, li
             chips.append({"label": re.sub(r"\s*(up|down|↑|↓)\s*$", "", text), "arrow": arrow})
     if not chips:
         for kpi in (dig(spec, "kpis") or [])[:3]:
-            chips.append({"label": kpi.get("chip_label") or kpi.get("name", ""), "arrow": _arrow(kpi.get("direction", "up"))})
+            chip = str(kpi.get("chip") or "").strip()
+            if chip:   # the deck's chip: its own arrow, or none at all
+                m = re.search(r"\s*([↑↓])\s*$", chip)
+                chips.append({"label": re.sub(r"\s*[↑↓]\s*$", "", chip), "arrow": m.group(1) if m else ""})
+            else:
+                chips.append({"label": kpi.get("chip_label") or kpi.get("name", ""), "arrow": _arrow(kpi.get("direction", "up"))})
 
     # --- data-flow line: explicit block, else derived from architecture
     flow = op.get("data_flow") or _flow_from_architecture(spec)
@@ -348,12 +353,29 @@ def build_context(spec: dict, channel: str, hero: Path | None) -> tuple[dict, li
         attribution = (attr.get("named_when_allowed") if name_allowed else attr.get("otherwise")) or attribution
         if attribution:
             break
+    who = customer if name_allowed and customer else descriptor
     story = op.get("proof_story") if name_allowed else (op.get("proof_story_anonymized") or op.get("proof_story"))
     if not story:
-        delivered = dig(spec, "meta.source_engagement.delivered", "")
-        who = customer if name_allowed and customer else descriptor
-        story = f"Delivered with {who}: {delivered}" if delivered else ""
+        delivered = _fill_customer(dig(spec, "meta.source_engagement.delivered", ""), who)
+        lead = "Delivered with" if stats else "In delivery with"   # no cleared figure: contracted, not delivered
+        story = f"{lead} {who}: {delivered}" if delivered else ""
+    story = _fill_customer(story, who)
+    if not stats and kpis:
+        # No cleared figure yet: the strip names the metrics the proof of value measures,
+        # where the figures will stand (as the deck does) — never an empty strip.
+        for kpi in kpis[:3]:
+            chip = re.sub(r"\s*[↑↓]\s*$", "", str(kpi.get("chip") or kpi.get("name") or "")).strip()
+            stats.append({"figure": chip, "prefix": None, "suffix": None, "text": True,
+                          "label": (kpi.get("one_pager_label") or kpi.get("label") or kpi.get("name", ""))
+                                   + " — measured in the proof of value"})
+        if not caveats:
+            caveats.append("Contracted proof of value; results to follow.")
     logo = op.get("proof_logo") if name_allowed else None
+    if name_allowed and not logo:
+        deck_logo = dig(spec, "deck.images.customer_logo", None)   # the deck's cleared logo: one file for both
+        logo = deck_logo.get("file") if isinstance(deck_logo, dict) else deck_logo
+    if logo and not Path(logo).is_absolute():
+        logo = str((SPEC_DIR / logo).resolve())
 
     # --- packages table
     tiers_raw = need(spec, "packages.tiers")
@@ -363,7 +385,8 @@ def build_context(spec: dict, channel: str, hero: Path | None) -> tuple[dict, li
         tiers.append({
             "name": tier.get("name") or tier.get("id", ""),
             "size_tag": tier.get("size_tag") if channel == "internal" or tier.get("show_size_tag", True) else None,
-            "scope_line": tier.get("scope_line") or (tier.get("what_you_get") or [None])[0],
+            "scope_line": ((op.get("tier_scope") or {}).get(tier.get("id") or "")   # the page's own shorter line, when the deck's costs a row
+                           or tier.get("scope_line") or (tier.get("what_you_get") or [None])[0]),
             "th_class": TIER_TH_CLASS[index] if index < len(TIER_TH_CLASS) else TIER_TH_CLASS[-1],
         })
 
@@ -411,7 +434,8 @@ def build_context(spec: dict, channel: str, hero: Path | None) -> tuple[dict, li
         "hero_image": data_uri(hero) if hero else None,
         "hero": {"eyebrow": op.get("eyebrow", dig(spec, "meta.eyebrow", "OCI AI Accelerators")),
                  "name": name, "subheading": subheading,
-                 "one_liner": need(spec, "one_liner.full")},
+                 "one_liner": (dig(spec, "one_liner.short") if op.get("sub") == "short" else None)
+                              or need(spec, "one_liner.full")},   # `one_pager.sub: short` — the deck cover's line, when the full one costs a row
         "problem": {"heading": op.get("problem_heading", "The problem"),
                     "text": ps.get("problem", ""),
                     "points": as_points(ps.get("problem_points")),
@@ -435,7 +459,9 @@ def build_context(spec: dict, channel: str, hero: Path | None) -> tuple[dict, li
                   "stats": stats, "stat_columns": max(1, len(stats)),
                   "caveat": op.get("proof_caveat") or (caveats[0] if caveats else None)},
         "packages": {"heading": op.get("packages_heading", "Service packages"),
-                     "tiers": tiers, "rows": rows, "legend": LEGEND, "footnote": footnote},
+                     "tiers": tiers, "rows": rows, "footnote": footnote,
+                     "legend": (html.escape(str(dig(spec, "packages.capability_handling_legend", ""))).replace(" · ", " &nbsp;&nbsp; ")
+                                or LEGEND)},   # the brief's own legend, in the page's spacing
         "disclaimer": op.get("disclaimer") or dig(spec, "clearance.disclaimer"),
         "cta": {"question": cta.get("question", "See the fit in one of your accounts?"),
                 "answer": cta.get("answer", ""),
@@ -459,6 +485,16 @@ def _arrow(direction):
 EMPTY_FIGURES = {"-", "--", "\u2014", "\u2013", "n/a"}
 
 
+SPEC_DIR = Path(".")
+
+
+def _fill_customer(text, who: str) -> str:
+    """`{customer}` / `{Customer}` in a spec string become what this channel may call the customer."""
+    text = str(text or "")
+    cap = (who[0].upper() + who[1:]) if who else ""
+    return text.replace("{Customer}", cap).replace("{customer}", who or "")
+
+
 def has_figure(kpi) -> bool:
     fig = str((kpi or {}).get("figure") or "").strip()
     return bool(fig) and fig.lower() not in EMPTY_FIGURES
@@ -470,21 +506,34 @@ def _flow_from_architecture(spec):
     if not inputs or not stack:
         return None
     first = inputs[0] if isinstance(inputs[0], dict) else {"system": str(inputs[0])}
-    source = {"name": first.get("system", ""), "note": first.get("note")}
+    others = [str(i.get("system") if isinstance(i, dict) else i) for i in inputs[1:]]
+    source = {"name": first.get("system", ""),
+              "note": ("with " + " and ".join(o for o in others if o)) if others else None}   # every source the deck draws
     boxes, platform_label = [], None
     for layer in stack:
         role = (layer.get("layer") or "").lower()
         if "infrastructure" in role:
             parts = [layer.get("vendor"), ", ".join(layer.get("items") or [])]
             platform_label = layer.get("label") or "<br>".join(html.escape(p) for p in parts if p)
-        elif any(word in role for word in ("app", "engine")):
+        elif any(word in role for word in ("app", "engine", "business", "by softserve", "agentic")) \
+                or role == str(dig(spec, "meta.name", "")).lower():   # the application row and the engine row, as the deck draws them
             boxes.append({"name": layer.get("name") or (layer.get("items") or [layer.get("layer", "")])[0],
-                          "note": layer.get("note") or layer.get("summary")})
+                          "note": (layer.get("summary") or ", ".join(str(x) for x in (layer.get("items") or [])))
+                                  if dig(spec, "one_pager.data_flow_notes", True) else None})   # a layer's `note` is internal and never prints; `one_pager.data_flow_notes: false` keeps names only
     if not boxes:
         return None
     out_first = outputs[0] if outputs and isinstance(outputs[0], dict) else {}
+    out_system = str(out_first.get("system") or "").strip()
+    input_names = {str(i.get("system") if isinstance(i, dict) else i).strip().lower() for i in inputs}
+    destination = None
+    if out_system and out_system.lower() not in input_names:
+        # The result lands in a system the pack does not read: the return pipe ends in
+        # its own box under the source, never back in the feeds (the deck's rule).
+        name, _, qualifier = out_system.partition(" — ")
+        destination = {"name": name.strip(), "note": qualifier.strip() or None}
     return {
         "source": source,
+        "destination": destination,
         "to_platform_label": first.get("data") or "source data",
         "from_platform_label": out_first.get("data") or "results",
         "platform": {"label": platform_label, "boxes": boxes[:2]},
@@ -655,6 +704,10 @@ def main(argv=None) -> int:
         return 1
 
     spec = yaml.safe_load(args.spec.read_text(encoding="utf-8")) or {}
+
+    global SPEC_DIR
+
+    SPEC_DIR = Path(args.spec).resolve().parent
     try:
         context, forbidden = build_context(spec, args.channel, args.hero)
         rendered = render(args.template.read_text(encoding="utf-8"), context)

@@ -462,7 +462,12 @@ the 15 MB exemplar, and it is a fallback, not a choice — every fidelity findin
 in `docs/DECK-FIDELITY.md` came from redrawing. Its geometry constants live in
 the builder itself and in `brand-tokens.md` (content band 0.42 → 12.91, title box
 0.39 / 1.40 / 11.80 × 0.95, the cover block and the icon and picture slots in
-`reference-geometry.json`). It builds the same anatomy, passes the same linter,
-and differs in the details a redraw cannot inherit: it adds numeral badges the
-reference's proof and seller slides do not have, and its architecture slide draws
-one destination box listing every output system rather than a box per system.
+`reference-geometry.json`). It builds the same anatomy and differs in the details a
+redraw cannot inherit: it adds numeral badges the reference's proof and seller
+slides do not have, and its architecture slide draws one destination box listing
+every output system rather than a box per system. It also **fails the deck linter
+on the cover by design** — the shell has no photo layout, so the cover is ink
+only, the black cover the owner rejected (2026-09-23). `lint_deck.py
+--legacy-cover-ok` demotes that one failure to a loud warning so the rest of the
+deck can still be checked; the deck is not delivered as final that way. Either
+set `deck.images.cover`, or build with the exemplar builder.

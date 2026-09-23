@@ -38,6 +38,11 @@ steps:
       - references/cards/sources.md
       - references/cards/photos.md
 
+  - id: customer-logo
+    title: The customer's logo
+    session:
+      - references/cards/customer-logo.md
+
   - id: record
     title: Recording each choice
     session:

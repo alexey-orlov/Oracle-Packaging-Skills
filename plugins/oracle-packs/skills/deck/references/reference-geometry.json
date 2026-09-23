@@ -88,7 +88,10 @@
            "table_min_pt": 9.0}
   },
   "cover": {
-    "_about": "Reference slide 1, on the Title-AI photo layout: the dark ground and the hero photo come from the layout, the slide carries three shapes.",
+    "_about": "Reference slide 1, on the Title-AI photo layout: the dark ground and the hero photo come from the layout, the slide carries three shapes. `layout` and `layout_pictures` are what lint_deck.py holds a built cover to — the cover must sit on this layout and a picture must reach it, from the layout or from the slide; an ink-only cover is an unfinished state.",
+    "layout": "Title-AI",
+    "layout_pictures": 2,
+    "layout_pictures_note": "on the layout: `Picture 4` (the hero) and `Logo` (the mark); `Image 2` is a freeform mask, not a picture",
     "title_block_in": {"x": 0.55, "y": 2.30, "w": 5.70, "h": 2.35},
     "title_pt": 44,
     "one_liner_pt": 25,
@@ -107,6 +110,34 @@
     "_about": "Reference slide 4: the two before/after pictures.",
     "left_in": {"x": 0.42, "y": 4.17, "w": 6.02, "h": 2.548},
     "right_in": {"x": 6.89, "y": 4.17, "w": 6.02, "h": 2.548}
+  },
+  "proof": {
+    "_about": [
+      "Reference slide 5 — the delivered case, in the composition lint_deck.py holds every",
+      "built proof slide to: the customer's logo top-left, a headline stating the delivered",
+      "outcome, three stat tiles, four labelled quadrants, the anchor strip, the caveat",
+      "footnote. `quadrants` is the reference's own four labels with the top-left corner of",
+      "each label textbox, in reading order (top row left to right, then the bottom row);",
+      "`stat_tiles` is the top-left corner of each tile's value and label textbox. A shape is",
+      "taken to be that slot when its top-left corner is within `match_tol_in` of the recorded",
+      "one — the builder fills these shapes and never moves them.",
+      "The logo is placed only when the pack brief clears the customer's name for the channel",
+      "being linted AND `deck.images.customer_logo` names a file; otherwise the slide carries",
+      "no picture at all."
+    ],
+    "logo_in": {"x": 0.367, "y": 1.157, "w": 3.281, "h": 0.738},
+    "match_tol_in": 0.25,
+    "quadrants": [
+      {"label": "CONTEXT", "at": {"x": 0.580, "y": 3.350}},
+      {"label": "SOLUTION", "at": {"x": 7.050, "y": 3.350}},
+      {"label": "VALUE FOR ORACLE + NVIDIA", "at": {"x": 0.580, "y": 4.750}},
+      {"label": "VALUE FOR CLIENT", "at": {"x": 7.050, "y": 4.750}}
+    ],
+    "stat_tiles": [
+      {"value": {"x": 0.600, "y": 2.527}, "label": {"x": 0.600, "y": 2.887}},
+      {"value": {"x": 4.778, "y": 2.527}, "label": {"x": 4.778, "y": 2.887}},
+      {"value": {"x": 9.083, "y": 2.516}, "label": {"x": 9.083, "y": 2.876}}
+    ]
   },
   "architecture": {
     "_about": "Reference slide 7. Two columns: the source boxes on the left, the platform container on the right. The builder adds a third column, at the source boxes' own geometry, only when the spec names a system that receives the result but is not also a source.",

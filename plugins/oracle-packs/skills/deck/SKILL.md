@@ -24,7 +24,7 @@ user-invocable: true
 
        python3 tools/build_deck_v2.py <spec> --out <dir> --channel <channel> --fit-report
 
-2. **Lint the deck before anyone sees it.** *Card: `lint.md`.* It must exit 0 before the render QA, and certainly before the owner.
+2. **Lint the deck before anyone sees it.** *Card: `lint.md`.* It must exit 0 before the render QA, and certainly before the owner. Among its checks: the cover carries the family's hero picture on the reference's own photo title layout — an ink-only cover is an unfinished state, never a build anyone delivers.
 
        python3 tools/lint_deck.py <pptx> --spec <spec> --channel <channel>
 
@@ -58,6 +58,7 @@ Fit report clean, deck linter clean, contact sheet reviewed, the diagram reviewe
 - [ ] Slide 8 went to a fresh-context reviewer that saw only the render, the brief's architecture and the diagram rules.
 - [ ] The architecture was put to the owner in plain sentences — every box, every arrow — not as "see slide 8".
 - [ ] Every industry card carries a picture; any that kept a stand-in is named for the owner to choose one.
-- [ ] A deck redrawn by the legacy builder said so in the review pack.
+- [ ] The cover carries the family's picture — the linter's cover check passed on its own, without `--legacy-cover-ok`.
+- [ ] A deck redrawn by the legacy builder said so in the review pack, and was not handed over as final with an ink-only cover.
 - [ ] Every message, question, option and table passed the reader's test: no method codes, no file or key names, no packaging vocabulary as vocabulary, reasons instead of rule names.
 - [ ] Everything the owner reviewed was opened beside the conversation before the question was asked.

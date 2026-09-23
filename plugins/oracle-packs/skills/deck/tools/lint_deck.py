@@ -3,6 +3,7 @@
 
     lint_deck.py <deck.pptx> [--spec <pack-spec.yaml>] [--channel partner_print]
                  [--header "<running header>"] [--geometry <reference-geometry.json>]
+                 [--legacy-cover-ok]
     lint_deck.py <deck.pptx> --reference
 
 Mechanical checks only — the things that drift silently between builds and that
@@ -11,26 +12,44 @@ nobody catches by looking at one slide:
   1  ten slides
   2  the running header on slides 2-10
   3  no tier line on the cover
-  4  only the faces the reference uses
-  5  corners: no rounded card, and no more pills than the slide type allows
-  6  an icon, not a number, on every industry card, and no more pictures than the
+  4  the cover carries the family's hero: the reference's own title layout, and a
+     picture on it or on the slide
+  5  only the faces the reference uses
+  6  corners: no rounded card, and no more pills than the slide type allows
+  7  an icon, not a number, on every industry card, and no more pictures than the
      reference's own slide has
-  7  the architecture slide names the pack, the engine's products and where every
+  8  the proof slide is the delivered case in the reference's composition: its
+     four quadrant labels, three stat tiles that are never empty, and the
+     customer's logo exactly where clearance and a logo file both say so
+  9  the architecture slide names the pack, the engine's products and where every
      result goes, and draws one arrow per data source
-  8  package-table type at or above the reference's own floor
+ 10  package-table type at or above the reference's own floor
+ 11  the technology-stack ladder: rows of one width, nothing sticking out of a
+     row or flush with its edge
 
 Every budget is measured from the exemplar deck itself and lives in
 references/reference-geometry.json; this tool never opens the exemplar.
 
-`--reference` lints the exemplar deck itself: it skips the two checks that
-compare a deck against a pack brief and would fail the reference by
-construction — the running header (the reference carries the old
-"OCI AI Accelerators" lockup) and the cover's tier line (the reference has one;
-the owner asked for none) — plus the architecture's naming and flow rules, which
-are about a pack brief, not about geometry. It is the regression test that the
+`--reference` lints the exemplar deck itself: it skips the checks that compare a
+deck against a pack brief and would fail the reference by construction — the
+running header (the reference carries the old "OCI AI Accelerators" lockup) and
+the cover's tier line (the reference has one; the owner asked for none) — plus
+the architecture's naming and flow rules and the proof slide's logo clearance,
+which are about a pack brief, not about geometry. The proof slide's labels and
+stat tiles are checked in reference mode too; the exemplar passes them by
+construction, as does the cover-hero check. It is the regression test that the
 budgets are still the reference's own.
 
-Exit 0 clean · 1 something failed · 2 the deck or the arguments cannot be read.
+`--legacy-cover-ok` is the legacy redraw path's flag: it turns the two checks
+that path cannot pass — the cover's hero (check 4) and the proof slide's
+composition (check 8) — from failures into loud warnings. `tools/build_deck.py`
+redraws the deck on the stripped base, which carries no photo layout and no
+reference slide 5, so its cover is ink only and its proof slide is its own. A
+deck built that way is never delivered as final: set `deck.images.cover`, or
+build with the exemplar builder (`tools/build_deck_v2.py`).
+
+Exit 0 clean (warnings do not change the exit code) · 1 something failed · 2 the
+deck or the arguments cannot be read.
 """
 
 from __future__ import annotations
@@ -56,7 +75,7 @@ ARROW_PRSTS = {"rightArrow", "leftArrow", "upArrow", "downArrow",
                "leftRightArrow", "bentArrow", "straightConnector1",
                "bentConnector3", "curvedConnector3"}
 
-COVER, VERTICALS, ARCHITECTURE = 1, 3, 8
+COVER, VERTICALS, PROOF, ARCHITECTURE = 1, 3, 5, 8
 _WEIGHTS = ("thin", "extralight", "ultralight", "light", "book", "regular", "roman",
             "medium", "semibold", "demibold", "bold", "extrabold", "black", "heavy",
             "italic", "oblique")
@@ -100,6 +119,51 @@ def corner_adj(shape) -> int | None:
 
 def height_in(shape) -> float:
     return (shape.height or 0) / 914400.0
+
+
+def at_in(shape) -> tuple[float, float]:
+    """The shape's top-left corner, in inches."""
+    return (shape.left or 0) / 914400.0, (shape.top or 0) / 914400.0
+
+
+def shape_at(shapes, spot, tol: float):
+    """The shape whose top-left corner is nearest `spot` (a {x, y} in inches), or None when
+    nothing sits within `tol` of it. The builder fills the reference's own shapes and never
+    moves them, so a slot is found by where the reference put it."""
+    want_x, want_y = float(spot.get("x", 0)), float(spot.get("y", 0))
+    best, best_d = None, None
+    for sp in shapes:
+        x, y = at_in(sp)
+        if abs(x - want_x) > tol or abs(y - want_y) > tol:
+            continue
+        d = abs(x - want_x) + abs(y - want_y)
+        if best_d is None or d < best_d:
+            best, best_d = sp, d
+    return best
+
+
+def is_picture(shape) -> bool:
+    return shape.shape_type is not None and "PICTURE" in str(shape.shape_type)
+
+
+def width_in(shape) -> float:
+    return (shape.width or 0) / 914400.0
+
+
+def top_in(shape) -> float:
+    return (shape.top or 0) / 914400.0
+
+
+def left_in(shape) -> float:
+    return (shape.left or 0) / 914400.0
+
+
+def ladder_rows(slide_shapes) -> list:
+    """The technology-stack slide's row bands: three or more wide, plain rectangles."""
+    rows = [sp for sp in slide_shapes
+            if getattr(sp, "shape_type", None) == 1 and not getattr(sp, "has_table", False)
+            and width_in(sp) >= 9.0 and height_in(sp) >= 0.5]
+    return rows if len(rows) >= 3 else []
 
 
 def shape_text(shape) -> str:
@@ -169,13 +233,19 @@ def mentions(text: str, name: str) -> bool:
 def expectations(spec_path, channel, header_arg):
     """Everything the checks compare against. Missing spec -> only what is known."""
     exp = {"header": header_arg, "name": None, "tier_line": None, "verticals": 0,
-           "inputs": 0, "outputs": [], "engine_products": [], "have_spec": False}
+           "inputs": 0, "outputs": [], "engine_products": [], "have_spec": False,
+           "channel": channel, "name_allowed": False, "customer_logo": ""}
     if not spec_path:
         return exp
     from deckkit import Spec, product_name
     spec = Spec.load(spec_path, channel=channel)
     exp["have_spec"] = True
     exp["name"] = spec.name()
+    exp["name_allowed"] = bool(spec.customer_name_allowed())
+    logo = (spec.get("deck.images") or {}).get("customer_logo")
+    if isinstance(logo, dict):
+        logo = logo.get("file")
+    exp["customer_logo"] = str(logo or "").strip()
     tiers = [str(t.get("name", "")) for t in (spec.get("packages.tiers") or [])]
     exp["tier_line"] = " · ".join(t for t in tiers if t)
     if not exp["header"]:
@@ -207,11 +277,12 @@ def expectations(spec_path, channel, header_arg):
 # the checks
 # ---------------------------------------------------------------------------
 
-def run_checks(deck_path, exp, geometry, reference: bool = False):
+def run_checks(deck_path, exp, geometry, reference: bool = False,
+               legacy_cover_ok: bool = False):
     from pptx import Presentation
     prs = Presentation(str(deck_path))
     slides = list(prs.slides)
-    fail, note = [], []
+    fail, note, warn = [], [], []
 
     budgets = {int(k): v for k, v in (geometry.get("deck_slides") or {}).items()
                if k.isdigit()}
@@ -268,7 +339,48 @@ def run_checks(deck_path, exp, geometry, reference: bool = False):
                             f"(\"{exp['tier_line']}\"); a cover has no tier line")
                 break
 
-    # 4 — the reference's own faces only
+    # 4 — the cover carries the family's hero
+    #
+    # The owner's rule (2026-09-23): a cover is the family's photo cover, not a
+    # black rectangle with type on it. The hero lives on the reference's own title
+    # layout, so a deck that keeps that layout inherits it; a deck that sets
+    # `deck.images.cover` swaps it in place on the same layout. Either way a
+    # picture reaches the cover — and an ink-only cover means the deck was redrawn
+    # on a base with no photo layout, which is an unfinished state, never a build
+    # anyone delivers. Checked in reference mode too; the exemplar passes it by
+    # construction.
+    cover_cfg = geometry.get("cover") or {}
+    want_layout = str(cover_cfg.get("layout") or "").strip()
+    remedy = ("an ink-only cover is an unfinished state; build with the exemplar "
+              "builder (tools/build_deck_v2.py) or set deck.images.cover")
+    cover_fail = []
+    if not slides:
+        cover_fail.append(f"the deck has no cover slide — {remedy}")
+    else:
+        cover_slide = slides[0]
+        layout = cover_slide.slide_layout
+        got_layout = (layout.name or "").strip()
+        if not want_layout:
+            note.append("the reference geometry records no cover layout name "
+                        "(cover.layout), so only the picture half of the cover "
+                        "check runs")
+        elif norm(got_layout) != norm(want_layout):
+            cover_fail.append(
+                f"the cover sits on the \"{got_layout or 'unnamed'}\" layout, not the "
+                f"reference's \"{want_layout}\" photo layout that carries the family's "
+                f"hero — {remedy}")
+        pics = sum(1 for sp in list(walk(layout.shapes)) + shapes.get(COVER, [])
+                   if sp.shape_type is not None and "PICTURE" in str(sp.shape_type))
+        if pics == 0:
+            cover_fail.append(f"the cover has no hero picture — {remedy}")
+    if cover_fail and legacy_cover_ok:
+        warn.extend(cover_fail)
+        warn.append("the cover was passed by --legacy-cover-ok: this is the legacy "
+                    "redraw path only, and this deck is not deliverable as final")
+    else:
+        fail.extend(cover_fail)
+
+    # 5 — the reference's own faces only
     seen = {}
     for i, sps in shapes.items():
         for sp in sps:
@@ -282,7 +394,7 @@ def run_checks(deck_path, exp, geometry, reference: bool = False):
                     f"{', '.join(str(n) for n in sorted(on))}; the reference deck "
                     f"uses {face_names}")
 
-    # 5 — corners: the reference rounds chips and badges, nothing else
+    # 6 — corners: the reference rounds chips and badges, nothing else
     for i, sps in shapes.items():
         budget = budgets.get(i)
         if budget is None:
@@ -307,7 +419,7 @@ def run_checks(deck_path, exp, geometry, reference: bool = False):
             fail.append(f"slide {i} ({role}): {pills} pills, more than the {cap} this "
                         f"slide allows (the reference has {ref_n})")
 
-    # 6 — an icon, not a number, on every industry card; and no extra pictures
+    # 7 — an icon, not a number, on every industry card; and no extra pictures
     for i, sps in shapes.items():
         budget = budgets.get(i)
         if budget is None or budget.get("max_pictures") is None:
@@ -333,7 +445,76 @@ def run_checks(deck_path, exp, geometry, reference: bool = False):
             fail.append(f"slide {VERTICALS}: a card shows the number \"{text}\" "
                         f"where its industry's icon belongs")
 
-    # 7 — the architecture slide names things and draws the flows
+    # 8 — the proof slide: the delivered case, in the reference's composition
+    #
+    # The owner's rule (2026-09-23): the proof slide is the delivered engagement told
+    # in the reference's own shape — the customer's logo top-left, a headline, three
+    # stat tiles, and four quadrants labelled as the reference labels them. The build
+    # this was set on had no logo, an empty stat band and relabelled quadrants; every
+    # one of those comes back red here.
+    proof_cfg = geometry.get("proof") or {}
+    proof = shapes.get(PROOF, [])
+    tol = float(proof_cfg.get("match_tol_in", 0.25))
+    # The labels and the tiles are found where the reference put them, so they can
+    # only be measured on a deck built from the exemplar. The legacy redraw draws
+    # its own slide 5; under its flag these become warnings, like the cover.
+    proof_shape = warn if legacy_cover_ok else fail
+
+    for i, quad in enumerate(proof_cfg.get("quadrants") or [], start=1):
+        want = str(quad.get("label", ""))
+        sp = shape_at(proof, quad.get("at") or {}, tol)
+        got = shape_text(sp).strip() if sp is not None else ""
+        if not got:
+            proof_shape.append(f"slide {PROOF}: the {i} of 4 block has no label — the "
+                               f"four are "
+                               f"{', '.join(str(q.get('label')) for q in proof_cfg['quadrants'])}"
+                               f", in that order")
+        elif norm(got) != norm(want):
+            proof_shape.append(f"slide {PROOF}: the {i} of 4 block is labelled "
+                               f"\"{got[:60]}\"; the reference labels it \"{want}\" — the "
+                               f"four labels and their order are the reference's, not "
+                               f"the pack's")
+
+    for i, tile in enumerate(proof_cfg.get("stat_tiles") or [], start=1):
+        value = shape_at(proof, tile.get("value") or {}, tol)
+        label = shape_at(proof, tile.get("label") or {}, tol)
+        missing = [what for what, sp in (("figure", value), ("caption", label))
+                   if sp is None or not shape_text(sp).strip()]
+        if missing:
+            proof_shape.append(f"slide {PROOF}: stat tile {i} of 3 has no "
+                               f"{' and no '.join(missing)} — the three tiles are never "
+                               f"empty: the cleared figures, or the metrics being "
+                               f"measured with their baselines")
+    if legacy_cover_ok and proof_shape is warn:
+        warn.append("the proof slide was measured on the legacy redraw path, which "
+                    "draws its own slide 5 — the reference's composition cannot be "
+                    "held to on it, and such a deck is not deliverable as final")
+
+    if reference:
+        note.append("reference mode: the customer's logo is not checked against a "
+                    "clearance — that is about a pack brief, not geometry")
+    elif not exp["have_spec"]:
+        note.append(f"slide {PROOF}: no pack brief, so whether the customer's logo "
+                    f"belongs on this slide cannot be checked — pass --spec")
+    else:
+        pics = [sp for sp in proof if is_picture(sp)]
+        if exp["name_allowed"] and exp["customer_logo"]:
+            if not pics:
+                fail.append(f"slide {PROOF}: the pack brief clears the customer's name "
+                            f"for {exp['channel']} and names a logo file "
+                            f"(\"{exp['customer_logo']}\"), and the slide carries no "
+                            f"picture — the proof slide shows the customer's logo")
+        elif exp["name_allowed"]:
+            warn.append(f"slide {PROOF}: the customer's name is cleared for this "
+                        f"audience but no logo file was given — the proof slide shows "
+                        f"no logo (set deck.images.customer_logo)")
+        elif pics:
+            fail.append(f"slide {PROOF}: the pack brief does not clear the customer's "
+                        f"name for {exp['channel']}, and the slide carries "
+                        f"{len(pics)} picture(s) — with no clearance the proof slide "
+                        f"carries no logo")
+
+    # 9 — the architecture slide names things and draws the flows
     arch = shapes.get(ARCHITECTURE, [])
     texts = [shape_text(sp) for sp in arch]
     blob = norm(" || ".join(texts))
@@ -369,7 +550,7 @@ def run_checks(deck_path, exp, geometry, reference: bool = False):
             fail.append(f"slide {ARCHITECTURE}: {arrows} arrows for {exp['inputs']} "
                         f"data sources — every source has its own labelled arrow in")
 
-    # 8 — package-table type at or above the reference's own floor
+    # 10 — package-table type at or above the reference's own floor
     for i, budget in budgets.items():
         floor = budget.get("table_floor_pt")
         if floor is None:
@@ -383,7 +564,44 @@ def run_checks(deck_path, exp, geometry, reference: bool = False):
                                 f"{floor:g} pt floor the reference's own table holds "
                                 f"(\"{text[:48]}\") — shorten the wording instead")
                     break
-    return fail, note
+    # 11 — the technology-stack ladder: rows are one width, and what a row holds
+    # stays inside it with the reference's inset. A card flush with, or over, its
+    # band's edge is the defect the owner's review caught (2026-09-23) after a
+    # four-layer stack shortened the rows and left the cards at their old height.
+    for i in sorted(shapes):
+        rows = ladder_rows(shapes[i])
+        if not rows:
+            continue
+        widths = {round(width_in(r), 2) for r in rows}
+        lefts = {round(left_in(r), 2) for r in rows}
+        if len(widths) > 1 or len(lefts) > 1:
+            fail.append(f"slide {i}: the ladder's rows are not one width on one left edge "
+                        f"({', '.join(f'{w:g}' for w in sorted(widths))} in wide)")
+        for sp in shapes[i]:
+            if sp in rows or getattr(sp, "has_table", False):
+                continue
+            t, h, l, w = top_in(sp), height_in(sp), left_in(sp), width_in(sp)
+            if h <= 0 or w <= 0:
+                continue
+            cy, cx = t + h / 2, l + w / 2
+            row = next((r for r in rows
+                        if top_in(r) <= cy <= top_in(r) + height_in(r)
+                        and left_in(r) <= cx <= left_in(r) + width_in(r)), None)
+            if row is None:
+                continue
+            rt, rb = top_in(row), top_in(row) + height_in(row)
+            over = max(rt - t, (t + h) - rb)
+            label = shape_text(sp).strip().splitlines()[0][:40] if shape_text(sp).strip() \
+                else (getattr(sp, "name", "") or "a shape")
+            if over > 0.02:
+                fail.append(f"slide {i}: \"{label}\" sticks out of its row by {over:.2f} in "
+                            f"— the row was resized and what it holds was not")
+            elif (getattr(sp, "shape_type", None) == 1 and w >= 1.0   # a card, not an accent bar or a divider
+                  and h >= 0.6 * height_in(row) and min(t - rt, rb - (t + h)) < 0.05):
+                fail.append(f"slide {i}: a card sits flush with its row's edge — the "
+                            f"reference insets its cards by 0.13 in")
+        break   # one ladder per deck
+    return fail, note, warn
 
 
 def main(argv=None) -> int:
@@ -400,6 +618,12 @@ def main(argv=None) -> int:
                     help="the deck IS the exemplar: skip the checks that compare it "
                          "against a pack brief (header, cover tier line, the "
                          "architecture's naming and flows)")
+    ap.add_argument("--legacy-cover-ok", action="store_true",
+                    help="the legacy redraw path only (tools/build_deck.py on the "
+                         "stripped base, which has neither the photo layout nor the "
+                         "reference's slide 5): report the cover-hero and proof-slide "
+                         "composition checks as loud warnings instead of failures. "
+                         "Such a deck is never delivered as final.")
     args = ap.parse_args(argv)
 
     deck = Path(args.deck)
@@ -420,21 +644,29 @@ def main(argv=None) -> int:
               file=sys.stderr)
         return 2
     try:
-        fail, note = run_checks(deck, exp, geometry, reference=args.reference)
+        fail, note, warn = run_checks(deck, exp, geometry, reference=args.reference,
+                                      legacy_cover_ok=args.legacy_cover_ok)
     except Exception as exc:
         print(f"lint_deck: cannot read the deck: {exc}", file=sys.stderr)
         return 2
 
     for n in note:
         print(f"  note: {n}")
+    for w in warn:
+        print(f"  WARNING: {w}")
     if fail:
         print(f"{len(fail)} problem(s) in {deck.name}:")
         for f in fail:
             print(f"  - {f}")
         return 1
-    print(f"{deck.name}: clean — ten slides, the running header, the reference's "
-          f"faces, square corners, industry icons, the architecture names and flows, "
-          f"table type at or above the floor.")
+    if warn:
+        print(f"{deck.name}: clean apart from the cover warning above — "
+              f"not a deliverable deck.")
+        return 0
+    print(f"{deck.name}: clean — ten slides, the running header, the cover's hero, "
+          f"the reference's faces, square corners, industry icons, the proof slide's "
+          f"four labels and three tiles, the architecture names and flows, table type "
+          f"at or above the floor.")
     return 0
 
 

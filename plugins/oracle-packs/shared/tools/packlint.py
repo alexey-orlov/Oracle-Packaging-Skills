@@ -319,7 +319,10 @@ def _read_text_file(path: str) -> Doc:
     with open(path, "r", encoding="utf-8", errors="replace") as fh:
         lines = fh.read().splitlines()
     if os.path.splitext(path)[1].lower() in ENTITY_EXT:
-        lines = [html.unescape(line) for line in lines]
+        # An embedded image (`data:image/png;base64,...`) is not copy: its random
+        # letters would hit the vocabulary rules ("YEt" read as "yet", 2026-09-23).
+        lines = [html.unescape(re.sub(r"data:[\w/.+-]+;base64,[A-Za-z0-9+/=]+", "data:", line))
+                 for line in lines]
     return Doc(path, lines, kind="text")
 
 

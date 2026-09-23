@@ -106,6 +106,13 @@ steps:
     agents:
       - references/cards/packages.md
 
+  - id: stage-5-proof
+    title: Stage 5 — The delivered case
+    session:
+      - references/cards/proof.md
+    agents:
+      - references/cards/proof.md
+
   - id: stage-6-brief
     title: Stage 6 — The whole brief
     session:

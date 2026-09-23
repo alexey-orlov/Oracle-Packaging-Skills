@@ -51,7 +51,10 @@ class Refused(Exception):
 # written in the pack spec; `{i}` is the vertical's zero-based index. Adding a slot is adding a row
 # here plus a line in `shared/references/visual-assets.md` — nothing else in the tools is per-slot.
 #
-# kind:     icon | photo
+# kind:     icon | photo | supplied
+#           `supplied` is a file only the owner can give us. It is never searched for and never
+#           licence-checked: the right to use it does not come from an open licence at all, it
+#           comes from the customer's clearance recorded in the pack brief.
 # artifact: which artifact consumes it (for the closing message, and so a future skill can ask for
 #           only the slots it needs)
 SLOT_KINDS = {
@@ -77,6 +80,16 @@ SLOT_KINDS = {
         "kind": "photo",
         "spec_path": "deck.images.tomorrow",
         "artifact": "sales deck (today → tomorrow, right)",
+        "repeats": "one",
+    },
+    # The delivered customer's own logo. Owner-supplied, never searched: a company's mark is a
+    # trademark, not an openly licensed picture, and the only copy we may use is the one that came
+    # with the engagement materials. Asked for only where the pack brief clears the customer's name
+    # for some audience; the deck drops the slot on every channel where it does not.
+    "customer_logo": {
+        "kind": "supplied",
+        "spec_path": "deck.images.customer_logo",
+        "artifact": "sales deck (the proof slide, and today → tomorrow)",
         "repeats": "one",
     },
     # Reserved, not yet asked for by any builder. Keeping it here means the one-pager step is a
@@ -170,6 +183,12 @@ ICON_SETS = {
         "credit": "Lucide",
     },
 }
+
+
+# A `supplied` file has no licence to look up. What stands in its record instead: where it came
+# from, and the thing that actually permits the use — the customer's clearance in the pack brief.
+SUPPLIED_SOURCE = "supplied by the owner from the engagement materials"
+SUPPLIED_TERMS = "used under the customer's clearance recorded in the pack brief"
 
 
 def check_photo_licence(code: str) -> dict:

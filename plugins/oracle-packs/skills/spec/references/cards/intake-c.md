@@ -1,19 +1,19 @@
 # Before we start · names and figures
 
-**What this is.** What may be said out loud, and which numbers are cleared. Same stage as the inputs and the frame — a figure cleared late rebuilds every artifact. The anonymous description of the customer is proposed later, with its own part.
+**What this is.** What may be said out loud, and which numbers are cleared; a figure cleared late rebuilds every artifact.
 
 **Ask:**
 
-- **May the customer's name and logo be used, and who may see them** — our own team, Oracle and SoftServe sellers, customers on the site, the demo. *Unanswered:* our own team only; everywhere else an anonymous description of the customer, proposed from the research.
-- **Which figures are cleared, and what each one is** — a delivered result, a proof-of-value result, a target, a modelled figure. *Unanswered:* nothing cleared; every document prints "results to follow" instead of a number.
-- **The proof of value — how long, and at what price?** A target, a contract value, or a constraint. Say why: a proof longer than 10 weeks reads as a project, not a proof; 4–8 weeks is where these land. *Unanswered:* the length is proposed from the scope; the price is left out and marked "to be confirmed", never invented.
-- **Is anything here for our own team only** — contract values, named accounts, staffing. *Unanswered:* everything from the scope document stays internal until you say otherwise.
+- **May the customer's name and logo be used, and who may see them** — our own team, Oracle and SoftServe sellers, customers on the site, the demo. **With a delivered case (`meta.source_engagement`), always asked, never defaulted.** Propose *yes — our own team, and Oracle and SoftServe sellers*: the proof slide then carries their logo and their specifics, the strongest slide in the deck. Ask for the exact name and a logo file from the engagement materials. *No delivered case:* our own team only, an anonymous description elsewhere.
+- **Which figures are cleared, and what each one is** — a delivered result, a proof-of-value result, a target, a modelled figure. *Unanswered:* nothing cleared; documents print "results to follow".
+- **The proof of value — how long, and at what price?** A target, a contract value, or a constraint. Say why: over 10 weeks reads as a project; 4–8 is where these land. *Unanswered:* proposed from the scope, the price "to be confirmed".
+- **Anything for our own team only** — contract values, named accounts, staffing. *Unanswered:* it stays internal.
 
 **Checks this stage must pass**
 
-1. Every audience has an explicit yes or no for the customer's name — an unanswered audience is a no, not a blank.
-2. Every figure carries what kind of figure it is and the caveat that will print beside it.
-3. No price or duration appears anywhere that the owner did not give.
-4. An uncleared figure never reaches a document, in any rounded or rephrased form.
+1. Every audience has an explicit yes or no. With a delivered case, it came from the owner — a default is a failure, not a fallback.
+2. A yes brings back the name as written and a logo file, or an open item naming what is missing.
+3. Every figure carries its kind and its caveat; an uncleared one never reaches a document, rephrased or rounded.
+4. No price or duration appears that the owner did not give.
 
-**Fills:** `clearance.*`, `kpis[].figure_status`, `packages[].price`, `internal_only[]`.
+**Fills:** `clearance.*`, `meta.source_engagement.customer`, `deck.images.customer_logo`, `kpis[].figure_status`, `packages[].price`, `internal_only[]`.

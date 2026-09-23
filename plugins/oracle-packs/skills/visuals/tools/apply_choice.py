@@ -22,6 +22,12 @@ key being written; if anything else moved, nothing is saved.
 to the library's map. It is off by default and never overwrites: a name already in the library is
 reported, not replaced.
 
+A `supplied` slot — today only `customer_logo` — is the one exception to the licence gate. That
+file comes from the owner's own engagement materials rather than from a picture library, so there
+is no sidecar to read and no licence to check: the record says where it came from and that it is
+used under the customer's clearance recorded in the pack brief, and the sidecar is written beside
+the copy.
+
 Exit codes: 0 applied · 1 usage or input error (unknown slot, missing file, no provenance) ·
 2 the file's recorded licence is not one this bundle may use · 3 not used here.
 """
@@ -39,8 +45,8 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from visuals_common import (  # noqa: E402
     CREDITS_HEADER, EXIT_LICENCE, EXIT_OK, EXIT_USAGE, ICON_LICENCES, PHOTO_LICENCES,
-    credits_line, eprint, load_spec, pack_dir, parse_slot, read_sidecar, slot_kind,
-    slot_spec_path, slugify,
+    SUPPLIED_SOURCE, SUPPLIED_TERMS, credits_line, eprint, load_spec, pack_dir, parse_slot,
+    provenance_record, read_sidecar, slot_kind, slot_spec_path, slugify, write_sidecar,
 )
 
 DEFAULT_LIBRARY = os.path.join(
@@ -360,18 +366,30 @@ def main(argv: list[str]) -> int:
     if not os.path.exists(args.file):
         eprint(f"no file at {args.file}")
         return EXIT_USAGE
-    try:
-        rec = read_sidecar(args.provenance or args.file)
-    except FileNotFoundError as exc:
-        eprint(str(exc))
-        return EXIT_USAGE
+    if kind == "supplied":
+        # No search, no sidecar, no licence lookup. The owner handed us this file from the
+        # engagement materials, and what permits the use is the customer's clearance recorded in
+        # the pack brief — so that is what goes in the record, in those words.
+        rec = provenance_record(
+            slot=args.slot, kind=kind, file=args.file,
+            title=os.path.splitext(os.path.basename(args.file))[0],
+            source=SUPPLIED_SOURCE, licence_name=SUPPLIED_TERMS, terms=SUPPLIED_TERMS,
+            note=args.note,
+        )
+    else:
+        try:
+            rec = read_sidecar(args.provenance or args.file)
+        except FileNotFoundError as exc:
+            eprint(str(exc))
+            return EXIT_USAGE
 
-    lic = (rec.get("licence") or "").lower()
-    allowed = ICON_LICENCES if kind == "icon" else PHOTO_LICENCES
-    if lic not in allowed:
-        eprint(f"the recorded licence for this file is {lic!r}, which is not one this bundle may "
-               f"use for a {kind}. Allowed: {', '.join(sorted(allowed))}. Nothing was written.")
-        return EXIT_LICENCE
+        lic = (rec.get("licence") or "").lower()
+        allowed = ICON_LICENCES if kind == "icon" else PHOTO_LICENCES
+        if lic not in allowed:
+            eprint(f"the recorded licence for this file is {lic!r}, which is not one this bundle "
+                   f"may use for a {kind}. Allowed: {', '.join(sorted(allowed))}. Nothing was "
+                   f"written.")
+            return EXIT_LICENCE
 
     pack = pack_dir(args.spec)
     visuals = os.path.join(pack, "visuals")
@@ -379,6 +397,11 @@ def main(argv: list[str]) -> int:
 
     copied = [] if args.dry_run else copy_in(args.file, visuals, args.slot, rec)
     chosen = copied[0] if copied else args.file
+    if kind == "supplied" and copied:
+        # The owner's file arrives with no sidecar; write one beside the copy so the record
+        # travels with the picture like every other file in the pack. It is removed with the copy
+        # if the spec edit is then refused.
+        write_sidecar(chosen, dict(rec, file=chosen, slot=args.slot))
     if kind == "icon":
         ink = next((p for p in copied if p.endswith("-ink.png")), chosen)
         white = next((p for p in copied if p.endswith("-white.png")), None)
@@ -386,6 +409,10 @@ def main(argv: list[str]) -> int:
                  "source": rec.get("source", "-"), "licence": rec.get("licence_name", "-")}
         if white:
             value["file_white"] = os.path.relpath(white, pack)
+    elif kind == "supplied":
+        value = {"file": os.path.relpath(chosen, pack),
+                 "source": SUPPLIED_SOURCE,
+                 "licence": SUPPLIED_TERMS}
     else:
         value = {"file": os.path.relpath(chosen, pack),
                  "source": rec.get("source", "-"),
