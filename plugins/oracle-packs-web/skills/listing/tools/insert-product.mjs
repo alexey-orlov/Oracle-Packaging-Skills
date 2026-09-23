@@ -4,41 +4,68 @@
  *
  *   node insert-product.mjs --entry entry.js --content <site>/site/data/content.js \
  *        [--config <site>/site/data/config.js --config-entry entry.js] \
+ *        [--links <site>/links.json [--demo-path demo/<slug>/index.html]] \
  *        [--before <slug>] [--dry-run]
  *
  * WHY A TOOL. The entry goes inside `products: [ … ]`, which is 2,000 lines into
  * a 190 KB file whose last element has no trailing comma. Hand-editing it is how
  * a build breaks silently: an entry pasted after the closing bracket parses fine
  * and renders nothing. This does the splice, then re-runs the file through a
- * sandbox and refuses to write unless the catalog actually grew by one.
+ * sandbox and refuses to write unless the catalog actually grew by one. With
+ * --links it also writes the product's kit-links entry (site round 12), because
+ * the site's checker fails a product that has none, and a step done by hand is
+ * the step a rebuild forgets.
  *
  * WHAT IT REFUSES TO DO
  *   - overwrite a slug that already exists (there is no --force: replacing an
  *     entry is an edit of the site's own copy, made in the site's own repo);
  *   - write anything when the spliced file does not evaluate, or when the
  *     product count did not go up by exactly one;
- *   - touch config.js unless both --config and --config-entry are given.
+ *   - touch config.js unless both --config and --config-entry are given;
+ *   - add a kit-links entry that links.json already carries, or write to a
+ *     links.json that is not valid JSON or has no `products` object. Every
+ *     refusal comes before the first write: a refused run writes nothing anywhere.
  *
  * INPUTS
  *   --entry <file>         a file holding ONE product object literal. Leading and
  *                          trailing comments are fine, and so are the extra blocks
  *                          of assets/exemplar-product-entry.js: the first balanced
- *                          {...} carrying a `slug:` key is taken and the rest ignored.
+ *                          {...} carrying a `slug:` key — bare, or JSON-quoted
+ *                          `"slug":` as the generated exemplar writes it — is taken
+ *                          and the rest ignored.
  *   --content <file>       the target site/data/content.js.
  *   --config <file>        the target site/data/config.js (optional).
  *   --config-entry <file>  a file holding ONE `"<slug>": { … }` switch block, or
  *                          the exemplar file, from which the block whose key is
  *                          this slug is taken (optional; requires --config).
  *                          The slug is also appended to `productOrder`.
+ *   --links <file>         the site's links.json, at the repo root (optional).
+ *                          Adds `products["<slug>"]` with the six kit keys in the
+ *                          site's order, every one "" until its artifact exists.
+ *   --demo-path <path>     the walkthrough's path inside the publish root, written
+ *                          as `interactiveDemo` (optional; requires --links). Pass
+ *                          it only once the walkthrough is on disk: the site's
+ *                          sync-links step fails a path that is not.
  *   --before <slug>        insert before that entry instead of at the end of the array.
  *   --dry-run              report what would change; write nothing.
  *
- * Exit 0 written (or dry-run clean) · 1 refused · 2 inputs not found.
+ * BACKUPS. Every file a run changes is copied first, to
+ * <site root>/.work/insert-product/<ISO timestamp, colons as dashes>/<its name>,
+ * the site root being the nearest folder above --content that holds
+ * site.manifest.json. The site repo autosyncs and git-ignores only .work/, so a
+ * backup beside content.js would be committed. With no manifest above --content
+ * (a scratch copy), each backup sits beside its file as <name>.bak. The run
+ * prints where they went.
+ *
+ * After a --links run, run the site's paths.syncLinks from the site root: it
+ * regenerates the two files that copy links.json, and the checker fails them stale.
+ *
+ * Exit 0 written (or dry-run clean) · 1 refused · 2 an input missing or not found.
  * Dependency-free: any Node ≥ 14.
  */
 
-import { readFileSync, writeFileSync, existsSync, copyFileSync } from "node:fs";
-import { resolve, basename } from "node:path";
+import { readFileSync, writeFileSync, existsSync, copyFileSync, mkdirSync } from "node:fs";
+import { resolve, basename, dirname, join } from "node:path";
 import vm from "node:vm";
 
 const ARGV = process.argv.slice(2);
@@ -46,7 +73,10 @@ const opt = (n) => { const i = ARGV.indexOf("--" + n); return i !== -1 && i + 1 
 const has = (n) => ARGV.indexOf("--" + n) !== -1;
 
 if (has("help") || !ARGV.length) {
-  console.log(readFileSync(new URL(import.meta.url)).toString().split("\n").slice(1, 40).join("\n").replace(/^ ?\*\/?/gm, ""));
+  /* The header comment is the help: every line from `/**` to its closing `*\/`. */
+  const lines = readFileSync(new URL(import.meta.url)).toString().split("\n");
+  const end = lines.findIndex((l, i) => i > 1 && /^\s*\*\/\s*$/.test(l));
+  console.log(lines.slice(2, end === -1 ? lines.length : end).join("\n").replace(/^ ?\*\/?/gm, ""));
   process.exit(0);
 }
 
@@ -57,10 +87,15 @@ const ENTRY = need(opt("entry"), "entry");
 const CONTENT = need(opt("content"), "content");
 const CONFIG = opt("config") ? need(opt("config"), "config") : "";
 const CONFIG_ENTRY = opt("config-entry") ? need(opt("config-entry"), "config-entry") : "";
+const LINKS = opt("links") ? need(opt("links"), "links") : "";
+const DEMO_PATH = opt("demo-path");
 const BEFORE = opt("before");
 const DRY = has("dry-run");
 if (CONFIG && !CONFIG_ENTRY) die(2, "--config needs --config-entry");
 if (CONFIG_ENTRY && !CONFIG) die(2, "--config-entry needs --config");
+if (has("links") && !LINKS) die(2, "--links needs a file: the site's links.json");
+if (has("demo-path") && !DEMO_PATH) die(2, "--demo-path needs a path, e.g. demo/<slug>/index.html");
+if (DEMO_PATH && !LINKS) die(2, "--demo-path needs --links");
 
 /* ---------------------------------------------------------------- scanning */
 /* A source-aware bracket walk: it steps over strings, template literals and
@@ -86,7 +121,10 @@ function matchBracket(src, openIdx) {
 }
 
 /* The first balanced {...} that carries a `slug:` key — so the exemplar file,
-   which also holds a config block and a diagram block, yields the right one. */
+   which also holds a config block and a diagram block, yields the right one.
+   SLUG_KEY accepts the key bare (`slug:`) or JSON-quoted (`"slug":`): the site
+   writes keys bare, tools/refresh-exemplar.mjs serializes the exemplar as JSON. */
+const SLUG_KEY = "\\bslug[\"']?\\s*:\\s*";
 function firstObjectWith(src, keyRe) {
   for (let i = 0; i < src.length; i++) {
     if (src[i] !== "{") continue;
@@ -100,7 +138,7 @@ function firstObjectWith(src, keyRe) {
 }
 
 function slugOf(text) {
-  const m = text.match(/\bslug\s*:\s*["']([^"']+)["']/);
+  const m = text.match(new RegExp(SLUG_KEY + "[\"']([^\"']+)[\"']"));
   return m ? m[1] : "";
 }
 
@@ -113,7 +151,7 @@ function evalSite(src, filename) {
 
 /* ------------------------------------------------------------------ entry */
 const entrySrc = readFileSync(ENTRY, "utf8");
-const found = firstObjectWith(entrySrc, /\bslug\s*:\s*["']/);
+const found = firstObjectWith(entrySrc, new RegExp(SLUG_KEY + "[\"']"));
 if (!found) die(1, "no product object literal (an object carrying a `slug:` key) found in " + basename(ENTRY));
 const slug = slugOf(found.text);
 if (!slug) die(1, "the entry has no readable slug");
@@ -142,7 +180,7 @@ const normalized = found.text.replace(/^\s+/, "");
 let out;
 let where;
 if (BEFORE) {
-  const target = new RegExp("\\n(\\s*)\\{[^]*?slug\\s*:\\s*[\"']" + BEFORE.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "[\"']");
+  const target = new RegExp("\\n(\\s*)\\{[^]*?" + SLUG_KEY + "[\"']" + BEFORE.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "[\"']");
   const m = contentSrc.match(target);
   if (!m || m.index === undefined || m.index > closeIdx || m.index < openIdx) {
     die(1, '--before "' + BEFORE + '" names no entry inside the products array');
@@ -219,17 +257,76 @@ if (CONFIG) {
   }
 }
 
+/* ---------------------------------------------------------------- links */
+/* The kit-links entry (site round 12): the six keys in the site's own order,
+   each "" until its artifact exists. links.json is JSON, so it is parsed and
+   re-serialized rather than spliced; a round trip keeps its key order. */
+const LINK_KEYS = ["onePager", "salesDeck", "featureList", "interactiveDemo", "interactiveDemoArtifact", "video"];
+let linksOut = "", linksNote = "";
+if (LINKS) {
+  let links;
+  try {
+    links = JSON.parse(readFileSync(LINKS, "utf8"));
+  } catch (e) {
+    die(1, basename(LINKS) + " is not valid JSON — nothing written: " + e.message);
+  }
+  const isMap = (v) => v !== null && typeof v === "object" && !Array.isArray(v);
+  if (!isMap(links) || !isMap(links.products)) die(1, basename(LINKS) + " has no `products` object — nothing written");
+  if (Object.prototype.hasOwnProperty.call(links.products, slug)) {
+    die(1, basename(LINKS) + ' already carries "' + slug + '" — nothing written');
+  }
+  const linkEntry = {};
+  for (const key of LINK_KEYS) linkEntry[key] = key === "interactiveDemo" ? DEMO_PATH : "";
+  links.products[slug] = linkEntry;
+  linksOut = JSON.stringify(links, null, 2) + "\n";
+  linksNote = " · links.json kit-links entry added (" +
+    (DEMO_PATH ? "interactiveDemo " + DEMO_PATH + ", the other five empty" : "all six keys empty") + ")";
+}
+
 /* ---------------------------------------------------------------- write */
 const summary =
   'insert-product: "' + slug + '" ' + where + " — content.js " +
   before.products.length + " → " + after.products.length + " products" +
-  (CONFIG ? " · config.js switch block added" + cfgNote : "");
+  (CONFIG ? " · config.js switch block added" + cfgNote : "") + linksNote;
 
 if (DRY) { console.log("[dry-run] " + summary); console.log("[dry-run] nothing written"); process.exit(0); }
 
-copyFileSync(CONTENT, CONTENT + ".bak");
+/* Backups leave the site's tree (header, BACKUPS): into the git-ignored
+   .work/ of the nearest folder above --content that holds site.manifest.json,
+   else beside each file as <name>.bak. */
+function siteRootOf(file) {
+  for (let dir = dirname(file); ; dir = dirname(dir)) {
+    if (existsSync(join(dir, "site.manifest.json"))) return dir;
+    if (dirname(dir) === dir) return "";
+  }
+}
+const SITE_ROOT = siteRootOf(CONTENT);
+const BACKUP_DIR = SITE_ROOT
+  ? join(SITE_ROOT, ".work", "insert-product", new Date().toISOString().replace(/:/g, "-"))
+  : "";
+function backup(file) {
+  const to = BACKUP_DIR ? join(BACKUP_DIR, basename(file)) : file + ".bak";
+  if (BACKUP_DIR) mkdirSync(BACKUP_DIR, { recursive: true });
+  copyFileSync(file, to);
+  return to;
+}
+
+const backups = [backup(CONTENT)];
 writeFileSync(CONTENT, out, "utf8");
-if (CONFIG) { copyFileSync(CONFIG, CONFIG + ".bak"); writeFileSync(CONFIG, cfgOut, "utf8"); }
+if (CONFIG) {
+  backups.push(backup(CONFIG));
+  writeFileSync(CONFIG, cfgOut, "utf8");
+}
+if (LINKS) {
+  backups.push(backup(LINKS));
+  writeFileSync(LINKS, linksOut, "utf8");
+}
 console.log(summary);
-console.log("insert-product: backups at " + basename(CONTENT) + ".bak" + (CONFIG ? " and " + basename(CONFIG) + ".bak" : ""));
-console.log("insert-product: now run the site's own checker (site.manifest.json, checker.run) before anything else.");
+console.log(BACKUP_DIR
+  ? "insert-product: backups in " + BACKUP_DIR + "/ (" + backups.map((b) => basename(b)).join(", ") + "), inside the site's git-ignored .work/"
+  : "insert-product: no site.manifest.json above " + basename(CONTENT) + ", so the backups sit beside the files: " + backups.join(", "));
+if (LINKS) {
+  console.log("insert-product: now run, from the site root, the manifest's paths.syncLinks (it regenerates the files copied from links.json), then its checker.run.");
+} else {
+  console.log("insert-product: now run the site's own checker (site.manifest.json, checker.run) before anything else.");
+}

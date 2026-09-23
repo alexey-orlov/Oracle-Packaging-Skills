@@ -2,7 +2,7 @@
 
 **What this is.** Four files under `packs/<slug>/demo/` (or the site manifest's `paths.demos/<slug>/` when the walkthrough goes onto the site): `index.html`, `demo.css`, `demo.js`, `data.js`. Static, no build step, no dependencies.
 
-**What to copy from.** `assets/reference-demo/` is a finished walkthrough — the fidelity yardstick and the parts bin (the KPI band, the changes list, the passive step, the mocked picker, the export tab). It is **code to adapt, not reading material**: open the one file you are adapting, never the folder. **Start from its shape, not its copy.** Never rewire it; it stays as delivered.
+**What to copy from.** `assets/reference-demo/` is a finished walkthrough — the fidelity yardstick and the parts bin (the KPI band, the changes list, the passive step, the mocked picker, the export tab). **Code to adapt, not reading material**: open the one file you are adapting, never the folder. **Start from its shape, not its copy.** Never rewire it; it stays as delivered.
 
 **The checks**
 

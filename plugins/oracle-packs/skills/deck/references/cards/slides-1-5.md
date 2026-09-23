@@ -16,15 +16,15 @@
 **3 Vertical applications.** `verticals[].{name, what_matters_here, icon}`.
 
 - Every industry card carries a **picture, never a number**. No match → a stand-in, and an open item.
-- Fewer than four industries greys the unused card — empty, never a gap.
+- Fewer than four industries greys the unused card: empty, never a gap.
 
 **4 Today → tomorrow.** `problem_solution.{today, tomorrow}` (else problem / solution) · `one_liner` · `deck.vertical_case` · `deck.images.{today, tomorrow, customer_logo}`.
 
-- The two pictures are one pair: the current way of working left, the solution right; a missing file leaves an empty container.
+- The two pictures are one pair: today's way of working left, the solution right; a missing file leaves an empty container.
 
 **5 Proof.** `meta.source_engagement.{context, delivered}` · `packages.value_for_{partner, client}` · `deck.proof_headline` · `kpis[]` · `deck.images.customer_logo`.
 
-- **The delivered case in the reference's composition**, specific to that engagement: logo, headline, three stat tiles, four blocks labelled CONTEXT · SOLUTION · VALUE FOR ORACLE + NVIDIA · VALUE FOR CLIENT, the reference's own labels.
+- **The delivered case in the reference's composition**, specific to that engagement: logo, headline, three stat tiles, four blocks labelled CONTEXT · SOLUTION · VALUE FOR ORACLE + NVIDIA · VALUE FOR CLIENT, the reference's labels.
 - **The tiles are never empty:** cleared figures, else the metrics measured, with baselines.
 - The logo only where the channel clears the name and a file is named; otherwise `anonymized_descriptor`.
 - **One** metric set, its attribution and caveat line. **Peer claims all or none:** a metric excluded from this channel drops the strip.

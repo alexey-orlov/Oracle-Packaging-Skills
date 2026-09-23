@@ -169,8 +169,9 @@ A demo that lives inside the site tree at `site/demo/<slug>/` cannot be opened
 as a top-level page when the site is served as a single preview artifact — a
 supporting file is not a document. So:
 
-- publish the walkthrough **standalone**, as its own preview target, and put that URL in `config.products[<slug>].demoPreviewUrl`;
-- keep `demoUrl` as the **canonical relative path** for the real deployment, unchanged;
+- publish the walkthrough **standalone**, as its own preview target, and put that URL in the site's `links.json` as `products[<slug>].interactiveDemoArtifact` (where the manifest's `publish.demoTargets` says; since site round 12, `config.js` carries no link to a kit artifact);
+- keep `interactiveDemo` as the **canonical path** inside the publish root, `demo/<slug>/index.html`, for the real deployment;
+- run `node tools/sync-links.js` (the manifest's `paths.syncLinks`) from the site root, and include `data/links.js` in the site's publish (`publish.fullTree`): without it every Interactive demo button disappears;
 - the listing's secondary CTA opens the demo **in a new tab**.
 
 ---
@@ -201,7 +202,8 @@ section numbers collide (read the last heading before numbering).
 [ ] wrapper stripped by exact line; diff shows only the skeleton lines
 [ ] read the live target, then publish with root + files map
 [ ] file listing: new files live, nothing live that should not be
-[ ] demo published standalone; demoPreviewUrl set; demoUrl left canonical
+[ ] demo published standalone; links.json interactiveDemoArtifact set; interactiveDemo canonical
+[ ] node tools/sync-links.js run; data/links.js in the site's publish
 [ ] round recorded; new rules turned into checker assertions
 [ ] report: changed / decided differently / still open
 ```

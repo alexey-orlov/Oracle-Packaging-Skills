@@ -20,7 +20,7 @@ build_diagram.py      the pack's ONE architecture model, for all three pictures
 check_diagram.py      the deck, the one-pager and the site figure against that model
 denylist.txt          the customer names and marks that must never ship (internal)
 packlint.py           shared library — YAML with line numbers, text extraction, reporting
-context_budget.py     a skill's per-step reading budget against its cards manifest
+context_budget.py     a skill's per-step reading budget and per-card word caps, against its cards manifest
 regen_roadmap.py      regenerates shared/data/roadmap-*.csv (owned separately)
 tests/run_tests.sh    the suite; fixtures in tests/fixtures/
 ```

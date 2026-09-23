@@ -34,4 +34,4 @@ your report**.
 
 - **Per-demo capture scenarios.** They name one product's selectors; they live beside the demo they drive. `../tools/README.md` shows their shape.
 - **Images, posters and step frames.** Each demo produces its own, at DPR 2, from the state that carries the cleared figure.
-- **Preview URLs.** Where a demo is published is a runner input (`demoPreviewUrl` on the listing), never a constant in a bundle.
+- **Preview URLs.** Where a demo is published is a runner input (`interactiveDemoArtifact` in the site's `links.json`), never a constant in a bundle.

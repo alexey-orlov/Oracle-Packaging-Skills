@@ -1,6 +1,6 @@
 # The sales deck — .pptx, 16:9, ten slides
 
-**Slide order, fixed.** Packs differ in content, never in anatomy. The spec keys per slide are on the deck skill's `slides-1-5.md` and `slides-6-10.md`.
+**Slide order, fixed.** Packs differ in content, never in anatomy. Spec keys per slide: the deck skill's `slides-1-5.md` and `slides-6-10.md`.
 
 1. **Cover** — name, one-liner, who it is for, the family's hero picture. No tier line, no header.
 2. **Use case** — problem card | solution card, up to three KPI chips, the anchor line.
@@ -15,4 +15,4 @@
 
 **The components, in the form they take here.** Name → the cover title and the running header. One-liner → the cover subtitle, short form. ICP → the cover's lower line. Capabilities → the handling rows on slides 9 and 10. Workflow → slide 4, prose. Architecture → slide 8, canonical detailed form; its ladder is slide 7. Oracle products → named on the architecture, every integration claim stating its tier. KPIs and the delivered case → slide 5.
 
-Speaker notes in the source decks carry live review comments; never reproduced.
+Source-deck speaker notes carry live review comments; never reproduced.

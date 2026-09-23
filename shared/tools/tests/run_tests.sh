@@ -30,6 +30,10 @@ LAST=""
 say()  { printf '%s\n' "$*"; }
 ok()   { PASS=$((PASS + 1)); printf '  ok   %s\n' "$1"; }
 bad()  { FAIL=$((FAIL + 1)); printf '  FAIL %s\n' "$1"; printf '%s\n' "$LAST" | sed 's/^/       | /'; }
+# warn <line> — not a failure, but repeated just above the final report so it is seen
+WARNINGS=""
+warn() { WARNINGS="${WARNINGS}$1
+"; printf '  %s\n' "$1"; }
 
 # run_case <label> <expected exit> <command...>
 run_case() {
@@ -541,6 +545,240 @@ for f in one-pager/tools/build_one_pager.py exec-summary/tools/build_exec_summar
     grep -q "in the proof of value; results to follow." "$TESTS/../../../plugins/oracle-packs/skills/$f"
 done
 
+# ------------------------------------ the listing inserter writes the kit-links entry
+# Site round 12 moved every kit link into links.json at the site's root, and the
+# site's checker fails a product with no entry there, so the inserter writes one in
+# the same run as the catalog entry: six keys in the site's order, all "" except
+# the walkthrough's path. A dry run writes nothing, and a slug the file already
+# carries is refused before anything is written (2026-09-23).
+say ""
+say "insert-product.mjs --links"
+if ! command -v node >/dev/null 2>&1; then
+  say "  (skipped: no node)"
+else
+  INSERTER="$(cd "$TESTS/../../.." && pwd)/plugins/oracle-packs-web/skills/listing/tools/insert-product.mjs"
+  LK="$WORK/links-site"
+  mkdir -p "$LK"
+  cat > "$LK/content.js" <<'EOF'
+window.SITE_CONTENT = {
+  products: [
+    { slug: "existing-pack", name: "Existing pack" }
+  ]
+};
+EOF
+  cp "$LK/content.js" "$LK/content.pristine.js"
+  cat > "$LK/entry.js" <<'EOF'
+/* one product object literal, as the listing skill writes it */
+{
+  slug: "new-pack",
+  name: "New pack"
+}
+EOF
+  cat > "$LK/links.json" <<'EOF'
+{
+  "siteUrl": "",
+  "products": {
+    "existing-pack": {
+      "onePager": "",
+      "salesDeck": "",
+      "featureList": "",
+      "interactiveDemo": "",
+      "interactiveDemoArtifact": "",
+      "video": ""
+    }
+  }
+}
+EOF
+  cp "$LK/links.json" "$LK/links.before.json"
+
+  run_case "a dry run with --links" 0 \
+    node "$INSERTER" --content "$LK/content.js" --entry "$LK/entry.js" \
+    --links "$LK/links.json" --demo-path demo/new-pack/index.html --dry-run
+  expect "the dry run" "links.json kit-links entry added" "nothing written"
+  run_case "the dry run left links.json as it was" 0 cmp -s "$LK/links.before.json" "$LK/links.json"
+
+  run_case "--demo-path without --links is a usage error" 2 \
+    node "$INSERTER" --content "$LK/content.js" --entry "$LK/entry.js" \
+    --demo-path demo/new-pack/index.html --dry-run
+
+  run_case "a real run with --links" 0 \
+    node "$INSERTER" --content "$LK/content.js" --entry "$LK/entry.js" \
+    --links "$LK/links.json" --demo-path demo/new-pack/index.html
+  run_case "links.json carries the new entry, the other five keys empty" 0 \
+    "$PY" -c 'import json, sys
+e = json.load(open(sys.argv[1], encoding="utf-8"))["products"]["new-pack"]
+print(",".join(e)); print(e["interactiveDemo"])
+sys.exit(0 if all(v == "" for k, v in e.items() if k != "interactiveDemo") else 1)' "$LK/links.json"
+  expect "the new entry" "onePager,salesDeck,featureList,interactiveDemo,interactiveDemoArtifact,video" \
+    "demo/new-pack/index.html"
+
+  # Against the untouched catalog, so the links check (not the catalog's own
+  # duplicate check) is the one that has to refuse.
+  run_case "a slug links.json already carries is refused" 1 \
+    node "$INSERTER" --content "$LK/content.pristine.js" --entry "$LK/entry.js" \
+    --links "$LK/links.json"
+  expect "the refusal" "already carries" "nothing written"
+  run_case "the refused run left its catalog as it was" 0 cmp -s "$LK/content.js.bak" "$LK/content.pristine.js"
+
+  # Under a site.manifest.json the backups leave the site's tree for its git-ignored
+  # .work/insert-product/<timestamp>/: the site repo autosyncs, so a .bak beside
+  # content.js would be committed (2026-09-23). The runs above have no manifest
+  # above them and keep the old place, beside the file.
+  say ""
+  say "insert-product.mjs backups under a site manifest"
+  MSITE="$WORK/manifest-site"
+  mkdir -p "$MSITE/site/data"
+  printf '{ "paths": { "content": "site/data/content.js" } }\n' > "$MSITE/site.manifest.json"
+  cp "$LK/content.pristine.js" "$MSITE/site/data/content.js"
+  run_case "a real run under a site manifest" 0 \
+    node "$INSERTER" --content "$MSITE/site/data/content.js" --entry "$LK/entry.js"
+  expect "the run under a manifest" ".work/insert-product/"
+  BAK="$(find "$MSITE/.work/insert-product" -type f -name content.js 2>/dev/null | head -1)"
+  run_case "the backup landed under .work/insert-product/" 0 test -f "$BAK"
+  run_case "the backup is the catalog as it was" 0 cmp -s "$BAK" "$LK/content.pristine.js"
+  run_case "no backup beside the file" 1 test -e "$MSITE/site/data/content.js.bak"
+fi
+
+# ------------------------------------------------ the exemplar and the site
+# The listing exemplar is GENERATED from the site manifest's exemplarProduct by
+# refresh-exemplar.mjs, never edited by hand: the hand copy drifted (a retired key,
+# "Scale" for "Scaling", old category ids) and would have failed the site's own
+# checker (2026-09-23). Against the live site, drift is a WARNING, not a failure: the
+# site moves on its own schedule and must not block an unrelated release. Against a
+# scratch site the tool must blank the account-bound URLs, write what the inserter
+# reads, pass --check on its own output, fail it once the site's entry changes, and
+# refuse a deny-listed name without printing it.
+say ""
+say "refresh-exemplar.mjs (the exemplar and the site)"
+if ! command -v node >/dev/null 2>&1; then
+  say "  (skipped: no node)"
+else
+  LISTING_TOOLS="$(cd "$TESTS/../../.." && pwd)/plugins/oracle-packs-web/skills/listing/tools"
+  REFRESH="$LISTING_TOOLS/refresh-exemplar.mjs"
+  SITE_ROOT="${ORACLE_SITE_ROOT:-$HOME/Documents/GitHub/Oracle-Solutions-Site}"
+  if [ ! -f "$SITE_ROOT/site.manifest.json" ]; then
+    say "  (skipped: no site root)"
+  else
+    LAST="$(node "$REFRESH" --site "$SITE_ROOT" --check 2>&1)"; got=$?
+    case "$got" in
+      0) ok "the exemplar matches the site's exemplar product" ;;
+      1) printf '%s\n' "$LAST" | sed 's/^/       | /'
+         warn "WARNING: the exemplar drifts from the site's exemplar product — run node plugins/oracle-packs-web/skills/listing/tools/refresh-exemplar.mjs --site $SITE_ROOT" ;;
+      *) printf '%s\n' "$LAST" | sed 's/^/       | /'
+         warn "WARNING: the exemplar could not be checked against the site (exit $got) — see the line above" ;;
+    esac
+  fi
+
+  MS="$WORK/mini-site"
+  mkdir -p "$MS/site/assets" "$MS/site/data"
+  cat > "$MS/site.manifest.json" <<'EOF'
+{
+  "contract": { "round": 99 },
+  "exemplarProduct": "demo-pack",
+  "paths": {
+    "publishRoot": "site",
+    "content": "site/data/content.js",
+    "config": "site/data/config.js",
+    "diagrams": "site/data/diagrams.js",
+    "links": "links.json"
+  }
+}
+EOF
+  printf 'window.SITE_BRAND = {};\n' > "$MS/site/assets/brand.js"
+  cat > "$MS/site/data/content.js" <<'EOF'
+window.SITE_CONTENT = {
+  products: [
+    { slug: "other-pack", name: "Other pack" },
+    {
+      slug: "demo-pack",
+      name: "Demo pack",
+      oneLiner: "Plans the field week in minutes, and a dispatcher approves it.",
+      jumpstart: { next: [{ tier: "Integration" }, { tier: "Scaling" }] }
+    }
+  ]
+};
+EOF
+  cat > "$MS/site/data/config.js" <<'EOF'
+window.SITE_CONFIG = {
+  productOrder: ["other-pack", "demo-pack"],
+  products: {
+    "other-pack": { marketplace: false, marketplaceUrl: "", video: false, videoPoster: "", successStoryUrl: "" },
+    "demo-pack": { marketplace: true, marketplaceUrl: "", video: true, videoPoster: "", successStoryUrl: "" }
+  }
+};
+EOF
+  cat > "$MS/site/data/diagrams.js" <<'EOF'
+window.SITE_DIAGRAMS = {
+  "demo-pack": {
+    layout: "flow",
+    sources: [{ title: ["Source"], sub: ["Records"] }],
+    target: { title: ["Reviewer", "approves"], sub: ["Nothing ships unreviewed"], accent: true },
+    note: "A person approves every plan"
+  }
+};
+EOF
+  cat > "$MS/links.json" <<'EOF'
+{
+  "siteUrl": "https://example.com/site",
+  "products": {
+    "other-pack": { "onePager": "", "salesDeck": "", "featureList": "", "interactiveDemo": "", "interactiveDemoArtifact": "", "video": "" },
+    "demo-pack": {
+      "onePager": "",
+      "salesDeck": "",
+      "featureList": "",
+      "interactiveDemo": "demo/demo-pack/index.html",
+      "interactiveDemoArtifact": "https://claude.ai/code/artifact/test-only-artifact",
+      "video": "https://video.example.com/test-only-recording"
+    }
+  }
+}
+EOF
+  EX="$WORK/exemplar.js"
+  run_case "the tool writes the exemplar from a scratch site" 0 \
+    node "$REFRESH" --site "$MS" --out "$EX"
+  run_case "the artifact URL and the recording are not in it" 1 grep -q "test-only" "$EX"
+  run_case "block 4 carries interactiveDemoArtifact as \"\"" 0 \
+    grep -q '"interactiveDemoArtifact": ""' "$EX"
+  run_case "block 4 keeps the walkthrough path" 0 \
+    grep -q '"interactiveDemo": "demo/demo-pack/index.html"' "$EX"
+  run_case "--check is clean on what the tool wrote" 0 \
+    node "$REFRESH" --site "$MS" --out "$EX" --check
+  run_case "a second run writes nothing" 0 node "$REFRESH" --site "$MS" --out "$EX"
+  expect "the second run" "nothing written"
+
+  # The inserter reads the generated file: the entry by its JSON-quoted "slug" key,
+  # the switch block by its "<slug>": { key.
+  IT="$WORK/insert-target"
+  mkdir -p "$IT"
+  printf 'window.SITE_CONTENT = {\n  products: [\n    { slug: "existing-pack", name: "Existing pack" }\n  ]\n};\n' \
+    > "$IT/content.js"
+  printf 'window.SITE_CONFIG = {\n  productOrder: ["existing-pack"],\n  products: {\n    "existing-pack": { marketplace: false }\n  }\n};\n' \
+    > "$IT/config.js"
+  run_case "the inserter takes the generated exemplar (dry run)" 0 \
+    node "$LISTING_TOOLS/insert-product.mjs" --entry "$EX" --content "$IT/content.js" \
+    --config "$IT/config.js" --config-entry "$EX" --dry-run
+  expect "the dry run" '"demo-pack"' "1 → 2 products" "config.js switch block added"
+
+  sed 's/in minutes, and/in an afternoon, and/' "$MS/site/data/content.js" > "$MS/content.edited"
+  mv "$MS/content.edited" "$MS/site/data/content.js"
+  run_case "--check fails once the site's entry changes" 1 \
+    node "$REFRESH" --site "$MS" --out "$EX" --check
+  expect "the drift" "drift" "block 1"
+
+  # A deny-listed name in the site's copy: refused, named by its line, never printed.
+  sed "s|Plans the field week|Plans the $DENY_NAME field week|" "$MS/site/data/content.js" > "$MS/content.edited"
+  mv "$MS/content.edited" "$MS/site/data/content.js"
+  cp "$EX" "$WORK/exemplar.before.js"
+  run_case "a deny-listed name in the site's entry is refused" 1 \
+    node "$REFRESH" --site "$MS" --out "$EX"
+  expect "the refusal" "deny-list entry on line" "block 1" "oneLiner" "Nothing written"
+  expect_absent "the refusal" "$DENY_NAME"
+  run_case "the refused run left the exemplar as it was" 0 cmp -s "$WORK/exemplar.before.js" "$EX"
+
+  run_case "no site root is a usage error" 2 \
+    env -u ORACLE_SITE_ROOT node "$REFRESH" --out "$WORK/unused.js"
+fi
+
 # --------------------------------------------------------------- context_budget
 # EVERY skill's manifest must stay inside its per-step reading budget; a card that
 # grows past its share fails here, not in a live run. The loop finds the manifests
@@ -591,6 +829,7 @@ fi
 
 # --------------------------------------------------------------------- report
 say ""
+[ -n "$WARNINGS" ] && printf '%s' "$WARNINGS"
 if [ "$FAIL" -eq 0 ]; then
   say "run_tests: $PASS passed, 0 failed"
   exit 0

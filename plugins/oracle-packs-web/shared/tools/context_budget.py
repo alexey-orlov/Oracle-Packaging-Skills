@@ -7,7 +7,8 @@
 A skill used to read everything it might ever need before its first question.
 The manifest says instead which files enter the conversation at which step, and
 this tool holds that honest: it counts the words of every listed file, converts
-them to tokens, and fails when a step reads more than its share.
+them to tokens, and fails when a step reads more than its share or a card grows
+past its own word cap.
 
 What counts
     `session` files enter the conversation at that step and are charged to it.
@@ -20,15 +21,28 @@ Budgets (overridable per manifest under `budget:`)
     start_up_tokens   6000   the step marked `start_up: true`
     step_tokens       2000   every other step
 
+Word caps per file (docs/CONTEXT-BUDGET.md; not overridable)
+    a card              300 words   every `.md` a manifest lists, `session` or
+                                    `agents`, whose path has a `cards/` or
+                                    `anatomy/` folder in it
+    owner-language.md   400 words   the reader's test, the one wider card
+    SKILL.md          1,200 words
+    A file over its cap is reported once, as `card over 300 words: <path> (<n>)`
+    (or `SKILL.md over 1200 words: ...`), even with --quiet, and fails the run
+    like a step over budget: the fix is to tighten the file, never to raise the cap.
+
 Paths
     Relative to the manifest's own `root:` (itself relative to the manifest's
     directory). A path beginning `shared/` resolves against the nearest parent
-    directory that contains one — the bundle's shared folder in the repo, the
-    plugin's synced copy in an install.
+    directory that contains one: the plugin's synced copy (`plugins/<plugin>/shared/`),
+    in the repo as in an install, so an edit to the repo's own `shared/` is
+    measured once `tools/sync-shared.sh` has run.
 
 Exit codes
-    0   every step is within budget (the per-step table is printed)
-    1   a step is over budget, or a listed file is missing
+    0   every step is within budget and every capped file within its cap
+        (the per-step table is printed)
+    1   a step is over budget, a card or SKILL.md is over its word cap, or a
+        listed file is missing
     2   usage or dependency error (bad arguments, unreadable manifest, no PyYAML)
 """
 
@@ -38,6 +52,22 @@ import sys
 USAGE = "usage: context_budget.py <manifest.yaml> [--quiet]"
 
 DEFAULTS = {"tokens_per_word": 1.35, "start_up_tokens": 6000, "step_tokens": 2000}
+
+CARD_WORDS = 300
+OWNER_LANGUAGE_WORDS = 400
+SKILL_WORDS = 1200
+
+
+def word_cap(path):
+    """The per-file word cap docs/CONTEXT-BUDGET.md states for `path`, as
+    (cap, kind), or (None, None) for a file with no cap of its own."""
+    norm = path.replace(os.sep, "/")
+    name = norm.rsplit("/", 1)[-1]
+    if name == "SKILL.md":
+        return SKILL_WORDS, "SKILL.md"
+    if name.endswith(".md") and ("/cards/" in norm or "/anatomy/" in norm):
+        return (OWNER_LANGUAGE_WORDS if name == "owner-language.md" else CARD_WORDS), "card"
+    return None, None
 
 
 def die(msg, code=2):
@@ -104,7 +134,16 @@ def main(argv):
     root = os.path.normpath(os.path.join(manifest_dir, manifest.get("root", ".")))
 
     rows, findings, missing = [], [], []
+    over_cap = {}               # absolute path -> (entry, words, cap, kind); each file once
     total_session_words = 0
+
+    def capped(entry, path, w):
+        """The table flag for a file over its own word cap, recording it once."""
+        file_cap, kind = word_cap(path)
+        if file_cap is None or w <= file_cap:
+            return ""
+        over_cap.setdefault(path, (entry, w, file_cap, kind))
+        return "  OVER the %d-word %s cap" % (file_cap, kind)
 
     for step in manifest["steps"]:
         step_id = step.get("id") or "(unnamed step)"
@@ -119,7 +158,7 @@ def main(argv):
                 continue
             w = words_in(path)
             session_words += w
-            files.append((entry, w))
+            files.append((entry, w, capped(entry, path, w)))
 
         agent_words, agent_files = 0, []
         for entry in step.get("agents") or []:
@@ -129,7 +168,7 @@ def main(argv):
                 continue
             w = words_in(path)
             agent_words += w
-            agent_files.append((entry, w))
+            agent_files.append((entry, w, capped(entry, path, w)))
 
         tokens = int(round(session_words * per_word))
         total_session_words += session_words
@@ -147,10 +186,10 @@ def main(argv):
         for (step_id, files, w, t, cap, is_start, agent_files, aw) in rows:
             flag = "  OVER" if t > cap else ""
             out.write("  %-26s %7d %8d %8d%s\n" % (step_id, w, t, cap, flag))
-            for name, fw in files:
-                out.write("      %-40s %5d w\n" % (name, fw))
-            for name, fw in agent_files:
-                out.write("      %-40s %5d w  (subagent, not charged)\n" % (name, fw))
+            for name, fw, over in files:
+                out.write("      %-40s %5d w%s\n" % (name, fw, over))
+            for name, fw, over in agent_files:
+                out.write("      %-40s %5d w  (subagent, not charged)%s\n" % (name, fw, over))
         out.write("\n  session words across all steps: %d (~%d tokens)\n"
                   % (total_session_words, int(round(total_session_words * per_word))))
 
@@ -159,16 +198,19 @@ def main(argv):
     for step_id, tokens, cap, files in findings:
         out.write("  OVER BUDGET %s: %d tokens against a cap of %d\n"
                   % (step_id, tokens, cap))
-        for name, fw in sorted(files, key=lambda p: -p[1]):
+        for name, fw, _over in sorted(files, key=lambda p: -p[1]):
             out.write("      %-40s %5d w (~%d tokens)\n"
                       % (name, fw, int(round(fw * per_word))))
+    for entry, w, file_cap, kind in over_cap.values():
+        out.write("  %s over %d words: %s (%d)\n" % (kind, file_cap, entry, w))
 
-    if missing or findings:
-        out.write("\ncontext_budget: %d over budget, %d missing\n"
-                  % (len(findings), len(missing)))
+    if missing or findings or over_cap:
+        out.write("\ncontext_budget: %d over budget, %d missing, %d over the word cap\n"
+                  % (len(findings), len(missing), len(over_cap)))
         return 1
     if not quiet:
-        out.write("\ncontext_budget: %d steps, all within budget\n" % len(rows))
+        out.write("\ncontext_budget: %d steps, all within budget; every card within its cap\n"
+                  % len(rows))
     return 0
 
 

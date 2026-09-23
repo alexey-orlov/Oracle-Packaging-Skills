@@ -9,9 +9,10 @@ _Long form; the runtime cards are `references/cards/entry-identity.md`, `entry-o
 > exists only to re-case strings written *before* that rebrand — never add to it.
 
 The listing skill writes **one entry** of `window.SITE_CONTENT.products[]` in a
-practice site's `site/data/content.js`, plus the two things that travel with it:
-a `window.SITE_CONFIG.products["<slug>"]` switch block in `site/data/config.js`
-and a `window.SITE_DIAGRAMS["<slug>"]` figure in `site/data/diagrams.js`.
+practice site's `site/data/content.js`, plus the three things that travel with it:
+a `window.SITE_CONFIG.products["<slug>"]` switch block in `site/data/config.js`,
+a `window.SITE_DIAGRAMS["<slug>"]` figure in `site/data/diagrams.js`, and a
+kit-links entry in the site's `links.json` (§6).
 
 It touches nothing else. `site`, `media`, `disclaimers`, `shared`, `overview`
 (the home page), `productsPage`, `facets`, `services`, `forms` and `salesKit`
@@ -36,7 +37,7 @@ Every string obeys `listing-rules.md`. The site's own checker (`<site>/tools/che
 | `categoryChip` | string | That category's display label, denormalised. Must equal `tags[0]`. |
 | `facet` | string | One `facets.technology[].id` — the platform the pack runs on. |
 | `oneLiner` | string | The tile description **and** the hero lead — one string on both surfaces. A product statement: what it does, for whom, with what outcome. No packaging vocabulary (the checker fails a list of phrases). Every clause traceable to a signed-off source; an unsupported clause is **dropped**, never swapped for a new claim. |
-| `shortLine` | string | ≤ 12 words, ends in a period, different from `oneLiner`. The one line under the name in a catalog row. |
+| ~~`shortLine`~~ | — | **Retired by the site in round 9, and a build failure if it returns.** `oneLiner` is the one line on the tile and the hero. |
 | `statusNote?` | string | One muted line under the hero one-liner, **only** where the pack has no package yet. One sentence. Where it is absent the availability badges say what there is, which is the correct rendering. |
 | `heroLine?` / `heroCaption?` | string | One or the other, never both — a short slogan or a short line above the name, in the same slot and treatment. |
 | `subLine?` | string | A second hero line where the one-liner is very short. Usually absent. |
@@ -144,7 +145,7 @@ output — and every element serves it.
 | `timeline` | 3–4 `{ label, text }` week-by-week nodes. Node 1 is the pre-flight gate where the pack has one. |
 | `needs` | **Exactly 3** short asks — data access, a business owner, sample material. |
 | `investment` | `{ price, duration, includes ≥ 3, footnote }`. `price` and `duration` are each a string **or `null`**. Where **both** are null the card prints one scoped-in-scoping line and no footnote; where one is known it prints what it has. `footnote` is **one line**, never a stack of disclaimers. |
-| `next` | **Exactly 2**, `Integration` then `Scale`, one line each, with duration and price where a signed-off source states them and `Scoped per engagement` where it does not. |
+| `next` | **Exactly 2**, `Integration` then `Scaling`, one line each, with duration and price where a signed-off source states them and `Scoped per engagement` where it does not. |
 | `cta` | `{ label, route }` routed at `#/products/<slug>/contacts`. |
 
 Packaging-internal disclaimers ("framed scope", "flexible add-ons", "beyond the
@@ -153,11 +154,33 @@ customer gets. The checker fails them.
 
 ---
 
-## 6 · `sellers`
+## 6 · The kit links — `links.json`
 
-Not rendered — this block is the **kit manifest**: what whoever sends the kit
-puts in it. `materials` is `[{ key, title, description, state }]`, one row per
-asset; `key` is the lookup into `SITE_CONFIG.products[slug].materials`.
+Not in `content.js` at all (site round 12). Every link a product's sales kit
+uses lives in `links.json` at the site repo's root (manifest `paths.links`),
+outside the publish root, so the file is never published. The site's own
+workflow emails the kit from it (the site's `docs.mail`). Per product, six keys,
+in this order:
+
+| Key | Contract |
+|---|---|
+| `onePager`, `salesDeck`, `featureList` | The kit documents: full https links anyone at Oracle or SoftServe can open. The owner pastes them by hand. |
+| `interactiveDemo` | The walkthrough: its path inside the publish root (`demo/<slug>/index.html`) or a full https URL. Set only once the walkthrough is on disk. |
+| `interactiveDemoArtifact` | The same walkthrough published as its own artifact, used while the site itself runs as one. **An input the runner supplies after publishing, never a constant in this bundle.** |
+| `video` | The recorded demo. |
+
+Every value stays `""` until its artifact exists. The inserter writes the entry
+(`insert-product.mjs --links`): all six keys, empty except `interactiveDemo` when
+a walkthrough ships. After a change to `interactiveDemo`,
+`interactiveDemoArtifact` or `video`, run the manifest's `paths.syncLinks` from
+the site root: it writes the public subset the site's buttons read
+(`paths.siteLinks`, which a publish must include) and the kit email's catalog,
+and the site's checker fails a stale copy.
+
+Retired in site round 12, and failed by the site's checker if they return:
+`content.js` `sellers` (the old unrendered kit manifest) and
+`shared.materialStates`; `config.js` `demoUrl`, `demoPreviewUrl`, `videoUrl` and
+`materials`.
 
 Anything in `content.js` is one view-source away from a customer. No seller
 notes, no internal file names, no internal paths.
@@ -168,17 +191,19 @@ notes, no internal file names, no internal paths.
 
 `SITE_CONFIG.products["<slug>"]` — every key must exist; an **empty string means
 the control does not render**, which is how absence stays an empty container
-rather than a dead button.
+rather than a dead button. Five keys, as of site round 12; the site's
+`docs.config` §3 wins.
 
 | Key | Contract |
 |---|---|
 | `marketplace` | Real boolean. Drives the availability badge. |
 | `marketplaceUrl` | The listing URL. A URL set while `marketplace` is `false` is a build failure. |
-| `demoUrl` | The canonical relative path to the walkthrough, e.g. `demo/<slug>/index.html`. Keep it canonical for the real deployment even while previewing. |
-| `demoPreviewUrl` | Where the demo actually opens **while previewing**. A hosted-preview platform that serves a page as a supporting file cannot open it as a top-level page, so the demo is published standalone and linked by its own URL. **A runner input, never a repo constant.** |
-| `video` / `videoUrl` / `videoPoster` | The demo-video switches; `videoPoster` must exist as a key even when empty. |
+| `video` | Real boolean: the owner's statement that a recording exists or is coming. It turns on the hero's video frame and nothing else; the demo badge and filter read `interactiveDemo` (§6). |
+| `videoPoster` | The still inside that frame; the key exists even when empty. |
 | `successStoryUrl` | Gates the case-study download link. |
-| `materials` | `{ <key>: <url> }` for each `sellers.materials[].key`. |
+
+`marketplace` and `video` are real booleans, never a quoted `"false"`. No link to
+a kit artifact lives in this file (§6).
 
 Site-level in the same file: `productOrder` — catalog order is **owner-controlled
 data, never derived**. A new slug joins the end; the owner moves it.
@@ -203,15 +228,15 @@ or `loop` states the one invariant that keeps the workflow honest.
 
 These hold for every entry, and the site's checker asserts them.
 
-- Every `slug` has a matching key in `SITE_CONFIG.products`.
+- Every `slug` has a matching key in `SITE_CONFIG.products` and an entry in `links.json`.
 - `facet` is one of the site's technology facet ids; `category` one of its category ids.
 - `tags.length === 2`, `tags[0] === categoryChip`, `tags[1] ===` the facet's label. **No surface names a platform in any other words.**
 - `tile.outcomes.length === 3`.
 - 1–4 `metrics` **plus** `metricsNote`; 6–8 `features`; 3–5 `steps` covering every feature exactly once; 3–6 `industryCases`; `scope.in`/`.out` ≥ 4; `moreDetail` ≥ 3; `featuresDetail` ≥ 6.
 - `caseStudy` present as an object or `null`.
 - `stack` 4–5 layers, each with ≥ 1 required item; `capabilities` exactly 4 stages, ≥ 3 items each.
-- `jumpstart.pillars` is `fast` → `low-risk` → `tangible`; `jumpstart.next.length === 2`, Integration → Scale.
-- `oneLiner` carries no packaging phrase; `shortLine` ≤ 12 words, ends in a period, differs from `oneLiner`.
+- `jumpstart.pillars` is `fast` → `low-risk` → `tangible`; `jumpstart.next.length === 2`, Integration → Scaling.
+- `oneLiner` carries no packaging phrase; no `shortLine` (retired by the site in round 9).
 - **No customer name anywhere in the file**, and no reference to a logo path.
 - **No surface states a total, a denominator or a gap** — never the size of the catalog, never what is missing.
 - A missing **image file** is a warning, not a failure: copy and imagery ship on separate tracks.
@@ -228,7 +253,7 @@ rather than filling the gap itself.
 |---|---|---|---|
 | `slug` | `meta.slug` | 4 | verbatim |
 | `name`, `headline` | `meta.name_variants.site` | 4 | split into `{accent, rest}` |
-| `oneLiner` / `shortLine` | `one_liner.full` / `one_liner.short` | 2 | verbatim; re-checked against the packaging deny-list |
+| `oneLiner` | `one_liner.full` | 2 | verbatim; re-checked against the packaging deny-list |
 | `category`, `categoryChip` | `meta.roadmap_block` + the workflow pattern | — | **choice**: map the pack's pattern onto the site's own category taxonomy |
 | `facet`, `tags[1]` | `oracle_products[]` where `role: required` | 9 | the platform those required products belong to, named in the vendor's own words |
 | `hero.image` | — | — | **an input**, not a derivation: imagery comes from the company's own corpus, never the web |
@@ -251,15 +276,15 @@ rather than filling the gap itself.
 | `jumpstart.investment` | `packages.tiers[pov].services_price` + `duration_weeks` | 12 | **only the PoV price ships** |
 | `jumpstart.next[]` | `packages.tiers[integration]`, `[scaling]` | 12 | text only; `Scoped per engagement` where no price is published |
 | `jumpstart.durationShort` | `packages.tiers[pov].duration_weeks` | 12 | one duration, everywhere |
-| `sellers.materials[]` | the pack's artifact set | — | the manifest, never rendered as a list to a reader |
+| `links.json products[<slug>]` | the pack's artifact set, once each is published somewhere anyone at Oracle or SoftServe can open | — | six keys, the owner pastes the document links |
 | `SITE_DIAGRAMS[slug]` | `architecture` | 8 | inputs → compute boundary → human gate |
-| `config.*` | — | — | **runner inputs**: URLs, posters, kit links |
+| `config.*` | — | — | **runner inputs**: URLs, posters |
 
 **Deliberately omitted from the listing**, relative to the full spec: customer
 names and logos; prices beyond the PoV; the per-capability S/M/L handling matrix
 (`packages.capability_handling`); counts and denominators; roadmap and gap
 statements; internal taxonomy names; uncleared time-to-deliver claims; the
-materials inventory (requested, never listed); `contacts.partner_print` and
+kit links (`links.json`, outside the publish root); `contacts.partner_print` and
 `contacts.internal`; `provenance`; `open_questions`.
 
 ---

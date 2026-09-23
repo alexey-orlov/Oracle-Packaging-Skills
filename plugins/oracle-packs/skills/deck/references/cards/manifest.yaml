@@ -36,8 +36,7 @@ steps:
       - references/cards/slides-1-5.md
       - references/cards/slides-6-10.md
       # shared/references/anatomy/artifact-deck.md is cited from build.md but not
-      # loaded: it records the delivered reference deck's own order (three package
-      # tables, architecture on 7), which this skill's ten supersede.
+      # loaded: it fixes the same ten slides these two cards detail.
 
   - id: lint
     title: The deck's own automatic check

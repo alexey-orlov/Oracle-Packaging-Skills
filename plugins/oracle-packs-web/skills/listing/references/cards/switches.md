@@ -1,25 +1,27 @@
-# The switch block
+# Switches and kit links
 
-**What this is.** `SITE_CONFIG.products["<slug>"]` in `site/data/config.js` — the per-product controls that decide which optional surfaces render. Every key must exist; an **empty string means the control does not render**, which is how absence stays an empty container rather than a dead button.
+**What this is.** `SITE_CONFIG.products["<slug>"]` at `paths.config`: which optional surfaces a product renders. An **empty string renders no control**: absence is an empty container, never a dead button.
 
-**The keys**
+**The keys**, as of site round 12; the site's `docs.config` §3 wins.
 
 | Key | Contract |
 |---|---|
 | `marketplace` | real boolean; drives the availability badge |
-| `marketplaceUrl` | the listing URL; a URL set while `marketplace` is `false` is a build failure |
-| `demoUrl` | the canonical relative path to the walkthrough (`demo/<slug>/index.html`), kept canonical for the real deployment even while previewing |
-| `demoPreviewUrl` | where the demo actually opens while previewing — a **runner input, never a repo constant** |
-| `video` / `videoUrl` / `videoPoster` | the demo-video switches; `videoPoster` exists as a key even when empty |
+| `marketplaceUrl` | the listing URL; a build failure while `marketplace` is `false` |
+| `video` | real boolean: a recording exists or is coming; shows the hero's video frame |
+| `videoPoster` | that frame's still; a key even when empty |
 | `successStoryUrl` | gates the case-study download link |
-| `materials` | `{ <key>: <url> }`, one per `sellers.materials[].key` |
+
+**The kit links**, at `paths.links`: six keys per product, in order `onePager`, `salesDeck`, `featureList`, `interactiveDemo`, `interactiveDemoArtifact`, `video`, each `""` until its artifact exists. `interactiveDemo`: the walkthrough's path, `demo/<slug>/index.html`, or an https URL; `interactiveDemoArtifact`: the same walkthrough as its own artifact, while the site runs as one. The last three drive the site's buttons: after changing one, run `paths.syncLinks` from the site root, and the publish includes `data/links.js`. `links.json` and `mail/` never ship.
+
+Retired, and failed by the site's checker: `config.js` `demoUrl`, `demoPreviewUrl`, `videoUrl`, `materials`; `content.js` `sellers`, `shared.materialStates`.
 
 **The checks**
 
-1. Every key above is present; the demo and video switches stay empty strings until those assets exist.
-2. Every slug in `products[]` has a matching key here, and `facet` and `category` are ids the site already defines.
-3. `productOrder` is site-level and **owner-controlled data, never derived**: a new slug joins the end and the owner moves it. Equal-size tiles, one CTA per tile.
-4. Availability is a **capability, not a lifecycle state** — a demo exists, a marketplace listing exists. A product carrying both must not crowd the tag row.
-5. A missing **image file** is a warning, not a failure: copy and imagery ship on separate tracks.
+1. Every key above is present; both booleans are real, never a quoted `"false"`.
+2. Every `products[]` slug has a key here and in `paths.links`; `facet` and `category` are ids the site defines.
+3. `productOrder` is **owner-controlled, never derived**: a new slug joins the end; the owner moves it. Equal-size tiles, one CTA each.
+4. A demo and a marketplace listing together never crowd the tag row.
+5. A missing **image file** warns, never fails: copy and imagery ship on separate tracks.
 
-**Fills / reads:** runner inputs (URLs, posters, kit links); `sellers.materials[].key`.
+**Fills / reads:** runner inputs (URLs, posters); the `links.json` entry the inserter writes and the owner fills.

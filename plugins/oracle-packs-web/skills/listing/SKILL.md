@@ -1,6 +1,6 @@
 ---
 name: listing
-description: Produce the accelerator pack's product listing for the practice mini-site from a confirmed pack spec — a checker-clean `products[]` entry (overview with problem ↔ solution, workflow steps, vertical cases, metrics with qualifiers; technology with the architecture stack and required/optional flags and the capabilities-by-stage view derived from the feature list; the Jumpstart tab with only the PoV price; sellers' materials manifest), inserted into the site's content file and previewed at every width. Use on /oracle-packs-web:listing <pack-spec.yaml> --site <mini-site root>, "add <pack> to the mini-site", "update the <pack> product page", or as step 5 of /oracle-packs:build.
+description: Produce the accelerator pack's product listing for the practice mini-site from a confirmed pack spec — a checker-clean `products[]` entry (overview with problem ↔ solution, workflow steps, vertical cases, metrics with qualifiers; technology with the architecture stack and required/optional flags and the capabilities-by-stage view derived from the feature list; the Jumpstart tab with only the PoV price), inserted into the site's content file and previewed at every width. Use on /oracle-packs-web:listing <pack-spec.yaml> --site <mini-site root>, "add <pack> to the mini-site", "update the <pack> product page", or as step 5 of /oracle-packs:build.
 disable-model-invocation: false
 user-invocable: true
 ---
@@ -26,7 +26,7 @@ The listing is the only artifact end customers read directly. It carries the sam
 2. **Map the tile and the overview tab.** Cards: `entry-identity`, `entry-overview`, `entry-case-study`, plus `shared/references/anatomy/artifact-listing.md` for the section order. Fill every key from the spec; a slot with no fact behind it is filled qualitatively, never omitted.
 3. **Map the technology and Jumpstart tabs.** Cards: `entry-technology`, `entry-jumpstart`. The stage view is derived, not re-typed: `python3 tools/derive-stage-view.py <spec>`.
 4. **Write the copy** on the strongest model, then give it a mechanical pass. Cards: `copy-rules`, `claim-rules`, `exemplar-altitude`. The exemplar entry is long: a fresh-context agent reads it and returns the strings, or you open only the keys you are filling.
-5. **Insert.** Cards: `insert`, `switches`. `node tools/insert-product.mjs --content <site>/<paths.content> --entry <entry file>`, then the figure and the switch block at the manifest's `paths.diagrams` and `paths.config`. The figure is **generated from the pack's architecture model, never written by hand** — `python3 tools/diagram_to_site.py packs/<slug>/architecture.json --slug <slug>` — so the site, the deck and the one-pager draw one picture.
+5. **Insert.** Cards: `insert`, `switches`. `node tools/insert-product.mjs --content <site>/<paths.content> --entry <entry file>`, then the figure and the switch block at the manifest's `paths.diagrams` and `paths.config`, then the kit-links entry at `paths.links` (the tool's `--links`), then run the manifest's `paths.syncLinks` from the site root. The figure is **generated from the pack's architecture model, never written by hand** — `python3 tools/diagram_to_site.py packs/<slug>/architecture.json --slug <slug>` — so the site, the deck and the one-pager draw one picture.
 6. **Gates.** Cards: `gates`, `claim-rules`. `python3 tools/denylist-to-json.py --out <site>/<paths.denyList>` **first** — the customer-name gate fails open, so an unconfigured deny-list warning is a failed gate. Then the site's own checker (the manifest's `checker.run`, from the site root), a clean console on every route, the deny-list sweep, `python3 shared/tools/lint_artifact.py <entry file> --channel customer_site --spec <spec>`, and `check_consistency.py <spec> <entry file>`. The owner hears one plain line about all of it.
 7. **Preview.** Card: `preview`. Every changed screen at the manifest's `preview.widths`, the H1 at `preview.h1Width`, no horizontal overflow.
 8. **Review pack.** Card: `review-pack`. One rebuild round.
@@ -51,6 +51,7 @@ Done = entry inserted, three gates green, consistency clean, preview screenshots
 - [ ] No customer name or logo in copy, alt text, captions, file names or anything under the publish root.
 - [ ] The stage view was derived from the feature list, and drops features rather than adding any.
 - [ ] The architecture figure was generated from the pack's model, and `check_diagram.py` says the site still draws it.
+- [ ] The kit-links entry exists in the site's `links.json` with all six keys and `links.js` is current (`paths.syncLinks`).
 - [ ] Every heading is inside its budget on the rendered page at 375 px.
 - [ ] The open items were listed for the owner, not resolved by the builder.
 - [ ] Everything the owner reviewed was open beside the conversation before the question was asked.

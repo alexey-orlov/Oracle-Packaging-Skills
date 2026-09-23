@@ -159,9 +159,10 @@ through several sub-steps feels broken — show the position inside the step
 9. **Red-team** against the pack's S/M/L rows, feature matrix and listing copy (R5). Close the gaps that do not change the flow. Report the delta.
 10. **Fidelity audit** (R9): A / B / C against the reference corpus, measured; fix the A-items; report the residual B-items with reasons.
 11. **Capture** the step frames and the poster at DPR 2, in the state that carries the cleared figure.
-12. **Wire** the listing: `demoUrl`, `demoPreviewUrl`, `videoPoster`, and the step images. Run the site's checker.
-13. **Publish** the demo as its own page (appendix), then the site.
-14. **Report**: what it covers, the red-team delta, every synthetic figure, the residual inventions, and the decisions that remain the owner's.
+12. **Publish the demo as its own page** (appendix A4). Its standalone URL exists only from this step on, and step 13 wires it.
+13. **Wire** the listing: `interactiveDemo` (the canonical path) and `interactiveDemoArtifact` (the URL step 12 returned) in the site's `links.json`, `videoPoster` in `config.js`, and the step images. Run `node tools/sync-links.js` from the site root, then the site's checker.
+14. **Publish the site**, `data/links.js` included (appendix A4).
+15. **Report**: what it covers, the red-team delta, every synthetic figure, the residual inventions, and the decisions that remain the owner's.
 
 ---
 
@@ -245,10 +246,19 @@ carries the cleared figure; then crop to the listing's fixed step-image frame.
 
 A demo that lives inside the site tree cannot open as a top-level page when the
 site is served as a single preview artifact — a supporting file is not a
-document. So **publish the walkthrough as its own page** and put that URL in the
-listing's `demoPreviewUrl`, while `demoUrl` keeps the canonical relative path for
-the real deployment. The listing's secondary CTA opens it in a new tab. Both
-URLs are runner inputs; neither belongs in a bundle.
+document. So the walkthrough is published on its own first, and the order is
+fixed, because each step needs what the one before it produced:
+
+1. **Publish the walkthrough as its own page.** Its URL exists only from here on.
+2. **Wire it.** That URL goes in the site's `links.json` as
+   `interactiveDemoArtifact`, while `interactiveDemo` holds the canonical path
+   inside the publish root (`demo/<slug>/index.html`) for the real deployment;
+   `videoPoster` and the step images go in with them.
+3. **Run `node tools/sync-links.js`** from the site root, then the site's checker.
+4. **Publish the site**, with `data/links.js` in the publish.
+
+The listing's secondary CTA opens the walkthrough in a new tab. Both links are
+runner inputs; neither belongs in a bundle.
 
 ### A5 · Definition of done
 
@@ -269,5 +279,8 @@ URLs are runner inputs; neither belongs in a bundle.
 [ ] fidelity audit A/B/C done and measured; residual inventions reported
 [ ] no customer mark anywhere; every synthetic figure listed for the owner
 [ ] frames and poster captured at DPR 2 in the cleared state
-[ ] listing wired: demoUrl, demoPreviewUrl, poster, step images; checker OK
+[ ] the demo published as its own page first, its URL in hand
+[ ] listing wired: links.json interactiveDemo + interactiveDemoArtifact (that URL),
+    poster, step images; sync-links run; checker OK
+[ ] the site published after the wiring, data/links.js included
 ```

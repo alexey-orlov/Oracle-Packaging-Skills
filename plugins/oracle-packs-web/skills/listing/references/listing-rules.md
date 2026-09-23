@@ -48,7 +48,7 @@ anywhere; no product-specific variant of a platform name.
 **A7. A price never ships without its disclaimer.** Check: every rendered price
 has a footnote in the same card.
 
-**A8. Only the proof-of-value price ships.** Integration and Scale read
+**A8. Only the proof-of-value price ships.** Integration and Scaling read
 `Scoped per engagement`; every other package price goes in the sales materials,
 not on the page. Check: `jumpstart.next[].price` carries a figure only where a
 signed-off source publishes one, and no money figure appears outside
@@ -56,8 +56,8 @@ signed-off source publishes one, and no money figure appears outside
 
 **A9. The three tiers are named `PoV Jumpstart` · `Integration` · `Scaling`.**
 On the listing the PoV tier's block is titled `Jumpstart Proof-of-Value` and the
-two forward steps are labelled `Integration` then `Scale`. **[checker]** Check:
-`jumpstart.title` is exact; `jumpstart.next[].tier` is `Integration` then `Scale`.
+two forward steps are labelled `Integration` then `Scaling`. **[checker]** Check:
+`jumpstart.title` is exact; `jumpstart.next[].tier` is `Integration` then `Scaling`.
 
 **A10. Commitments are enforced, not written.** One proof-of-value duration,
 identical everywhere on the site. A duration, a price or a promise is a
@@ -102,8 +102,9 @@ pack", "pods", "scoped", "evaluation-first" are internal. A number is a headline
 only when the number is the reader's information — a price, a duration.
 **[checker]** for the packaging phrases in `oneLiner`.
 
-**B3. One-liners state the job and the outcome, never the packaging.** Two
-lengths: a full `oneLiner` and a rep-sayable `shortLine`. **[checker]** Check:
+**B3. One-liners state the job and the outcome, never the packaging.** One
+string, `oneLiner`, on the tile and the hero; `shortLine` was retired by the site in
+round 9 and its checker fails it. **[checker]** Check:
 the one-liner would still be true and useful if the pack were sold a different way.
 
 **B4. Heading budgets, measured on the rendered page.** H1 two to four words,
