@@ -839,7 +839,9 @@ class Build:
         # What every box will say — decided before anything is placed, because the
         # platform's own geometry is laid out to what it has to hold.
         app = ex.by_id(slide, s["architecture.app"])
-        app_layer = self.layer_like("app", "business", default_index=0)
+        # the app layer is named after the pack ("<name> by SoftServe") since the naming rule of
+        # 2026-09-23; failing every word, it is the layer directly above the engine, never the first
+        app_layer = self.layer_like("app", "business", "by softserve", default_index=1)
         app_name = f"{self.spec.name()} by SoftServe"
         app_sub = clean(app_layer.get("summary")) or ", ".join(
             clean(x) for x in (app_layer.get("items") or []))
