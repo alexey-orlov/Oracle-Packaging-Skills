@@ -374,8 +374,9 @@ class Build:
         body = ex.by_id(slide, s["use_case.problem.body"])
         protos = ex.paragraph_prototypes(body)
         lead, tail = split_lead(self.spec.need("problem_solution.problem"))
-        points = [clean(p) for p in (self.spec.get("problem_solution.problem_points") or []) if clean(p)]
-        points = [f"{x['label']}: {x['text']}" if isinstance(x, dict) else x for x in (points or [])]  # the schema writes {label, text}; the exemplar splits on the first ":"
+        raw_points = self.spec.get("problem_solution.problem_points") or []
+        points = [f"{x['label']}: {x['text']}" if isinstance(x, dict) else x for x in raw_points]  # the schema writes {label, text}; the exemplar splits on the first ":" — normalize BEFORE clean(), which would stringify the dict
+        points = [clean(p) for p in points if clean(p)]
         specs: list[tuple[int, list[str]]] = [(0, [lead, tail] if tail else [lead])]
         if points:
             specs.append((1, [""]))
@@ -573,8 +574,9 @@ class Build:
         elif hitl:
             flow += "   ·   every step is reviewed by a person."
         boundaries = " ".join(x for x in (
-            clean(self.spec.get("meta.source_engagement.divergence_from_pack")),
-            self.spec.kpi_caveat()) if x)
+            clean(self.spec.get("meta.source_engagement.divergence_line"))       # the print-ready sentence (schema); the paragraph is internal
+            or clean(self.spec.get("meta.source_engagement.divergence_from_pack")),
+            self.spec.kpi_caveat() if self.spec.figured_kpis() else "") if x)    # no figures, no figure caveat
         content = [
             ("CONTEXT", context),
             ("WHAT THE PACK DOES", pack_does),
@@ -597,7 +599,10 @@ class Build:
         self.log(5, "proof.anchor_strip", anchor, anchor_text)
 
         foot = ex.by_id(slide, s["proof.footnote"])
-        foot_text = f"Figures from {self.spec.kpi_attribution()}. {self.spec.kpi_caveat()}"
+        if self.spec.figured_kpis():
+            foot_text = f"Figures from {self.spec.kpi_attribution()}. {self.spec.kpi_caveat()}"
+        else:   # nothing to attribute yet: say where the first engagement stands instead
+            foot_text = f"First engagement: {self.spec.kpi_attribution()} — contracted, results to follow."
         ex.fill_text(foot, clean(foot_text))
         self.log(5, "proof.footnote", foot, foot_text)
 
@@ -660,7 +665,9 @@ class Build:
 
         claims = [clean(c) for c in (self.spec.get("packages.why_it_sells_for_the_partner") or [])
                   if clean(c)]
-        consumption = clean(self.spec.get("packages.target_oci_consumption"))
+        raw_consumption = self.spec.get("packages.target_oci_consumption")
+        consumption = clean(raw_consumption) if self.spec.has_text(raw_consumption) else (
+            "To be defined" if raw_consumption is not None else "")   # `-` = deliberately empty: keep the panel, say so; an absent key drops it
         blocks = s["proof.blocks"]
         filled: list[tuple[str, str]] = []
         for claim in claims[:len(blocks) - (1 if consumption else 0)]:
@@ -696,8 +703,8 @@ class Build:
         self.log(6, "why.cta", cta, question + " " + who)
 
         foot = ex.by_id(slide, s["proof.footnote"])
-        foot_text = ("Tier names, timing and prices as on the service-packages slides; "
-                     "figures indicative and subject to confirmation.")
+        foot_text = "Tier names, timing and prices as on the service-packages slides" + (
+            "; figures indicative and subject to confirmation." if self.spec.figured_kpis() else ".")
         ex.fill_text(foot, foot_text)
 
     # -- 7 solution layers -------------------------------------------------
@@ -807,13 +814,19 @@ class Build:
         title = ex.find_id(slide, card.get("title"))
         body = ex.find_id(slide, card.get("body"))
         if title is not None and body is not None:
-            ex.fill_lines(title, ["What comes ready",
+            # The top row is the client's own configuration: this card lists what is
+            # configured per client (the layer's items) and the chip card names the
+            # tiers that carry it — the rows below already show what comes ready.
+            ex.fill_lines(title, ["Configured per client",
                                   clean(layer.get("vendor")).upper()])
-            text = f"The part of {self.spec.name()} that is already built and reused"
+            own = [clean(x) for x in (layer.get("items") or []) if clean(x)]
+            own = own[:1] + [x if x[:2].isupper() else x[0].lower() + x[1:] for x in own[1:]]
+            text = "; ".join(own) or clean(layer.get("summary")) or (
+                f"The lists and rules {self.spec.name()} takes from each client")
             ex.fill_text(body, text)
             self.log(7, "layers.card.pack", body, text)
         elif title is not None:
-            ex.fill_lines(title, ["What is tailored", "SOFTSERVE"])
+            ex.fill_lines(title, ["In every tier", "SOFTSERVE"])
 
     # -- 8 architecture ----------------------------------------------------
     # The exemplar draws two columns: the systems the pack reads on the left, the
@@ -1083,10 +1096,11 @@ class Build:
             # The box names the system; what flows travels on the arrow (rule 7), so
             # the data string is never printed twice. A second line appears only when
             # the catalog says what the system is.
-            role = self.system_role(node["system"])
-            ex.fill_lines(box, [node["system"]] + ([role] if role else []))
+            name, qualifier = split_lead(node["system"], (" — ", " - "))   # "Any CRM — Oracle CX included": the name is the box, the rest its second line
+            role = qualifier or self.system_role(node["system"])
+            ex.fill_lines(box, [name] + ([role] if role else []))
             self.log(8, f"architecture.{node['role']}[{node['ix']}]", box,
-                     node["system"], para=0)
+                     name, para=0)
             if role:
                 self.log(8, f"architecture.{node['role']}[{node['ix']}].role", box,
                          role, para=1)
@@ -1307,15 +1321,17 @@ class Build:
                 if is_empty(prose) and not override:
                     ex.set_cell(cell, [(0, ["—"])], glyph_protos["none"])
                     continue
-                glyph = clean(override) or TIER_DEFAULT_GLYPH.get(tid, "●")
-                protos = glyph_protos.get(GLYPH_KIND.get(glyph, "included"),
-                                          glyph_protos["included"])
+                lead = re.match(r"^(●●|●|◐|—)\s*", clean(prose))     # the spec may carry the glyph in the prose itself
+                glyph = clean(override) or (lead.group(1) if lead else TIER_DEFAULT_GLYPH.get(tid, "●"))
+                prose_text = clean(prose)[lead.end():] if lead else clean(prose)
+                protos = (glyph_protos["none"] if glyph == "—" else
+                          glyph_protos.get(GLYPH_KIND.get(glyph, "included"), glyph_protos["included"]))
                 if detailed:
                     k = max(ex.distinct_runs(protos[0]), 2)
-                    texts = [glyph] + ["  "] * (k - 2) + [clean(prose)]
+                    texts = [glyph] + ["  "] * (k - 2) + [prose_text]
                     ex.set_cell(cell, [(0, texts)], protos)
                     self.logc(slide_no, f"packages.cell[{ri}][{ci}]", cell,
-                             clean(prose), col_w[ci], ex.to_in(table.rows[r].height),
+                             prose_text, col_w[ci], ex.to_in(table.rows[r].height),
                              original=was[r][ci] if r < len(was) else None,
                              pt=ex.last_run_pt(protos[0]) or 9.0)
                 else:

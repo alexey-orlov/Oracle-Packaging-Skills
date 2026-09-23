@@ -167,11 +167,66 @@ def run_variability(tmp: Path) -> None:
           "the ladder was not filled from architecture.stack[]")
 
 
+def run_figureless(tmp: Path) -> None:
+    """No cleared figure, `-` consumption, {label, text} problem points, a PoV cell that
+    carries its own glyph, a destination named with a qualifier: the deck says so
+    instead of printing dicts, dashes, figure caveats or the internal paragraph."""
+    import yaml
+    spec = yaml.safe_load(VARIABILITY.read_text())
+    for k in spec["kpis"]:
+        k["figure"] = "-"
+    spec["packages"]["target_oci_consumption"] = "-"
+    spec["problem_solution"]["problem_points"] = [
+        {"label": "Slow answers", "text": "a single obligation question takes days of reading"},
+        {"label": "Missed renewals", "text": "auto-renewals pass unnoticed and lock in old terms"}]
+    row0 = spec["packages"]["capability_handling"][0]
+    row0["pov"] = "● " + row0["pov"]
+    spec["architecture"]["outputs"][1]["system"] = "Any BI tool — Obligation dashboard included"
+    spec["meta"]["source_engagement"]["divergence_from_pack"] = "INTERNAL PARAGRAPH never printed"
+    spec["meta"]["source_engagement"]["divergence_line"] = "The pack generalizes the rules the proof of value hard-coded."
+    path = tmp / "figureless-pack-spec.yaml"
+    path.write_text(yaml.safe_dump(spec, allow_unicode=True, sort_keys=False))
+    out = tmp / "figureless"
+    rc, log = build(path, out)
+    check(rc == 0, f"figure-less build exited {rc}, not 0:\n{log}")
+    deck = out / "contract-intelligence-sales-deck.pptx"
+    check(deck.is_file(), "figure-less deck was not written")
+    slides = list(Presentation(str(deck)).slides)
+    t2 = texts(slides[1])
+    check("{'label'" not in t2 and "Slow answers" in t2, "problem points print as raw dicts")
+    t5 = texts(slides[4])
+    check("First engagement" in t5 and "Figures from" not in t5,
+          "the figure-less proof slide still attributes figures")
+    check("illustrative" not in t5, "a figure caveat printed with no figures")
+    check("INTERNAL PARAGRAPH" not in t5 and "hard-coded" in t5,
+          "the proof slide prints the internal divergence paragraph, not the print-ready line")
+    t6 = texts(slides[5])
+    check("OCI CONSUMPTION" in t6 and "To be defined" in t6,
+          "a `-` consumption target does not keep the panel as an empty instance")
+    check("indicative" not in t6, "the seller footnote mentions figures with none in the spec")
+    t7 = texts(slides[6])
+    check("Configured per client" in t7, "the top layer's card does not say what is configured")
+    t8 = texts(slides[7])
+    check("Any BI tool" in t8 and "Any BI tool — Obligation" not in t8,
+          "a qualified destination is not split into name and second line")
+    t9 = next(shp.table for shp in slides[8].shapes
+              if getattr(shp, "has_table", False) and shp.has_table)
+    first = len(t9.rows) - len(spec["packages"]["capability_handling"])
+    check(t9.cell(first, 1).text.strip() == "●",
+          f"PoV glyph carried in the prose is {t9.cell(first, 1).text.strip()!r}, not ●")
+    t10 = next(shp.table for shp in slides[9].shapes
+               if getattr(shp, "has_table", False) and shp.has_table)
+    first10 = len(t10.rows) - len(spec["packages"]["capability_handling"])
+    check("● ●" not in t10.cell(first10, 1).text and "●●" not in t10.cell(first10, 1).text,
+          f"detailed PoV cell doubles the glyph: {t10.cell(first10, 1).text[:40]!r}")
+
+
 def main() -> int:
     with tempfile.TemporaryDirectory() as tmpdir:
         tmp = Path(tmpdir)
         run_fixture(tmp)
         run_variability(tmp)
+        run_figureless(tmp)
     if failures:
         print(f"{len(failures)} of {checks} checks failed:")
         for f in failures:
