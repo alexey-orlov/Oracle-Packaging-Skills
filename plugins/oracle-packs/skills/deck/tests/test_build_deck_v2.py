@@ -100,10 +100,11 @@ def run_fixture(tmp: Path) -> None:
           "the cover still carries the reference's tier ladder line")
     check("Workforce optimization" in cover, "the cover does not name the pack")
 
-    # The hero photo belongs to the reference pack, not to this one.
+    # The cover hero is shared across the pack family (the owner, 2026-09-23) — kept
+    # unless the pack sets deck.images.cover, which the fixture does not.
     hero = [shp for shp in slides[0].slide_layout.shapes
             if shp.shape_type == 13 and "logo" not in (shp.name or "").lower()]
-    check(not hero, "the reference pack's cover photo is still on the layout")
+    check(bool(hero), "the family's cover hero is missing from the cover layout")
 
     # Fidelity: the exemplar's own rounded cards and type sizes are untouched.
     check(rounded(slides[1]) == 6,

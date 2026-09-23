@@ -1,5 +1,9 @@
 # The exemplar builder — filling the reference deck instead of redrawing it
 
+_Read by tools, not by the model. Documentation of `tools/build_deck_v2.py` and
+its slot map, for anyone changing the builder. The runtime card is
+`references/cards/build.md`._
+
 `tools/build_deck_v2.py` builds the sales deck by opening a copy of the reference
 Workforce Optimization deck and **replacing its content**. Nothing here draws a
 card, a corner, a fill or a font: geometry, type, colour, corner radius, table
@@ -58,9 +62,10 @@ looking at it, then reading the shape's XML.
 - **Cover (ref 1) has only three shapes.** The dark ground and the hero photo are
   on the **layout** `Title-AI`, not the slide: `Picture 4` (9.13 × 7.5 in, 2 MB
   PNG) is the hero, `Image 2` is the black freeform mask, and the layout's own
-  background is `solidFill tx1`. The hero is pack-specific, so it is a slot
-  (`cover.photo`), replaced from `deck.images.cover` or removed — never inherited.
-  Removing it leaves the ink ground, which is the explicit empty state.
+  background is `solidFill tx1`. **The hero is shared across the pack family** (the
+  owner, 2026-09-23: "the title slide image can be shared across the packs"): it
+  stays unless the pack sets `deck.images.cover`, which swaps it in place. An
+  ink-only cover is an unfinished state, never the default.
 - **Cover text is one placeholder, not two.** Shape 3 holds the pack name (p0,
   44 pt) and the one-liner (p1, 25 pt). Shape 2 is the tier ladder
   ("PROOF OF VALUE · ROLL-OUT · SCALING"). The tier line is a finding
@@ -153,8 +158,8 @@ Four places, each because the spec's shape differs from the reference's:
 
 - **No scaling to fit.** A deck that cannot hold the wording says so; shrinking
   below the reference's type sizes is the failure this rewrite exists to remove.
-- **No invented imagery.** Cover, before and after are explicit empty states with
-  a stdout line naming the spec key to set. The customer logo is only ever the one
+- **No invented imagery.** Before and after are explicit empty states with a
+  stdout line naming the spec key to set; the cover keeps the family hero. The customer logo is only ever the one
   clearance allows.
 - **No new columns.** A spec with a different number of tiers fills what the
   exemplar's four columns hold and says so; column cloning would change the table

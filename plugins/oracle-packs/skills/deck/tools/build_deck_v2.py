@@ -319,12 +319,13 @@ class Build:
         self.cover_photo(slide)
 
     def cover_photo(self, slide) -> None:
-        """The hero image is the exemplar pack's, never this pack's — replace or remove.
+        """The cover hero is shared across the pack family — kept unless this pack chooses its own.
 
         It lives on the `Title-AI` layout, not on the slide. With
         `deck.images.cover` it is swapped in place (centre-cropped to the frame);
-        without it, it is removed and the layout's own ink ground is the cover,
-        an explicit empty state that the pictures step then fills.
+        without it, the family's own hero stays — the owner's rule (2026-09-23):
+        "the title slide image can be shared across the packs". An ink-only
+        cover is never the default.
         """
         layout = slide.slide_layout
         hero, area = None, 0.0
@@ -341,10 +342,7 @@ class Build:
             ex.replace_picture(hero, path)
             self.note(f"cover: hero image replaced from `deck.images.cover` ({path}).")
             return
-        ex.delete_shape(hero)
-        self.pictures.append(
-            "cover      s1  deck.images.cover — the reference pack's hero photo was "
-            "removed; the cover is the layout's ink ground until one is chosen")
+        self.note("cover: the family hero kept — shared across the packs; set `deck.images.cover` only to replace it.")
 
     # -- 2 use case -------------------------------------------------------
     def use_case(self, slide) -> None:
