@@ -304,8 +304,11 @@ def build_slide(prs, layout, spec: Spec, fit: FitLog, title: str | None):
     if star:
         bits.append("* Indicative; depends on usage and rule-set complexity.")
     # the print-ready sentence first; the long internal statement only as a fallback
-    div = (spec.get("meta.source_engagement.divergence_line")
-           or spec.get("meta.source_engagement.divergence_from_pack"))
+    div = spec.get("meta.source_engagement.divergence_line")   # the one print-ready sentence; the internal note never prints
+    if not div and spec.get("meta.source_engagement.divergence_from_pack"):
+        print("build_exec_summary: no meta.source_engagement.divergence_line in the brief — the "
+              "divergence footnote is omitted (the internal note is never printed); add the line "
+              "through the spec skill's proof card", file=sys.stderr)
     if div:
         bits.append(f"Pack scope differs from the delivered engagement: {div}")
     tail = " ".join(b for b in bits if b)
