@@ -24,9 +24,11 @@ Every artifact reads its content from `packs/<slug>/pack-spec.yaml`. Nothing is 
 | `/oracle-packs-web:listing` | a `products[]` entry for the practice mini-site, checker-clean | oracle-packs-web |
 | `/oracle-packs-web:demo` | a guided interactive walkthrough (asks for sources first) | oracle-packs-web |
 
-## Install
+## Running it anywhere
 
-**As plugins from this marketplace** (recommended once the plugin spike in `docs/PLAN.md` §7 has passed):
+The plugins run on the owner's Macs and on a colleague's Mac or Windows machine. What a machine lacks is found at run time and reported in plain words; nothing degrades silently.
+
+**1. Install from GitHub.** Two private repositories: this one (the marketplace, both plugins) and the practice mini-site's, which only the listing and the demo need. Authenticate once — `gh auth login` (let it set up Git) or an SSH key on your GitHub account — then:
 
 ```bash
 claude plugin marketplace add <this repo's git URL>
@@ -34,54 +36,73 @@ claude plugin install oracle-packs@oracle-packaging-skills
 claude plugin install oracle-packs-web@oracle-packaging-skills   # only if you build listings or demos
 ```
 
-**As a plain copy (pilot)**: copy `plugins/oracle-packs/` to `<your repo>/.claude/skills/oracle-packs/` (and the web plugin likewise). A folder under `.claude/skills/` that carries `.claude-plugin/plugin.json` loads as a plugin in place, with the same `/oracle-packs:<name>` commands, when the session starts at that repo's root.
+For the listing and the demo, clone the mini-site repository and point `ORACLE_SITE_ROOT` at the checkout (or pass `--site`). A release runs `tools/sync-shared.sh` first, so each plugin carries the current `shared/` (`--check` reports drift).
 
-Before either, run `tools/sync-shared.sh` so each plugin carries the current `shared/` copy (the release step; `--check` reports drift).
+> **Note — on the owner's Mac (done 2026-09-18):** the repo folder itself is registered as a local marketplace (`source: directory`) and both plugins are installed at user scope, so `/oracle-packs:…` and `/oracle-packs-web:…` work in every session. Sessions do **not** read this repo: they read a snapshot copied into `~/.claude/plugins/cache/oracle-packaging-skills/<plugin>/<version>/`, and `claude plugin update` re-copies only when the `version` in the plugin's `.claude-plugin/plugin.json` is higher than the installed one — at the same version it reports "already at the latest version" and keeps the old snapshot (2026-09-22: four days of edits had reached no session this way). A release is therefore: bump `version` in **both** `plugins/*/.claude-plugin/plugin.json` (both, because `sync-shared.sh` touches both plugins), then
+>
+> ```bash
+> tools/sync-shared.sh && claude plugin marketplace update oracle-packaging-skills && claude plugin update oracle-packs@oracle-packaging-skills && claude plugin update oracle-packs-web@oracle-packaging-skills
+> ```
+>
+> then start a new session — a running one keeps the version it loaded (the old snapshot directory is kept, so a run in progress does not break). The snapshot is taken from the working tree, committed or not, while the `gitCommitSha` the plugin manager records is HEAD at that moment — commit before releasing if that provenance should mean anything.
 
-**On the owner's Mac (done 2026-09-18):** the repo folder itself is registered as a local marketplace (`source: directory`) and both plugins are installed at user scope, so `/oracle-packs:…` and `/oracle-packs-web:…` work in every session. Sessions do **not** read this repo: they read a snapshot copied into `~/.claude/plugins/cache/oracle-packaging-skills/<plugin>/<version>/`, and `claude plugin update` re-copies only when the `version` in the plugin's `.claude-plugin/plugin.json` is higher than the installed one — at the same version it reports "already at the latest version" and keeps the old snapshot (2026-09-22: four days of edits had reached no session this way). A release is therefore: bump `version` in **both** `plugins/*/.claude-plugin/plugin.json` (both, because `sync-shared.sh` touches both plugins), then
+**2. Python — nothing to install by hand.** Every tool runs as `shared/tools/py <tool>.py`. That resolver takes the first interpreter that imports PyYAML, python-docx, python-pptx, Pillow and pypdf on Python 3.9+: `$ORACLE_PACKS_PY`, then a `.venv` at the repo (or plugin) root, then the managed venv at `$ORACLE_PACKS_VENV` (default `~/.oracle-packs/venv`) — created from `requirements.txt` on first use, with one line saying so — then plain `python3`. Never system Python. `shared/tools/py --check` shows what it found. On Windows it runs under Git Bash or WSL.
 
-```bash
-tools/sync-shared.sh && claude plugin marketplace update oracle-packaging-skills && claude plugin update oracle-packs@oracle-packaging-skills && claude plugin update oracle-packs-web@oracle-packaging-skills
-```
+**3. Other programs.** Node 22+ (the listing's checker and inserter need 14+, the demo capture 22+) · Google Chrome or Chromium, for the one-pager's PDF and the demo capture · LibreOffice, for the feature list's page count and slide rendering off macOS · poppler's `pdftotext`, optional, for PDFs in the clearance linter · `rsvg-convert` or the `cairosvg` module, for icons off macOS. `plugins/oracle-packs/skills/deck/tools/render_probe.sh` says which renderers a machine has.
 
-then start a new session — a running one keeps the version it loaded (the old snapshot directory is kept, so a run in progress does not break). The snapshot is taken from the working tree, committed or not, while the `gitCommitSha` the plugin manager records is HEAD at that moment — commit before releasing if that provenance should mean anything.
+**4. What a Mac adds.** QuickLook renders slides and icons with nothing installed; Pages verifies the feature list's page count; Apple Symbols draws its three status glyphs at one size.
 
-## Requirements
+**5. Environment variables.**
 
-Python packages go in a virtualenv, never in system Python. From the repo root:
+| Variable | Sets |
+|---|---|
+| `ORACLE_PACKS_PY` | the interpreter to try first |
+| `ORACLE_PACKS_VENV` | where the managed venv lives (default `~/.oracle-packs/venv`) |
+| `ORACLE_PACKS_ROOT` | optional: the folder `packs/<slug>/` goes under when the user names none; packs default to the working directory |
+| `ORACLE_SITE_ROOT` | the mini-site checkout, for the listing and the demo |
+| `PEXELS_API_KEY`, `UNSPLASH_ACCESS_KEY` | the photo libraries' keys; on a Mac the Keychain entry of the same name works too |
+| `CHROME_BIN` | Chrome, when it is not where the builders look |
 
-```bash
-python3 -m venv .venv
-.venv/bin/pip install -r plugins/oracle-packs/requirements.txt
-.venv/bin/python shared/tools/lint_spec.py examples/workforce-optimization/pack-spec.yaml --strict
-```
+Pack folders are produced where the user runs the skills (or under `$ORACLE_PACKS_ROOT`) and stay on that user's machine; they are never part of the plugin.
 
-Then call every tool with `.venv/bin/python` (the suite takes `PY=.venv/bin/python shared/tools/tests/run_tests.sh`). Without PyYAML each tool exits 2 and prints that install line.
+**6. Brand fonts.** Azurio and Replica LL TT ship in the plugin's `fonts/` folder, privately, for practice members: not redistributable, and never copied into an artifact or a customer file. The builders read the shipped files, so fit is exact on every machine (with the folder empty they fall back to metric stand-ins with headroom). To see a render as the owner sees it, install them: `shared/tools/py shared/tools/install_fonts.py`.
 
-| Plugin | Needs | Pinned floor (verified) |
+**7. What degrades where.**
+
+| Feature | macOS with QuickLook and Pages | Windows or a Mac without them (LibreOffice + Chrome) |
 |---|---|---|
-| oracle-packs | Python 3.9+ with `plugins/oracle-packs/requirements.txt` | PyYAML ≥ 6.0 (6.0.3) · python-docx ≥ 1.1.0 (1.2.0) · python-pptx ≥ 1.0.0 (1.0.2) · Pillow ≥ 10.0 (12.3.0) · pypdf ≥ 4.0 (6.19.0), on Python 3.14.6 |
-| oracle-packs | **Google Chrome or Chromium** for the one-pager: the builder prints the HTML to PDF and proves it is one A4 page. Found via `$CHROME_BIN`, the macOS default application path, or `google-chrome` / `chromium` on PATH; without it the tool writes the HTML and exits 4 | any current Chrome |
-| oracle-packs | `pdftotext` (poppler) — optional. Without it `lint_artifact.py` skips a `.pdf` with a warning and reports it as *not evaluated*, never as a pass | — |
-| oracle-packs-web | **Node** for the site's checker, the inserter and the deny-list converter; **Node 22+** for the demo capture script (built-in `fetch` and `WebSocket`), plus Chrome and a checkout of the practice mini-site repository (it carries `site.manifest.json` and is found through `--site`, `$ORACLE_SITE_ROOT` or a session opened in it) | Node ≥ 14 for listing, ≥ 22 for the demo capture (verified on 26.0.0) |
+| The Python tools | works | works (Git Bash or WSL on Windows) |
+| Feature list on one page | verified by Pages | verified by LibreOffice; with neither, not verified, says so |
+| One-pager on one page | verified by Chrome | verified by Chrome; without Chrome, not verified, says so |
+| Deck and executive-summary fit | works, exact on the shipped fonts | works, exact on the shipped fonts |
+| Slide render for review | works (QuickLook) | works (LibreOffice, then `pdftoppm`); with neither, not verified, says so |
+| Feature list's status glyphs | works (Apple Symbols) | works: measured on Segoe UI Symbol or DejaVu Sans |
+| Icons above 240 px | works (QuickLook) | works with `rsvg-convert` or `cairosvg`; without, skipped, says so |
+| Photos from Pexels or Unsplash | works with a key in the environment or the Keychain | works with a key in the environment; without, skipped, says so |
+| PDF text in the clearance linter | works with `pdftotext`; without, skipped, says so | works with `pdftotext`; without, skipped, says so |
+| Demo capture | works with Node 22+ and Chrome | works with Node 22+ and Chrome; without, skipped, says so |
 
-Brand fonts are licensed and are not shipped; the deck fit report uses metric stand-ins, so trust the report, not what a machine without the fonts renders. For slide QA, `plugins/oracle-packs/skills/deck/tools/render_probe.sh` reports which renderer this machine has and prints the contact-sheet recipe for it.
+**8. The rules.** `shared/references/` is the plugins' own home for their rules; copies in the owner's personal repository serve his other work and may differ.
+
+**Fewer permission prompts.** Merge the `permissions.allow` list of `docs/settings.example.json` into the `.claude/settings.json` of the folder you run the skills from.
+Add the two installed resolvers in absolute form as well — `Bash(<home>/.claude/plugins/cache/oracle-packaging-skills/<plugin>/<version>/shared/tools/py *)` for each plugin, redone when the version changes — since a permission rule does not expand `${CLAUDE_PLUGIN_ROOT}`.
 
 ## Layout
 
 ```
 .claude-plugin/marketplace.json     the marketplace (two plugins)
 shared/                             single source, synced into each plugin by tools/sync-shared.sh
-  references/                       engagement context · naming and clearance · pack anatomy · PoV rules · review loop · talking to the owner · slide-design · client-documents · research-standards · coaching rules
+  references/                       engagement context · naming and clearance · pack anatomy · PoV rules · review loop · talking to the owner · slide-design · client-documents · research-standards · coaching rules · running agents
   data/                             oracle-products.yaml (the only allowed product names) · roadmap-items.csv (+ L2 patterns, crosswalk, tracker) · regen script
   schema/pack-spec.md               the spec schema and template
-  tools/                            lint_spec.py · lint_artifact.py · check_consistency.py · denylist.txt · tests/
-plugins/oracle-packs/               spec · feature-list · deck · one-pager · exec-summary · build
+  tools/                            py (the interpreter resolver) · requirements.txt · lint_spec.py · lint_artifact.py · check_consistency.py · denylist.txt · tests/
+plugins/oracle-packs/               spec · feature-list · deck · one-pager · exec-summary · visuals · build; fonts/ (the brand faces, private)
 plugins/oracle-packs-web/           listing · demo
 examples/workforce-optimization/    the worked example spec
 docs/PLAN.md                        the build plan and the rules overview
 docs/DECISIONS.md                   the owner decisions the skills implement
 docs/TEST-REPORT.md                 the integration pass: what ran, what was fixed, what is still rough
+docs/settings.example.json          the permission allow-list for the toolchain
 ```
 
 ## Rules of the repo

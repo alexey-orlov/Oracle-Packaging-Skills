@@ -2,9 +2,9 @@
 
 **What this is.** One icon per entry in `verticals[]`, for the deck's industries slide. Three candidates, one sheet, the owner picks.
 
-    python3 tools/suggest_icons.py "<industry>" --context "<its 'what matters here' line>"
-    python3 tools/fetch_icon.py <name> --out <dir> --slot vertical:<i>
-    python3 tools/contact_sheet.py <dir> --out <sheet.png>
+    shared/tools/py tools/suggest_icons.py "<industry>" --context "<its 'what matters here' line>"
+    shared/tools/py tools/fetch_icon.py <name> --out <dir> --slot vertical:<i>
+    shared/tools/py tools/contact_sheet.py <dir> --out <sheet.png>
 
 **The checks**
 

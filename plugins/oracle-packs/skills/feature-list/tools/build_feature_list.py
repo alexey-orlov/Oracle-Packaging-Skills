@@ -39,9 +39,15 @@ Exit codes
     2  a pricing figure reached the page, which the feature list must never carry
     3  the capability tree does not fit one A4 page even in compact mode at 7pt
 
-Dependencies: pyyaml, python-docx (see plugins/oracle-packs/requirements.txt).
-Pillow is optional and only makes the height estimate exact; without it the build falls
-back to an average glyph width and says so on stderr.
+The real page count is verified by exporting the written file to PDF -- Pages.app on macOS,
+else LibreOffice headless (`soffice`) -- and the report names the renderer that did it. With
+neither installed the report carries a `WARNING: page count NOT verified` line; the exit code
+does not change.
+
+Dependencies: pyyaml, python-docx (see plugins/oracle-packs/requirements.txt); pypdf to count
+LibreOffice's pages. Pillow is optional and only makes the height estimate exact; without it the
+build falls back to an average glyph width and says so on stderr. The brand faces are read from
+the plugin's own `fonts/` folder first, then from the installed font folders.
 """
 
 from __future__ import annotations
@@ -101,6 +107,16 @@ GLYPHS = {                       # status -> (glyph, colour, legend wording)
 SYMBOL_FONT = "Apple Symbols"
 SYMBOL_ALT = "Segoe UI Symbol"
 SYMBOL_FILE = "/System/Library/Fonts/Apple Symbols.ttf"
+# The faces the estimator may measure the glyphs with, in order. Where Apple Symbols is absent, a
+# face that draws all three at one size stands in -- Segoe UI Symbol on Windows (the altName Word
+# substitutes there), DejaVu Sans on Linux. The document still names Apple Symbols with its
+# altName; only the measuring changes.
+SYMBOL_FACES = (
+    (SYMBOL_FONT, SYMBOL_FILE),
+    (SYMBOL_ALT, "C:/Windows/Fonts/seguisym.ttf"),
+    ("DejaVu Sans", "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"),
+    ("DejaVu Sans", "/usr/share/fonts/dejavu/DejaVuSans.ttf"),
+)
 # Only used when no symbol face can be found: per-glyph sizes that look equal once the renderer
 # has substituted a different face for each one.
 GLYPH_SCALE = {"available": 1.15, "partial": 1.0, "roadmap": 1.15}
@@ -193,7 +209,12 @@ class SpecError(Exception):
 
 
 # --- text measurement -------------------------------------------------------
-FONT_DIRS = ("/Library/Fonts/Managed", str(Path.home() / "Library/Fonts"),
+# The brand faces ship privately in the plugin's own fonts/ folder (<plugin>/fonts, three levels
+# above this tools/ folder), so the estimate is exact on any practice member's machine; the
+# installed font folders are searched after it. A fonts/ folder that is there but empty is simply
+# passed over.
+PLUGIN_FONTS = Path(__file__).resolve().parents[3] / "fonts"
+FONT_DIRS = (str(PLUGIN_FONTS), "/Library/Fonts/Managed", str(Path.home() / "Library/Fonts"),
              "/Library/Fonts", "/System/Library/Fonts", "/usr/share/fonts")
 FONT_FILES = {  # family -> filename stem as installed (the Managed copies carry a hash suffix)
     ("Replica LL TT", False): "ReplicaLLTT-Regular*",
@@ -212,13 +233,16 @@ class Symbols:
     """
 
     def __init__(self):
-        self.family = SYMBOL_FONT
+        self.family = SYMBOL_FONT               # what the document names, whichever face is measured
         self.uniform = True
         self.reason = ""
-        path = Path(SYMBOL_FILE)
-        if not path.exists():
-            self._degrade(f"{SYMBOL_FONT} is not installed at {SYMBOL_FILE}")
+        self.measured = None
+        found = next(((face, Path(p)) for face, p in SYMBOL_FACES if Path(p).exists()), None)
+        if found is None:
+            self._degrade(f"no symbol face was found ({SYMBOL_FONT}, {SYMBOL_ALT} or DejaVu Sans)")
             return
+        face, path = found
+        self.measured = face
         try:
             from PIL import ImageFont
         except ImportError:
@@ -232,16 +256,21 @@ class Symbols:
             missing = font.getbbox("")     # a private-use code point draws .notdef
             control = (missing[2] - missing[0], missing[3] - missing[1])
             if control in boxes.values():
-                self._degrade(f"{SYMBOL_FONT} is missing one of the status glyphs")
+                self._degrade(f"{face} is missing one of the status glyphs")
                 return
             widths = [w for w, _h in boxes.values()]
             heights = [h for _w, h in boxes.values()]
             for values, what in ((widths, "width"), (heights, "height")):
                 if max(values) - min(values) > 0.10 * max(values):
-                    self._degrade(f"{SYMBOL_FONT} draws the status glyphs at uneven {what}s")
+                    self._degrade(f"{face} draws the status glyphs at uneven {what}s")
                     return
         except Exception as err:                # pragma: no cover -- unreadable face
-            self._degrade(f"{SYMBOL_FONT} could not be read ({err})")
+            self._degrade(f"{face} could not be read ({err})")
+            return
+        if face != SYMBOL_FONT:
+            print(f"build_feature_list: {SYMBOL_FONT} is not installed here; the status glyphs are "
+                  f"measured with {face}, and the document still names {SYMBOL_FONT} "
+                  f"({SYMBOL_ALT} where Word substitutes it).", file=sys.stderr)
 
     def _degrade(self, reason):
         self.family = BODY_FONT
@@ -271,10 +300,12 @@ def symbols() -> "Symbols":
 
 
 class Measurer:
-    """Text width in points. Exact when the brand face is installed and Pillow is present."""
+    """Text width in points. Exact when the brand face is found (shipped or installed) and Pillow
+    is present."""
 
     def __init__(self):
         self._cache = {}
+        self.sources = {}                        # (family, bold) -> the font file measured
         self.exact = True
         self.reason = ""
         try:
@@ -291,19 +322,32 @@ class Measurer:
         pattern = FONT_FILES.get(key)
         if pattern and self.exact:
             for directory in FONT_DIRS:
-                matches = sorted(glob.glob(os.path.join(directory, pattern)))
-                if matches:
+                for match in sorted(glob.glob(os.path.join(directory, pattern))):
                     try:
                         from PIL import ImageFont
-                        font = ImageFont.truetype(matches[0], 100)
+                        font = ImageFont.truetype(match, 100)
                     except Exception:            # pragma: no cover -- unreadable face
-                        font = None
+                        continue
+                    self.sources[key] = match
+                    break
+                if font is not None:
                     break
         if font is None and self.exact:
             self.exact = False
-            self.reason = f"{family} is not installed on this machine"
+            self.reason = f"{family} is in neither the plugin's fonts/ folder nor the installed fonts"
         self._cache[key] = font
         return font
+
+    def source_line(self):
+        """Where the estimate's glyph widths came from, for the report."""
+        if not self.exact:
+            return f"fit measured with an average glyph width ({self.reason}); the estimate is approximate"
+        path = self.sources.get((BODY_FONT, False))
+        if not path:
+            return None
+        folder = Path(path).parent
+        where = "the plugin's fonts/ folder" if folder == PLUGIN_FONTS else str(folder)
+        return f"fit measured with {BODY_FONT} from {where}"
 
     def length(self, text, size, family=BODY_FONT, bold=False):
         font = self._font(family, bold)
@@ -1134,6 +1178,91 @@ def pages_page_count(docx: Path):
         shutil.rmtree(workdir, ignore_errors=True)
 
 
+# LibreOffice's command-line binary where the installers put it; PATH is tried first.
+SOFFICE_PATHS = ("/Applications/LibreOffice.app/Contents/MacOS/soffice", "/usr/bin/soffice",
+                 "/usr/lib/libreoffice/program/soffice",
+                 "C:/Program Files/LibreOffice/program/soffice.exe")
+SOFFICE_TIMEOUT = 120                           # seconds; a hung converter is a note, not a hang
+
+
+def find_soffice():
+    """The LibreOffice binary to convert with, or None."""
+    for name in ("soffice", "libreoffice"):
+        found = shutil.which(name)
+        if found:
+            return found
+    for candidate in SOFFICE_PATHS:
+        if Path(candidate).is_file():
+            return candidate
+    return None
+
+
+def pypdf_page_count(pdf: Path):
+    """The PDF's page count through pypdf, else through the PDF's own page objects."""
+    try:
+        from pypdf import PdfReader
+        return len(PdfReader(str(pdf)).pages)
+    except Exception:                           # no pypdf, or a PDF it cannot parse
+        return pdf_page_count(pdf)
+
+
+def soffice_page_count(docx: Path):
+    """Export the docx to PDF with LibreOffice headless and count its pages. (count, note)."""
+    soffice = find_soffice()
+    if not soffice:
+        return None, "LibreOffice is not installed"
+    workdir = Path(tempfile.mkdtemp(prefix="fl-soffice-"))
+    # A private profile, so a LibreOffice already open on this machine cannot swallow the run.
+    profile = (workdir / "profile").as_uri()
+    try:
+        result = subprocess.run(
+            [soffice, f"-env:UserInstallation={profile}", "--headless", "--convert-to", "pdf",
+             "--outdir", str(workdir), str(docx.resolve())],
+            capture_output=True, text=True, timeout=SOFFICE_TIMEOUT)
+        pdf = workdir / (docx.stem + ".pdf")
+        if not pdf.exists():
+            reason = ((result.stderr or "") + (result.stdout or "")).strip().splitlines()
+            return None, (reason[-1] if reason else "LibreOffice produced no PDF")
+        count = pypdf_page_count(pdf)
+        if count is None:
+            return None, "the exported PDF gave no page count"
+        return count, ""
+    except subprocess.TimeoutExpired:
+        return None, f"LibreOffice did not finish in {SOFFICE_TIMEOUT}s"
+    except Exception as err:                    # pragma: no cover -- environment failure
+        return None, str(err)
+    finally:
+        shutil.rmtree(workdir, ignore_errors=True)
+
+
+def pages_available():
+    return sys.platform == "darwin" and Path("/Applications/Pages.app").exists()
+
+
+# The renderers that can verify the page count, in the order they are tried.
+RENDERERS = (("Pages", pages_available, pages_page_count),
+             ("LibreOffice", lambda: find_soffice() is not None, soffice_page_count))
+
+NOT_VERIFIED = "WARNING: page count NOT verified — install LibreOffice (or run on a Mac with Pages)"
+
+
+def page_renderers():
+    """The renderers installed here, as (name, count function)."""
+    return [(name, count) for name, present, count in RENDERERS if present()]
+
+
+def verify_page_count(docx: Path, renderers):
+    """(count, renderer, notes): the first renderer that answers, and why the ones before it
+    did not."""
+    notes = []
+    for name, count_fn in renderers:
+        count, note = count_fn(docx)
+        if count is not None:
+            return count, name, notes
+        notes.append(f"{name}: {note}")
+    return None, None, notes
+
+
 def pricing_leak(document, spec):
     """The feature list never carries pricing. Return the offending strings, if any."""
     text = "\n".join(p.text for p in document.paragraphs)
@@ -1172,10 +1301,10 @@ def main(argv=None) -> int:
                              "none: one row per feature at 7.5pt over as many pages as it takes")
     check = parser.add_mutually_exclusive_group()
     check.add_argument("--check-pages", dest="check_pages", action="store_true", default=None,
-                       help="verify the real page count by exporting to PDF with Pages.app "
-                            "(default: on where Pages is installed)")
+                       help="verify the real page count by exporting to PDF with Pages.app, "
+                            "else LibreOffice (default: on wherever either is installed)")
     check.add_argument("--no-check-pages", dest="check_pages", action="store_false",
-                       help="skip the Pages export; the estimate is the contract")
+                       help="skip the PDF export; the estimate is the contract")
     args = parser.parse_args(argv)
 
     if not args.spec.exists():
@@ -1204,9 +1333,10 @@ def main(argv=None) -> int:
         print(f"build_feature_list: {err}", file=sys.stderr)
         return 1
 
+    renderers = page_renderers()
     check_pages = args.check_pages
     if check_pages is None:
-        check_pages = sys.platform == "darwin" and Path("/Applications/Pages.app").exists()
+        check_pages = bool(renderers)           # default: verify wherever any renderer is here
 
     args.out.mkdir(parents=True, exist_ok=True)
     path = args.out / f"{dig(spec, 'meta.slug', 'pack')}-feature-list.docx"
@@ -1241,29 +1371,35 @@ def main(argv=None) -> int:
             print(f"build_feature_list: the written file no longer opens ({err}).", file=sys.stderr)
             return 1
 
-        verified = None
+        verified, warning = None, None
         if check_pages:
-            count, note = pages_page_count(path)
+            count, renderer, notes = verify_page_count(path, renderers)
             if count is None:
-                verified = f"page count not verified (estimate only): {note}"
+                warning = ("WARNING: page count NOT verified — " + "; ".join(notes)
+                           if notes else NOT_VERIFIED)
             elif count > 1 and args.fit == "one-page":
-                print(f"build_feature_list: {mode} at {size:g}pt rendered {count} pages; "
-                      f"trying the next setting.", file=sys.stderr)
+                print(f"build_feature_list: {mode} at {size:g}pt rendered {count} pages in "
+                      f"{renderer}; trying the next setting.", file=sys.stderr)
                 path.unlink(missing_ok=True)
                 last = (mode, size, table_h, budget)
                 continue                        # the real count beats the estimate
             else:
-                verified = f"page count verified with Pages: {count}"
+                verified = f"page count verified with {renderer}: {count}"
+        elif args.check_pages is None:
+            warning = NOT_VERIFIED              # nothing here can render a .docx
+        else:
+            verified = "page count not verified (--no-check-pages): the estimate is the contract"
 
         report(path, spec, rows, title, headers, mode, size, table_h, budget,
-               args.fit, verified)
+               args.fit, verified, warning, measurer.source_line())
         return 0
 
     print(fit_report(rows, last[2], last[3], f"{last[0]} at {last[1]:g}pt"), file=sys.stderr)
     return 3
 
 
-def report(path, spec, rows, title, headers, mode, size, table_h, budget, fit, verified):
+def report(path, spec, rows, title, headers, mode, size, table_h, budget, fit, verified,
+           warning=None, measured=None):
     areas = len({r["area"] for r in rows})
     categories = len({(r["area"], r["category"]) for r in rows})
     counts = {k: sum(1 for r in rows if r["status"] == k) for k in GLYPHS}
@@ -1283,8 +1419,12 @@ def report(path, spec, rows, title, headers, mode, size, table_h, budget, fit, v
     if mode == "compact":
         print("      compact mode dropped the Current status and Tier first available columns; "
               "each feature carries its glyph inline.")
+    if measured:
+        print(f"      {measured}")
     if verified:
         print(f"      {verified}")
+    if warning:
+        print(warning)
 
 
 if __name__ == "__main__":

@@ -47,17 +47,19 @@ The shape written into the spec is documented in `shared/schema/pack-spec.md`. A
 renders (`file` = ink, `file_white` = white); a photograph writes the file plus its source, creator
 and licence, so a builder never has to open the credits file to print a caption.
 
-## What needs a key on this machine
+## What needs a key
 
-Checked 2026-09-22 on the owner's Mac:
+A key is read from the environment variable of its name (`PEXELS_API_KEY`,
+`UNSPLASH_ACCESS_KEY`), or on a Mac from the Keychain entry of that name. Checked 2026-09-22 on the
+owner's Mac:
 
 | Source | State |
 |---|---|
 | Openverse | works with no key |
 | Tabler (PNG package and SVG) | works with no key |
 | Lucide (SVG) | works with no key |
-| Pexels | **no key present** (`PEXELS_API_KEY` not in the Keychain). Free at pexels.com/api, then `security add-generic-password -s PEXELS_API_KEY -a <you> -w <key>` |
-| Unsplash | **needs a key**; the public search endpoint answers 401 without one. `UNSPLASH_ACCESS_KEY` in the Keychain |
+| Pexels | **needs a key**, free at pexels.com/api: set the environment variable `PEXELS_API_KEY`, or on a Mac `security add-generic-password -s PEXELS_API_KEY -a <you> -w <key>` |
+| Unsplash | **needs a key**; the public search endpoint answers 401 without one. The environment variable `UNSPLASH_ACCESS_KEY`, or on a Mac the Keychain entry of that name |
 
 Without a Pexels or Unsplash key, photographs come only from Openverse's public-domain pool, which
 is strong on machinery, vehicles and control rooms and weak on contemporary office scenes. Say that
@@ -66,17 +68,17 @@ to the owner before the first photograph question rather than after.
 ## Run it
 
 ```sh
-python3 -m venv .venv
-.venv/bin/pip install -r plugins/oracle-packs/requirements.txt
-
 V=plugins/oracle-packs/skills/visuals/tools
-.venv/bin/python $V/suggest_icons.py "Telecom & cable" --context "<the 'what matters here' line>"
-.venv/bin/python $V/fetch_icon.py antenna --out /tmp/vis/icons --slot vertical:2
-.venv/bin/python $V/search_photos.py "control room" --out /tmp/vis/photos --slot tomorrow --n 3
-.venv/bin/python $V/contact_sheet.py /tmp/vis/photos --out /tmp/vis/sheet.png --title "Today → tomorrow"
-.venv/bin/python $V/apply_choice.py packs/<slug>/pack-spec.yaml --slot tomorrow \
+shared/tools/py $V/suggest_icons.py "Telecom & cable" --context "<the 'what matters here' line>"
+shared/tools/py $V/fetch_icon.py antenna --out /tmp/vis/icons --slot vertical:2
+shared/tools/py $V/search_photos.py "control room" --out /tmp/vis/photos --slot tomorrow --n 3
+shared/tools/py $V/contact_sheet.py /tmp/vis/photos --out /tmp/vis/sheet.png --title "Today → tomorrow"
+shared/tools/py $V/apply_choice.py packs/<slug>/pack-spec.yaml --slot tomorrow \
     --file /tmp/vis/photos/tomorrow-A-....jpg --note "<the owner's reason>"
 ```
+
+`shared/tools/py` runs each tool with an interpreter that has the packages, provisioning one on first
+use; `shared/tools/py --check` shows which.
 
 ## Test fixture
 
@@ -84,7 +86,7 @@ The deck skill's fixture doubles as this step's: an anonymized Workforce Optimiz
 industries and a problem/solution the photograph terms can be built from.
 
 ```sh
-.venv/bin/python $V/suggest_icons.py "Residential appliance & white-goods repair"
+shared/tools/py $V/suggest_icons.py "Residential appliance & white-goods repair"
 # -> wash-machine, home-cog, tool
 ```
 
@@ -92,10 +94,12 @@ Copy the fixture before running `apply_choice.py` against it — it is a read-on
 
 ## Dependencies
 
-`PyYAML` and `Pillow`, plus `qlmanage`, which is on every Mac. No SVG rasterizer is installed here
-(no `cairosvg`, no `rsvg-convert`) and none is needed: `fetch_icon.py` rewrites the SVG's declared
-`width`/`height` before handing it to QuickLook, which is what stops a 24-unit icon rendering as a
-70 px glyph in the corner of a 1024 px canvas. Everything else is the standard library.
+`PyYAML` and `Pillow`, plus one SVG rasterizer for icons above 240 px (or when the PNG package does
+not answer): QuickLook (`qlmanage`, on every Mac) first, then `rsvg-convert` (librsvg) on PATH,
+then the `cairosvg` Python module. `fetch_icon.py` rewrites the SVG's declared `width`/`height`
+before rendering, which is what stops a 24-unit icon rendering as a 70 px glyph in the corner of a
+1024 px canvas. With none of the three it exits 3 (deferred) and names all three. Everything else is
+the standard library.
 
 ## Done means
 

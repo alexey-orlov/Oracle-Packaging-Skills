@@ -2,7 +2,9 @@
 
 Brand tokens, shape/text helpers, the pack-spec accessor and the headless
 text-fit estimator. No machine-specific paths: fonts are probed at run time
-from a candidate list and the deck base ships next to the skill.
+from a candidate list — the brand face the plugin ships in its fonts/ folder
+first, then Helvetica-metric stand-ins — and the deck base ships next to the
+skill.
 
 This file is duplicated verbatim in:
     skills/deck/tools/deckkit.py
@@ -74,11 +76,21 @@ FOOTNOTE_Y = 6.80
 
 
 # --------------------------------------------------------------------------
-# Metric stand-in fonts for the headless fit estimate
+# Fonts for the headless fit estimate: the shipped brand face, else stand-ins
 # --------------------------------------------------------------------------
+
+# The brand face ships privately in the plugin's own fonts/ folder (<plugin>/fonts, three levels
+# above this tools/ folder), for practice members; measured with it, the estimate is the real one.
+# A folder with no files in it is passed over quietly and the stand-ins below take over.
+PLUGIN_FONTS = Path(__file__).resolve().parents[3] / "fonts"
+_SHIPPED_FACES = {
+    False: str(PLUGIN_FONTS / "ReplicaLLTT-Regular.ttf"),
+    True: str(PLUGIN_FONTS / "ReplicaLLTT-Bold.ttf"),
+}
 
 _FONT_CANDIDATES = {
     False: [  # regular
+        _SHIPPED_FACES[False],
         "/Applications/LibreOffice.app/Contents/Resources/fonts/truetype/LiberationSans-Regular.ttf",
         "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
         "/usr/share/fonts/liberation-sans/LiberationSans-Regular.ttf",
@@ -87,6 +99,7 @@ _FONT_CANDIDATES = {
         "/System/Library/Fonts/Helvetica.ttc",
     ],
     True: [  # bold
+        _SHIPPED_FACES[True],
         "/Applications/LibreOffice.app/Contents/Resources/fonts/truetype/LiberationSans-Bold.ttf",
         "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
         "/usr/share/fonts/liberation-sans/LiberationSans-Bold.ttf",
@@ -96,14 +109,15 @@ _FONT_CANDIDATES = {
     ],
 }
 
-# The brand faces (Replica LL TT / Azurio) are not shipped — licensing. The
-# stand-ins are Helvetica-metric, which tracks Replica closely; the safety
-# margin below covers the residual difference. Rule: trust geometry, not glyphs.
-SAFETY = 1.06          # +6% width headroom for the real brand font
+# The stand-ins are Helvetica-metric, which tracks Replica closely; SAFETY covers the residual
+# difference. Measured on the shipped Replica itself there is no metric difference left to cover,
+# only rendering slack, so the margin drops to SAFETY_SHIPPED. Rule: trust geometry, not glyphs.
+SAFETY = 1.06          # +6% width headroom when a stand-in is measured
+SAFETY_SHIPPED = 1.02  # +2% when the shipped brand face is measured
 LINE_FACTOR = 1.22     # single-spaced line box as a multiple of the point size
 
 _font_cache: dict[tuple[float, bool], Any] = {}
-_font_source: list[str] = []
+_font_source: dict[bool, str] = {}   # bold -> the file measured, or a note when there is none
 
 
 def _load_metric_font(pt: float, bold: bool):
@@ -123,9 +137,7 @@ def _load_metric_font(pt: float, bold: bool):
             f = ImageFont.truetype(path, size)
         except Exception:
             continue
-        if not _font_source or _font_source[0] != path:
-            if not _font_source:
-                _font_source.append(path)
+        _font_source.setdefault(bold, path)
         _font_cache[key] = f
         return f
     try:
@@ -133,30 +145,48 @@ def _load_metric_font(pt: float, bold: bool):
         f = ImageFont.load_default()
     except Exception:
         f = None
-    if not _font_source:
-        _font_source.append("PIL default bitmap font (crude estimate)")
+    _font_source.setdefault(bold, "PIL default bitmap font (crude estimate)")
     _font_cache[key] = f
     return f
 
 
+def fit_safety(bold: bool = False) -> float:
+    """The width margin on the face measured for this weight: SAFETY_SHIPPED on the shipped brand
+    face, SAFETY on a stand-in."""
+    if bold not in _font_source:
+        _load_metric_font(10, bold)
+    return SAFETY_SHIPPED if _font_source.get(bold) == _SHIPPED_FACES[bold] else SAFETY
+
+
 def metric_font_source() -> str:
-    if not _font_source:
+    """The file the estimate measures regular text with."""
+    if False not in _font_source:
         _load_metric_font(10, False)
-    return _font_source[0] if _font_source else "none"
+    return _font_source.get(False, "none")
+
+
+def metric_font_line() -> str:
+    """The fit report's first line: which face was measured, where from, and the margin on it."""
+    source = metric_font_source()
+    margin = int(round((fit_safety(False) - 1) * 100))
+    if source == _SHIPPED_FACES[False]:
+        return f"metric: {source} (the shipped brand face)  (+{margin}% safety)"
+    return f"metric stand-in: {source}  (+{margin}% safety)"
 
 
 def text_width_in(s: str, pt: float, bold: bool = False) -> float:
-    """Width of `s` in inches at `pt`, measured on the stand-in font, +safety."""
+    """Width of `s` in inches at `pt`, measured on the shipped face or a stand-in, +safety."""
     if not s:
         return 0.0
     f = _load_metric_font(pt, bold)
+    margin = fit_safety(bold)
     if f is None:
-        return len(s) * pt * 0.5 / 72.0 * SAFETY
+        return len(s) * pt * 0.5 / 72.0 * margin
     try:
         w = f.getlength(s) / 20.0
     except AttributeError:  # very old Pillow / default bitmap font
         w = f.getsize(s)[0] / 20.0
-    return w / 72.0 * SAFETY
+    return w / 72.0 * margin
 
 
 def wrap_count(s: str, pt: float, box_w_in: float, bold: bool = False) -> int:
@@ -254,7 +284,7 @@ class FitLog:
         return out
 
     def report(self, verbose: bool = False) -> str:
-        lines = [f"Fit report — metric stand-in: {metric_font_source()}  (+{int((SAFETY-1)*100)}% safety)"]
+        lines = [f"Fit report — {metric_font_line()}"]
         bad = self.problems()
         if verbose:
             for e in self.entries:

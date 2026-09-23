@@ -4,7 +4,7 @@
 
 **Read the spec, not the delivered artifacts.** The title and the two intro lines come from the keys the anatomy names; `feature_list.intro` overrides `one_liner.full` where the pack needs a longer definition. Missing `icp.line` → go back to `/oracle-packs:spec` for it rather than inventing one; otherwise the build prints the one-liner alone and warns. Rows = `capabilities[]` in spec order. Cut the footnotes first (card: `footnotes`).
 
-**Build:** `python3 tools/build_feature_list.py <spec> --out <dir>` (resolve paths via `${CLAUDE_PLUGIN_ROOT}`). The customization-scope column stays last; Area and Category cells merge down. The build walks a fit ladder — a row per feature at 7.5pt, then 7pt, then compact mode (a row per category, features inline, the status and tier columns dropped) at 7.5 and 7pt — and where Pages is installed verifies the real page count. `--fit none` allows several pages, only when the long form was asked for; `--no-check-pages` skips verification. Exit 3 → card: `does-not-fit`.
+**Build:** `shared/tools/py tools/build_feature_list.py <spec> --out <dir>` (resolve paths via `${CLAUDE_PLUGIN_ROOT}`). The customization-scope column stays last; Area and Category cells merge down. The build walks a fit ladder — a row per feature at 7.5pt, then 7pt, then compact mode (a row per category, features inline, the status and tier columns dropped) at 7.5 and 7pt — and where Pages or LibreOffice is installed verifies the real page count. `--fit none` allows several pages, only when the long form was asked for; `--no-check-pages` skips verification. Exit 3 → card: `does-not-fit`.
 
 **Checks**
 

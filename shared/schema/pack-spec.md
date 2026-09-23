@@ -1,6 +1,6 @@
 # Pack spec — schema and template
 
-One YAML file per pack, at `packs/<slug>/pack-spec.yaml` in the working folder the user chooses. It is the single source of truth: every artifact skill reads its values from here and never re-derives them. Values are confirmed by the user through `/oracle-packs:spec`; a build skill that finds a required key missing stops and sends the user back to the spec skill instead of filling the gap itself.
+One YAML file per pack, at `packs/<slug>/pack-spec.yaml` under the folder the user names, else `$ORACLE_PACKS_ROOT`, else the working directory — on the user's own machine, never part of the plugin. It is the single source of truth: every artifact skill reads its values from here and never re-derives them. Values are confirmed by the user through `/oracle-packs:spec`; a build skill that finds a required key missing stops and sends the user back to the spec skill instead of filling the gap itself.
 
 Conventions: every fact carries a `source` (file, call, URL, or `user:<date>` for something the user typed) so the linter can trace it. The four first-order components carry theirs on a fixed key — `problem_solution.source`, `one_liner.source`, `icp.source` and, because the name lives inside `meta`, `meta.name_source` — and the linter reads exactly those. Money in EUR as written on the source artifact. Durations in weeks. `status` values are the ones listed; free text goes in `note`.
 

@@ -2,7 +2,7 @@
 
 **What this is.** The deck's automatic check, its budgets measured from the exemplar and kept in `references/reference-geometry.json`, which the tool reads and you do not: it holds a build to the reference, not an opinion, before render QA and the owner.
 
-    python3 tools/lint_deck.py <pptx> --spec <spec> --channel <channel>
+    shared/tools/py tools/lint_deck.py <pptx> --spec <spec> --channel <channel>
 
 **What it checks**
 

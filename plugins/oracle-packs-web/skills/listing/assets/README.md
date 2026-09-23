@@ -54,7 +54,7 @@ still exits 0, which is exactly how a customer name reaches a published page. So
 before the gate runs:
 
 ```bash
-python3 ../tools/denylist-to-json.py --out <site-root>/tools/deny-list.json
+shared/tools/py ../tools/denylist-to-json.py --out <site-root>/tools/deny-list.json
 node <site-root>/tools/check-grammar.js
 ```
 

@@ -9,7 +9,7 @@ user-invocable: true
 
 > **Paths.** `shared/...` means `${CLAUDE_PLUGIN_ROOT}/shared/...`; `tools/...`, `assets/...` and `references/...` without a prefix are relative to this skill's own folder.
 
-> **Load only what the step needs.** `references/cards/manifest.yaml` lists, per step, which files that step reads. Read those and nothing else — never the whole folder, never a card for a step you are not on.
+> **Load only what the step needs.** `references/cards/manifest.yaml` lists, per step, which files that step reads. Read those and nothing else — never the whole folder, never a card for a step you are not on. Every subagent follows `shared/references/running-agents.md`.
 
 This step searches openly licensed sources, puts three candidates per picture in front of the owner, and records what they choose.
 
@@ -17,8 +17,8 @@ This step searches openly licensed sources, puts three candidates per picture in
 
 ## Preconditions and inputs
 
-- A confirmed, lint-clean `pack-spec.yaml` (`python3 shared/tools/lint_spec.py`). Otherwise stop and send the owner to `/oracle-packs:spec` — the industries and the problem/solution wording build the searches.
-- Dependencies: Python 3 with `pyyaml` and `Pillow` (`plugins/oracle-packs/requirements.txt`), plus `qlmanage` (on every Mac). Check with `python3 -c "import yaml, PIL"`; tell the owner what to install if it fails, never install into system Python yourself.
+- A confirmed, lint-clean `pack-spec.yaml` (`shared/tools/py shared/tools/lint_spec.py`). Otherwise stop and send the owner to `/oracle-packs:spec` — the industries and the problem/solution wording build the searches.
+- Dependencies: Python 3 with `pyyaml` and `Pillow` (`plugins/oracle-packs/requirements.txt`), plus an SVG renderer: `qlmanage` (on every Mac), else `rsvg-convert` or `cairosvg`. Check with `shared/tools/py --check`; tell the owner what to install if it fails, never install into system Python yourself.
 - **Say what is reachable before you start.** Run one search and read what the tool reports: which sources answered, which need a key. When a source that carries contemporary working-life pictures needs a key this machine has not got, say so *before* the first question.
 
 ## Procedure
@@ -27,19 +27,19 @@ This step searches openly licensed sources, puts three candidates per picture in
 
 2. **The icon for each industry.** *Cards: `icons.md` and `sources.md`.* Propose three, fetch them in both colours, lay them out as one sheet, open the sheet beside the conversation, then ask.
 
-       python3 tools/suggest_icons.py "<industry>" --context "<its 'what matters here' line>"
-       python3 tools/fetch_icon.py <name> --out <dir> --slot vertical:<i>
-       python3 tools/contact_sheet.py <dir> --out <sheet.png>
+       shared/tools/py tools/suggest_icons.py "<industry>" --context "<its 'what matters here' line>"
+       shared/tools/py tools/fetch_icon.py <name> --out <dir> --slot vertical:<i>
+       shared/tools/py tools/contact_sheet.py <dir> --out <sheet.png>
 
 3. **The two photographs.** *Cards: `photos.md` and `sources.md`.* Build the search terms from the pack's own words — the current way of working for `today`, the person using the solution for `tomorrow` — and read the pair on the sheet before asking.
 
-       python3 tools/search_photos.py "<terms>" --out <dir> --slot today --n 3
+       shared/tools/py tools/search_photos.py "<terms>" --out <dir> --slot today --n 3
 
 4. **The customer's logo.** *Card: `customer-logo.md`.* Only when `clearance.customer_name_allowed` is true for some audience. One question — a widget offering "I'll give the path" free text, or skip — from the owner's engagement materials. **Never search the web for a logo:** a company's mark is a trademark, not an openly licensed picture.
 
 5. **Record each choice.** *Card: `record.md`.* One command per picture; it copies the file, writes the key, credits it and logs the decision.
 
-       python3 tools/apply_choice.py <spec> --slot <slot> --file <the chosen file> --note "<their reason>"
+       shared/tools/py tools/apply_choice.py <spec> --slot <slot> --file <the chosen file> --note "<their reason>"
 
 6. **Close.** *Card: `close.md`.* What was chosen, where the files are, and every slot still open with what would unblock it. That list is the open items; do not bury it.
 

@@ -309,8 +309,14 @@ def http_json(url: str, headers: dict | None = None) -> dict:
 
 
 def keychain(service: str) -> str | None:
-    """Read a key from the macOS Keychain. Returns None when it is not there — never raises, and
-    never prints the value."""
+    """A key by name: the environment variable of that name when it is set and non-empty, else —
+    on macOS only — the Keychain entry of that name (`security find-generic-password -s <name>`).
+    Returns None when neither has it — never raises, and never prints the value."""
+    value = (os.environ.get(service) or "").strip()
+    if value:
+        return value
+    if sys.platform != "darwin":
+        return None
     try:
         out = subprocess.run(
             ["security", "find-generic-password", "-s", service, "-w"],

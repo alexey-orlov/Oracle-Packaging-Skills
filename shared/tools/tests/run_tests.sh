@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Tests for shared/tools: lint_spec.py, lint_artifact.py, check_consistency.py.
 #
-#   shared/tools/tests/run_tests.sh              # uses python3
-#   PY=.venv/bin/python shared/tools/tests/run_tests.sh
+#   shared/tools/tests/run_tests.sh              # runs every tool through shared/tools/py
+#   PY=.venv/bin/python shared/tools/tests/run_tests.sh   # or through a given interpreter
 #   KEEP=1 shared/tools/tests/run_tests.sh       # leave the work dir in place
 #
 # It runs the three tools on fixtures/pack-spec.valid.yaml, on two deliberately
@@ -22,7 +22,7 @@ cd "$(dirname "$0")" || exit 2
 TESTS="$PWD"
 TOOLS="$(cd .. && pwd)"
 FIX="$TESTS/fixtures"
-PY="${PY:-python3}"
+PY="${PY:-$TOOLS/py}"
 PASS=0
 FAIL=0
 LAST=""
@@ -67,10 +67,9 @@ expect_absent() {
 
 # ---------------------------------------------------------------- dependencies
 if ! "$PY" -c "import yaml" >/dev/null 2>&1; then
-  say "run_tests: PyYAML is not installed for $PY, so the suite cannot run."
-  say "  python3 -m venv .venv \\"
-  say "    && .venv/bin/pip install -r plugins/oracle-packs/requirements.txt"
-  say "  then: PY=.venv/bin/python shared/tools/tests/run_tests.sh"
+  say "run_tests: PyYAML is not importable through $PY, so the suite cannot run."
+  say "  shared/tools/py --check says which interpreter it found and what it lacks;"
+  say "  or point PY= at an interpreter that has shared/tools/requirements.txt."
   say ""
   say "Checking the dependency guard itself instead:"
   LAST="$("$PY" "$TOOLS/lint_spec.py" "$FIX/pack-spec.valid.yaml" 2>&1)"; got=$?
@@ -82,6 +81,106 @@ fi
 WORK="$(mktemp -d "${TMPDIR:-/tmp}/packlint-tests.XXXXXX")" || exit 2
 trap '[ -n "${KEEP:-}" ] || rm -rf "$WORK"' EXIT
 say "run_tests: work dir $WORK"
+
+# ------------------------------------------------------ the interpreter resolver
+# Every skill runs its tools as `shared/tools/py <tool>.py`. py takes the first
+# interpreter that imports the five packages — $ORACLE_PACKS_PY, the root's .venv,
+# the managed venv (provisioned when missing), python3 — and with none anywhere exits
+# 2 with one line saying what to run, never a traceback. The failure case runs a
+# copy of py whose root has no .venv, with PATH, HOME and ORACLE_PACKS_VENV pointed
+# at an empty folder, an empty home and a path no venv can be created at, so no
+# interpreter on this machine can leak into it.
+say ""
+say "the interpreter resolver"
+RESOLVER="$TOOLS/py"
+run_case "shared/tools/py is executable" 0 test -x "$RESOLVER"
+run_case "--which resolves an interpreter" 0 "$RESOLVER" --which
+WHICH="$(printf '%s\n' "$LAST" | tail -n 1)"
+run_case "the interpreter --which printed runs" 0 "$WHICH" -c "import sys"
+run_case "--check" 0 "$RESOLVER" --check
+expect "--check" "interpreter:" PyYAML python-docx python-pptx Pillow pypdf
+run_case "a broken ORACLE_PACKS_PY falls through" 0 \
+  env ORACLE_PACKS_PY=/nonexistent/python "$RESOLVER" --which
+expect "the fall-through" "ORACLE_PACKS_PY=/nonexistent/python"
+run_case "a tool runs through it with its arguments intact" 0 \
+  "$RESOLVER" -c 'import sys; sys.exit(0 if sys.argv[1:] == ["a", "b c"] else 1)' a "b c"
+run_case "the two requirements files are one list" 0 \
+  cmp -s "$TOOLS/../../plugins/oracle-packs/requirements.txt" "$TOOLS/requirements.txt"
+
+BARE="$WORK/bare/shared/tools"
+mkdir -p "$BARE" "$WORK/empty-bin" "$WORK/empty-home"
+cp "$RESOLVER" "$BARE/py"
+run_case "with no Python anywhere it exits 2" 2 \
+  env -u ORACLE_PACKS_PY PATH="$WORK/empty-bin" HOME="$WORK/empty-home" \
+      ORACLE_PACKS_VENV=/dev/null/venv "$BASH" "$BARE/py" --which
+expect "no Python anywhere" "python3 -m venv /dev/null/venv" "pip install -r"
+expect_absent "no Python anywhere" Traceback
+run_case "and says so in one line" 0 test "$(printf '%s\n' "$LAST" | grep -c .)" -eq 1
+
+# ---------------------------------------------------- API keys, the environment first
+# The picture tools read a key from the environment variable of its name, and only on
+# a Mac fall back to the Keychain entry of that name — so a key works on any machine.
+# The Keychain itself is not exercised here: a locked entry can raise a dialog, and an
+# unattended suite must never wait on one.
+say ""
+say "API keys from the environment"
+VISUALS_TOOLS="$TOOLS/../../plugins/oracle-packs/skills/visuals/tools"
+run_case "keychain() returns PEXELS_API_KEY from the environment" 0 \
+  env PEXELS_API_KEY=test-key "$PY" -c 'import sys
+sys.path.insert(0, sys.argv[1])
+from visuals_common import keychain
+value = keychain("PEXELS_API_KEY")
+print(value)
+sys.exit(0 if value == "test-key" else 1)' "$VISUALS_TOOLS"
+expect "the key" "test-key"
+
+# ------------------------------- the feature list's page count: verified, or said so
+# The page count is verified by Pages on a Mac, else by LibreOffice, and the report
+# names which. With neither, the report must carry a WARNING line — a build that stays
+# quiet about an unverified count is the silent degradation this guards against. The
+# renderer list is patched so no real Pages or LibreOffice runs here (Pages can wait on
+# an automation prompt); a stand-in `soffice` on PATH drives the real LibreOffice code
+# path — its command line, the file it writes, the pypdf count.
+say ""
+say "build_feature_list.py — the page count, verified or said so"
+FL_TOOLS="$TOOLS/../../plugins/oracle-packs/skills/feature-list/tools"
+FL_FIX="$TOOLS/../../plugins/oracle-packs/skills/one-pager/tests/fixture-pack-spec.yaml"
+run_case "with no renderer the build still writes the file" 0 \
+  "$PY" -c 'import sys
+sys.path.insert(0, sys.argv[1])
+import build_feature_list as bfl
+bfl.RENDERERS = ()
+sys.exit(bfl.main([sys.argv[2], "--out", sys.argv[3]]))' "$FL_TOOLS" "$FL_FIX" "$WORK/fl-none"
+expect "no renderer" "WARNING: page count NOT verified — install LibreOffice"
+case "$(uname -s)" in
+  MINGW*|MSYS*|CYGWIN*) say "  (the stand-in soffice is skipped on Windows: it is a shell script)" ;;
+  *)
+    mkdir -p "$WORK/fake-bin"
+    cat > "$WORK/fake-bin/soffice" <<'EOF'
+#!/bin/sh
+# a stand-in for LibreOffice: checks the command line, writes a one-page PDF where soffice would
+case "$*" in *"-env:UserInstallation=file:"*"--headless --convert-to pdf --outdir "*) ;;
+  *) echo "unexpected soffice command line: $*" >&2; exit 3 ;; esac
+out=""; last=""
+while [ $# -gt 0 ]; do
+  case "$1" in --outdir) out="$2"; shift 2; continue ;; esac
+  last="$1"; shift
+done
+stem=$(basename "$last" .docx)
+printf '%%PDF-1.4\n1 0 obj <</Type/Catalog/Pages 2 0 R>> endobj\n2 0 obj <</Type/Pages/Kids[3 0 R]/Count 1>> endobj\n3 0 obj <</Type/Page/Parent 2 0 R/MediaBox[0 0 595 842]>> endobj\ntrailer <</Root 1 0 R>>\n%%%%EOF\n' > "$out/$stem.pdf"
+EOF
+    chmod +x "$WORK/fake-bin/soffice"
+    run_case "LibreOffice verifies the count where Pages is absent" 0 \
+      "$PY" -c 'import os, sys
+os.environ["PATH"] = sys.argv[4] + os.pathsep + os.environ.get("PATH", "")
+sys.path.insert(0, sys.argv[1])
+import build_feature_list as bfl
+bfl.RENDERERS = tuple(r for r in bfl.RENDERERS if r[0] == "LibreOffice")
+sys.exit(bfl.main([sys.argv[2], "--out", sys.argv[3]]))' "$FL_TOOLS" "$FL_FIX" "$WORK/fl-lo" "$WORK/fake-bin"
+    expect "LibreOffice" "page count verified with LibreOffice: 1"
+    expect_absent "LibreOffice" "WARNING"
+    ;;
+esac
 
 # The first deny-list entry, used wherever a test needs a name that must not ship.
 DENY_NAME="$(sed -e 's/#.*//' -e 's/^~//' -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' \
@@ -777,6 +876,44 @@ EOF
 
   run_case "no site root is a usage error" 2 \
     env -u ORACLE_SITE_ROOT node "$REFRESH" --out "$WORK/unused.js"
+fi
+
+# ------------------------------------------ the inserter and the product's lead (site round 13)
+# Since site round 13 every product names its lead, an id in shared.people, and the site's
+# checker fails a product without one. The inserter refuses such an entry before writing,
+# and leaves a site (or a fixture) that defines no shared.people alone (2026-09-24).
+say ""
+say "insert-product.mjs and contactPerson"
+if ! command -v node >/dev/null 2>&1; then
+  say "  (skipped: no node)"
+else
+  LP="$WORK/lead-site"
+  mkdir -p "$LP"
+  cat > "$LP/content.js" <<'EOF'
+window.SITE_CONTENT = {
+  shared: {
+    people: {
+      "a-lead": { name: "A Lead", title: "Lead" }
+    }
+  },
+  products: [
+    { slug: "existing-pack", name: "Existing pack", contactPerson: "a-lead" }
+  ]
+};
+EOF
+  cp "$LP/content.js" "$LP/content.pristine.js"
+  printf '{\n  slug: "no-lead",\n  name: "No lead"\n}\n' > "$LP/entry-no-lead.js"
+  printf '{\n  slug: "wrong-lead",\n  name: "Wrong lead",\n  contactPerson: "nobody"\n}\n' > "$LP/entry-wrong-lead.js"
+  printf '{\n  slug: "good-lead",\n  name: "Good lead",\n  contactPerson: "a-lead"\n}\n' > "$LP/entry-good-lead.js"
+  run_case "an entry with no contactPerson is refused" 1 \
+    node "$INSERTER" --content "$LP/content.js" --entry "$LP/entry-no-lead.js"
+  expect "the refusal" "contactPerson" "nothing written"
+  run_case "an unknown contactPerson is refused" 1 \
+    node "$INSERTER" --content "$LP/content.js" --entry "$LP/entry-wrong-lead.js"
+  expect "the unknown lead" "not an id in shared.people"
+  run_case "the refused runs wrote nothing" 0 cmp -s "$LP/content.js" "$LP/content.pristine.js"
+  run_case "a known contactPerson is inserted" 0 \
+    node "$INSERTER" --content "$LP/content.js" --entry "$LP/entry-good-lead.js"
 fi
 
 # --------------------------------------------------------------- context_budget

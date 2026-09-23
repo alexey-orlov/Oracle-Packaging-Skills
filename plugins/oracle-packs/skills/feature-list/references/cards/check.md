@@ -2,7 +2,7 @@
 
 **What this is.** The automatic pass on the written .docx, run before the owner sees anything.
 
-**The command.** `python3 shared/tools/lint_artifact.py <file> --channel internal --spec <spec>`.
+**The command.** `shared/tools/py shared/tools/lint_artifact.py <file> --channel internal --spec <spec>`.
 
 **The feature list is the `internal` cut** — the pack's internal/partner spine document, and `internal` is the channel the tools README and `/oracle-packs:build` use for it. When a copy goes to an Oracle seller as it stands, lint it again on `partner_print` and expect the channel's name variant (sentence case) to be the only difference.
 

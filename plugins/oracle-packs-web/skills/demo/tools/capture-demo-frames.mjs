@@ -7,8 +7,8 @@
 //
 // PORTED from the practice site's tools/capture-demo-frames.mjs. Changes:
 //   1. The Chrome path was hard-coded to one macOS install. It is now
-//      $CHROME_BIN, defaulting to the standard macOS path, and the script says
-//      what to set when the binary is not there.
+//      $CHROME_BIN, else the standard macOS and Windows install paths, and the
+//      script says what to set when no binary is there.
 //   2. Positional args became --demo / --out / --scenario, and a bare
 //      filesystem path is turned into a file:// URL, so a demo can be captured
 //      without a web server.
@@ -51,7 +51,7 @@
 
 import { spawn } from "node:child_process";
 import { writeFileSync, mkdirSync, readFileSync, existsSync } from "node:fs";
-import { resolve } from "node:path";
+import { resolve, join } from "node:path";
 import { pathToFileURL } from "node:url";
 
 const ARGV = process.argv.slice(2);
@@ -63,12 +63,20 @@ if (has("help") || !ARGV.length) {
   process.exit(0);
 }
 
-const CH = process.env.CHROME_BIN || "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
+// The standard installs, tried in order when CHROME_BIN is not set.
+const CHROME_DEFAULTS = [
+  "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+  "C:/Program Files/Google/Chrome/Application/chrome.exe",
+  "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe",
+  ...(process.env.LOCALAPPDATA ? [join(process.env.LOCALAPPDATA, "Google", "Chrome", "Application", "chrome.exe")] : []),
+];
+const CH = process.env.CHROME_BIN || CHROME_DEFAULTS.find((p) => existsSync(p)) || CHROME_DEFAULTS[0];
 if (!existsSync(CH)) {
   console.error(
     `capture-demo-frames: no Chrome at ${CH}\n` +
     "  Set CHROME_BIN to a Chrome or Chromium binary. Common locations:\n" +
     "    macOS   /Applications/Google Chrome.app/Contents/MacOS/Google Chrome\n" +
+    "    Windows C:/Program Files/Google/Chrome/Application/chrome.exe\n" +
     "    Linux   /usr/bin/google-chrome  ·  /usr/bin/chromium\n" +
     "  This is an environment condition, not a result: nothing was captured."
   );

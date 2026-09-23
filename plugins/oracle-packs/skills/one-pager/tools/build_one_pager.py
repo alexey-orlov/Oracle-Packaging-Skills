@@ -728,16 +728,23 @@ def measure(rendered: str) -> list[tuple[str, int, int]]:
 
 
 def find_chrome() -> str | None:
-    """CHROME_BIN, then the macOS default path, then PATH. A CHROME_BIN that is not runnable
-    falls through with a warning rather than failing the build with a FileNotFoundError."""
+    """CHROME_BIN, then the macOS and Windows default install paths, then PATH. A CHROME_BIN that
+    is not runnable falls through with a warning rather than failing the build with a
+    FileNotFoundError."""
     override = os.environ.get("CHROME_BIN")
     if override:
         if os.access(override, os.X_OK):
             return override
         print(f"build_one_pager: CHROME_BIN={override} is not executable; looking elsewhere", file=sys.stderr)
-    mac_default = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
-    if Path(mac_default).exists():
-        return mac_default
+    defaults = ["/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+                "C:/Program Files/Google/Chrome/Application/chrome.exe",
+                "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe"]
+    if os.environ.get("LOCALAPPDATA"):            # a per-user Chrome install on Windows
+        defaults.append(os.path.join(os.environ["LOCALAPPDATA"], "Google", "Chrome",
+                                     "Application", "chrome.exe"))
+    for default in defaults:
+        if Path(default).exists():
+            return default
     for name in ("google-chrome", "google-chrome-stable", "chromium", "chromium-browser"):
         found = shutil.which(name)
         if found:

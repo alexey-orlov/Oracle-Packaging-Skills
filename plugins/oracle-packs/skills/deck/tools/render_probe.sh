@@ -45,6 +45,8 @@ QL=$(have qlmanage)
 SOFFICE=$(have soffice); [ -z "$SOFFICE" ] && SOFFICE=$(have libreoffice)
 [ -z "$SOFFICE" ] && [ -x "/Applications/LibreOffice.app/Contents/MacOS/soffice" ] \
   && SOFFICE="/Applications/LibreOffice.app/Contents/MacOS/soffice"
+[ -z "$SOFFICE" ] && [ -x "/c/Program Files/LibreOffice/program/soffice.exe" ] \
+  && SOFFICE="/c/Program Files/LibreOffice/program/soffice.exe"   # Windows, under Git Bash
 PDFTOPPM=$(have pdftoppm)
 PDFTOTEXT=$(have pdftotext)
 NODE=$(have node)
@@ -75,8 +77,8 @@ fi
 
 echo "Renderers found"
 echo "---------------"
-printf '  %-14s %s\n' "qlmanage"    "${QL:-— not found (macOS only)}"
-printf '  %-14s %s\n' "soffice"     "${SOFFICE:-— not found}"
+printf '  %-14s %s\n' "qlmanage"    "${QL:-— not found (macOS only; elsewhere LibreOffice renders)}"
+printf '  %-14s %s\n' "soffice"     "${SOFFICE:-— not found (LibreOffice: the renderer off macOS)}"
 printf '  %-14s %s\n' "pdftoppm"    "${PDFTOPPM:-— not found (poppler)}"
 printf '  %-14s %s\n' "pdftotext"   "${PDFTOTEXT:-— not found (poppler)}"
 printf '  %-14s %s\n' "node"        "${NODE:-— not found}"
@@ -112,7 +114,7 @@ fi
 if [ -n "$SOFFICE" ]; then
   n=$((n+1))
   cat <<EOF
-$n. LibreOffice headless -> PDF -> PNG
+$n. LibreOffice headless -> PDF -> PNG (the renderer off macOS: Windows, Linux)
      "$SOFFICE" --headless --convert-to pdf --outdir "$OUTDIR" "$D"
      ${PDFTOPPM:+pdftoppm -r 110 -png "$OUTDIR/\$(basename "${D%.pptx}").pdf" "$OUTDIR/slide"}
    VERIFY, never trust the return code: ls "$OUTDIR" and check a PDF appeared.
@@ -144,6 +146,8 @@ fi
 if [ "$n" = "0" ]; then
   cat <<EOF
    None found. Options:
+     - install LibreOffice — the renderer off macOS (Windows, Linux) — and poppler
+       (pdftoppm), then run this probe again for the recipe
      - open the .pptx in PowerPoint / Keynote / Google Slides and export images
      - install poppler (pdftoppm) and render an exported PDF
      - run the QA on a machine that has QuickLook or LibreOffice

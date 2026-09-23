@@ -2,7 +2,7 @@
 
 **What this is.** The ten-slide sales deck, **filled**, not drawn: `tools/build_deck_v2.py` copies the reference deck (`assets/exemplar/wfo-sales-deck.pptx`), replacing only content, so geometry, type, colour, corners, icons and the table idiom are the reference's by construction.
 
-    python3 tools/build_deck_v2.py <spec> --out <dir> --channel <channel> --fit-report
+    shared/tools/py tools/build_deck_v2.py <spec> --out <dir> --channel <channel> --fit-report
 
 Per-slide content and order: cards `slides-1-5` and `slides-6-10`, the same ten slides `shared/references/anatomy/artifact-deck.md` fixes.
 

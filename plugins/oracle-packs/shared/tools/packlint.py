@@ -27,12 +27,13 @@ import sys
 import zipfile
 from xml.etree import ElementTree as ET
 
-# Into a virtualenv, never into system Python (plugins/oracle-packs/requirements.txt).
+# Into a virtualenv, never into system Python (shared/tools/requirements.txt).
 PYYAML_HINT = (
-    "PyYAML is required and is not installed.\n"
-    "  python3 -m venv .venv \\\n"
-    "    && .venv/bin/pip install -r plugins/oracle-packs/requirements.txt\n"
-    "  then run this tool with .venv/bin/python (or just: .venv/bin/pip install pyyaml)"
+    "PyYAML is required and is not installed for this interpreter.\n"
+    "  run the tool through shared/tools/py, which finds or provisions an interpreter that has it\n"
+    "  (shared/tools/py --check shows which), or by hand:\n"
+    "  python3 -m venv ~/.oracle-packs/venv \\\n"
+    "    && ~/.oracle-packs/venv/bin/pip install -r shared/tools/requirements.txt"
 )
 
 EXIT_CLEAN = 0

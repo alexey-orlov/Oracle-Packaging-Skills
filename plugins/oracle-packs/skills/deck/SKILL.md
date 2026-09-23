@@ -16,28 +16,28 @@ user-invocable: true
 - A confirmed, lint-clean `pack-spec.yaml`. Otherwise stop and send the user to `/oracle-packs:spec`.
 - Channel: `partner_print` (default) or `internal`. Ask once with a widget if not given, and ask it as "who will see this deck": "Oracle and SoftServe sellers" (default) or "our own team" (adds prices in full, named accounts and internal notes where the pack brief allows). Store the two values; never show them.
 - Pictures chosen: the icon per industry (`verticals[].icon`) and the photographs (`deck.images.cover`, `deck.images.today`, `deck.images.tomorrow`) come from `/oracle-packs:visuals`, chosen by the owner from openly licensed sources. Run it first when the brief has none; build anyway if the owner has not picked yet, and each unchosen slot stays an explicit empty container labelled "image to be chosen" and becomes an open item.
-- Dependencies: Python 3 with `pyyaml`, `python-pptx`, `Pillow`. The exemplar deck `assets/exemplar/wfo-sales-deck.pptx` and its slot map ship with the skill; the industry icons come from `shared/data/icons/`. The brand fonts are licensed and may be absent here — trust the fit report, not the rendered glyph widths.
+- Dependencies: Python 3 with `pyyaml`, `python-pptx`, `Pillow` — `shared/tools/py --check` says what is missing. The exemplar deck `assets/exemplar/wfo-sales-deck.pptx` and its slot map ship with the skill; the industry icons come from `shared/data/icons/`. The fit report measures with the brand fonts the plugin ships in `fonts/`; a render shows them only where they are installed — trust the fit report, not the rendered glyph widths.
 
 ## Procedure
 
 1. **Build.** *Card: `build.md`, with `slides-1-5.md` and `slides-6-10.md`.* Every slide's content comes from named spec keys; an empty key shows the honest state, never a placeholder that reads as fact.
 
-       python3 tools/build_deck_v2.py <spec> --out <dir> --channel <channel> --fit-report
+       shared/tools/py tools/build_deck_v2.py <spec> --out <dir> --channel <channel> --fit-report
 
 2. **Lint the deck before anyone sees it.** *Card: `lint.md`.* It must exit 0 before the render QA, and certainly before the owner. Among its checks: the cover carries the family's hero picture on the reference's own photo title layout — an ink-only cover is an unfinished state, never a build anyone delivers.
 
-       python3 tools/lint_deck.py <pptx> --spec <spec> --channel <channel>
+       shared/tools/py tools/lint_deck.py <pptx> --spec <spec> --channel <channel>
 
 3. **Render and look at every slide.** *Card: `render-qa.md`.* `tools/render_probe.sh` says which renderer this machine has; make a contact sheet of all ten and read it by eye.
 
 4. **The architecture picture on slide 8.** *Card: `diagram-reviewer.md`.* The picture is not drawn or reviewed here: `/oracle-packs:build` built the pack's one architecture model and had it reviewed once, and this slide renders it. Check that it still does.
 
-       python3 shared/tools/check_diagram.py packs/<slug>/architecture.json --deck <pptx>
+       shared/tools/py shared/tools/check_diagram.py packs/<slug>/architecture.json --deck <pptx>
 
-5. **Clearance, consistency and the editorial pass.** *Card: `clearance-and-editorial.md`.* Both scripts clean, then read every slide's text against the spec and the naming rules on the strongest model.
+5. **Clearance, consistency and the editorial pass.** *Card: `clearance-and-editorial.md`.* Both scripts clean, then read every slide's text against the spec and the naming rules on the strongest model. Every subagent follows `shared/references/running-agents.md`.
 
-       python3 shared/tools/lint_artifact.py <pptx> --channel <channel> --spec <spec>
-       python3 shared/tools/check_consistency.py <spec> <pptx>
+       shared/tools/py shared/tools/lint_artifact.py <pptx> --channel <channel> --spec <spec>
+       shared/tools/py shared/tools/check_consistency.py <spec> <pptx>
 
 6. **The review pack, then the question.** *Card: `review-pack.md`.* The contact sheet, the .pptx, the layout decisions, the architecture in plain sentences, everything inferred or unconfirmed, and the open items — opened beside the conversation before the widget asks: approve, or say what to change.
 

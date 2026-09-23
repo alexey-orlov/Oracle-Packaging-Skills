@@ -38,6 +38,7 @@ Every string obeys `listing-rules.md`. The site's own checker (`<site>/tools/che
 | `facet` | string | One `facets.technology[].id` — the platform the pack runs on. |
 | `oneLiner` | string | The tile description **and** the hero lead — one string on both surfaces. A product statement: what it does, for whom, with what outcome. No packaging vocabulary (the checker fails a list of phrases). Every clause traceable to a signed-off source; an unsupported clause is **dropped**, never swapped for a new claim. |
 | ~~`shortLine`~~ | — | **Retired by the site in round 9, and a build failure if it returns.** `oneLiner` is the one line on the tile and the hero. |
+| `contactPerson` | string | **Site round 13.** An id in the site's `shared.people`: the product's lead, named after the practice contact on its Contacts card. Required — the checker fails a missing or unknown id. **An owner choice, never derived**: offer the people the site lists. |
 | `statusNote?` | string | One muted line under the hero one-liner, **only** where the pack has no package yet. One sentence. Where it is absent the availability badges say what there is, which is the correct rendering. |
 | `heroLine?` / `heroCaption?` | string | One or the other, never both — a short slogan or a short line above the name, in the same slot and treatment. |
 | `subLine?` | string | A second hero line where the one-liner is very short. Usually absent. |
@@ -252,6 +253,7 @@ rather than filling the gap itself.
 | Listing key | Spec source | Component | How |
 |---|---|---|---|
 | `slug` | `meta.slug` | 4 | verbatim |
+| `contactPerson` | — | — | **owner choice** among the site's `shared.people` |
 | `name`, `headline` | `meta.name_variants.site` | 4 | split into `{accent, rest}` |
 | `oneLiner` | `one_liner.full` | 2 | verbatim; re-checked against the packaging deny-list |
 | `category`, `categoryChip` | `meta.roadmap_block` + the workflow pattern | — | **choice**: map the pack's pattern onto the site's own category taxonomy |

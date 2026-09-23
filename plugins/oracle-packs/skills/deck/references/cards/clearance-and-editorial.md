@@ -2,8 +2,8 @@
 
 **What this is.** Two passes before the owner sees anything: the automatic clearance and consistency checks, then a reading of every slide's text on the strongest model.
 
-    python3 shared/tools/lint_artifact.py <pptx> --channel <channel> --spec <spec>
-    python3 shared/tools/check_consistency.py <spec> <pptx>
+    shared/tools/py shared/tools/lint_artifact.py <pptx> --channel <channel> --spec <spec>
+    shared/tools/py shared/tools/check_consistency.py <spec> <pptx>
 
 Both clean before the first render is shown.
 

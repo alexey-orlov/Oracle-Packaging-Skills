@@ -5,8 +5,9 @@
                   [--fit-report] [--allow-overflow] [--base <pptx>]
 
 One function per slide; geometry from references/deck-anatomy.md. Text is
-sized to fit with a headless estimate (Pillow on a Helvetica-metric stand-in
-font, +6% safety) — the deck-kit rule is: trust geometry, not glyph widths.
+sized to fit with a headless estimate (Pillow on the brand face the plugin ships,
++2% safety, else on a Helvetica-metric stand-in, +6%) — the deck-kit rule is:
+trust geometry, not glyph widths.
 A box that would still overflow is printed and the build exits non-zero.
 
 Dependencies: pyyaml, python-pptx, Pillow  (see plugins/oracle-packs/requirements.txt)

@@ -3,7 +3,7 @@
 **What this is.** The sales one-pager: the deck condensed onto one A4 page, rendered from the confirmed spec as HTML and printed to PDF. Section order and what each block carries: `shared/references/anatomy/artifact-one-pager.md`.
 
 ```
-python3 tools/build_one_pager.py <spec> --out <dir> --channel partner_print|internal [--hero <image>]
+shared/tools/py tools/build_one_pager.py <spec> --out <dir> --channel partner_print|internal [--hero <image>]
 ```
 
 Exit 0 one A4 page · 1 spec error · 2 a name this channel may not carry reached the page · 3 more than one page (card `overflow`) · 4 no Chrome, so nothing was verified. Needs `pyyaml`, `pypdf` and Chrome or Chromium (`CHROME_BIN`, then the macOS default, then PATH). Name what is missing; never degrade silently.

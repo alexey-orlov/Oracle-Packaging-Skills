@@ -106,9 +106,12 @@ footnotes; anything that must be read on a tinted panel uses `6B7076` or darker.
 | Status marks ● ◐ ○ ●● | `Apple Symbols`, with `a:sym` = `Segoe UI Symbol` | any one face that has all of them |
 | Small keys, numerals | `Roboto Mono` | Menlo, Consolas, monospace |
 
-The faces are **not shipped with this plugin** (licensing). A machine without
-them renders substitutes; the deck file is still correct, because the runs name
-the brand faces and PowerPoint resolves them wherever they are installed.
+Azurio and Replica LL TT ship privately in the plugin's `fonts/` folder, for
+practice members only, and are never embedded in a deck (see the README there).
+A machine that has not installed them (`shared/tools/py
+shared/tools/install_fonts.py`) renders substitutes; the deck file is still
+correct, because the runs name the brand faces and PowerPoint resolves them
+wherever they are installed.
 
 The reference deck's cover is set entirely in `+mj-lt`; its content slides are
 `Replica LL TT` throughout. Neither brand face carries U+25CF / U+25D0 / U+25CB,
@@ -124,12 +127,15 @@ Sizes that hold up on this master: slide title 24–28 · section label 10.5 bol
 card heading 13–15 bold · body 9.5–12 · table values 10.5–11.5 · table glyphs
 15–18 · small caption 7.5–8.5 · footnote 8.
 
-## Text fit without the brand fonts
+## Text fit
 
-The builders never measure with the brand face. They measure with a
-Helvetica-metric stand-in — Liberation Sans, then Arial, then Helvetica,
-whichever exists — and add a **+6 % safety margin**, then compare against the
-box width in EMU. Line height is `1.22 × point size`.
+The builders measure with the Replica LL TT the plugin ships in its `fonts/`
+folder and add a **+2 % margin** for rendering slack. Where that folder holds
+no files they measure with a Helvetica-metric stand-in — Liberation Sans, then
+Arial, then Helvetica, whichever exists — and add a **+6 % safety margin**. Either
+way the width is compared against the box width in EMU, and the fit report's
+first line names the face measured and the margin. Line height is
+`1.22 × point size`.
 
 This is the deck-kit rule restated: a render proves geometry and colour; it does
 not prove that the real font fits, because the renderer substitutes. Any string

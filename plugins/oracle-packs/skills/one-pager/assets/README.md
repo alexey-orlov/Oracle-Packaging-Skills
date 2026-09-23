@@ -8,10 +8,7 @@ Optimization build source (2026-07-17) and the content replaced by tokens. Rende
 ## Run it
 
 ```sh
-python3 -m venv .venv
-.venv/bin/pip install -r plugins/oracle-packs/requirements.txt
-
-.venv/bin/python plugins/oracle-packs/skills/one-pager/tools/build_one_pager.py \
+shared/tools/py plugins/oracle-packs/skills/one-pager/tools/build_one_pager.py \
     packs/<slug>/pack-spec.yaml \
     --out packs/<slug>/artifacts \
     --channel partner_print \
@@ -33,9 +30,9 @@ is the editable source, and the PDF is a render of it.
 
 ## Dependencies
 
-`PyYAML`, `pypdf`, and **Google Chrome or Chromium** for the PDF. The browser is found via
-`$CHROME_BIN`, then the macOS default application path, then `google-chrome` / `chromium` on PATH.
-Nothing else is required and nothing is fetched at render time.
+`PyYAML`, `pypdf` (`shared/tools/py` provides both), and **Google Chrome or Chromium** for the
+PDF. The browser is found via `$CHROME_BIN`, then the macOS and Windows default install paths, then
+`google-chrome` / `chromium` on PATH. Nothing else is required and nothing is fetched at render time.
 
 ## Hero images
 

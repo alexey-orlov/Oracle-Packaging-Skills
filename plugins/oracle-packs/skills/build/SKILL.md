@@ -15,8 +15,8 @@ You produce nothing yourself: each artifact is built by its own skill, shown to 
 
 ## Preconditions
 
-1. Argument: the path to `packs/<slug>/pack-spec.yaml`. If missing, look for exactly one `packs/*/pack-spec.yaml` under the working directory; if none or several, ask.
-2. `meta.status` must be `confirmed` and `python3 shared/tools/lint_spec.py <spec>` must be clean. Otherwise stop and send the user to `/oracle-packs:spec` (resume mode) — never patch the spec here.
+1. Argument: the path to `packs/<slug>/pack-spec.yaml`. If missing, look for exactly one `packs/*/pack-spec.yaml` under the directory the user names, else `$ORACLE_PACKS_ROOT`, else the working directory; if none or several, ask.
+2. `meta.status` must be `confirmed` and `shared/tools/py shared/tools/lint_spec.py <spec>` must be clean. Otherwise stop and send the user to `/oracle-packs:spec` (resume mode) — never patch the spec here.
 3. Who will see the printed documents is settled once, at the map, and holds for every artifact and for the consistency gate.
 
 ## 1. The map, and the one question
@@ -29,7 +29,7 @@ Card: `per-artifact-review` (with `artifact-order` for what comes next). Run eac
 
 ## 3. The architecture picture
 
-Card: `architecture-picture`. After the feature list and before the deck, once for the whole pack: build the model (`shared/tools/build_diagram.py`), render the one-pager's strip — the canonical picture — and put it to ONE fresh-context reviewer. The deck, the one-pager and the mini-site listing then render that reviewed model; none of them reviews the picture again, and none draws its own.
+Card: `architecture-picture`. After the feature list and before the deck, once for the whole pack: build the model (`shared/tools/build_diagram.py`), render the one-pager's strip — the canonical picture — and put it to ONE fresh-context reviewer. Every subagent follows `shared/references/running-agents.md`. The deck, the one-pager and the mini-site listing then render that reviewed model; none of them reviews the picture again, and none draws its own.
 
 ## 4. The consistency gate
 

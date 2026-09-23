@@ -4,8 +4,8 @@
 
 ```
 bash ../deck/tools/render_probe.sh     # prints how to render on this machine
-python3 shared/tools/lint_artifact.py <the pptx> --channel <channel> --spec <spec>
-python3 shared/tools/check_consistency.py <spec> <the pptx>
+shared/tools/py shared/tools/lint_artifact.py <the pptx> --channel <channel> --spec <spec>
+shared/tools/py shared/tools/check_consistency.py <spec> <the pptx>
 ```
 
 **Checks**

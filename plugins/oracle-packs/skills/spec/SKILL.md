@@ -17,9 +17,9 @@ You produce one file the other skills trust: `packs/<slug>/pack-spec.yaml`, vali
 
 ## 0. Before you start
 
-1. Working folder `packs/<slug>/`, under the directory the user names (default: the working directory). If a `pack-spec.yaml` is already there, read it, resume at the first unsettled part, and say so.
+1. Working folder `packs/<slug>/`, under the directory the user names, else `$ORACLE_PACKS_ROOT`, else the working directory; it stays on this machine, never in the plugin. If a `pack-spec.yaml` is already there, read it, resume at the first unsettled part, and say so.
 2. Load `shared/data/oracle-products.yaml` (the only allowed product names) and `shared/data/roadmap-items.csv` (the only allowed roadmap ids) at the step that needs them, not before.
-3. Roles: research agents, extraction and lookups on the mechanical model; the synthesis, the story candidates and the final consistency pass on the strongest available. Name the split once. Never more than four research agents at once.
+3. Roles: research agents, extraction and lookups on the mechanical model; the synthesis, the story candidates and the final consistency pass on the strongest available. Name the split once. Never more than four research agents at once. Every subagent follows `shared/references/running-agents.md`.
 4. **Show the map first** — one short message: the six stages below in the owner's words, how many questions each will actually ask after skipping, and the total. Every widget title then carries `<Stage> · n of N · <question name>`, and every stage ends with one line: what is done, what is next.
 
 ## 1. Before we start
@@ -48,7 +48,7 @@ While drafting: when something essential is missing, ask rather than invent — 
 
 ## 6. The whole brief
 
-Card: `brief`. One table, one widget — exactly confirm · change · stop. Then set the status, run `python3 shared/tools/lint_spec.py packs/<slug>/pack-spec.yaml` silently, report it in one plain line, and invoke `/oracle-packs:build packs/<slug>/pack-spec.yaml` at once, in the same session.
+Card: `brief`. One table, one widget — exactly confirm · change · stop. Then set the status, run `shared/tools/py shared/tools/lint_spec.py packs/<slug>/pack-spec.yaml` silently, report it in one plain line, and invoke `/oracle-packs:build packs/<slug>/pack-spec.yaml` at once, in the same session.
 
 ## Showing it to the owner
 

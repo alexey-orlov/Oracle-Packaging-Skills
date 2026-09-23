@@ -3,7 +3,7 @@
 **What this is.** One slide that puts a whole pack in front of an executive audience, built on the host deck's own master so it pastes in unchanged and renumbers itself. The six blocks: `shared/references/anatomy/artifact-exec-summary.md`. What goes inside them: card `blocks`.
 
 ```
-python3 tools/build_exec_summary.py <spec> --out <dir> --fit-report \
+shared/tools/py tools/build_exec_summary.py <spec> --out <dir> --fit-report \
         [--channel internal|partner_print] [--host-deck <pptx>] [--with-closing]
 ```
 

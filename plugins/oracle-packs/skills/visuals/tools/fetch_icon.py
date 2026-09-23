@@ -7,8 +7,10 @@
 Tabler Icons (MIT) is the primary set, Lucide (ISC) the fallback. Two routes, in this order:
 
   1. the PNG package on jsDelivr (`@tabler/icons-png`) — already black on transparent, 240 px;
-  2. the SVG from the set's repository, rasterized with QuickLook (`qlmanage -t`), which returns a
-     square PNG on white — the alpha channel is then rebuilt as 255 minus luminance.
+  2. the SVG from the set's repository, rasterized by the first renderer this machine has:
+     QuickLook (`qlmanage -t`, macOS), which returns a square PNG on white whose alpha channel is
+     then rebuilt as 255 minus luminance; else `rsvg-convert` on PATH; else the `cairosvg` module
+     (both keep the transparency). With none of the three the icon is deferred, naming all three.
 
 Route 1 is preferred where it answers and the wanted size is 240 px or less; above that the SVG
 route is taken instead, because upscaling a 240 px bitmap softens the strokes. Each render is
@@ -51,31 +53,74 @@ def upsize_svg(svg_bytes: bytes, size: int) -> bytes:
     return text.encode("utf-8")
 
 
-def rasterize_svg(svg_bytes: bytes, size: int, work: str) -> "Image.Image":
-    """QuickLook is the only SVG rasterizer on this Mac (no cairosvg, no rsvg-convert). It renders
-    into a square canvas on an opaque white ground, so the alpha channel has to be rebuilt."""
+def rasterize_svg(svg_bytes: bytes, size: int, work: str) -> tuple["Image.Image", str]:
+    """Render the SVG with the first rasterizer this machine has, as (image, renderer):
+
+      1. QuickLook (`qlmanage`, macOS). It renders into a square canvas on an opaque white ground,
+         so the alpha channel has to be rebuilt;
+      2. `rsvg-convert` (librsvg) on PATH;
+      3. the `cairosvg` Python module.
+
+    The last two keep the SVG's transparency. With none of them working this raises Deferred
+    naming all three, never a silent miss."""
     from PIL import Image
 
-    if not shutil.which("qlmanage"):
-        raise Deferred("no SVG rasterizer here: qlmanage is not on PATH, and no cairosvg/rsvg is "
-                       "installed. The PNG route is the only one left.")
+    px = max(size, 512)
     svg_path = os.path.join(work, "icon.svg")
     with open(svg_path, "wb") as fh:
-        fh.write(upsize_svg(svg_bytes, max(size, 512)))
+        fh.write(upsize_svg(svg_bytes, px))
+    tried = []
+
+    if shutil.which("qlmanage"):
+        try:
+            subprocess.run(["qlmanage", "-t", "-s", str(px), "-o", work, svg_path],
+                           capture_output=True, timeout=60, check=False)
+        except (OSError, subprocess.SubprocessError) as exc:
+            tried.append(f"QuickLook failed ({exc})")
+        else:
+            png = svg_path + ".png"
+            if os.path.exists(png):
+                im = Image.open(png).convert("RGB")
+                # White ground, dark strokes -> alpha is the ink coverage.
+                alpha = im.convert("L").point(lambda v: 255 - v)
+                out = Image.new("RGBA", im.size, (0, 0, 0, 0))
+                out.putalpha(alpha)
+                return square_on_canvas(out), "QuickLook"
+            tried.append("QuickLook produced no thumbnail")
+    else:
+        tried.append("no qlmanage (macOS only)")
+
+    rsvg = shutil.which("rsvg-convert")
+    if rsvg:
+        png = os.path.join(work, "icon-rsvg.png")
+        try:
+            subprocess.run([rsvg, "-w", str(px), "-h", str(px), "-o", png, svg_path],
+                           capture_output=True, timeout=60, check=False)
+        except (OSError, subprocess.SubprocessError) as exc:
+            tried.append(f"rsvg-convert failed ({exc})")
+        else:
+            if os.path.exists(png):
+                with open(png, "rb") as fh:
+                    return square_on_canvas(load_png(fh.read())), "rsvg-convert"
+            tried.append("rsvg-convert produced no PNG")
+    else:
+        tried.append("no rsvg-convert on PATH")
+
     try:
-        subprocess.run(["qlmanage", "-t", "-s", str(max(size, 512)), "-o", work, svg_path],
-                       capture_output=True, timeout=60, check=False)
-    except (OSError, subprocess.SubprocessError) as exc:
-        raise Deferred(f"qlmanage could not render the icon: {exc}")
-    png = svg_path + ".png"
-    if not os.path.exists(png):
-        raise Deferred("qlmanage produced no thumbnail for this SVG.")
-    im = Image.open(png).convert("RGB")
-    # White ground, dark strokes -> alpha is the ink coverage.
-    alpha = im.convert("L").point(lambda v: 255 - v)
-    out = Image.new("RGBA", im.size, (0, 0, 0, 0))
-    out.putalpha(alpha)
-    return square_on_canvas(out)
+        import cairosvg
+    except (ImportError, OSError):              # OSError: the module is there, the cairo library is not
+        tried.append("no cairosvg module")
+    else:
+        try:
+            blob = cairosvg.svg2png(url=svg_path, output_width=px, output_height=px)
+            return square_on_canvas(load_png(blob)), "cairosvg"
+        except Exception as exc:                # noqa: BLE001 -- any render failure is a route that failed
+            tried.append(f"cairosvg failed ({exc})")
+
+    raise Deferred("no SVG rasterizer could render the icon — tried QuickLook (qlmanage, macOS), "
+                   "rsvg-convert (librsvg) and the cairosvg module: " + "; ".join(tried) + ". "
+                   "Install librsvg (rsvg-convert) or cairosvg (shared/tools/py -m pip install "
+                   "cairosvg), then retry.")
 
 
 def square_on_canvas(im: "Image.Image", fill_floor: float = 0.5) -> "Image.Image":
@@ -138,8 +183,8 @@ def fetch(name: str, icon_set: str, size: int) -> tuple["Image.Image", dict, str
     if im is None:
         svg = http_get(meta["svg"].format(name=name))   # FileNotFoundError -> no such icon
         with tempfile.TemporaryDirectory() as work:
-            im = rasterize_svg(svg, size, work)
-        route = "SVG + QuickLook"
+            im, renderer = rasterize_svg(svg, size, work)
+        route = f"SVG + {renderer}"
     lic = ICON_LICENCES[meta["licence"]]
     rec = provenance_record(
         kind="icon", title=name, creator=meta["credit"],
@@ -172,8 +217,9 @@ def main(argv: list[str]) -> int:
                f"for candidates that do exist.")
         return EXIT_USAGE
     except Deferred as exc:
-        eprint(f"deferred — {exc}\nThis is a network failure, not a missing icon. Retry; do not "
-               f"record the icon as unavailable.")
+        eprint(f"deferred — {exc}\nThis is an environment limitation (the network, or no SVG "
+               f"rasterizer here), not a missing icon. Retry once it is fixed; do not record the "
+               f"icon as unavailable.")
         return EXIT_DEFERRED
 
     wanted = ["white", "ink"] if args.color == "both" else [args.color]

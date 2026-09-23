@@ -16,18 +16,18 @@ user-invocable: true
 - A confirmed, lint-clean `pack-spec.yaml`.
 - Channel: `internal` by default — the slide usually lands in an internal solutions-review or section deck and carries the internal name variant; `partner_print` when it goes into a partner deck, where the external variant and the clearance rules apply. When it has to be asked, ask it as "who will see this slide": "our own team", or "Oracle and SoftServe sellers". Store the two values; never show them.
 - Optional `--host-deck <pptx>`: build on that deck's own master, so the slide pastes in unchanged and renumbers itself. Without it, the shipped brand base.
-- Dependencies as for the deck skill: `pyyaml`, `python-pptx`, `Pillow`. Say what is missing instead of degrading silently.
+- Dependencies as for the deck skill: `pyyaml`, `python-pptx`, `Pillow` (`shared/tools/py --check`). Say what is missing instead of degrading silently.
 
 ## Procedure
 
 1. **Build.** Cards: `build` and `blocks`, plus `shared/references/anatomy/artifact-exec-summary.md` for the six blocks. Read the spec, settle the channel, then:
-   `python3 tools/build_exec_summary.py <spec> --out <dir> --fit-report [--channel internal|partner_print] [--host-deck <pptx>]`
+   `shared/tools/py tools/build_exec_summary.py <spec> --out <dir> --fit-report [--channel internal|partner_print] [--host-deck <pptx>]`
    The fit report must be clean; overflow is cut, not shrunk (`--allow-overflow` is for review builds and is never how a slide ships).
 2. **The automatic checks.** Card: `check`. Render the slide and look at it (`../deck/tools/render_probe.sh` prints how), then:
-   `python3 shared/tools/lint_artifact.py <the pptx> --channel <channel> --spec <spec>`
-   `python3 shared/tools/check_consistency.py <spec> <the pptx>`
+   `shared/tools/py shared/tools/lint_artifact.py <the pptx> --channel <channel> --spec <spec>`
+   `shared/tools/py shared/tools/check_consistency.py <spec> <the pptx>`
    Both clean before anything is shown; the owner hears one plain line about them.
-3. **Editorial pass.** Card: `editorial`, on the strongest model with fresh eyes — the slide must read for someone who has not seen the deck, every number equal to the spec, the status word once, prices and the customer's name as the clearance table allows for this cut, the notes naming it.
+3. **Editorial pass.** Card: `editorial`, on the strongest model with fresh eyes — the slide must read for someone who has not seen the deck, every number equal to the spec, the status word once, prices and the customer's name as the clearance table allows for this cut, the notes naming it. Every subagent follows `shared/references/running-agents.md`.
 4. **Show it.** Card: `review-pack`. One rebuild round.
 5. **One change afterwards.** Card: `fast-path`. A single-block change is never a rerun of the build.
 

@@ -6,13 +6,16 @@ a rule moves, those files are rewritten first and the tools follow in the same
 pass. A skill that produces an artifact is not done until the relevant tool here
 is green on it.
 
-Python 3, standard library only, plus **PyYAML** for anything that reads YAML —
-into a virtualenv, never into system Python:
-`python3 -m venv .venv && .venv/bin/pip install -r plugins/oracle-packs/requirements.txt`,
-then call the tools with `.venv/bin/python`. Without it every tool exits 2 and
-prints that line. No tool writes into the repository; they read and report.
+Python 3, standard library only, plus **PyYAML** for anything that reads YAML.
+Call every tool through `py`, the interpreter resolver beside them: it finds a
+Python that has the packages in `requirements.txt`, or provisions one in
+`~/.oracle-packs/venv` on first use — never in system Python — and runs the tool
+with it (`py --check` shows which). A tool run without the packages exits 2 and
+prints the install line. No tool writes into the repository; they read and report.
 
 ```
+py                    the interpreter resolver every tool runs through (--which, --check)
+requirements.txt      the Python packages; a copy of plugins/oracle-packs/requirements.txt
 lint_spec.py          validates a pack spec against the schema
 lint_artifact.py      clearance, naming, vocabulary, prices and figures per channel
 check_consistency.py  every artifact of a pack against its spec
@@ -48,7 +51,7 @@ not a check that passed.
 ## lint_spec.py
 
 ```
-python3 shared/tools/lint_spec.py packs/<slug>/pack-spec.yaml [--strict] [--signoff] \
+shared/tools/py shared/tools/lint_spec.py packs/<slug>/pack-spec.yaml [--strict] [--signoff] \
         [--catalog shared/data/oracle-products.yaml] \
         [--roadmap shared/data/roadmap-items.csv] [--denylist shared/tools/denylist.txt]
 ```
@@ -111,7 +114,7 @@ engagement, no cleared headline number**. The linter reads it as absent: no
 ## lint_artifact.py
 
 ```
-python3 shared/tools/lint_artifact.py <file-or-dir> \
+shared/tools/py shared/tools/lint_artifact.py <file-or-dir> \
         --channel internal|partner_print|customer_site|demo \
         [--spec packs/<slug>/pack-spec.yaml] [--denylist ...] [--catalog ...]
 ```
@@ -144,7 +147,7 @@ become real instead of skipped.
 ## check_consistency.py
 
 ```
-python3 shared/tools/check_consistency.py packs/<slug>/pack-spec.yaml <artifact>...
+shared/tools/py shared/tools/check_consistency.py packs/<slug>/pack-spec.yaml <artifact>...
 ```
 
 Asks whether the artifacts say the **same** thing, which the per-artifact linter
@@ -165,8 +168,8 @@ artifacts omit by design — so the output is a matrix of artifact × component 
 ## build_diagram.py
 
 ```
-python3 shared/tools/build_diagram.py <spec> --out packs/<slug>/architecture.json
-python3 shared/tools/build_diagram.py <spec> --check        # rules only, writes nothing
+shared/tools/py shared/tools/build_diagram.py <spec> --out packs/<slug>/architecture.json
+shared/tools/py shared/tools/build_diagram.py <spec> --check        # rules only, writes nothing
 ```
 
 The pack's architecture picture, derived once and rendered three times. It reads
@@ -184,7 +187,7 @@ app box without the pack's name. Rules: `shared/references/architecture-diagram.
 ## check_diagram.py
 
 ```
-python3 shared/tools/check_diagram.py packs/<slug>/architecture.json \
+shared/tools/py shared/tools/check_diagram.py packs/<slug>/architecture.json \
         --deck <pptx> --one-pager <html> --site <diagrams.js> --slug <slug>
 ```
 
@@ -224,8 +227,8 @@ review hand-off:
    never edit an artifact away from the spec to silence a finding.
 6. Hand the owner the `not evaluated:` lines together with the artifact.
 
-Run the suite after touching any rule: `shared/tools/tests/run_tests.sh`
-(`PY=.venv/bin/python` to point it at an interpreter that has PyYAML). It builds
+Run the suite after touching any rule: `shared/tools/tests/run_tests.sh` (it
+runs every tool through `py`; `PY=<interpreter>` points it at another one). It builds
 its broken fixtures from the good one and reads the deny-listed name it needs out
 of `denylist.txt`, so no customer name is committed to this repo.
 

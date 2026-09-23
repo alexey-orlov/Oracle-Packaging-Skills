@@ -35,30 +35,28 @@ any machine where it is installed, and a file on OneDrive can be edited by anyon
 and silently change the template. A repo asset changes only by a deliberate
 commit — and `slots.json` records the hash it was mapped against.
 
-Brand fonts are **not** shipped (licensing). The deck names them; whoever opens
-it in PowerPoint sees them if they have them, and the fit check never depends on
-having them — see "Text fit" in `brand-tokens.md`.
+Brand fonts ship privately in the plugin's `fonts/` folder, for practice members
+only, and are never embedded in a deck. The deck names them; whoever opens it in
+PowerPoint sees them if they have them installed, and the fit check reads the
+shipped files (falling back to metric stand-ins when the folder is empty) — see
+"Text fit" in `brand-tokens.md`.
 
 ## Dependencies
 
 Python 3 with `pyyaml`, `python-pptx`, `Pillow` (listed in
-`plugins/oracle-packs/requirements.txt`). Check:
+`plugins/oracle-packs/requirements.txt`). Nothing to install by hand: `shared/tools/py`
+(the plugin's `shared/tools/py`) runs every tool with an interpreter that has them,
+provisioning one in `~/.oracle-packs/venv` on first use — never in system Python. Check:
 
 ```bash
-python3 -c "import yaml, pptx, PIL"
-```
-
-If that fails, create a virtualenv and install there — never into system Python:
-
-```bash
-python3 -m venv .venv && .venv/bin/pip install -r plugins/oracle-packs/requirements.txt
+shared/tools/py --check
 ```
 
 ## Run it
 
 ```bash
-python3 tools/build_deck_v2.py <pack-spec.yaml> --out <dir> [--channel partner_print|internal]
-python3 tools/build_deck_v2.py --help
+shared/tools/py tools/build_deck_v2.py <pack-spec.yaml> --out <dir> [--channel partner_print|internal]
+shared/tools/py tools/build_deck_v2.py --help
 ```
 
 Useful flags:
@@ -71,7 +69,7 @@ Useful flags:
 Check it:
 
 ```bash
-python3 tools/lint_deck.py <dir>/<slug>-sales-deck.pptx \
+shared/tools/py tools/lint_deck.py <dir>/<slug>-sales-deck.pptx \
   --spec <pack-spec.yaml> --channel partner_print
 ```
 
@@ -83,8 +81,8 @@ regression test that the linter's budgets are still the exemplar's own.
 Tests:
 
 ```bash
-PY=.venv/bin/python tests/test_lint_deck.sh      # the four linter verdicts
-.venv/bin/python tests/test_build_deck_v2.py     # both specs, 49 assertions
+PY=shared/tools/py tests/test_lint_deck.sh       # the four linter verdicts
+shared/tools/py tests/test_build_deck_v2.py      # both specs, 49 assertions
 ```
 
 Output: `<dir>/<slug>-sales-deck.pptx`, 10 slides.
@@ -92,7 +90,7 @@ Output: `<dir>/<slug>-sales-deck.pptx`, 10 slides.
 ## The legacy builder
 
 ```bash
-python3 tools/build_deck.py <pack-spec.yaml> --out <dir> [--channel …] [--base <pptx>]
+shared/tools/py tools/build_deck.py <pack-spec.yaml> --out <dir> [--channel …] [--base <pptx>]
 ```
 
 It redraws every slide on `softserve-deck-base.pptx` from measurements. Use it
@@ -110,7 +108,8 @@ still be checked, and such a deck is never delivered as final — set
 
 1. **Fit report clean.** The builder exits non-zero if any box would overflow or
    any detailed-table cell runs past its word budget; 0 means every string fits
-   its box on the stand-in metrics plus 6 %.
+   its box on the measured metrics plus the margin — 2 % on the shipped brand
+   face, 6 % on a stand-in; the report's first line says which.
 2. **Deck linter clean.** `tools/lint_deck.py` — ten slides, the running header on
    slides 2–10, no tier line on the cover, the family's hero on the cover (the
    exemplar's own photo title layout, with a picture on it), the exemplar's own

@@ -25,11 +25,11 @@ user-invocable: true
 4. **Settle the data model and the figures.** Cards: `data-model`, `synthetic-data`. Current state + named changes with additive effects + `flagsFor(applied)`, so every number is computed in the page. Get this right before any UI.
 5. **Build** `index.html`, `demo.css`, `demo.js` and `data.js` under `packs/<slug>/demo/` (or, when the walkthrough goes onto the site, under the site manifest's `paths.demos/<slug>/`, finding and reading the site as the listing skill's `site` card says). Cards: `build`, `word-budgets`. Ship a thin vertical slice first, then the full run.
 6. **Red-team, then audit fidelity.** Card: `red-team`. Both before showing it to anyone.
-7. **QA and lint.** Card: `qa`. `node tools/capture-demo-frames.mjs --demo <url> --scenario <json> --out <dir>`; `LOGS: none` is the gate; then `python3 shared/tools/lint_artifact.py <demo dir> --channel demo --spec <spec>`.
+7. **QA and lint.** Card: `qa`. `node tools/capture-demo-frames.mjs --demo <url> --scenario <json> --out <dir>`; `LOGS: none` is the gate; then `shared/tools/py shared/tools/lint_artifact.py <demo dir> --channel demo --spec <spec>`.
 8. **Review pack.** Card: `review-pack`. One rebuild round; a single-step change is the fast path.
 9. **Hand to the listing.** Card: `handoff`. The captures become its step frames and poster; the demo is published standalone and linked.
 
-**Model routing.** The mechanical majority — source extraction, research fan-out, builds from a settled design, QA loops, captures, conversions — goes to a cheaper capable model. Spend the strongest model only on the design decisions, the data model where the numbers must reconcile, the red-team pass and the final review. **Say which steps used which.** Its copy still gets a mechanical pass before it ships.
+**Model routing.** The mechanical majority — source extraction, research fan-out, builds from a settled design, QA loops, captures, conversions — goes to a cheaper capable model. Spend the strongest model only on the design decisions, the data model where the numbers must reconcile, the red-team pass and the final review. **Say which steps used which.** Its copy still gets a mechanical pass before it ships. Every subagent follows `shared/references/running-agents.md`.
 
 **Every message, question and option the owner sees passes the reader's test in `references/cards/owner-language.md`.**
 

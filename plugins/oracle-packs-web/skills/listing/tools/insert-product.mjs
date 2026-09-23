@@ -22,6 +22,8 @@
  *   - write anything when the spliced file does not evaluate, or when the
  *     product count did not go up by exactly one;
  *   - touch config.js unless both --config and --config-entry are given;
+ *   - write an entry with no `contactPerson`, or one that is not an id in the site's
+ *     `shared.people` (site round 13), where the site defines `shared.people`;
  *   - add a kit-links entry that links.json already carries, or write to a
  *     links.json that is not valid JSON or has no `products` object. Every
  *     refusal comes before the first write: a refused run writes nothing anywhere.
@@ -209,6 +211,21 @@ if (after.products.length !== before.products.length + 1) {
   die(1, "the spliced file holds " + after.products.length + " products, expected " + (before.products.length + 1) + " — nothing written");
 }
 if (!after.products.some((p) => p && p.slug === slug)) die(1, 'slug "' + slug + '" is not in the spliced catalog — nothing written');
+
+/* Site round 13: every product names its lead, an id in shared.people, and the site's
+   checker fails a missing or unknown one — so refuse here, before anything is written.
+   A site (or a fixture) that defines no shared.people is left alone. */
+const people = after.shared && after.shared.people;
+if (people && typeof people === "object" && !Array.isArray(people)) {
+  const inserted = after.products.find((p) => p && p.slug === slug) || {};
+  const ids = Object.keys(people).join(", ");
+  if (typeof inserted.contactPerson !== "string" || !inserted.contactPerson) {
+    die(1, "the entry has no contactPerson — the site names each product's lead, an id in shared.people (" + ids + ") — nothing written");
+  }
+  if (!Object.prototype.hasOwnProperty.call(people, inserted.contactPerson)) {
+    die(1, 'contactPerson "' + inserted.contactPerson + '" is not an id in shared.people (' + ids + ") — nothing written");
+  }
+}
 
 /* --------------------------------------------------------------- config */
 let cfgOut = "", cfgNote = "";

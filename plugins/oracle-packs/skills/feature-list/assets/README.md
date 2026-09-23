@@ -17,7 +17,7 @@ for the column widths to drift.
 ```sh
 qlmanage -t -s 2400 -o <tmp> softserve-wordmark-ink.svg      # → <tmp>/softserve-wordmark-ink.svg.png
 # QuickLook pads the render into a square; crop it back to the mark and keep a white ground:
-python3 - <<'PY'
+shared/tools/py - <<'PY'
 from PIL import Image, ImageChops, ImageOps
 im = Image.open("<tmp>/softserve-wordmark-ink.svg.png").convert("RGB")
 box = ImageChops.invert(im).getbbox()                         # the ink's own bounding box
@@ -32,31 +32,36 @@ file is ever missing the build does not silently drop the brand — it falls bac
 ## Fonts
 
 The document asks for **Azurio** (the title) and **Replica LL TT** (everything else), the mini-site's
-two faces. On the owner's Mac they are installed in `/Library/Fonts/Managed/`. Nothing is shipped
-here: fonts are licensed, and the repo is not their distribution channel.
+two faces. They ship privately in the plugin's `fonts/` folder, for practice members only (see the
+README there); on the owner's Mac they are also installed in `/Library/Fonts/Managed/`. The
+document names the faces and never embeds the files.
 
 The three status glyphs are set in a third face, **Apple Symbols**
 (`/System/Library/Fonts/Apple Symbols.ttf`). Neither brand face carries U+25CF / U+25D0 / U+25CB, so
 without this the renderer picks a different substitute per glyph and they come out at different
-sizes. Apple Symbols draws all three within 4% of each other; where it is absent the build falls
-back to per-glyph point sizes that look equal (● and ○ at 1.15× ◐) and says so on stderr.
+sizes. Apple Symbols draws all three within 4% of each other. Where it is absent the estimator
+measures the glyphs with Segoe UI Symbol (Windows) or DejaVu Sans (Linux) instead — the document
+still names Apple Symbols, with Segoe UI Symbol as its `altName` — and where none of the three is
+there the build falls back to per-glyph point sizes that look equal (● and ○ at 1.15× ◐) and says
+so on stderr.
 
 The builder writes an `altName` for each face into `word/fontTable.xml` after saving — Azurio →
 Georgia, Replica LL TT → Arial, Apple Symbols → Segoe UI Symbol — so a machine without them
 substitutes something sane instead of letting Word guess. The same font files are what make the one-page estimate exact: the height
-estimator measures text with the installed face through Pillow, and falls back to an average glyph
-width (saying so on stderr) when it cannot find them.
+estimator measures text with the brand face through Pillow — the plugin's `fonts/` copy first, then
+the installed font folders — and falls back to an average glyph width (saying so on stderr) when it
+finds neither.
 
 ## Run it
 
 ```sh
-python3 -m venv .venv
-.venv/bin/pip install -r plugins/oracle-packs/requirements.txt
-
-.venv/bin/python plugins/oracle-packs/skills/feature-list/tools/build_feature_list.py \
+shared/tools/py plugins/oracle-packs/skills/feature-list/tools/build_feature_list.py \
     packs/<slug>/pack-spec.yaml \
     --out packs/<slug>/artifacts
 ```
+
+`shared/tools/py` runs it with an interpreter that has the packages, provisioning one on first use;
+`shared/tools/py --check` shows which.
 
 `--help` lists every option. Paths are arguments — nothing is hard-coded to one machine.
 
@@ -67,7 +72,7 @@ python3 -m venv .venv
 | `--no-tier-column` | Force the five-column reference layout. |
 | `--fit one-page` *(default)* | Walk the fit ladder and guarantee one A4 page: a row per feature at 7.5pt → 7pt → compact (a row per category, features inline, status and tier columns dropped) at 7.5pt → 7pt. |
 | `--fit none` | One row per feature at 7.5pt over as many pages as it takes, header row repeating. |
-| `--check-pages` / `--no-check-pages` | Verify the real page count by exporting to PDF with Pages.app (default: on where Pages is installed; hard 90-second limit, and a failure is reported as "not verified", never as an error). |
+| `--check-pages` / `--no-check-pages` | Verify the real page count by exporting to PDF — Pages.app on macOS, else LibreOffice (`soffice --headless`), counted with pypdf (default: on wherever either is installed; hard 90- and 120-second limits). The report names the renderer that verified the count; a count nobody could verify is a `WARNING: page count NOT verified` line, never an error. |
 
 Writes `<slug>-feature-list.docx` into `--out`, and prints the area / category / feature counts, the
 status split, the layout it used and the estimated fill — so a miscount or an unexpectedly tight
@@ -83,15 +88,16 @@ page is visible without opening the file.
 ## Dependencies
 
 `PyYAML` and `python-docx`; `Pillow` is optional and only makes the one-page estimate exact. No
-browser, no Word, no LibreOffice — the document is written directly as Office Open XML. Pages.app
-is used only to confirm the page count, and only when it is there.
+browser and no Word — the document is written directly as Office Open XML. Pages.app or
+LibreOffice is used only to confirm the page count, and only when one is there; with neither, the
+report says so in a `WARNING` line.
 
 ## Test fixture
 
 Both builders share one fixture, in the one-pager skill:
 
 ```sh
-.venv/bin/python plugins/oracle-packs/skills/feature-list/tools/build_feature_list.py \
+shared/tools/py plugins/oracle-packs/skills/feature-list/tools/build_feature_list.py \
     plugins/oracle-packs/skills/one-pager/tests/fixture-pack-spec.yaml --out /tmp/fl-check
 ```
 
@@ -104,8 +110,8 @@ thirds of the page) — itself a demonstration that 38 features is a tree past i
 ## Done means
 
 1. **It builds**, exit 0, with the counts matching the spec's capability tree.
-2. **One page.** The build printed the layout and the estimated fill, and — where Pages is
-   installed — verified the real page count. An exit 3 is not a build to be worked around; it is a
+2. **One page.** The build printed the layout and the estimated fill, and — where Pages or
+   LibreOffice is installed — verified the real page count, naming which one did. An exit 3 is not a build to be worked around; it is a
    question for the owner about grouping.
 3. **No pricing.** Exit 2 means a price reached the document; the feature list never carries one.
 4. **The brand is right**: the wordmark lockup with `Oracle AI & Data Solutions` at the top, the

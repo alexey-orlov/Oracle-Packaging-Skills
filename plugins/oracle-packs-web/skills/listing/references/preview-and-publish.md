@@ -79,7 +79,7 @@ keeps no copy).
 Generate the deny-list before the gate, never by hand:
 
 ```sh
-python3 tools/denylist-to-json.py --out "$ORACLE_SITE_ROOT/tools/deny-list.json"
+shared/tools/py tools/denylist-to-json.py --out "$ORACLE_SITE_ROOT/tools/deny-list.json"
 ```
 
 It converts `shared/tools/denylist.txt` — the one list the practice keeps — into the

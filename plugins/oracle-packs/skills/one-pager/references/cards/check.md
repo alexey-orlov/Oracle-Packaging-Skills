@@ -3,9 +3,9 @@
 **What this is.** Three shared checkers on this skill's files, before anything reaches the owner: clearance and naming, consistency against the spec, the diagram.
 
 ```
-python3 shared/tools/lint_artifact.py <the pdf and the html> --channel <channel> --spec <spec>
-python3 shared/tools/check_consistency.py <spec> <the html>
-python3 shared/tools/check_diagram.py packs/<slug>/architecture.json --one-pager <the html>
+shared/tools/py shared/tools/lint_artifact.py <the pdf and the html> --channel <channel> --spec <spec>
+shared/tools/py shared/tools/check_consistency.py <spec> <the html>
+shared/tools/py shared/tools/check_diagram.py packs/<slug>/architecture.json --one-pager <the html>
 ```
 
 **Checks**

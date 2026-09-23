@@ -10,26 +10,27 @@
 
 This skill ships **no deck base of its own**. Without `--host-deck` it builds on
 the deck skill's `../deck/assets/softserve-deck-base.pptx`; brand tokens and the
-text-fit rule live in `../deck/references/brand-tokens.md`. Brand fonts are not
-shipped (licensing).
+text-fit rule live in `../deck/references/brand-tokens.md`. Brand fonts ship
+privately in the plugin's `fonts/` folder, for practice members only; the fit
+estimate reads them from there and a slide never embeds them.
 
 ## Dependencies
 
 Python 3 with `pyyaml`, `python-pptx`, `Pillow` (see
-`plugins/oracle-packs/requirements.txt`). Check:
+`plugins/oracle-packs/requirements.txt`). Nothing to install by hand: the plugin's
+`shared/tools/py` runs the tools with an interpreter that has them, provisioning one on
+first use — never in system Python. Check:
 
 ```bash
-python3 -c "import yaml, pptx, PIL"
+shared/tools/py --check
 ```
-
-Missing? Create a virtualenv and install there — never into system Python.
 
 ## Run it
 
 ```bash
-python3 tools/build_exec_summary.py <pack-spec.yaml> --out <dir> \
+shared/tools/py tools/build_exec_summary.py <pack-spec.yaml> --out <dir> \
         [--host-deck <deck.pptx>] [--with-closing] [--fit-report]
-python3 tools/build_exec_summary.py --help
+shared/tools/py tools/build_exec_summary.py --help
 ```
 
 - `--host-deck <pptx>` — build the slide on **that deck's own master**, so it
@@ -44,7 +45,7 @@ python3 tools/build_exec_summary.py --help
 Smoke test:
 
 ```bash
-python3 tools/build_exec_summary.py ../deck/tests/fixture-pack-spec.yaml \
+shared/tools/py tools/build_exec_summary.py ../deck/tests/fixture-pack-spec.yaml \
         --out /tmp/es-smoke --fit-report
 ```
 
@@ -53,7 +54,8 @@ when `--with-closing` found a `Close` layout.
 
 ## What "done" means
 
-1. **Fit report clean** — exit 0; no box overflows on the stand-in metrics +6 %.
+1. **Fit report clean** — exit 0; no box overflows on the measured metrics plus
+   the margin (2 % on the shipped brand face, 6 % on a stand-in).
 2. **Render reviewed** — `../deck/tools/render_probe.sh` prints how to render on
    this machine. One slide, so one PNG; look at it.
 3. **Linter clean** — the shared clearance linter passes.

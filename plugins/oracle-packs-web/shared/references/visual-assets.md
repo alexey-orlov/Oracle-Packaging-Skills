@@ -16,8 +16,8 @@ A pack's artifacts go to Oracle sellers, to customers and onto a public site. A 
 | Source | Licence it yields | Key needed | What it is actually good for |
 |---|---|---|---|
 | **Openverse** (`api.openverse.org`) restricted to `cc0` and `pdm` | CC0 1.0, Public Domain Mark | No | Machinery, vehicles, infrastructure, control rooms, industrial and archival scenes. Its public-domain pool is Wikimedia, museum and government-archive material, so it is **thin on contemporary office and knowledge-work photography** — expect little for "a person at a screen", and say so rather than accepting a 1950s picture for a 2026 deck. |
-| **Pexels** (`api.pexels.com`) | Pexels License | Yes — `PEXELS_API_KEY` in the macOS Keychain (free at pexels.com/api) | Modern working life: people at desks, in warehouses, in vans, on screens. This is the source that makes the today → tomorrow pair work. |
-| **Unsplash** (`api.unsplash.com`) | Unsplash License | Yes — `UNSPLASH_ACCESS_KEY` in the Keychain. The public search endpoint answers `401` without one, so there is no key-free route. | The same ground as Pexels, different photographers. |
+| **Pexels** (`api.pexels.com`) | Pexels License | Yes — the environment variable `PEXELS_API_KEY`, or on a Mac the Keychain entry of that name (free at pexels.com/api) | Modern working life: people at desks, in warehouses, in vans, on screens. This is the source that makes the today → tomorrow pair work. |
+| **Unsplash** (`api.unsplash.com`) | Unsplash License | Yes — the environment variable `UNSPLASH_ACCESS_KEY`, or on a Mac the Keychain entry of that name. The public search endpoint answers `401` without one, so there is no key-free route. | The same ground as Pexels, different photographers. |
 
 Both the Pexels and the Unsplash licences allow commercial use and ask for no attribution; the record is kept anyway.
 
@@ -51,18 +51,19 @@ Its full-text search is strict: every word must appear, so a five-word descripti
 
 **Never a CC-BY icon set** (it would put an attribution line on the slide) and **never a vendor's logo used as an icon** — a logo is a trade mark with its own clearance rules, which live in `naming-and-clearance.md`.
 
-### Rendering, on a Mac with no SVG rasterizer
+### Rendering the SVG
 
-There is no `cairosvg` and no `rsvg-convert` here. QuickLook does the work:
+`plugins/oracle-packs/skills/visuals/tools/fetch_icon.py` tries three rasterizers in order and uses the first that renders: QuickLook on a Mac, then `rsvg-convert` (librsvg) on PATH, then the `cairosvg` Python module. With none of them the icon is **deferred**, and the message names all three.
 
 ```sh
-qlmanage -t -s 1024 -o <dir> <file.svg>      # -> <dir>/<file>.svg.png, square, on opaque white
+qlmanage -t -s 1024 -o <dir> <file.svg>              # macOS: -> <dir>/<file>.svg.png, square, on opaque white
+rsvg-convert -w 1024 -h 1024 -o <out.png> <file.svg>  # elsewhere: transparent ground
 ```
 
-Two traps, both handled by `plugins/oracle-packs/skills/visuals/tools/fetch_icon.py` and both worth knowing:
+Two traps, both handled by the tool and both worth knowing:
 
 1. **QuickLook honours the SVG's own `width`/`height`.** Tabler and Lucide declare `width="24" height="24"`, so a render asked for 1024 px comes back with a 70 px glyph in the corner of a 1024 px canvas. Rewrite `width` and `height` to the target size before rendering — the `viewBox` is left alone, so stroke weights scale with it.
-2. **The render is opaque white behind black strokes.** The alpha channel is rebuilt as `255 − luminance`, then filled: **white** for the deck's dark panels, **ink `#26282B`** for light grounds. Both renders are kept — an icon that reads on one ground and not the other is a bad choice a single preview would hide.
+2. **QuickLook's render is opaque white behind black strokes.** The alpha channel is rebuilt as `255 − luminance` (the other two keep their transparency), then filled: **white** for the deck's dark panels, **ink `#26282B`** for light grounds. Both renders are kept — an icon that reads on one ground and not the other is a bad choice a single preview would hide.
 
 The PNG package is preferred where the wanted size is 240 px or less; above that the SVG route wins, because upscaling a 240 px bitmap softens the strokes.
 

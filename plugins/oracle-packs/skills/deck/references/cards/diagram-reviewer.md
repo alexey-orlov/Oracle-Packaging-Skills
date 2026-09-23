@@ -4,7 +4,7 @@
 
 **The check**
 
-    python3 shared/tools/check_diagram.py packs/<slug>/architecture.json --deck <pptx>
+    shared/tools/py shared/tools/check_diagram.py packs/<slug>/architecture.json --deck <pptx>
 
 It asserts every node name in the model is on the slide, letter for letter, that every arrow carries its data label, and that no box on the slide is missing from the model.
 

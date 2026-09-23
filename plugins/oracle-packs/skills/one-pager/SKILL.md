@@ -16,20 +16,20 @@ user-invocable: true
 - A confirmed, lint-clean `pack-spec.yaml`. In the full build, the sales deck is approved first: this page condenses it, and the owner's deck feedback applies here.
 - Channel `partner_print` (default) or `internal`. When it has to be asked, ask it as "who will see this one-pager": "Oracle and SoftServe sellers", or "our own team" (which carries prices in full and named accounts). Store the two values; never show them.
 - Optional `--hero <image>`: an approved image from the owner. Without it the hero renders with no photo. Never fetch imagery from the web.
-- Dependencies: Python 3 with `pyyaml` and `pypdf`, and headless Chrome or Chromium for the PDF (`CHROME_BIN`, then the macOS default, then PATH). Say what is missing instead of degrading silently.
+- Dependencies: Python 3 with `pyyaml` and `pypdf` (`shared/tools/py --check`), and headless Chrome or Chromium for the PDF (`CHROME_BIN`, then the macOS or Windows default, then PATH). Say what is missing instead of degrading silently.
 
 ## Procedure
 
 1. **Build.** Card: `build`, plus `shared/references/anatomy/artifact-one-pager.md` for the section order. Read the spec, settle the channel, then:
-   `python3 tools/build_one_pager.py <spec> --out <dir> --channel <channel> [--hero <image>]`
+   `shared/tools/py tools/build_one_pager.py <spec> --out <dir> --channel <channel> [--hero <image>]`
    The tool renders the HTML, prints it to PDF and fails when the result is more than one page, naming the longest blocks.
 2. **Overflow.** Card: `overflow`. Only when the build exits 3. Overflow means cuts, not smaller type: put the cuts to the owner in plain words, by the block's name on the page, and apply the agreed wording through the spec skill's fast path so every artifact stays consistent. Rebuild.
 3. **The automatic checks.** Card: `check`.
-   `python3 shared/tools/lint_artifact.py <the pdf and the html> --channel <channel> --spec <spec>`
-   `python3 shared/tools/check_consistency.py <spec> <the html>`
-   `python3 shared/tools/check_diagram.py packs/<slug>/architecture.json --one-pager <the html>`
+   `shared/tools/py shared/tools/lint_artifact.py <the pdf and the html> --channel <channel> --spec <spec>`
+   `shared/tools/py shared/tools/check_consistency.py <spec> <the html>`
+   `shared/tools/py shared/tools/check_diagram.py packs/<slug>/architecture.json --one-pager <the html>`
    All clean before anything is shown; the owner hears one plain line about them.
-4. **Editorial pass.** Card: `editorial`, on the strongest model with fresh eyes — the de-AI read of typography, voice, figures and altitude, per `shared/references/client-documents.md`.
+4. **Editorial pass.** Card: `editorial`, on the strongest model with fresh eyes — the de-AI read of typography, voice, figures and altitude, per `shared/references/client-documents.md`. Every subagent follows `shared/references/running-agents.md`.
 5. **Show it.** Card: `review-pack`. One rebuild round.
 6. **One change afterwards.** Card: `fast-path`. A single-block change is never a rerun of the flow.
 

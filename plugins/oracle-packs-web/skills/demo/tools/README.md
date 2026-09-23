@@ -7,11 +7,12 @@
 ## Requirements — check before planning around them
 
 - **Node ≥ 22.** The script uses the built-in `fetch` and `WebSocket`; there is nothing to `npm install`. It prints a clear message and **exits 3** on an older Node. Exit 3 means *the environment cannot do this yet* — retry after fixing it; never record it as a result.
-- **A Chrome or Chromium binary**, found through **`CHROME_BIN`**. The default is the standard macOS path:
+- **A Chrome or Chromium binary**, found through **`CHROME_BIN`**, else the standard macOS and Windows install paths:
 
   ```sh
-  # macOS (the default — no need to set it)
+  # macOS and Windows: the standard installs are found — no need to set it
   export CHROME_BIN="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+  export CHROME_BIN="C:/Program Files/Google/Chrome/Application/chrome.exe"
   # Linux
   export CHROME_BIN=/usr/bin/google-chrome     # or /usr/bin/chromium
   ```

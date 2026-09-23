@@ -2,8 +2,8 @@
 
 **What this is.** The pair on the deck's before-and-after slide. Search terms come from the pack's own words, not the industry name.
 
-    python3 tools/search_photos.py "<terms>" --out <dir> --slot today --n 3
-    python3 tools/contact_sheet.py <dir> --out <sheet.png>
+    shared/tools/py tools/search_photos.py "<terms>" --out <dir> --slot today --n 3
+    shared/tools/py tools/contact_sheet.py <dir> --out <sheet.png>
 
 - **today** — the pain in the way the work is done now, from `problem_solution.problem` and `problem_solution.today`: the desk, the paperwork, the manual step. **Never a picture of the software.**
 - **tomorrow** — the person using the solution, from `problem_solution.solution` and `problem_solution.tomorrow`: the plan reviewed, the decision made.

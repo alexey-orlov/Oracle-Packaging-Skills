@@ -97,9 +97,10 @@ def search_pexels(terms: str, want: int, min_width: int, orientation: str) -> li
     key = keychain("PEXELS_API_KEY")
     if not key:
         raise Deferred(
-            "Pexels needs an API key and there is none in this Mac's Keychain "
-            "(service PEXELS_API_KEY). Free at pexels.com/api; then: "
-            "security add-generic-password -s PEXELS_API_KEY -a <you> -w <key>"
+            "Pexels needs an API key and none is set: the environment variable PEXELS_API_KEY, "
+            "or on a Mac the Keychain entry of that name "
+            "(security add-generic-password -s PEXELS_API_KEY -a <you> -w <key>). "
+            "Free at pexels.com/api."
         )
     q = urllib.parse.quote_plus(terms)
     url = (f"https://api.pexels.com/v1/search?query={q}&per_page={max(want * 4, 12)}"
@@ -127,8 +128,9 @@ def search_pexels(terms: str, want: int, min_width: int, orientation: str) -> li
 # ------------------------------------------------------------------------------------- unsplash
 
 def search_unsplash(terms: str, want: int, min_width: int, orientation: str) -> list[dict]:
-    """Official API when a key is in the Keychain (UNSPLASH_ACCESS_KEY); otherwise the public
-    search endpoint, which on this machine answers 307 "Authorization required" — i.e. deferred."""
+    """Official API when a key is set — the environment variable UNSPLASH_ACCESS_KEY, or on a Mac
+    the Keychain entry of that name; otherwise the public search endpoint, which answers 307
+    "Authorization required" without one — i.e. deferred."""
     q = urllib.parse.quote_plus(terms)
     key = keychain("UNSPLASH_ACCESS_KEY")
     if key:

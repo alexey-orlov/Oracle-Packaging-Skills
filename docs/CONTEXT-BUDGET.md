@@ -64,6 +64,6 @@ The same restructuring cut `/oracle-packs:spec`'s run from about 30 questions to
 2. No rationale, no owner quotes, no history. Those go to `docs/DECISIONS.md`, which is where a rule's *why* lives. A card is what to do, not why.
 3. One home per rule. If a rule already lives on another card or in a shared reference, point at it in one line instead of copying it.
 4. Add the card to the step that reads it in `manifest.yaml` — `session` if the conversation reads it, `agents` if only a subagent does.
-5. Run `python3 shared/tools/context_budget.py <manifest.yaml>`. If the step is over, the fix is to split the step or cut the card; if the card is over 300 words, the tool names it and the fix is to tighten it without dropping a rule. Never raise a cap.
+5. Run `shared/tools/py shared/tools/context_budget.py <manifest.yaml>`. If the step is over, the fix is to split the step or cut the card; if the card is over 300 words, the tool names it and the fix is to tighten it without dropping a rule. Never raise a cap.
 
 A new skill needs a manifest from its first commit: the test suite counts manifests against `SKILL.md` files and fails when one is missing.

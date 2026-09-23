@@ -23,10 +23,11 @@ These files are the long form a card points at.
 | `architecture-diagram.md` | The one architecture diagram every artifact draws: where it is derived from, the naming rules, the flow rules, and the fresh-context reviewer's nine-point checklist. Read by that reviewer in its own context, not by the session. |
 | `talking-to-the-owner.md` | **Long form.** The runtime card is each skill's `references/cards/owner-language.md`. Read this only when the card leaves a case open. |
 | `slide-design.md` | The fourteen numbered design rules for decks, one-pagers and executive-summary slides. |
-| `visual-assets.md` | Where a pack's icons and photographs may come from: the allowed sources and licences, what is never used, how icons are rendered on a Mac with no SVG rasterizer, the shared icon library's format and add-only rule, the customer's logo as the one owner-supplied picture (never searched for), what the picture credits record, and why an unreachable source is deferred rather than empty. |
+| `visual-assets.md` | Where a pack's icons and photographs may come from: the allowed sources and licences and where their keys are read from, what is never used, how icons are rendered (QuickLook, `rsvg-convert` or `cairosvg`), the shared icon library's format and add-only rule, the customer's logo as the one owner-supplied picture (never searched for), what the picture credits record, and why an unreachable source is deferred rather than empty. |
 | `client-documents.md` | Voice, de-AI typography and vocabulary, the summary-altitude rule, the living-documents rule, and persona-first marketing copy with its heading budgets. |
 | `research-standards.md` | Labelled claims, source tiers, named specifics, explicit gaps, no force-filled frameworks, answer first. Governs the generalization research and the feature list. |
 | `packaging-coaching-rules.md` | The coaching rules for turning one delivered engagement into a pack. |
+| `running-agents.md` | The four rules every subagent follows: model routing, the tool rules its prompt spells out, a per-unit progress log the session can check, and reporting rather than editing reference docs. Read once, when an agent's prompt is written. |
 
 Related, outside this folder: `shared/schema/pack-spec.md` (the machine-readable spec),
 `shared/data/oracle-products.yaml` (the canonical product catalog every pack picks from), and
