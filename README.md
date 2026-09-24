@@ -64,7 +64,7 @@ Clone this repository as well: the pack specs live in its `packs/`, so run the s
 | `PEXELS_API_KEY`, `UNSPLASH_ACCESS_KEY` | the photo libraries' keys; on a Mac the Keychain entry of the same name works too |
 | `CHROME_BIN` | Chrome, when it is not where the builders look |
 
-A pack's spec lives in this repo at `packs/<slug>/pack-spec.md`, with the architecture model and the pictures it names beside it, committed and pushed so every colleague builds from the same spec. Everything else a run produces — the built artifacts, the intake, the inventory and its extracts of customer documents, the sources, the research, the decisions log — goes to the local work folder `$ORACLE_PACKS_OUT/<slug>/` (default `~/oracle-packs/<slug>/`), and `shared/tools/pack_paths.py <slug>` prints both places. That working record never enters the repo, because it quotes the customer's own documents and carries internal figures: one intake note held a contract value.
+A pack's spec lives in this repo at `packs/<slug>/pack-spec.md`, with the pictures it names beside it, committed and pushed so every colleague builds from the same spec. Everything else a run produces — the built artifacts, the intake, the inventory and its extracts of customer documents, the sources, the research, the decisions log — goes to the local work folder `$ORACLE_PACKS_OUT/<slug>/` (default `~/oracle-packs/<slug>/`), and `shared/tools/pack_paths.py <slug>` prints both places. That working record never enters the repo, because it quotes the customer's own documents and carries internal figures: one intake note held a contract value.
 
 **6. Brand fonts.** Azurio and Replica LL TT ship in the plugin's `fonts/` folder, privately, for practice members: not redistributable, and never copied into an artifact or a customer file. The builders read the shipped files, so fit is exact on every machine (with the folder empty they fall back to metric stand-ins with headroom). To see a render as the owner sees it, install them: `shared/tools/py shared/tools/install_fonts.py`.
 
@@ -99,7 +99,7 @@ shared/                             single source, synced into each plugin by to
   tools/                            py (the interpreter resolver) · requirements.txt · packspec.py (the spec's loader and writer) · pack_paths.py · spec_stamp.py · lint_spec.py · lint_artifact.py · check_consistency.py · denylist.txt · tests/
 plugins/oracle-packs/               spec · feature-list · deck · one-pager · exec-summary · visuals · build; fonts/ (the brand faces, private)
 plugins/oracle-packs-web/           listing · demo
-packs/<slug>/                       one pack's shared files, and only these (.gitignore keeps out the rest): pack-spec.md · architecture.json (the architecture model) · visuals/ (the pictures the spec names, their provenance .json files, credits.md)
+packs/<slug>/                       one pack's shared files, and only these (.gitignore keeps out the rest): pack-spec.md · visuals/ (the pictures the spec names, their provenance .json files, credits.md)
 examples/workforce-optimization/    the worked example spec
 docs/PLAN.md                        the build plan and the rules overview
 docs/DECISIONS.md                   the owner decisions the skills implement

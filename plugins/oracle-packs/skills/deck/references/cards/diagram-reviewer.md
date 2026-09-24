@@ -4,15 +4,15 @@
 
 **The check**
 
-    shared/tools/py shared/tools/check_diagram.py packs/<slug>/architecture.json --deck <pptx>
+    shared/tools/py shared/tools/check_diagram.py <spec> --deck <pptx> --channel <channel>
 
 It asserts every node name in the model is on the slide, letter for letter, that every arrow carries its data label, and that no box on the slide is missing from the model.
 
 **Checks this step must pass**
 
 1. `check_diagram.py` exits 0. A finding is drift: the slide is rebuilt from the model, never edited in PowerPoint.
-2. The model is wrong → change the model, not the slide, and rebuild the one-pager and the listing figure with it. All three move together or they have drifted again.
-3. No pack with no model: when `packs/<slug>/architecture.json` is absent, the build step was skipped — build and review the picture there (`shared/tools/build_diagram.py`), then rebuild this deck. Never review it here instead: a second reviewer on a picture three artifacts share is how they diverged.
+2. The picture is wrong → fix the brief's architecture through the spec skill's fast path, not the slide, and rebuild the one-pager and the listing figure with it. The model is built from the brief, so all three move together.
+3. Never review the picture here: it is reviewed once, in the build's architecture step, and a second reviewer on a picture three artifacts share is how they diverged.
 4. The builder's plain-sentence summary of the diagram — the boxes, then the arrows — goes into the review pack, so the owner can check naming and direction without opening the slide. The build prints it under `architecture diagram:`.
 
 **Bad.** "Point 4 failed: unlabelled edge."
@@ -20,4 +20,4 @@ It asserts every node name in the model is on the slide, letter for letter, that
 
 Rules and levels of detail: `shared/references/architecture-diagram.md`. What slide 8 places where: `references/cards/slides-6-10.md`.
 
-**Reads:** `packs/<slug>/architecture.json`. **Writes:** nothing.
+**Reads:** the brief's `architecture`, through the model. **Writes:** nothing.

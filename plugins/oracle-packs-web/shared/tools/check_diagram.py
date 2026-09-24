@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 """Check that the three artifacts draw the SAME architecture picture.
 
-    python3 shared/tools/check_diagram.py packs/<slug>/architecture.json \
+    python3 shared/tools/check_diagram.py packs/<slug>/pack-spec.md \
             --deck out/deck.pptx --one-pager out/one-pager.html \
             --site <site>/site/data/diagrams.js --slug <slug>
 
-The model (shared/tools/build_diagram.py) is the picture; the deck slide, the
-one-pager's strip and the mini-site's figure are three levels of detail on it. This
+The model (shared/tools/build_diagram.py, built from the spec: `--channel` for the deck
+and the one-pager, the site's name variant for the site) is the picture; the deck slide,
+the one-pager's strip and the mini-site's figure are three levels of detail on it. This
 asserts they still are: every node the artifact should carry appears exactly, letter
-for letter, and no artifact draws a box the model has never heard of.
+for letter, and no artifact draws a box the model has never heard of. A model file from
+`build_diagram.py --out` is read as it is, for every artifact.
 
 What each artifact must carry
     deck        every node name (app, engine, every source, every destination) and
@@ -27,7 +29,7 @@ Findings print as `artifact: message`, then one summary line.
 Exit codes
     0   every artifact draws the model
     1   at least one artifact has drifted from it
-    2   usage or dependency error (unreadable model or artifact, no python-pptx)
+    2   usage or dependency error (unreadable spec, model or artifact, no python-pptx)
 
 Rules: shared/references/architecture-diagram.md.
 """
@@ -175,16 +177,25 @@ def check(artifact: str, found: dict, must_carry, must_label, names: set,
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog=PROG, description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("model", help="packs/<slug>/architecture.json")
+    ap.add_argument("model", help="packs/<slug>/pack-spec.md (or a model file from build_diagram.py --out)")
+    ap.add_argument("--channel", default="partner_print", choices=("partner_print", "internal"),
+                    help="the cut the deck and the one-pager were built for (default: partner_print)")
     ap.add_argument("--deck", type=Path, default=None, help="the sales deck (.pptx)")
     ap.add_argument("--one-pager", type=Path, default=None, help="the one-pager (.html)")
     ap.add_argument("--site", type=Path, default=None, help="the site's data/diagrams.js")
     ap.add_argument("--slug", default=None, help="the site's product slug (default: the model's)")
     args = ap.parse_args(argv)
 
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import build_diagram  # the one model builder, beside this file
     try:
-        model = json.loads(Path(args.model).read_text(encoding="utf-8"))
-    except (OSError, ValueError) as err:
+        model = build_diagram.load_model(args.model, channel=args.channel)
+        site_model = build_diagram.load_model(args.model, channel="site") if args.site else model
+    except build_diagram.DiagramError as err:
+        sys.stderr.write(f"{PROG}: the architecture picture cannot be drawn from "
+                         f"{args.model}: {err}\n")
+        return 2
+    except Exception as err:            # unreadable file, or a spec that does not parse
         sys.stderr.write(f"{PROG}: cannot read {args.model}: {err}\n")
         return 2
     if not model.get("app") or not model.get("engine"):
@@ -221,13 +232,15 @@ def main(argv=None) -> int:
             checked.append("one-pager")
 
         if args.site:
-            slug = args.slug or model.get("slug") or ""
+            slug = args.slug or site_model.get("slug") or ""
             found = read_site(args.site, slug)
-            must = {model["app"]["name"], model["engine"]["name"]} | \
-                   {s["name"] for s in sources[:2]} | {d["name"] for d in dests}
-            if model.get("gate"):
-                must.add(model["gate"]["name"])
-            check("site", found, {m for m in must if m}, [], names, findings)
+            site_sources = site_model.get("sources") or []
+            must = {site_model["app"]["name"], site_model["engine"]["name"]} | \
+                   {s["name"] for s in site_sources[:2]} | \
+                   {d["name"] for d in site_model.get("destinations") or []}
+            if site_model.get("gate"):
+                must.add(site_model["gate"]["name"])
+            check("site", found, {m for m in must if m}, [], model_names(site_model), findings)
             checked.append(f"site ({slug})")
     except Dependency as err:
         sys.stderr.write(f"{PROG}: {err}\n")

@@ -12,9 +12,9 @@ interpreter resolver beside them: it finds a Python that has the packages in
 `requirements.txt`, or provisions one in `~/.oracle-packs/venv` on first use —
 never in system Python — and runs the tool with it (`py --check` shows which). A
 tool run without the packages exits 2 and prints the install line. The linters
-read and report and never write; `packspec.py set` and `convert` write the spec,
-`build_diagram.py` writes the architecture model beside it, and
-`pack_paths.py --create` makes the pack's folders.
+read and report and never write; `packspec.py set` and `convert` write the spec, and
+`pack_paths.py --create` makes the pack's folders. The architecture model is built from
+the spec by every renderer and never stored.
 
 ```
 py                    the interpreter resolver every tool runs through (--which, --check)
@@ -250,8 +250,8 @@ exit code, and the fix is a rebuild from the current spec.
 ## build_diagram.py
 
 ```
-shared/tools/py shared/tools/build_diagram.py <spec> --out packs/<slug>/architecture.json
-shared/tools/py shared/tools/build_diagram.py <spec> --check        # rules only, writes nothing
+shared/tools/py shared/tools/build_diagram.py <spec>                  # the model in sentences, writes nothing
+shared/tools/py shared/tools/build_diagram.py <spec> --out model.json  # and a copy of it, e.g. for a test
 ```
 
 The pack's architecture picture, derived once and rendered three times. It reads
@@ -269,7 +269,7 @@ app box without the pack's name. Rules: `shared/references/architecture-diagram.
 ## check_diagram.py
 
 ```
-shared/tools/py shared/tools/check_diagram.py packs/<slug>/architecture.json \
+shared/tools/py shared/tools/check_diagram.py <spec> \
         --deck <pptx> --one-pager <html> --site <diagrams.js> --slug <slug>
 ```
 
@@ -303,7 +303,7 @@ review hand-off:
    are `partner_print`, the listing is `customer_site`, the walkthrough is `demo`.
 3. `check_consistency.py <spec> <every artifact built so far>` — after the second
    artifact exists, and again at the end of `/oracle-packs:build`.
-4. `check_diagram.py <architecture.json> --deck/--one-pager/--site <this artifact>` —
+4. `check_diagram.py <spec> --deck/--one-pager/--site <this artifact>` —
    wherever the artifact carries the architecture picture.
 5. Exit 1 is not a pass. Fix the artifact, or change the spec and rebuild from it —
    never edit an artifact away from the spec to silence a finding.

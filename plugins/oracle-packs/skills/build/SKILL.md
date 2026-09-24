@@ -29,7 +29,7 @@ Card: `per-artifact-review` (with `artifact-order` for what comes next). Run eac
 
 ## 3. The architecture picture
 
-Card: `architecture-picture`. After the feature list and before the deck, once for the whole pack: build the model (`shared/tools/build_diagram.py`), render the one-pager's strip — the canonical picture — and put it to ONE fresh-context reviewer. Every subagent follows `shared/references/running-agents.md`. The deck, the one-pager and the mini-site listing then render that reviewed model; none of them reviews the picture again, and none draws its own. The reviewed model is shared: save it to the repo (the spec skill's card `save`, `<what>` = `architecture model`).
+Card: `architecture-picture`. After the feature list and before the deck, once for the whole pack: build the model (`shared/tools/build_diagram.py`), render the one-pager's strip — the canonical picture — and put it to ONE fresh-context reviewer. Every subagent follows `shared/references/running-agents.md`. The deck, the one-pager and the mini-site listing then render that same model, which each builds from the brief; none of them reviews the picture again, and none draws its own. Nothing is stored: a fix to the picture is a fix to the brief, through the spec skill's fast path, and the review is one line in `<work>/decisions.md`.
 
 ## 4. The consistency gate
 
@@ -57,6 +57,6 @@ Everything the owner reviews opens beside the conversation *before* the question
 - [ ] `check_diagram.py` clean: the deck, the one-pager and the site figure all draw the model.
 - [ ] Nothing internal-only in a partner or customer cut (contract values, named accounts, capacity numbers).
 - [ ] Delivery paths and decisions logged; file names follow `<Pack name> - <Artifact> - Oracle.<ext>`.
-- [ ] Every artifact was written to the `artifacts` folder and each approval logged with its spec stamp; only the architecture model went into the repo.
+- [ ] Every artifact was written to the `artifacts` folder and each approval logged with its spec stamp; nothing from the build went into the repo.
 - [ ] Every message, question, option and table the owner saw passed the reader's test.
 - [ ] Everything the owner reviewed was opened beside the conversation before the question was asked.

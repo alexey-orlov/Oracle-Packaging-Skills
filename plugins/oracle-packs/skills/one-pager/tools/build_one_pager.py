@@ -574,28 +574,16 @@ def pov_success_line(spec) -> str:
     return ("Proof accepted when: " + ", ".join(bits)) if bits else ""
 
 def architecture_model(spec, channel="partner_print"):
-    """The pack's ONE architecture model — `packs/<slug>/architecture.json`.
-
-    Read when the pack has one (the reviewed picture the deck and the mini-site also
-    render); built from the brief and written there when it has not. This page never
-    derives its own node list: the strip below is the model at the deck's level of
+    """The pack's ONE architecture model, built from the spec by the function the deck
+    and the mini-site also call (shared/tools/build_diagram.py), never stored. This page
+    never derives its own node list: the strip below is the model at the deck's level of
     detail — `name` and `line`, never `detail`, which belongs to the mini-site.
     """
-    import importlib.util
-    here = Path(__file__).resolve().parent
-    for up in range(2, 6):
-        if len(here.parents) <= up:
-            break
-        candidate = here.parents[up] / "shared" / "tools" / "build_diagram.py"
-        if candidate.is_file():
-            spec_mod = importlib.util.spec_from_file_location("build_diagram", candidate)
-            module = importlib.util.module_from_spec(spec_mod)
-            spec_mod.loader.exec_module(module)
-            try:
-                return module.load_or_build(spec, SPEC_DIR / "pack-spec.md", channel=channel)
-            except module.DiagramError as err:
-                raise SpecError(f"the architecture picture cannot be drawn: {err}")
-    return None
+    import build_diagram  # beside packspec in shared/tools, already on the path
+    try:
+        return build_diagram.build_model(spec, channel)
+    except build_diagram.DiagramError as err:
+        raise SpecError(f"the architecture picture cannot be drawn: {err}")
 
 
 MAX_DEST_BOXES = 2          # what the strip's left column holds without crushing the boxes

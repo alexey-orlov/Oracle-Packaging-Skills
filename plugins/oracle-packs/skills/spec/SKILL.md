@@ -17,7 +17,7 @@ You produce one file the other skills trust: `packs/<slug>/pack-spec.md`, valid 
 
 ## 0. Before you start
 
-1. `shared/tools/py shared/tools/pack_paths.py <slug> --create` prints the repo and `<work>`. The spec, architecture model and pictures live in the repo's `packs/<slug>/`; everything else goes to `<work>/`, never the repo. `git -C <repo> pull --ff-only` before reading or writing the spec; a pull that cannot run is deferred and retried, never skipped silently. An existing `pack-spec.md`: read it, resume at the first unsettled part, say so.
+1. `shared/tools/py shared/tools/pack_paths.py <slug> --create` prints the repo and `<work>`. The spec and its pictures live in the repo's `packs/<slug>/`; everything else goes to `<work>/`, never the repo. `git -C <repo> pull --ff-only` before reading or writing the spec; a pull that cannot run is deferred and retried, never skipped silently. An existing `pack-spec.md`: read it, resume at the first unsettled part, say so.
 2. Load `shared/data/oracle-products.yaml` (the only allowed product names) and `shared/data/roadmap-items.csv` (the only allowed roadmap ids) at the step that needs them, not before.
 3. Roles: research agents, extraction and lookups on the mechanical model; the synthesis, the story candidates and the final consistency pass on the strongest available. Name the split once. Never more than four research agents at once. Every subagent follows `shared/references/running-agents.md`.
 4. **Show the map first** — one short message: the six stages below in the owner's words, how many questions each will actually ask after skipping, and the total. Every widget title then carries `<Stage> · n of N · <question name>`, and every stage ends with one line: what is done, what is next.

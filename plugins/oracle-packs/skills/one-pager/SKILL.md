@@ -27,7 +27,7 @@ user-invocable: true
 3. **The automatic checks.** Card: `check`.
    `shared/tools/py shared/tools/lint_artifact.py <the pdf and the html> --channel <channel> --spec <spec>`
    `shared/tools/py shared/tools/check_consistency.py <spec> <the html>`
-   `shared/tools/py shared/tools/check_diagram.py packs/<slug>/architecture.json --one-pager <the html>`
+   `shared/tools/py shared/tools/check_diagram.py <spec> --one-pager <the html> --channel <channel>`
    All clean before anything is shown; the owner hears one plain line about them.
 4. **Editorial pass.** Card: `editorial`, on the strongest model with fresh eyes — the de-AI read of typography, voice, figures and altitude, per `shared/references/client-documents.md`. Every subagent follows `shared/references/running-agents.md`.
 5. **Show it.** Card: `review-pack`. One rebuild round.
@@ -36,7 +36,7 @@ user-invocable: true
 ## Rules that bite on one-pagers
 
 - The page is the deck condensed, never a second source of truth: a price, a duration or a figure here equals the spec, to the character.
-- The architecture strip renders the pack's one model (`packs/<slug>/architecture.json`), reviewed once in the build step — its composition is the reference the deck and the mini-site follow, it carries every system and edge label the deck does, and it is never drawn here from the brief.
+- The architecture strip renders the pack's one model (built from the brief by `shared/tools/build_diagram.py`), reviewed once in the build step — its composition is the reference the deck and the mini-site follow, it carries every system and edge label the deck does, and it is never drawn here from the brief.
 - The proof strip states its status once, carries its caveat, and names the customer only where the channel allows; otherwise the anonymized descriptor.
 - The packages table shows three tiers named from the spec, the capability rows with their marks, and prices with status and footnote; the infrastructure row says "indicative" when the spec does.
 - "Why it sells" is written for the partner's seller, in one card, and appears on no customer-facing artifact.

@@ -12,12 +12,12 @@
 - A ladder with the value arrow: partner layer on top, infrastructure at the bottom; official vendor logos where the assets exist.
 - Layers differ in weight and shape, not tint alone; vendor is the colour.
 
-**8 Architecture.** `packs/<slug>/architecture.json` — the pack's model, not the brief.
+**8 Architecture.** The pack's one model (`shared/tools/build_diagram.py`), the nodes the one-pager and the site draw too.
 
 - The slide draws the model and derives nothing: boxes carry its `name`, app and engine also its `line`; `detail` belongs to the mini-site. The gate rides the subline as a small caption.
 - One labelled arrow **in** per source, one **out** per receiving system. The only arrow back to a source is a stated write-back: one box, two arrows.
 - A system that only receives stands in a right-hand column at the source boxes' geometry; with every output a write-back, the diagram keeps two columns.
-- No model file means the build skill's architecture step was skipped — build and review the picture there, never here.
+- The picture is reviewed once, in the build's architecture step — never here.
 
 **9 and 10 Service packages.** `packages.tiers[]` · `packages.capability_handling[]`.
 

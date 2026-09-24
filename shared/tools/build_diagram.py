@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Build the pack's ONE architecture model — the picture the three artifacts share.
 
-    python3 shared/tools/build_diagram.py <pack-spec.md> --out packs/<slug>/architecture.json
-    python3 shared/tools/build_diagram.py <pack-spec.md> --check        # rules only, writes nothing
+    python3 shared/tools/build_diagram.py <pack-spec.md>                 # the model in sentences
+    python3 shared/tools/build_diagram.py <pack-spec.md> --out model.json  # and a copy, e.g. for a test
 
 Also a library:
 
@@ -10,8 +10,9 @@ Also a library:
     model = build_model(spec_dict, channel="partner_print")
 
 The deck, the one-pager and the mini-site used to derive a picture each from the
-same spec, and drifted. They now render THIS model: it is built once, reviewed
-once, and detailed to each artifact's own level.
+same spec, and drifted. They now render THIS model, built from the spec by the same
+function every time, so it is never stored beside the spec and can never go stale
+against it. It is reviewed once, in the build, and detailed to each artifact's level.
 
 Levels of detail — the contract every renderer obeys
     name      prints everywhere (deck, one-pager, site)
@@ -33,7 +34,7 @@ Everything traces to a spec entry: `architecture.inputs[]`, `architecture.stack[
 `meta.name` with the channel's variant, and `workflow.steps[].human_in_the_loop`.
 
 Exit codes
-    0   the model is valid (and was written, unless --check)
+    0   the model is valid (and was written, when --out names a file)
     1   a rule failed — a source with no edge, an output with no destination,
         an unnamed engine, an app box without the pack's name
     2   usage or dependency error (unreadable spec, no PyYAML)
@@ -378,33 +379,18 @@ def build_model(spec: dict, channel: str = "partner_print") -> dict:
     }
 
 
-def model_path(spec_path) -> Path:
-    """packs/<slug>/architecture.json — beside the pack brief it was built from."""
-    return Path(spec_path).resolve().parent / "architecture.json"
-
-
-def load_or_build(spec: dict, spec_path, channel: str = "partner_print",
-                  write: bool = True) -> dict:
-    """The reviewed model when the pack has one, otherwise build it and write it.
-
-    The renderers call this: the picture is derived once, and a rebuild of a single
-    artifact never redraws it.
-    """
-    path = model_path(spec_path)
-    if path.is_file():
-        try:
-            model = json.loads(path.read_text(encoding="utf-8"))
-            if isinstance(model, dict) and model.get("app"):
-                return model
-        except (OSError, ValueError):
-            pass                            # unreadable: rebuild rather than fail
-    model = build_model(spec, channel)
-    if write:
-        try:
-            write_model(model, path)
-        except OSError:
-            pass                            # a read-only pack folder is not a build failure
-    return model
+def load_model(path, channel: str = "partner_print") -> dict:
+    """The model for a pack spec (`pack-spec.md`, built for `channel`), or a model file
+    as `--out` writes it (read as it is). The checkers take either; the renderers call
+    `build_model` on the spec they already hold, so the picture is never stored and can
+    never go stale against its spec."""
+    path = Path(path)
+    if path.suffix.lower() == ".json":
+        return json.loads(path.read_text(encoding="utf-8"))
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import packspec  # the one spec loader, beside this file
+    spec, _lines = packspec.load(path)
+    return build_model(spec, channel)
 
 
 def write_model(model: dict, path) -> Path:
@@ -447,12 +433,14 @@ def main(argv=None) -> int:
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("spec", help="packs/<slug>/pack-spec.md")
     ap.add_argument("--out", default=None,
-                    help="where to write the model (default: architecture.json beside the spec)")
+                    help="also write the model to this file (never beside the spec: the "
+                         "renderers build it from the spec themselves)")
     ap.add_argument("--channel", default="partner_print",
                     choices=("partner_print", "internal", "site"),
                     help="which name variant the app box carries (default: partner_print)")
     ap.add_argument("--check", action="store_true",
-                    help="apply the diagram rules and print the model; write nothing")
+                    help="the default: apply the diagram rules and print the model (kept "
+                         "for old calls; writes nothing unless --out)")
     args = ap.parse_args(argv)
 
     try:
@@ -484,14 +472,12 @@ def main(argv=None) -> int:
     for warning in model.get("warnings") or []:
         print(f"note: {warning}")
     print(describe(model))
-    if args.check:
-        print(f"{PROG}: the model is valid ({len(model['sources'])} source(s), "
-              f"{len(model['destinations'])} destination(s), "
-              f"gate: {model['gate']['name'] if model['gate'] else 'none'})")
-        return 0
-    out = Path(args.out) if args.out else model_path(args.spec)
-    write_model(model, out)
-    print(f"MODEL {out}")
+    print(f"{PROG}: the model is valid ({len(model['sources'])} source(s), "
+          f"{len(model['destinations'])} destination(s), "
+          f"gate: {model['gate']['name'] if model['gate'] else 'none'})")
+    if args.out:
+        out = write_model(model, args.out)
+        print(f"MODEL {out}")
     return 0
 
 

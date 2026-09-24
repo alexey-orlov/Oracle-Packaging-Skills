@@ -769,7 +769,9 @@ expect "the engagement's length on a tier" CON003 "10 weeks"
 # One model, three pictures. The fixture's model must build clean; the deck slide, the
 # one-pager's strip and the generated site figure must all draw it; and a model with one
 # node renamed must fail against those same three artifacts — that failure is the whole
-# point of the check, so it is asserted, not assumed.
+# point of the check, so it is asserted, not assumed. The model is built from the spec
+# every time and never stored beside it: a stored copy once went stale and drew another
+# pack's systems on a deck (2026-09-24).
 say ""
 say "build_diagram.py / diagram_to_site.py / check_diagram.py"
 REPO="$(cd "$TESTS/../../.." && pwd)"
@@ -806,8 +808,8 @@ EOF
   expect "the model" "Workforce optimization by SoftServe" "NVIDIA cuOpt" "Reviewer approves"
 
   "$PY" "$TOOLS/build_diagram.py" "$WORK/pack/pack-spec.md" \
-        --out "$WORK/pack/architecture.json" >/dev/null 2>&1
-  MODEL="$WORK/pack/architecture.json"
+        --out "$WORK/model.json" >/dev/null 2>&1
+  MODEL="$WORK/model.json"
 
   # a source whose arrow says nothing is not a diagram the model will hand over
   run_case "a source with no edge fails the model" 1 \
@@ -889,6 +891,29 @@ EOF
 
   run_case "a missing model is a usage error" 2 \
     "$PY" "$TOOLS/check_diagram.py" "$WORK/not-a-model.json" --site "$WORK/diagrams.js"
+
+  # the spec itself is the model's source: the checkers and the site figure take it
+  run_case "no renderer writes a model beside the spec" 1 test -e "$WORK/pack/architecture.json"
+  printf 'window.SITE_DIAGRAMS = {\n' > "$WORK/diagrams-spec.js"
+  "$PY" "$SITE_TOOL" "$WORK/pack/pack-spec.md" --slug workforce-optimization 2>/dev/null >> "$WORK/diagrams-spec.js"
+  printf '};\n' >> "$WORK/diagrams-spec.js"
+  set -- "$TOOLS/check_diagram.py" "$WORK/pack/pack-spec.md" \
+         --site "$WORK/diagrams-spec.js" --slug workforce-optimization
+  [ -f "$OP" ] && set -- "$@" --one-pager "$OP"
+  [ -n "$DECK" ] && set -- "$@" --deck "$DECK"
+  run_case "every artifact draws the model built from the spec" 0 "$PY" "$@"
+
+  # a stale model file beside a spec is ignored: the deck draws the spec as it stands
+  if [ -n "$DECK" ]; then
+    mkdir -p "$WORK/stale"
+    cp "$WORK/pack/pack-spec.md" "$WORK/stale/pack-spec.md"
+    cp "$WORK/architecture-renamed.json" "$WORK/stale/architecture.json"
+    "$PY" "$REPO/plugins/oracle-packs/skills/deck/tools/build_deck_v2.py" \
+          "$WORK/stale/pack-spec.md" --out "$WORK/stale/deck" >/dev/null 2>&1
+    run_case "a stale model file beside the spec does not reach the deck" 0 \
+      "$PY" "$TOOLS/check_diagram.py" "$WORK/stale/pack-spec.md" \
+      --deck "$WORK/stale/deck/workforce-optimization-sales-deck.pptx"
+  fi
 fi
 
 # ------------------------------------------ the figure-less metric caveat, one wording
@@ -1210,9 +1235,10 @@ fi
 
 # ------------------------------------------------- where a pack's files go (2026-09-24)
 # The spec lives in the packaging-skills repo; the artifacts and every other working file
-# live in the local work folder. The repo's .gitignore keeps a pack's spec, its
-# architecture model and its pictures and nothing else — the working record quotes the
-# customer's documents and carries internal figures — and pack_paths.py names both places.
+# live in the local work folder. The repo's .gitignore keeps a pack's spec and its
+# pictures and nothing else — the working record quotes the customer's documents and
+# carries internal figures, and the architecture model is built from the spec, never
+# stored — and pack_paths.py names both places.
 # The slug below is made up, so no tracked file can mask a rule.
 say ""
 say "the repo keeps only the spec"
@@ -1222,12 +1248,13 @@ if ! command -v git >/dev/null 2>&1 || \
   say "  (skipped: $REPO is not a git checkout)"
 else
   P="packs/zz-layout-check"
-  for shared in "$P/pack-spec.md" "$P/pack-spec.yaml" "$P/architecture.json" "$P/visuals/today-A.jpg"; do
+  for shared in "$P/pack-spec.md" "$P/pack-spec.yaml" "$P/visuals/today-A.jpg"; do
     run_case "$shared is kept in the repo" 1 git -C "$REPO" check-ignore -q "$shared"
   done
   for local_only in "$P/intake.md" "$P/inventory.md" "$P/inventory/E1-scope.md" \
                     "$P/sources/scope.pdf" "$P/research/P1-domain.md" "$P/research-brief.md" \
-                    "$P/decisions.md" "$P/artifacts/zz-layout-check-feature-list.docx"; do
+                    "$P/decisions.md" "$P/artifacts/zz-layout-check-feature-list.docx" \
+                    "$P/architecture.json"; do
     run_case "$local_only never enters the repo" 0 git -C "$REPO" check-ignore -q "$local_only"
   done
 fi
@@ -1434,6 +1461,20 @@ if [ -x "$DECK_TESTS" ]; then
     2) say "  (skipped: $PY has no python-pptx / Pillow)" ;;
     *) bad "the deck sub-suite failed" ;;
   esac
+fi
+
+# The exemplar builder's own checks: both fixture specs built into a scratch folder,
+# ten slides in order, the lockup, the cover hero, the architecture drawn from each spec.
+DECK_V2_TESTS="$TESTS/../../../plugins/oracle-packs/skills/deck/tests/test_build_deck_v2.py"
+if [ -f "$DECK_V2_TESTS" ]; then
+  say ""
+  say "the exemplar deck builder"
+  if "$PY" -c "import pptx, PIL" >/dev/null 2>&1; then
+    run_case "test_build_deck_v2.py" 0 "$PY" "$DECK_V2_TESTS"
+    printf '%s\n' "$LAST" | tail -2 | sed 's/^/  /'
+  else
+    say "  (skipped: $PY has no python-pptx / Pillow)"
+  fi
 fi
 
 # --------------------------------------------------------------------- report

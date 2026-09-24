@@ -1,6 +1,6 @@
 # Saving the pack to the shared repo
 
-**What this is.** How a change to the pack's shared files reaches the packaging-skills repo, so a colleague builds from the same spec. Shared means `packs/<slug>/`: the spec, the architecture model, the pictures. Run it when the spec is confirmed, after any change to a confirmed spec, after pictures are recorded and after the architecture model is written.
+**What this is.** How a change to the pack's shared files reaches the packaging-skills repo, so a colleague builds from the same spec. Shared means `packs/<slug>/`: the spec and its pictures. Run it when the spec is confirmed, after any change to a confirmed spec and after pictures are recorded.
 
 **The calls** — three, each its own, never chained; `<repo>` is the checkout `pack_paths.py` printed:
 
@@ -8,7 +8,7 @@
     git -C <repo> commit -m "spec(<slug>): <what>" -- packs/<slug>
     git -C <repo> push
 
-`<what>` is `confirmed` on confirmation, else the change in a few words: `pictures`, `architecture model`, `PoV price`.
+`<what>` is `confirmed` on confirmation, else the change in a few words: `pictures`, `architecture`, `PoV price`.
 
 **Checks**
 

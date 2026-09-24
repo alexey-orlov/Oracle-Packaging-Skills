@@ -39,7 +39,6 @@ steps:
     title: The architecture picture, built and reviewed once
     session:
       - references/cards/architecture-picture.md
-      - ../spec/references/cards/save.md                # the spec skill's card; one home, no copy
     agents:
       - shared/references/architecture-diagram.md
 

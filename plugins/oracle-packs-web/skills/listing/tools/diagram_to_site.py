@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 """Turn the pack's architecture model into the mini-site's `SITE_DIAGRAMS` figure.
 
-    python3 tools/diagram_to_site.py packs/<slug>/architecture.json --slug <slug>
+    python3 tools/diagram_to_site.py <repo>/packs/<slug>/pack-spec.md --slug <slug>
+
+The model is built from the spec with the site's name variant, by the function the deck
+and the one-pager also call (shared/tools/build_diagram.py); a model file written by
+`build_diagram.py --out` is read as it is.
 
 Prints one JavaScript entry, ready to paste into `site/data/diagrams.js` between the
 other packs' figures. The figure is NEVER written by hand: the deck, the one-pager and
@@ -17,7 +21,7 @@ model rather than a silently half-told box.
 Exit codes
     0   the figure was printed
     1   the model cannot be drawn as a site figure (no sources, no app, no engine)
-    2   usage error (unreadable model file)
+    2   usage error (unreadable spec or model file)
 """
 
 from __future__ import annotations
@@ -29,6 +33,12 @@ import sys
 from pathlib import Path
 
 PROG = "diagram_to_site"
+HERE = Path(__file__).resolve().parent
+for _up in range(2, 6):                     # the model builder: the plugin's shared/tools
+    _shared = HERE.parents[_up] / "shared" / "tools" if len(HERE.parents) > _up else None
+    if _shared is not None and (_shared / "build_diagram.py").is_file():
+        sys.path.insert(0, str(_shared))
+        break
 
 # Characters that fit one line of each box, measured on the renderer's own geometry
 # (diagrams.js: source 236 px, group node 312 px, target 248 px, at 27/21 px type).
@@ -189,14 +199,18 @@ def figure(model: dict, slug: str, warnings: list) -> str:
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog=PROG, description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("model", help="packs/<slug>/architecture.json")
+    ap.add_argument("model", help="packs/<slug>/pack-spec.md (or a model file from build_diagram.py --out)")
     ap.add_argument("--slug", default=None,
                     help="the site's product slug (default: the model's own `slug`)")
     args = ap.parse_args(argv)
 
+    import build_diagram
     try:
-        model = json.loads(Path(args.model).read_text(encoding="utf-8"))
-    except (OSError, ValueError) as err:
+        model = build_diagram.load_model(args.model, channel="site")
+    except build_diagram.DiagramError as err:
+        sys.stderr.write(f"{PROG}: the architecture picture cannot be drawn: {err}\n")
+        return 1
+    except Exception as err:            # unreadable file, or a spec that does not parse
         sys.stderr.write(f"{PROG}: cannot read {args.model}: {err}\n")
         return 2
 

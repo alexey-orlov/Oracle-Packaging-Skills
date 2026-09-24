@@ -32,7 +32,7 @@ user-invocable: true
 
 4. **The architecture picture on slide 8.** *Card: `diagram-reviewer.md`.* The picture is not drawn or reviewed here: `/oracle-packs:build` built the pack's one architecture model and had it reviewed once, and this slide renders it. Check that it still does.
 
-       shared/tools/py shared/tools/check_diagram.py packs/<slug>/architecture.json --deck <pptx>
+       shared/tools/py shared/tools/check_diagram.py <spec> --deck <pptx> --channel <channel>
 
 5. **Clearance, consistency and the editorial pass.** *Card: `clearance-and-editorial.md`.* Both scripts clean, then read every slide's text against the spec and the naming rules on the strongest model. Every subagent follows `shared/references/running-agents.md`.
 

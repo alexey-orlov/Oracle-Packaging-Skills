@@ -987,17 +987,14 @@ class Build:
         self.draw_flows(slide, s, plan, geom)
 
     def diagram_model(self) -> dict:
-        """The pack's architecture model — read once, never re-derived here.
-
-        `packs/<slug>/architecture.json` when the pack has one (the reviewed
-        picture); otherwise built from the brief and written there, so the
-        one-pager and the mini-site render the very same nodes.
+        """The pack's architecture model, built from the spec by the one function the
+        one-pager and the mini-site also call, so all three draw the very same nodes
+        for this spec and this channel. Never stored, so never stale.
         """
         if self._diagram_model is None:
             try:
-                self._diagram_model = diagram.load_or_build(
-                    self.spec.data, self.spec_path or "pack-spec.md",
-                    channel=self.spec.channel)
+                self._diagram_model = diagram.build_model(self.spec.data,
+                                                          channel=self.spec.channel)
             except diagram.DiagramError as err:
                 raise SpecError(f"the architecture picture cannot be drawn: {err}")
             for warning in self._diagram_model.get("warnings") or []:

@@ -7,9 +7,10 @@ The owner's layout (2026-09-24). The spec lives in the packaging-skills repo, so
 colleague builds from the same one; everything a run produces, and everything it reads out
 of the customer's documents, stays on the machine of the person running the skills:
 
-    <repo>/packs/<slug>/     committed and shared: pack-spec.md, architecture.json (the
-                             architecture model) and visuals/ (the pictures the spec names,
-                             with their provenance .json files and credits.md). For one
+    <repo>/packs/<slug>/     committed and shared: pack-spec.md and visuals/ (the pictures
+                             the spec names, with their provenance .json files and
+                             credits.md). The architecture model is built from the spec by
+                             every renderer and never stored. For one
                              release a pack whose only spec is still pack-spec.yaml resolves
                              to that file; where both stand, `spec` is the Markdown one (and
                              packspec.load refuses the pair until the YAML is deleted)
