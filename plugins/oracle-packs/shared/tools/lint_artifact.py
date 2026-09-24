@@ -140,16 +140,10 @@ TIER_RULES = [
 
 SIZE_TAG = re.compile(r"\bS\s*/\s*M\s*/\s*L\b|\b(?:size|tier)\s+tags?\s*[:=]\s*[SML]\b")
 
-# The retired family name, caught the way the retired tier names are (ART402):
-# one pattern over the extracted text, on every channel. "Oracle AI & Data
-# Solutions" is the lockup the mini-site ships and the only family name.
-#
-# The lookahead spares Oracle's own catalog entry `OCI AI Accelerator Packs`
-# (oci-ai-accelerator-packs), which is a real product an artifact may name. The
-# retired lockup never carries "Pack(s)" after it, so the two do not collide.
-HEADER_BRAND = "Oracle AI & Data Solutions"
-RETIRED_HEADER = re.compile(r"OCI\s+(?:AI\s+)?[Aa]ccelerators?\b(?!\s+[Pp]acks?\b)",
-                            re.IGNORECASE)
+# The retired family name, caught the way the retired tier names are (ART402): one
+# pattern over the extracted text, on every channel. Its one home is packlint.
+HEADER_BRAND = PL.HEADER_BRAND
+RETIRED_HEADER = PL.RETIRED_HEADER_RE
 
 # A vendor phrase runs on while the next token is capitalized or a connector.
 # No punctuation inside a token, so a sentence-ending "Service." stops it.

@@ -134,8 +134,8 @@ TECHNICAL_NAME_RE = re.compile(
     r"|\bdocuments?\b|\btokens?\b|\buptime\b", re.IGNORECASE)
 
 # The family name retired on 2026-09-23; the mini-site lockup is the only one.
-HEADER_BRAND = "Oracle AI & Data Solutions"
-RETIRED_HEADER_RE = re.compile(r"OCI\s+AI\s+Accelerators?|OCI\s+accelerators?", re.IGNORECASE)
+HEADER_BRAND = PL.HEADER_BRAND
+RETIRED_HEADER_RE = PL.RETIRED_HEADER_RE
 HEADER_KEYS = (("meta", "eyebrow"), ("deck", "running_header"),
                ("exec_summary", "running_header"), ("one_pager", "eyebrow"))
 

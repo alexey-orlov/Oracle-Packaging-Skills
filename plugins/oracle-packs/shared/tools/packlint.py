@@ -154,6 +154,15 @@ def _with_lines(value, path, linemap):
     return value
 
 
+# The family name every print artifact carries, and the retired one both linters catch
+# (lint_spec SPEC028 in the spec's header fields, lint_artifact ART105 in an artifact's
+# text). The lookahead spares Oracle's own catalog entry `OCI AI Accelerator Packs`
+# (oci-ai-accelerator-packs), a real product an artifact may name: the retired lockup
+# never carries "Pack(s)" after it, so the two do not collide.
+HEADER_BRAND = "Oracle AI & Data Solutions"
+RETIRED_HEADER_RE = re.compile(r"OCI\s+(?:AI\s+)?[Aa]ccelerators?\b(?!\s+[Pp]acks?\b)", re.IGNORECASE)
+
+
 def _packspec():
     here = os.path.dirname(os.path.abspath(__file__))
     if here not in sys.path:
