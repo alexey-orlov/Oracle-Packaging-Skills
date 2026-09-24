@@ -27,7 +27,7 @@ This step searches openly licensed sources, puts three candidates per picture in
 
 1. **List the pictures and count the questions.** One icon per entry in `verticals[]`, plus `today` and `tomorrow`, plus the customer's logo where clearance allows it — not the cover, which carries the family's shared picture unless the owner asks for one of this pack's own. Say the count in one line, in the owner's words: "Six pictures to pick: an icon for each of your four industries, and the two photographs for the before-and-after slide." That count is the `N` every question title carries.
 
-2. **The icon for each industry.** *Cards: `icons.md` and `sources.md`.* Propose three, fetch them in both colours, lay them out as one sheet, open the sheet beside the conversation, then ask; in a plain terminal, print the sheet's path and each candidate with its source and licence. Candidates and sheets go under the pack's work folder — `<dir>` is `<work>/candidates/<slot>` (`shared/tools/pack_paths.py <slug>`) — never into the repo.
+2. **The icon for each industry.** *Cards: `icons.md` and `sources.md`.* Propose three, fetch them in both colours, lay them out as one sheet, open the sheet beside the conversation, then ask; in a plain terminal, print the sheet's path and each candidate with its source and licence. Candidates and sheets go under the pack's work folder — `<dir>` is `<work>/.scratch/candidates/<slot>` (`shared/tools/pack_paths.py <slug>`) — never into the repo.
 
        shared/tools/py tools/suggest_icons.py "<industry>" --context "<its 'what matters here' line>"
        shared/tools/py tools/fetch_icon.py <name> --out <dir> --slot vertical:<i>

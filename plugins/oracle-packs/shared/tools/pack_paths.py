@@ -11,18 +11,20 @@ of the customer's documents, stays on the machine of the person running the skil
                              the spec names; each one's provenance is on its spec entry).
                              The architecture model is built from the spec by every renderer
                              and never stored.
-    <work>/                  $ORACLE_PACKS_OUT/<slug>, else ~/oracle-packs/<slug>: artifacts/
-                             (every built file), intake.md, inventory.md, inventory/ (extracts
-                             of customer documents), sources/, research-brief.md, research/,
-                             decisions.md, any scratch. Never in the repo: these files quote
-                             the customer's own documents and carry internal figures.
+    <work>/                  $ORACLE_PACKS_OUT/<slug>, else ~/oracle-packs/<slug>, never in the
+                             repo (these files quote the customer's documents and carry internal
+                             figures): research-brief.md, decisions.md, artifacts/ (every built
+                             file), and .scratch/ — the working files no later step reads:
+                             intake.md, inventory.md, inventory/ (extracts of customer
+                             documents), sources/, research/, candidates/ (pictures not chosen),
+                             demo/ (the walkthrough's flow notes).
 
 The repo is `--repo`, else $ORACLE_PACKS_ROOT, else the working directory or its nearest
 ancestor that is a checkout of this repo: a folder holding .claude-plugin/marketplace.json
 whose "name" is "oracle-packaging-skills".
 
 Output, as key=value lines or, with --json, one JSON object:
-    slug, repo, spec_dir, spec, work, artifacts, spec_exists
+    slug, repo, spec_dir, spec, work, artifacts, scratch, spec_exists
     and, when the spec exists:
     spec_sha      sha256 of the spec's canonical data (packspec.data_sha: the sorted JSON of
                   its values, not the file's bytes), first 12 hex characters; `none` when the
@@ -31,7 +33,7 @@ Output, as key=value lines or, with --json, one JSON object:
     spec_commit   short hash of the last commit touching the spec, or `none`
     spec_dirty    true when git reports the spec modified, staged or untracked
 
---create makes spec_dir, work and artifacts, and nothing else in the repo.
+--create makes spec_dir, work, artifacts and scratch, and nothing else in the repo.
 
 Exit codes
     0   printed (and created, with --create)
@@ -181,7 +183,8 @@ def layout(slug: str, repo: str, environ=None) -> dict:
     work = work_dir(slug, environ)
     return {"slug": slug, "repo": repo, "spec_dir": spec_dir,
             "spec": spec_file(spec_dir), "work": work,
-            "artifacts": os.path.join(work, "artifacts")}
+            "artifacts": os.path.join(work, "artifacts"),
+            "scratch": os.path.join(work, ".scratch")}
 
 
 def paths(slug: str, repo: str, environ=None) -> dict:
@@ -200,8 +203,8 @@ def paths(slug: str, repo: str, environ=None) -> dict:
 
 
 def create(found: dict) -> None:
-    """spec_dir, work and artifacts — nothing else in the repo."""
-    for key in ("spec_dir", "work", "artifacts"):
+    """spec_dir, work, artifacts and scratch — nothing else in the repo."""
+    for key in ("spec_dir", "work", "artifacts", "scratch"):
         try:
             os.makedirs(found[key], exist_ok=True)
         except OSError as exc:
@@ -226,7 +229,7 @@ def main(argv=None) -> int:
     ap.add_argument("--repo", help="the packaging-skills checkout (default: $ORACLE_PACKS_ROOT, "
                                    "else found from the working directory)")
     ap.add_argument("--create", action="store_true",
-                    help="make spec_dir, work and artifacts")
+                    help="make spec_dir, work, artifacts and scratch")
     ap.add_argument("--json", action="store_true", help="one JSON object instead of key=value lines")
     args = ap.parse_args(argv)
 

@@ -75,7 +75,7 @@ Card: `consistency-gate`. After the last document and before the listing and the
 
 ## 10. Delivery
 
-Card: `delivery`. The approved finals go to the pack's OneDrive folder, one line per artifact in `<work>/decisions.md`, and one closing message: the files and where they are, what was decided differently from the brief and why, and the open items the owner still holds.
+Card: `delivery`. The approved finals go to the pack's OneDrive folder, one line per delivered file in `<work>/decisions.md`, and one closing message: the files and where they are, what was decided differently from the brief and why, and the open items the owner still holds.
 
 ## Self-check before closing
 

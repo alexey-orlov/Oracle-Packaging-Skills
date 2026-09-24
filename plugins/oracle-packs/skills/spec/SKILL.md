@@ -19,14 +19,14 @@ You produce one file the other skills trust: `packs/<slug>/pack-spec.md`, valid 
 
 ## 0. Before you start
 
-1. `shared/tools/py shared/tools/pack_paths.py <slug> --create` prints the repo and `<work>`. The spec and its pictures live in the repo's `packs/<slug>/`; everything else goes to `<work>/`, never the repo. `git -C <repo> pull --ff-only` before reading or writing the spec; a pull that cannot run is deferred and retried, never skipped silently. An existing `pack-spec.md`: read it, resume at the first unsettled part, say so.
+1. `shared/tools/py shared/tools/pack_paths.py <slug> --create` prints the repo and `<work>`. The spec and its pictures live in the repo's `packs/<slug>/`; everything else goes to `<work>/`, never the repo: the research summary and the decisions log at its top, the working files in `<work>/.scratch/`. `git -C <repo> pull --ff-only` before reading or writing the spec; a pull that cannot run is deferred and retried, never skipped silently. An existing `pack-spec.md`: read it, resume at the first unsettled part, say so.
 2. Load `shared/data/oracle-products.yaml` (the only allowed product names) and `shared/data/roadmap-items.csv` (the only allowed roadmap ids) at the step that needs them, not before.
 3. Roles: research agents, extraction and lookups on the mechanical model; the synthesis, the story candidates and the final consistency pass on the strongest available. Name the split once. Never more than four research agents at once. Every subagent follows `shared/references/running-agents.md`.
 4. **Show the map first** — one short message: the six stages below in the owner's words, how many questions each will actually ask after skipping, and the total. Every widget title then carries `<Stage> · n of N · <question name>`, and every stage ends with one line: what is done, what is next.
 
 ## 1. Before we start
 
-Cards: `intake-a`, `intake-b`, `intake-c`. Inventory the inputs first — every file with what it is, text extracted where you can (python-docx, python-pptx, `pdftotext`), written to `<work>/inventory.md`. Then ask only what the inventory did not answer, **all of it in one or two widget calls**. Propose before you ask: state what you found and where, and let the owner correct it. Answers go to `<work>/intake.md`.
+Cards: `intake-a`, `intake-b`, `intake-c`. Inventory the inputs first — every file with what it is, text extracted where you can (python-docx, python-pptx, `pdftotext`), written to `<work>/.scratch/inventory.md`. Then ask only what the inventory did not answer, **all of it in one or two widget calls**. Propose before you ask: state what you found and where, and let the owner correct it. Answers go to `<work>/.scratch/intake.md`.
 
 ## 2. Research
 
@@ -60,7 +60,7 @@ When the user asks for one thing ("re-propose the one-liner", "add an industry",
 
 ## Done, and the self-check
 
-Done = `pack-spec.md` settled, lint-clean and pushed from the repo's `packs/<slug>/`; `research-brief.md`, `intake.md`, `inventory.md`, `decisions.md` in `<work>/`; the closing message lists the open items and the artifacts to build next. Before you close:
+Done = `pack-spec.md` settled, lint-clean and pushed from the repo's `packs/<slug>/`; `research-brief.md` and `decisions.md` in `<work>/`, the intake, the inventory and the raw research in `<work>/.scratch/`; the closing message lists the open items and the artifacts to build next. Before you close:
 
 - [ ] Every part has a source; the story's parts carry `user:` sources.
 - [ ] No customer name in any component text; clearance set per audience.

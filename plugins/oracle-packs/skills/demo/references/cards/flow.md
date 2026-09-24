@@ -1,6 +1,6 @@
 # The real flow
 
-**What this is.** What the sources actually show, written down and confirmed before any design: the screens in order, the information model, where the human decides, what the system does at each step, what the outputs are. Written to `<work>/demo/flow.md`.
+**What this is.** What the sources actually show, written down and confirmed before any design: the screens in order, the information model, where the human decides, what the system does at each step, what the outputs are. Written to `<work>/.scratch/demo/flow.md`.
 
 **The checks**
 

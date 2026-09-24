@@ -2,7 +2,7 @@
 
 **What this is.** How this job is done outside the one delivered case. No questions here — progress is reported; it ends with a summary the owner reads in ten minutes.
 
-**What the fan-out produces.** Five agents, at most four at once, each writing `<work>/research/<topic>.md` and reading its own prompt from `references/generalization-method.md` §4 — the method never enters this conversation.
+**What the fan-out produces.** Five agents, at most four at once, each writing `<work>/.scratch/research/<topic>.md` and reading its own prompt from `references/generalization-method.md` §4 — the method never enters this conversation.
 
 1. **How the job runs across industries** — canonical steps, where industries differ, how the delivered case differs.
 2. **What other vendors ship** — 3–5: direct competitors, substitutes (a team doing it by hand counts), same-vendor overlaps; which steps we miss or over-split.

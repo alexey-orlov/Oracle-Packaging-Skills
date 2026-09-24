@@ -1362,16 +1362,18 @@ got, fake, out = json.loads(sys.argv[1]), sys.argv[2], sys.argv[3]
 want = {"spec_dir": os.path.join(fake, "packs", "demo-pack"),
         "spec": os.path.join(fake, "packs", "demo-pack", "pack-spec.md"),
         "work": os.path.join(out, "demo-pack"),
-        "artifacts": os.path.join(out, "demo-pack", "artifacts")}
+        "artifacts": os.path.join(out, "demo-pack", "artifacts"),
+        "scratch": os.path.join(out, "demo-pack", ".scratch")}
 off = {k: got.get(k) for k, v in want.items()
        if os.path.realpath(str(got.get(k))) != os.path.realpath(v)}
-print(off or "the four paths as expected")
+print(off or "the five paths as expected")
 sys.exit(1 if off or got.get("spec_exists") is not False else 0)' "$PP_JSON" "$FAKE" "$WORK/out"
 run_case "--create" 0 \
   env ORACLE_PACKS_OUT="$WORK/out" "$PY" "$TOOLS/pack_paths.py" demo-pack --repo "$FAKE" --create
 run_case "--create made the spec folder" 0 test -d "$FAKE/packs/demo-pack"
 run_case "--create made the work folder" 0 test -d "$WORK/out/demo-pack"
 run_case "--create made the artifacts folder" 0 test -d "$WORK/out/demo-pack/artifacts"
+run_case "--create made the scratch folder" 0 test -d "$WORK/out/demo-pack/.scratch"
 run_case "and nothing else in the repo" 0 test -z "$(ls -A "$FAKE/packs/demo-pack")"
 cp "$VALID" "$FAKE/packs/demo-pack/pack-spec.md"
 run_case "an existing spec" 0 \
