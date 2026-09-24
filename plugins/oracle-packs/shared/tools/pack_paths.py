@@ -7,9 +7,12 @@ The owner's layout (2026-09-24). The spec lives in the packaging-skills repo, so
 colleague builds from the same one; everything a run produces, and everything it reads out
 of the customer's documents, stays on the machine of the person running the skills:
 
-    <repo>/packs/<slug>/     committed and shared: pack-spec.yaml, architecture.json (the
+    <repo>/packs/<slug>/     committed and shared: pack-spec.md, architecture.json (the
                              architecture model) and visuals/ (the pictures the spec names,
-                             with their provenance .json files and credits.md)
+                             with their provenance .json files and credits.md). For one
+                             release a pack whose only spec is still pack-spec.yaml resolves
+                             to that file; where both stand, `spec` is the Markdown one (and
+                             packspec.load refuses the pair until the YAML is deleted)
     <work>/                  $ORACLE_PACKS_OUT/<slug>, else ~/oracle-packs/<slug>: artifacts/
                              (every built file), intake.md, inventory.md, inventory/ (extracts
                              of customer documents), sources/, research-brief.md, research/,
@@ -23,7 +26,10 @@ whose "name" is "oracle-packaging-skills".
 Output, as key=value lines or, with --json, one JSON object:
     slug, repo, spec_dir, spec, work, artifacts, spec_exists
     and, when the spec exists:
-    spec_sha      sha256 of the spec's bytes, first 12 hex characters
+    spec_sha      sha256 of the spec's canonical data (packspec.data_sha: the sorted JSON of
+                  its values, not the file's bytes), first 12 hex characters; `none` when the
+                  spec does not parse
+    spec_error    only when the spec does not parse: why, in one line
     spec_commit   short hash of the last commit touching the spec, or `none`
     spec_dirty    true when git reports the spec modified, staged or untracked
 
@@ -34,13 +40,13 @@ Exit codes
     2   usage error, one line on stderr: a bad slug, no checkout found, a --repo or
         $ORACLE_PACKS_ROOT that is not a checkout of this repo, a folder that cannot be made
 
-Standard library only. Also a library: spec_stamp.py reuses spec_sha() and spec_git_state().
+Standard library only, except spec_sha(), which reads the spec through packspec.py beside
+this file. Also a library: spec_stamp.py reuses spec_sha() and spec_git_state().
 """
 
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import os
 import re
@@ -50,7 +56,8 @@ import sys
 PROG = "pack_paths"
 REPO_NAME = "oracle-packaging-skills"
 MARKETPLACE = os.path.join(".claude-plugin", "marketplace.json")
-SPEC_NAME = "pack-spec.yaml"
+SPEC_NAME = "pack-spec.md"
+YAML_SPEC_NAME = "pack-spec.yaml"   # still found for one release, when it is the only spec
 SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
 NOT_FOUND = ("no checkout of the packaging-skills repo found: clone it and set "
@@ -123,13 +130,21 @@ def check_slug(slug: str) -> str:
 
 
 # ------------------------------------------------------------------------------ the spec
+def packspec_module():
+    """shared/tools/packspec.py — the one spec loader, beside this file — imported on first use."""
+    here = os.path.dirname(os.path.abspath(__file__))
+    if here not in sys.path:
+        sys.path.insert(0, here)
+    import packspec
+    return packspec
+
+
 def spec_sha(spec_path: str) -> str:
-    """sha256 of the spec's bytes, first 12 hex characters."""
-    digest = hashlib.sha256()
-    with open(spec_path, "rb") as fh:
-        for block in iter(lambda: fh.read(65536), b""):
-            digest.update(block)
-    return digest.hexdigest()[:12]
+    """sha256 of the spec's canonical data — the sorted JSON of what the spec says
+    (packspec.data_sha) — first 12 hex characters. Not of the file's bytes: a re-render, a
+    whitespace edit or the conversion from YAML to Markdown leaves it as it is; a changed value
+    moves it. Raises packspec.SpecError when the spec does not parse, OSError when unreadable."""
+    return packspec_module().data_sha(spec_path)
 
 
 def _git(args, where):
@@ -158,12 +173,21 @@ def spec_git_state(spec_path: str, repo=None):
 
 
 # ------------------------------------------------------------------------------- paths
+def spec_file(spec_dir: str) -> str:
+    """pack-spec.md — or, for one release, pack-spec.yaml when that is the only spec."""
+    markdown = os.path.join(spec_dir, SPEC_NAME)
+    legacy = os.path.join(spec_dir, YAML_SPEC_NAME)
+    if not os.path.isfile(markdown) and os.path.isfile(legacy):
+        return legacy
+    return markdown
+
+
 def layout(slug: str, repo: str, environ=None) -> dict:
-    """The folders and the spec's path, without looking at the spec."""
+    """The folders and the spec's path; only which spec file exists is looked at."""
     spec_dir = os.path.join(repo, "packs", slug)
     work = work_dir(slug, environ)
     return {"slug": slug, "repo": repo, "spec_dir": spec_dir,
-            "spec": os.path.join(spec_dir, SPEC_NAME), "work": work,
+            "spec": spec_file(spec_dir), "work": work,
             "artifacts": os.path.join(work, "artifacts")}
 
 
@@ -173,7 +197,12 @@ def paths(slug: str, repo: str, environ=None) -> dict:
     out["spec_exists"] = os.path.isfile(out["spec"])
     if out["spec_exists"]:
         commit, dirty = spec_git_state(out["spec"], repo)
-        out.update(spec_sha=spec_sha(out["spec"]), spec_commit=commit, spec_dirty=dirty)
+        try:
+            out["spec_sha"] = spec_sha(out["spec"])
+        except (OSError, packspec_module().SpecError) as exc:
+            out["spec_sha"] = "none"
+            out["spec_error"] = " ".join(str(exc).split())
+        out.update(spec_commit=commit, spec_dirty=dirty)
     return out
 
 

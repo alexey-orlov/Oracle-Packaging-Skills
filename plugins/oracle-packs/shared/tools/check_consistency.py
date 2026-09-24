@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Check every produced artifact against the pack spec it was built from.
 
-    python3 shared/tools/check_consistency.py packs/<slug>/pack-spec.yaml \
+    python3 shared/tools/check_consistency.py packs/<slug>/pack-spec.md \
             out/one-pager.html out/deck.pptx out/feature-list.docx
 
 The linters ask whether an artifact is allowed to say what it says; this asks
@@ -460,13 +460,13 @@ class Consistency:
 def main() -> int:
     ap = argparse.ArgumentParser(prog=PROG, description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("spec", help="packs/<slug>/pack-spec.yaml")
+    ap.add_argument("spec", help="packs/<slug>/pack-spec.md")
     ap.add_argument("artifacts", nargs="+", help="the produced artifacts (files or directories)")
     args = ap.parse_args()
 
     if not os.path.isfile(args.spec):
         PL.die_usage(PROG, "no such spec file: %s" % args.spec)
-    spec = PL.load_yaml(args.spec, PROG)
+    spec = PL.load_spec_or_die(args.spec, PROG)
     if not isinstance(spec, dict):
         PL.die_usage(PROG, "%s is not a pack spec" % args.spec)
 

@@ -211,11 +211,12 @@ sales one-liner).
 `in_progress`, `partially_available`, `planned`, `no`). Anything else is an error naming the
 feature — the builder never guesses a status.
 
-## 9. A note on YAML
+## 9. The capability table in the spec
 
-`capabilities[]` is long and is usually written in YAML flow style (`- { name: ..., status: ... }`).
-An **unquoted flow value containing a comma is silently truncated at the comma** — `name: Dispatcher
-UI (map, table views)` becomes `Dispatcher UI (map`, with no error, and `source: a-2026-07-13,
-b-2026-09-10` turns the second source into a junk key. Quote any value containing a comma, a colon
-or a brace. `lint_spec.py` warns (SPEC024) when a feature carries a key it does not recognize,
-which is how this damage usually surfaces.
+In `pack-spec.md` each capability area is a `###` heading with one table under it: a row per
+feature, its category first (`shared/schema/pack-spec.md`). Values go in through `packspec.py set`,
+never by editing cells by hand — a `|` inside a cell has to be written `\|`, and a row with a cell
+too many or too few is refused on its line. A spec converted from YAML can still carry the old
+flow-style damage, a value split at its commas into junk keys (`name: Dispatcher UI (map, table
+views)` read as `Dispatcher UI (map` plus a key); in Markdown it shows as an extra column, and
+`lint_spec.py` warns (SPEC024) naming the key.

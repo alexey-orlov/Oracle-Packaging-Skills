@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build the 10-slide Oracle accelerator-pack sales deck from a pack spec.
 
-    build_deck.py <pack-spec.yaml> --out <dir> [--channel partner_print|internal]
+    build_deck.py <pack-spec.md> --out <dir> [--channel partner_print|internal]
                   [--fit-report] [--allow-overflow] [--base <pptx>]
 
 One function per slide; geometry from references/deck-anatomy.md. Text is
@@ -1332,7 +1332,7 @@ def main(argv=None) -> int:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="Done means: fit report clean, contact sheet reviewed (see "
                "tools/render_probe.sh), linter clean.")
-    ap.add_argument("spec", help="path to pack-spec.yaml")
+    ap.add_argument("spec", help="path to pack-spec.md")
     ap.add_argument("--out", required=True, help="output directory")
     ap.add_argument("--channel", default="partner_print",
                     choices=["partner_print", "internal"],

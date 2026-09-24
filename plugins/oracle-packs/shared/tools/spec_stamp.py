@@ -8,10 +8,13 @@
     shared/tools/py shared/tools/spec_stamp.py --spec <spec>     the stamp a build writes now
 
 The spec lives in the packaging-skills repo and the artifacts on the machine that built them
-(pack_paths.py), so every artifact says which spec it reflects. The sha is the spec file's
-own bytes. The commit is the last commit touching the spec, `uncommitted` when git reports it
-modified or untracked, `none` outside a git checkout (pack_paths.spec_git_state). A file
-built before 2026-09-24, or by hand, carries no stamp.
+(pack_paths.py), so every artifact says which spec it reflects. The sha is of the spec's
+canonical data — `json.dumps(data, sort_keys=True, default=str)` of what packspec.load
+returns — not of the file's bytes: a re-render, a whitespace edit or the conversion from YAML
+to Markdown leaves it as it is, and only a changed value moves it (pack_paths.spec_sha). The
+commit is the last commit touching the spec, `uncommitted` when git reports it modified or
+untracked, `none` outside a git checkout (pack_paths.spec_git_state). A file built before
+2026-09-24, or by hand, carries no stamp.
 
 Where the stamp lives
     .docx .pptx   dc:identifier in docProps/core.xml — core_properties.identifier in
@@ -22,7 +25,8 @@ Where the stamp lives
 check_consistency.py compares an artifact's sha with the current spec's: CON006 when they
 differ (built from an earlier version of the spec), CON007 when a stampable file has none.
 
-Exit codes (the command line): 0 printed · 2 usage error (no such file, no arguments).
+Exit codes (the command line): 0 printed · 1 the --spec does not parse · 2 usage error (no
+such file, no arguments).
 """
 
 from __future__ import annotations
@@ -54,7 +58,8 @@ STAMPED = (".docx", ".pptx", ".html", ".htm", ".pdf")
 
 
 def spec_sha(spec_path) -> str:
-    """sha256 of the spec's bytes, first 12 hex characters."""
+    """sha256 of the spec's canonical data (the sorted JSON of its values), first 12 hex
+    characters. Raises packspec.SpecError when the spec does not parse."""
     return pack_paths.spec_sha(str(spec_path))
 
 
@@ -156,14 +161,18 @@ def main(argv=None) -> int:
     args = ap.parse_args(argv)
     if not args.spec and not args.artifacts:
         ap.print_usage(sys.stderr)
-        sys.stderr.write("spec_stamp: give --spec <pack-spec.yaml>, or one or more built files\n")
+        sys.stderr.write("spec_stamp: give --spec <pack-spec.md>, or one or more built files\n")
         return 2
     for path in ([args.spec] if args.spec else []) + args.artifacts:
         if not os.path.isfile(path):
             sys.stderr.write("spec_stamp: no such file: %s\n" % path)
             return 2
     if args.spec:
-        print(stamp(args.spec))
+        try:
+            print(stamp(args.spec))
+        except pack_paths.packspec_module().SpecError as exc:
+            sys.stderr.write("spec_stamp: the spec does not parse: %s\n" % exc)
+            return 1
     for path in args.artifacts:
         if not readable(path):
             print("%s: not read here — pypdf is not installed" % path)

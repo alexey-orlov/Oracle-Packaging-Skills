@@ -19,7 +19,7 @@
 
 ## The layout
 
-Front matter carries identity only: `slug`, `status`, `spec_version: 2`, `generated_with`, the roadmap ids. The body follows the order in which the owner reviews a pack:
+Front matter carries identity only: `slug`, `status`, `spec_version`, `generated_with`, the roadmap ids. `spec_version` counts changes to the schema's keys, not the file format, so the move to Markdown leaves it at 1. The body follows the order in which the owner reviews a pack:
 
 1. `# <name>`, then the name variants as a key list
 2. One-liner
@@ -55,7 +55,7 @@ The forms are declared per key path in one layout table in code: `paragraph`, `k
 ---
 slug: account-insights
 status: confirmed
-spec_version: 2
+spec_version: 1
 ---
 
 # Account Insights

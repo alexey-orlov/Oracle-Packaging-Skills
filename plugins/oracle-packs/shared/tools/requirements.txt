@@ -12,7 +12,7 @@
 # Two identical copies: plugins/oracle-packs/requirements.txt and shared/tools/requirements.txt
 # (which reaches the web plugin through tools/sync-shared.sh). The suite fails when they differ.
 
-PyYAML>=6.0            # reads pack-spec.yaml — every tool                  (verified 6.0.3)
+PyYAML>=6.0            # the spec's front matter and the catalog — every tool (verified 6.0.3)
 python-docx>=1.1.0     # builds the feature list .docx                      (verified 1.2.0)
 python-pptx>=1.0.0     # builds the sales deck and the exec-summary slide   (verified 1.0.2)
 Pillow>=10.0           # text-fit estimation behind the deck fit report     (verified 12.3.0)

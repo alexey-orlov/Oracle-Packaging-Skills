@@ -27,8 +27,8 @@ from pptx import Presentation                       # noqa: E402
 from pptx.oxml.ns import qn                         # noqa: E402
 
 BUILDER = SKILL / "tools" / "build_deck_v2.py"
-FIXTURE = HERE / "fixture-pack-spec.yaml"
-VARIABILITY = HERE / "fixture-pack-spec_v2-variability.yaml"
+FIXTURE = HERE / "fixture-pack-spec.md"
+VARIABILITY = HERE / "fixture-pack-spec_v2-variability.md"
 
 failures: list[str] = []
 checks = 0
@@ -189,8 +189,9 @@ def run_figureless(tmp: Path) -> None:
     """No cleared figure, `-` consumption, {label, text} problem points, a PoV cell that
     carries its own glyph, a destination named with a qualifier: the deck says so
     instead of printing dicts, dashes, figure caveats or the internal paragraph."""
-    import yaml
-    spec = yaml.safe_load(VARIABILITY.read_text())
+    from deckkit import packspec_module
+    packspec = packspec_module()
+    spec = packspec.load(VARIABILITY)[0]
     for k in spec["kpis"]:
         k["figure"] = "-"
     spec["packages"]["target_oci_consumption"] = "-"
@@ -202,8 +203,10 @@ def run_figureless(tmp: Path) -> None:
     spec["architecture"]["outputs"][1]["system"] = "Any BI tool — Obligation dashboard included"
     spec["meta"]["source_engagement"]["divergence_from_pack"] = "INTERNAL PARAGRAPH never printed"
     spec["meta"]["source_engagement"]["divergence_line"] = "The pack generalizes the rules the proof of value hard-coded."
-    path = tmp / "figureless-pack-spec.yaml"
-    path.write_text(yaml.safe_dump(spec, allow_unicode=True, sort_keys=False))
+    path = tmp / "figureless-pack-spec.md"
+    problems = packspec.roundtrip_problems(spec, str(path))
+    check(not problems, f"the figure-less variant does not round-trip: {problems[:1]}")
+    path.write_text(packspec.dump(spec), encoding="utf-8")
     out = tmp / "figureless"
     rc, log = build(path, out)
     check(rc == 0, f"figure-less build exited {rc}, not 0:\n{log}")

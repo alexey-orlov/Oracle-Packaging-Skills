@@ -6,7 +6,7 @@
 
 1. Load this card and the card for the part being changed; nothing else. Never rerun the flow for one field, and never re-ask a settled question.
 2. Wording that also appears in another artifact changes in the spec, through the spec skill's fast path — the page is the deck condensed, never a second source of truth.
-3. Wording that belongs only to this page changes in the spec's `one_pager:` overrides. The output file is regenerated, never hand-edited: a hand edit is lost on the next build.
+3. Wording that belongs only to this page changes in the spec's `one_pager:` overrides, through `packspec.py set`. The output file is regenerated, never hand-edited: a hand edit is lost on the next build.
 4. Rebuild and re-run the one-page check as well as both checkers — a few added words can push the page to two (card `overflow`).
 5. Re-show it the same way: the render open beside the conversation, the editable file attached, then the question.
 6. Close in one line: what changed and what deliberately did not.

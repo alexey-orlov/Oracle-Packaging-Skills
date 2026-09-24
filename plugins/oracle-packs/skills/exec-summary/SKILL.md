@@ -1,6 +1,6 @@
 ---
 name: exec-summary
-description: Build the accelerator pack's executive summary — one slide in the style of the host deck (the internal solutions-review deck by default) from a confirmed pack spec: name, one-liner, problem → solution, solution layers, proof strip with caveat, the three tiers in one strip, planned next steps. Use on /oracle-packs:exec-summary <pack-spec.yaml> [--host-deck <pptx>], "one slide on <pack> for the AI Days deck", "exec summary slide", or as step 4 of /oracle-packs:build.
+description: Build the accelerator pack's executive summary — one slide in the style of the host deck (the internal solutions-review deck by default) from a confirmed pack spec: name, one-liner, problem → solution, solution layers, proof strip with caveat, the three tiers in one strip, planned next steps. Use on /oracle-packs:exec-summary <pack-spec.md> [--host-deck <pptx>], "one slide on <pack> for the AI Days deck", "exec summary slide", or as step 4 of /oracle-packs:build.
 disable-model-invocation: false
 user-invocable: true
 ---
@@ -13,7 +13,7 @@ user-invocable: true
 
 ## Preconditions
 
-- A confirmed, lint-clean `pack-spec.yaml`.
+- A confirmed, lint-clean `pack-spec.md`.
 - Channel: `internal` by default — the slide usually lands in an internal solutions-review or section deck and carries the internal name variant; `partner_print` when it goes into a partner deck, where the external variant and the clearance rules apply. When it has to be asked, ask it as "who will see this slide": "our own team", or "Oracle and SoftServe sellers". Store the two values; never show them.
 - Optional `--host-deck <pptx>`: build on that deck's own master, so the slide pastes in unchanged and renumbers itself. Without it, the shipped brand base.
 - Dependencies as for the deck skill: `pyyaml`, `python-pptx`, `Pillow` (`shared/tools/py --check`). Say what is missing instead of degrading silently.

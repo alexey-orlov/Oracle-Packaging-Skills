@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build the one-slide executive summary for an accelerator pack.
 
-    build_exec_summary.py <pack-spec.yaml> --out <dir>
+    build_exec_summary.py <pack-spec.md> --out <dir>
                           [--host-deck <pptx>] [--with-closing]
                           [--fit-report] [--allow-overflow]
 
@@ -552,7 +552,7 @@ def main(argv=None) -> int:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="Done means: fit report clean, render reviewed (see the deck "
                "skill's tools/render_probe.sh), linter clean.")
-    ap.add_argument("spec", help="path to pack-spec.yaml")
+    ap.add_argument("spec", help="path to pack-spec.md")
     ap.add_argument("--out", required=True, help="output directory")
     ap.add_argument("--channel", choices=["internal", "partner_print"], default="internal",
                     help="who the slide is for: internal (default — the solutions-review deck, "

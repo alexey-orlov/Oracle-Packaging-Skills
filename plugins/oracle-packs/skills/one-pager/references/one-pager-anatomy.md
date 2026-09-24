@@ -167,7 +167,8 @@ takes `meta.name_variants.internal_slide` and `contacts.internal`. Attribution f
 page anyway.
 
 **Capability cells.** Each `packages.capability_handling[]` entry needs a level per tier:
-`levels: {pov: partial, integration: included, scaling: advanced}`, or a glyph-prefixed string
-(`"● In: staff, availability …"`), or a `{level: …}` mapping. Prose with no level is an error, not
-a guess — the tool says which entry and how to fix it. Levels map to
+`levels.pov` / `.integration` / `.scaling` (the `Level at PoV`, `Level at Integration`,
+`Level at Scaling` columns of the spec's table: `partial`, `included`, `advanced` or `none`), or a
+glyph-prefixed cell (`● In: staff, availability …`), or a `level` key inside the tier's value.
+Prose with no level is an error, not a guess — the tool says which entry and how to fix it. Levels map to
 `— none · ◐ partial · ● included · ●● multi-region / advanced`.

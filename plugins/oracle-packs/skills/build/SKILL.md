@@ -1,6 +1,6 @@
 ---
 name: build
-description: Build the full artifact set for a confirmed accelerator-pack spec, sequentially with a review pause after each artifact — feature list, sales deck, sales one-pager, executive summary — then hand off to the web plugin for the mini-site listing and the interactive demo. Use on /oracle-packs:build <pack-spec.yaml>, "build all the artifacts for <pack>", "produce the pack collateral", or after /oracle-packs:spec confirms a brief. Refuses to start on an unconfirmed spec.
+description: Build the full artifact set for a confirmed accelerator-pack spec, sequentially with a review pause after each artifact — feature list, sales deck, sales one-pager, executive summary — then hand off to the web plugin for the mini-site listing and the interactive demo. Use on /oracle-packs:build <pack-spec.md>, "build all the artifacts for <pack>", "produce the pack collateral", or after /oracle-packs:spec confirms a brief. Refuses to start on an unconfirmed spec.
 disable-model-invocation: false
 user-invocable: true
 ---
@@ -15,7 +15,7 @@ You produce nothing yourself: each artifact is built by its own skill, shown to 
 
 ## Preconditions
 
-1. Argument: the spec, `packs/<slug>/pack-spec.yaml`, or the pack's slug. `shared/tools/py shared/tools/pack_paths.py <slug> --create` prints the repo, `<work>` and the `artifacts` folder; with no argument, list the repo's `packs/*/` and ask which. `git -C <repo> pull --ff-only` first — a pull that cannot run is deferred and retried, never skipped silently — then build from the repo's spec, never from a copy.
+1. Argument: the spec, `packs/<slug>/pack-spec.md`, or the pack's slug. `shared/tools/py shared/tools/pack_paths.py <slug> --create` prints the repo, `<work>` and the `artifacts` folder; with no argument, list the repo's `packs/*/` and ask which. `git -C <repo> pull --ff-only` first — a pull that cannot run is deferred and retried, never skipped silently — then build from the repo's spec, never from a copy.
 2. `meta.status` must be `confirmed` and `shared/tools/py shared/tools/lint_spec.py <spec>` must be clean. Otherwise stop and send the user to `/oracle-packs:spec` (resume mode) — never patch the spec here.
 3. Who will see the printed documents is settled once, at the map, and holds for every artifact and for the consistency gate.
 

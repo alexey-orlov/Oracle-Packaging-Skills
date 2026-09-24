@@ -1,6 +1,6 @@
 # Worked example — Workforce Optimization
 
-`pack-spec.yaml` in this folder is the reference fill of `shared/schema/pack-spec.md`: the Workforce Optimization (WfO) pack, reconstructed from its **delivered** artifacts with the 2026-09-18 decisions applied on top.
+`pack-spec.md` in this folder is the reference fill of `shared/schema/pack-spec.md`: the Workforce Optimization (WfO) pack, reconstructed from its **delivered** artifacts with the 2026-09-18 decisions applied on top.
 
 It exists for three jobs:
 
@@ -59,9 +59,19 @@ Two notes for the catalog owner:
 Recorded in `open_questions`, flagged here because they are schema questions, not pack questions. The second one is now settled:
 
 1. **Feature-level `status` and `customization_scope` have no source at that granularity.** The delivered feature list merges `Current status` down per **category** and `Standard customization scope` down per **area**. So `status` on each feature inherits its category's cell (with a `note` on the category saying so), and feature-level `customization_scope` is left unset — only `customization_scope_area` is filled.
-2. **Settled: a KPI with no cleared headline figure writes `figure: "-"`.** The enum (`pov_result | delivered_result | target | modeled`) did not need a fifth value — `-` already means "deliberately empty" everywhere in a spec, and `shared/tools/lint_spec.py` now reads a `-` figure as absent: no `figure_status`, `caveat` or `attribution` is demanded for it, and a real `figure_status` beside a `-` figure is itself a finding. Four of the seven WfO KPIs sit in that state, keeping their formula, baseline and caveat.
+2. **Settled: a KPI with no cleared headline figure has the figure `-`.** The enum (`pov_result | delivered_result | target | modeled`) did not need a fifth value — `-` already means "deliberately empty" everywhere in a spec, and `shared/tools/lint_spec.py` now reads a `-` figure as absent: no `figure_status`, `caveat` or `attribution` is demanded for it, and a real `figure_status` beside a `-` figure is itself a finding. Four of the seven WfO KPIs sit in that state, keeping their formula, baseline and caveat.
 
 Separately: `figure_status` for the `€190K / month` figure is set to `modeled`, not `pov_result`, because the one-pager itself types it as "estimated savings at full launch" rather than a measured proof-of-value outcome. The other two headline figures are `pov_result`.
+
+## Reading the file
+
+What the YAML version said in comments, which Markdown does not carry:
+
+- **The delivery customer is not named in this repo** (`shared/tools/denylist.txt`). A real pack spec carries the name under Proof and clears it per channel in Settings; this example carries the anonymized descriptor instead.
+- **Clearance history.** Partner print is `no` while the owner's approval is pending (see Open questions); the customer site was granted on 2026-09-14 and withdrawn on 2026-09-16.
+- **Sources.** Every `Source` line names ids from Provenance's inputs; an inference is marked `(inferred)` in the text it qualifies. The name's source is an artifact until sign-off, `user:<date>` after it.
+- **Packages.** The capability-handling rows are the six commercial rows of the delivered packages table, a different cut from the feature list's four areas; the table's `Feature areas` column is the bridge the builders use. The OCI consumption target is `-`: committed on call-2026-07-09, never added to an artifact.
+- **Paths** in Provenance are written against three roots instead of machine paths: `<practice-drive>` (the practice's shared drive for this account), `<owner-repo>` (the owner's notes repository), `<owner-local>` (his local working folder). A real pack spec carries the resolved paths.
 
 ## Sources
 

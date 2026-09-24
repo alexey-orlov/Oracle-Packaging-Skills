@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Build the pack's ONE architecture model — the picture the three artifacts share.
 
-    python3 shared/tools/build_diagram.py <pack-spec.yaml> --out packs/<slug>/architecture.json
-    python3 shared/tools/build_diagram.py <pack-spec.yaml> --check        # rules only, writes nothing
+    python3 shared/tools/build_diagram.py <pack-spec.md> --out packs/<slug>/architecture.json
+    python3 shared/tools/build_diagram.py <pack-spec.md> --check        # rules only, writes nothing
 
 Also a library:
 
@@ -445,7 +445,7 @@ def describe(model: dict) -> str:
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog=PROG, description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("spec", help="packs/<slug>/pack-spec.yaml")
+    ap.add_argument("spec", help="packs/<slug>/pack-spec.md")
     ap.add_argument("--out", default=None,
                     help="where to write the model (default: architecture.json beside the spec)")
     ap.add_argument("--channel", default="partner_print",
@@ -456,18 +456,20 @@ def main(argv=None) -> int:
     args = ap.parse_args(argv)
 
     try:
-        import yaml
+        import yaml  # noqa: F401  (the spec loader needs it)
     except ImportError:
         sys.stderr.write(f"{PROG}: pyyaml is required — "
                          f"pip install -r plugins/oracle-packs/requirements.txt\n")
         return 2
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import packspec  # the one spec loader, beside this file
     try:
-        spec = yaml.safe_load(Path(args.spec).read_text(encoding="utf-8")) or {}
+        spec, _lines = packspec.load(args.spec)
     except OSError as err:
         sys.stderr.write(f"{PROG}: cannot read {args.spec}: {err}\n")
         return 2
-    except yaml.YAMLError as err:
-        sys.stderr.write(f"{PROG}: {args.spec} is not readable YAML: {err}\n")
+    except packspec.SpecError as err:
+        sys.stderr.write(f"{PROG}: the spec does not parse: {err}\n")
         return 2
 
     try:

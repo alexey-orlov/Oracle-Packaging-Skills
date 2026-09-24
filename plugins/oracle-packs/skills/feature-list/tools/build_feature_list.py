@@ -30,7 +30,7 @@ The feature list carries NO pricing; the build refuses to write a document in wh
 price has leaked in.
 
 Usage
-    build_feature_list.py <pack-spec.yaml> --out <dir>
+    build_feature_list.py <pack-spec.md> --out <dir>
         [--tier-column | --no-tier-column] [--fit one-page|none]
         [--check-pages | --no-check-pages]
 
@@ -85,6 +85,12 @@ for _up in range(2, 6):                     # the spec stamp: the plugin's synce
         sys.path.insert(0, str(_shared))
         break
 import spec_stamp  # noqa: E402  (which spec the file was built from, written into its properties)
+for _up in range(2, 6):                     # the spec loader: the plugin's synced shared/tools, or the bundle's
+    _shared = HERE.parents[_up] / "shared" / "tools" if len(HERE.parents) > _up else None
+    if _shared is not None and (_shared / "packspec.py").is_file():
+        sys.path.insert(0, str(_shared))
+        break
+import packspec  # noqa: E402  (the one spec loader: every tool reads the spec through it)
 
 # --- brand, from the mini-site's stylesheet (site/assets/site.css) ----------
 DISPLAY_FONT = "Azurio"          # the title only, regular weight, sentence case
@@ -900,7 +906,7 @@ def stamp(document, spec, title_text):
     props.subject = (f"{dig(spec, 'meta.name', 'Pack')} · feature list · "
                      f"spec v{dig(spec, 'meta.spec_version', '?')}")
     props.comments = (f"Generated {dt.date.today().isoformat()} from "
-                      f"{dig(spec, 'meta.slug', 'pack')}/pack-spec.yaml "
+                      f"{dig(spec, 'meta.slug', 'pack')}/pack-spec.md "
                       f"(spec v{dig(spec, 'meta.spec_version', '?')}) by build_feature_list.py. "
                       f"Internal / partner material: no pricing.")
     props.category = "Accelerator pack · feature list"
@@ -1298,7 +1304,7 @@ def main(argv=None) -> int:
         epilog="Exit codes: 0 written | 1 spec error | 2 pricing leaked | "
                "3 the capability tree does not fit one page.",
     )
-    parser.add_argument("spec", type=Path, help="path to packs/<slug>/pack-spec.yaml")
+    parser.add_argument("spec", type=Path, help="path to packs/<slug>/pack-spec.md")
     parser.add_argument("--out", type=Path, required=True, help="output directory (created if missing)")
     tier = parser.add_mutually_exclusive_group()
     tier.add_argument("--tier-column", dest="tier_column", action="store_true", default=None,
@@ -1319,7 +1325,11 @@ def main(argv=None) -> int:
     if not args.spec.exists():
         print(f"build_feature_list: no such spec: {args.spec}", file=sys.stderr)
         return 1
-    spec = yaml.safe_load(args.spec.read_text(encoding="utf-8")) or {}
+    try:
+        spec, _lines = packspec.load(args.spec)
+    except packspec.SpecError as err:
+        print(f"build_feature_list: the spec does not parse: {err}", file=sys.stderr)
+        return 1
 
     measurer = Measurer()
     try:

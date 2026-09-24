@@ -64,8 +64,15 @@ WORK="$(mktemp -d "${TMPDIR:-/tmp}/deck-tests.XXXXXX")" || exit 2
 trap '[ -n "${KEEP:-}" ] || rm -rf "$WORK"' EXIT
 say "test_lint_deck: work dir $WORK"
 
-SPEC="$TESTS/fixture-pack-spec.yaml"
+SPEC="$TESTS/fixture-pack-spec.md"
 EXEMPLAR="$SKILL/assets/exemplar/wfo-sales-deck.pptx"
+
+# The one spec loader (shared/tools/packspec.py): the plugin's synced copy, or the bundle's.
+SHARED_TOOLS=""
+for d in "$SKILL/../../shared/tools" "$SKILL/../../../../shared/tools"; do
+  if [ -f "$d/packspec.py" ]; then SHARED_TOOLS="$(cd "$d" && pwd)"; break; fi
+done
+[ -n "$SHARED_TOOLS" ] || { say "test_lint_deck: shared/tools/packspec.py not found"; exit 2; }
 DECK="$WORK/v2/workforce-optimization-sales-deck.pptx"
 LEGACY="$WORK/v1/workforce-optimization-sales-deck.pptx"
 
@@ -174,14 +181,16 @@ expect "the broken copy" "a cover has no tier line" \
 say ""
 say "the proof slide — the delivered case, the logo, the four labels, three tiles"
 
-VSPEC="$WORK/variant-pack-spec.yaml"
+VSPEC="$WORK/variant/pack-spec.md"
 LOGO="$SKILL/../feature-list/assets/softserve-wordmark-ink.png"
-"$PY" - "$SPEC" "$VSPEC" "$LOGO" <<'PYVARIANT'
-import sys, yaml
+mkdir -p "$WORK/variant" "$WORK/variant-nologo"
+"$PY" - "$SPEC" "$VSPEC" "$LOGO" "$SHARED_TOOLS" <<'PYVARIANT'
+import sys
 
 src, dst, logo = sys.argv[1], sys.argv[2], sys.argv[3]
-with open(src, encoding="utf-8") as fh:
-    spec = yaml.safe_load(fh)
+sys.path.insert(0, sys.argv[4])
+import packspec
+spec = packspec.load(src)[0]
 
 spec["clearance"]["customer_name_allowed"]["partner_print"] = True
 se = spec["meta"]["source_engagement"]
@@ -209,8 +218,11 @@ spec.setdefault("deck", {}).setdefault("images", {})["customer_logo"] = logo
 spec["kpis"][0]["attribution"]["named_when_allowed"] = \
     "the proof of value at Northwind Appliances"
 
+problems = packspec.roundtrip_problems(spec, dst)
+if problems:
+    sys.exit(problems[0])
 with open(dst, "w", encoding="utf-8") as fh:
-    yaml.safe_dump(spec, fh, allow_unicode=True, sort_keys=False, width=100)
+    fh.write(packspec.dump(spec))
 print("wrote the variant brief: the name cleared, a logo file, the delivered case")
 PYVARIANT
 [ $? -eq 0 ] || { say "test_lint_deck: could not write the variant brief"; exit 2; }
@@ -242,14 +254,18 @@ run_case "the variant deck is clean" 0 \
   "$PY" "$SKILL/tools/lint_deck.py" "$VDECK" --spec "$VSPEC" --channel partner_print
 
 # Cleared, but no file given: a warning naming what is missing, not a failure.
-NSPEC="$WORK/variant-nologo-pack-spec.yaml"
-"$PY" - "$VSPEC" "$NSPEC" <<'PYNOLOGO'
-import sys, yaml
-with open(sys.argv[1], encoding="utf-8") as fh:
-    spec = yaml.safe_load(fh)
+NSPEC="$WORK/variant-nologo/pack-spec.md"
+"$PY" - "$VSPEC" "$NSPEC" "$SHARED_TOOLS" <<'PYNOLOGO'
+import sys
+sys.path.insert(0, sys.argv[3])
+import packspec
+spec = packspec.load(sys.argv[1])[0]
 spec["deck"]["images"].pop("customer_logo", None)
+problems = packspec.roundtrip_problems(spec, sys.argv[2])
+if problems:
+    sys.exit(problems[0])
 with open(sys.argv[2], "w", encoding="utf-8") as fh:
-    yaml.safe_dump(spec, fh, allow_unicode=True, sort_keys=False, width=100)
+    fh.write(packspec.dump(spec))
 print("wrote the same brief with no logo file")
 PYNOLOGO
 NDECK="$WORK/v2-nologo/workforce-optimization-sales-deck.pptx"

@@ -636,6 +636,21 @@ class SpecError(RuntimeError):
     pass
 
 
+def packspec_module():
+    """The one spec loader, shared/tools/packspec.py: the plugin's synced copy, or the bundle's."""
+    here = Path(__file__).resolve().parent
+    for up in range(2, 6):
+        if len(here.parents) <= up:
+            break
+        shared = here.parents[up] / "shared" / "tools"
+        if (shared / "packspec.py").is_file():
+            if str(shared) not in sys.path:
+                sys.path.insert(0, str(shared))
+            break
+    import packspec
+    return packspec
+
+
 class Spec:
     """Dotted read-only access to a pack spec, with channel-aware helpers."""
 
@@ -645,11 +660,11 @@ class Spec:
 
     @classmethod
     def load(cls, path: str | Path, channel: str = "partner_print") -> "Spec":
-        import yaml
-        with open(path, "r", encoding="utf-8") as fh:
-            data = yaml.safe_load(fh)
-        if not isinstance(data, dict):
-            raise SpecError(f"{path}: expected a YAML mapping at the top level")
+        packspec = packspec_module()
+        try:
+            data, _lines = packspec.load(path)
+        except packspec.SpecError as err:
+            raise SpecError(f"the spec does not parse: {err}")
         return cls(data, channel)
 
     def get(self, dotted: str, default=None):

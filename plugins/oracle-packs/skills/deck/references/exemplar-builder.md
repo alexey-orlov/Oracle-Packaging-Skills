@@ -17,7 +17,7 @@ them could drift — the owner's seven findings were all drift of that kind.
 ## How a build runs
 
 ```
-build_deck_v2.py <pack-spec.yaml> --out <dir> [--channel partner_print|internal]
+build_deck_v2.py <pack-spec.md> --out <dir> [--channel partner_print|internal]
                  [--fit-report] [--allow-overflow] [--exemplar <pptx>] [--slots <json>]
                  [--icons <map.yaml>]
 ```

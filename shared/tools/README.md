@@ -6,18 +6,20 @@ the executable form of `shared/schema/pack-spec.md` and
 rewritten first and the tools follow in the same pass. A skill that produces an artifact is not done until the relevant tool here
 is green on it.
 
-Python 3, standard library only, plus **PyYAML** for anything that reads YAML.
-Call every tool through `py`, the interpreter resolver beside them: it finds a
-Python that has the packages in `requirements.txt`, or provisions one in
-`~/.oracle-packs/venv` on first use — never in system Python — and runs the tool
-with it (`py --check` shows which). A tool run without the packages exits 2 and
-prints the install line. The linters read and report and never write;
-`build_diagram.py` writes the architecture model beside the spec, and
+Python 3, standard library only, plus **PyYAML** — the spec's front matter, the
+catalog, anything else that reads YAML. Call every tool through `py`, the
+interpreter resolver beside them: it finds a Python that has the packages in
+`requirements.txt`, or provisions one in `~/.oracle-packs/venv` on first use —
+never in system Python — and runs the tool with it (`py --check` shows which). A
+tool run without the packages exits 2 and prints the install line. The linters
+read and report and never write; `packspec.py set` and `convert` write the spec,
+`build_diagram.py` writes the architecture model beside it, and
 `pack_paths.py --create` makes the pack's folders.
 
 ```
 py                    the interpreter resolver every tool runs through (--which, --check)
 requirements.txt      the Python packages; a copy of plugins/oracle-packs/requirements.txt
+packspec.py           the spec: the one loader and writer of pack-spec.md; get / set / check / convert
 pack_paths.py         where a pack's files go: the spec in the repo, the work on this machine
 spec_stamp.py         the spec stamp every builder writes into its file, and reads back
 lint_spec.py          validates a pack spec against the schema
@@ -26,7 +28,7 @@ check_consistency.py  every artifact of a pack against its spec, and the spec it
 build_diagram.py      the pack's ONE architecture model, for all three pictures
 check_diagram.py      the deck, the one-pager and the site figure against that model
 denylist.txt          the customer names and marks that must never ship (internal)
-packlint.py           shared library — YAML with line numbers, text extraction, reporting
+packlint.py           shared library — the spec through packspec.py, the catalog with line numbers, text extraction, reporting
 context_budget.py     a skill's per-step reading budget and per-card word caps, against its cards manifest
 regen_roadmap.py      regenerates shared/data/roadmap-*.csv (owned separately)
 tests/run_tests.sh    the suite; fixtures in tests/fixtures/
@@ -52,6 +54,34 @@ no `pdftotext` installed, a check that needs `--spec` — is listed as
 `not evaluated:` and counted in the summary, because a check that could not run is
 not a check that passed.
 
+## packspec.py
+
+```
+shared/tools/py shared/tools/packspec.py get <spec> <key.path>                    the value, as JSON
+shared/tools/py shared/tools/packspec.py set <spec> <key.path> <value> [--source <src>]
+shared/tools/py shared/tools/packspec.py check <spec>
+shared/tools/py shared/tools/packspec.py convert <in.yaml> --out <out.md> [--force]
+```
+
+The spec is one Markdown file per pack, `packs/<slug>/pack-spec.md`, in the fixed layout
+`shared/schema/pack-spec.md` sets out (the design: `docs/SPEC-MARKDOWN.md`). Every tool reads it
+through `packspec.load(path) -> (data, linemap)`: `data` is exactly the mapping the YAML spec
+gave, so no builder changed, and `linemap` gives each key's line for findings. The contract is
+tested on every spec in the repo: **lossless** (`load(dump(d)) == d`), **canonical**
+(`dump(load(md)) == md`), **strict** (a slip — a row with a cell too many or too few, an unknown
+section or label, an unescaped `|` in a cell, a price that does not read — is a finding on its
+line, never a guess) and **kept** (a key the layout does not know becomes a table column or an
+entry in the fenced YAML under `## Other fields`, and is named).
+
+`set` takes JSON when the value parses as JSON, else text; a typed key also takes its own syntax
+(`€95K · indicative`, `6–8 weeks (target 8, hard cap 10)`, `yes`); `--source` sets the key's
+sibling `source`; the first `set` on a path with no spec creates it. Every write re-renders the
+whole file and is refused unless its round trip is exact. `check` names each line that does not
+parse or is not in the canonical form, and each key the layout does not know. `convert` writes the
+Markdown from a YAML spec only when the round trip is exact, and says what YAML comments it could
+not carry. A `pack-spec.yaml` still loads for one release, with one line on stderr saying to
+convert it; a folder holding both files is refused. Exit 0 done · 1 a finding · 2 usage.
+
 ## pack_paths.py
 
 ```
@@ -68,8 +98,10 @@ nearest ancestor holding `.claude-plugin/marketplace.json` named
 `oracle-packaging-skills`; none found exits 2 with one line saying to clone it and set
 `ORACLE_PACKS_ROOT` or pass `--repo`. It prints `slug`, `repo`, `spec_dir`, `spec`,
 `work`, `artifacts` and `spec_exists` as `key=value` lines (or one JSON object), plus
-`spec_sha`, `spec_commit` and `spec_dirty` when the spec exists. `--create` makes
-`spec_dir`, `work` and `artifacts`, nothing else.
+`spec_sha`, `spec_commit` and `spec_dirty` when the spec exists — and `spec_error`, with
+`spec_sha=none`, when it does not parse. `spec` is `pack-spec.md`; for one release a pack whose
+only spec is still `pack-spec.yaml` resolves to that. `--create` makes `spec_dir`, `work` and
+`artifacts`, nothing else.
 
 ## spec_stamp.py
 
@@ -81,14 +113,17 @@ shared/tools/py shared/tools/spec_stamp.py --spec <spec>      the stamp a build 
 Every builder writes `pack-spec sha256:<12 hex> commit:<short hash|uncommitted|none>`
 into its file — `dc:identifier` in a `.docx` or `.pptx`, `<meta name="pack-spec">` in the
 one-pager's HTML, `/PackSpec` in its PDF — so a file built on one machine still says
-which spec it reflects. `uncommitted` is a spec git reports modified or untracked; `none`
-is a spec outside a git checkout. `check_consistency.py` reads it back (CON006, CON007),
-and `/oracle-packs:build` logs it with each approval.
+which spec it reflects. The sha is of the spec's canonical data — the sorted JSON of its
+values (`packspec.data_sha`) — not of the file's bytes, so a re-render, a whitespace edit or
+the conversion from YAML never marks a built file stale; a changed value does.
+`uncommitted` is a spec git reports modified or untracked; `none` is a spec outside a git
+checkout. `check_consistency.py` reads it back (CON006, CON007), and `/oracle-packs:build`
+logs it with each approval.
 
 ## lint_spec.py
 
 ```
-shared/tools/py shared/tools/lint_spec.py packs/<slug>/pack-spec.yaml [--strict] [--signoff] \
+shared/tools/py shared/tools/lint_spec.py packs/<slug>/pack-spec.md [--strict] [--signoff] \
         [--catalog shared/data/oracle-products.yaml] \
         [--roadmap shared/data/roadmap-items.csv] [--denylist shared/tools/denylist.txt]
 ```
@@ -141,11 +176,12 @@ engagement, no cleared headline number**. The linter reads it as absent: no
 | SPEC019 / SPEC020 | `workflow.steps` has more than 7 steps — the pack's workflow is 5–7, grouped at the buyer's checkpoints, mechanics inside a step / fewer than 3 steps (warning) |
 | SPEC021 / SPEC022 | more than 3 required Oracle products / more than 4 optional (warnings) — required is only what the pack cannot run without, optional only what a buyer would plausibly connect |
 | SPEC023 | the capability tree is too fine for a one-page feature list (warning) — above 6 areas, 14 categories or 40 features, group at the capabilities sign-off |
-| SPEC024 | a `capabilities[]` feature carries an unknown key, or no status (warning) — usually an unquoted inline mapping whose value held a comma, which silently drops everything after it |
+| SPEC024 | a record in any list the layout knows (inputs, outputs, steps, the stack, industries, capability areas, categories and features, products, metrics, tiers, capability handling, open questions, provenance inputs) carries a key the layout does not define, or a feature has no status (warning) — usually a value YAML split at its commas, which silently drops everything after the comma |
 | SPEC025 | no business metric in `kpis[]`, or a `kind` that is not `business` / `leading` / `technical` (warning) — sales artifacts print business metrics, so a set of proof criteria leaves every tile empty |
 | SPEC026 | a metric whose name reads as a proof criterion or a vanity count is not marked `kind: technical` (warning) — agreement, precision, recall, accuracy, latency, coverage, confidence, F1, throughput, "processed", "ingested", "onboarded", "surfaced", signals, documents, tokens, uptime |
 | SPEC027 | a `business` metric carries no `owner_role` (warning) — the buyer-side role who would sign the number off |
 | SPEC028 | a retired family name ("OCI AI Accelerators", "OCI accelerator") in `meta.eyebrow`, `deck.running_header`, `exec_summary.running_header` or `one_pager.eyebrow` — the family name is **Oracle AI & Data Solutions** |
+| SPEC029 | the spec does not parse — one finding on the line of the slip (packspec.py's message), and nothing else is checked |
 | SPEC900–902 | catalog absent / roadmap absent / a recommended key unfilled (warnings) |
 
 ## lint_artifact.py
@@ -153,7 +189,7 @@ engagement, no cleared headline number**. The linter reads it as absent: no
 ```
 shared/tools/py shared/tools/lint_artifact.py <file-or-dir> \
         --channel internal|partner_print|customer_site|demo \
-        [--spec packs/<slug>/pack-spec.yaml] [--denylist ...] [--catalog ...]
+        [--spec packs/<slug>/pack-spec.md] [--denylist ...] [--catalog ...]
 ```
 
 The clearance gate. It extracts text from `.docx` (document, headers, footers,
@@ -184,7 +220,7 @@ become real instead of skipped.
 ## check_consistency.py
 
 ```
-shared/tools/py shared/tools/check_consistency.py packs/<slug>/pack-spec.yaml <artifact>...
+shared/tools/py shared/tools/check_consistency.py packs/<slug>/pack-spec.md <artifact>...
 ```
 
 Asks whether the artifacts say the **same** thing, which the per-artifact linter

@@ -17,8 +17,8 @@
 | `../tools/lint_deck.py` | the deck linter — run it before anyone sees the deck |
 | `../tools/deckkit.py` | shared primitives (brand tokens, shapes, spec access, fit estimator) |
 | `../tools/render_probe.sh` | what can render a .pptx on this machine, and how |
-| `../tests/fixture-pack-spec.yaml` | anonymized Workforce optimization spec — the acceptance fixture for both builders |
-| `../tests/fixture-pack-spec_v2-variability.yaml` | a second spec (3 verticals, 7 capability rows, 3 layers, a 3-product engine) that must build with no drawing change |
+| `../tests/fixture-pack-spec.md` | anonymized Workforce optimization spec — the acceptance fixture for both builders and the executive summary. Not a delivered artifact and not a source of truth for pricing: its figures are the July collateral's, kept so the builders fit realistic string lengths |
+| `../tests/fixture-pack-spec_v2-variability.md` | a second spec, not a real pack (3 verticals with one empty card, 7 capability rows, 2 architecture inputs and 2 outputs, 3 layers, a 3-product engine) that must build with no drawing change |
 | `../tests/test_build_deck_v2.py` | builds both specs and asserts what "clone, don't redraw" means in the file |
 | `../tests/test_lint_deck.sh` | lints the exemplar, both builders' fixture decks, and a copy broken four ways |
 
@@ -55,7 +55,7 @@ shared/tools/py --check
 ## Run it
 
 ```bash
-shared/tools/py tools/build_deck_v2.py <pack-spec.yaml> --out <dir> [--channel partner_print|internal]
+shared/tools/py tools/build_deck_v2.py <pack-spec.md> --out <dir> [--channel partner_print|internal]
 shared/tools/py tools/build_deck_v2.py --help
 ```
 
@@ -70,7 +70,7 @@ Check it:
 
 ```bash
 shared/tools/py tools/lint_deck.py <dir>/<slug>-sales-deck.pptx \
-  --spec <pack-spec.yaml> --channel partner_print
+  --spec <pack-spec.md> --channel partner_print
 ```
 
 Exit 0 clean · 1 something failed, each finding on its own line · 2 the deck or
@@ -90,7 +90,7 @@ Output: `<dir>/<slug>-sales-deck.pptx`, 10 slides.
 ## The legacy builder
 
 ```bash
-shared/tools/py tools/build_deck.py <pack-spec.yaml> --out <dir> [--channel …] [--base <pptx>]
+shared/tools/py tools/build_deck.py <pack-spec.md> --out <dir> [--channel …] [--base <pptx>]
 ```
 
 It redraws every slide on `softserve-deck-base.pptx` from measurements. Use it

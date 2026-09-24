@@ -9,7 +9,7 @@ Optimization build source (2026-07-17) and the content replaced by tokens. Rende
 
 ```sh
 shared/tools/py plugins/oracle-packs/skills/one-pager/tools/build_one_pager.py \
-    <repo>/packs/<slug>/pack-spec.yaml \
+    <repo>/packs/<slug>/pack-spec.md \
     --out <work>/artifacts \
     --channel partner_print \
     --hero /path/to/approved-hero.jpg          # optional

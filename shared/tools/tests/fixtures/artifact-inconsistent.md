@@ -1,5 +1,5 @@
 <!-- Fixture: every component below is present and contradicts
-     pack-spec.valid.yaml, so check_consistency.py reports CON001-CON005.
+     pack-spec.valid.md, so check_consistency.py reports CON001-CON005.
      No customer name, no deny-listed mark — this file tests consistency only.
      Never quote the spec's own values in a comment here: the checks read a
      window around each match, and a comment holding the right value would make

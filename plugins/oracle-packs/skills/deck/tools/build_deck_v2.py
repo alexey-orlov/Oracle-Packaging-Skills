@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build the 10-slide accelerator-pack sales deck by FILLING the exemplar deck.
 
-    build_deck_v2.py <pack-spec.yaml> --out <dir> [--channel partner_print|internal]
+    build_deck_v2.py <pack-spec.md> --out <dir> [--channel partner_print|internal]
                      [--fit-report] [--allow-overflow] [--exemplar <pptx>]
 
 Stage 2 of docs/DECK-FIDELITY.md — "clone, don't redraw". The reference
@@ -996,7 +996,7 @@ class Build:
         if self._diagram_model is None:
             try:
                 self._diagram_model = diagram.load_or_build(
-                    self.spec.data, self.spec_path or "pack-spec.yaml",
+                    self.spec.data, self.spec_path or "pack-spec.md",
                     channel=self.spec.channel)
             except diagram.DiagramError as err:
                 raise SpecError(f"the architecture picture cannot be drawn: {err}")
@@ -1517,7 +1517,7 @@ def main(argv=None) -> int:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="Done means: fit report clean, contact sheet compared against the exemplar, "
                "linter clean.")
-    ap.add_argument("spec", help="path to pack-spec.yaml")
+    ap.add_argument("spec", help="path to pack-spec.md")
     ap.add_argument("--out", required=True, help="output directory")
     ap.add_argument("--channel", default="partner_print",
                     choices=["partner_print", "internal"],

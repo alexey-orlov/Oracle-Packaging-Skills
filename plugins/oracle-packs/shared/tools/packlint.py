@@ -6,7 +6,9 @@ from their own directory. Keep the four files together when a skill copies them.
 
 What lives here:
   * the PyYAML guard (every tool exits 2 with an install line when it is absent)
-  * a line-preserving YAML loader, so a finding can name the line it came from
+  * `load_spec`, the pack spec read through packspec.py (the one spec loader) as
+    line-carrying nodes, and a line-preserving YAML loader for the catalog, so a
+    finding can name the line it came from
   * the finding/report plumbing behind `file:line: CODE message` + one summary line
   * the deny-list reader (shared/tools/denylist.txt)
   * text extraction for .docx, .pptx, .pdf, .html, .js, .md, .txt, .yaml
@@ -131,6 +133,101 @@ def load_yaml(path: str, prog: str):
     if data is None:
         die_usage(prog, "%s is empty" % path)
     return data
+
+
+def _with_lines(value, path, linemap):
+    """Rebuild packspec's plain data as LineDict/LineList nodes, lines from its linemap."""
+    if isinstance(value, dict):
+        out = LineDict()
+        out.line = linemap.starts.get(path, linemap.line(path))
+        for key, item in value.items():
+            out[key] = _with_lines(item, path + (key,), linemap)
+            out.key_lines[key] = linemap.line(path + (key,), out.line)
+        return out
+    if isinstance(value, list):
+        out = LineList()
+        out.line = linemap.starts.get(path, linemap.line(path))
+        for i, item in enumerate(value):
+            out.append(_with_lines(item, path + (i,), linemap))
+            out.item_lines.append(linemap.line(path + (i,), out.line))
+        return out
+    return value
+
+
+def _packspec():
+    here = os.path.dirname(os.path.abspath(__file__))
+    if here not in sys.path:
+        sys.path.insert(0, here)
+    import packspec
+    return packspec
+
+
+def spec_error_type():
+    """packspec.SpecError: what load_spec raises when the spec does not parse."""
+    return _packspec().SpecError
+
+
+def record_lists():
+    """The record lists the spec layout knows and the keys each item may carry
+    (packspec.RECORD_LISTS: 'workflow.inputs' -> {'system', 'data', ...})."""
+    return _packspec().RECORD_LISTS
+
+
+def iter_records(spec, pattern):
+    """(path, list, index, item) for every item of the record list `pattern`
+    ('capabilities[].categories[].features' walks every area's every category)."""
+    parts = pattern.split(".")
+
+    def walk(node, i, path):
+        if i == len(parts) - 1:
+            items = node.get(parts[i]) if isinstance(node, dict) else None
+            if isinstance(items, list):
+                for n, item in enumerate(items):
+                    yield path + (parts[i], n), items, n, item
+            return
+        key = parts[i][:-2] if parts[i].endswith("[]") else parts[i]
+        child = node.get(key) if isinstance(node, dict) else None
+        if parts[i].endswith("[]"):
+            if isinstance(child, list):
+                for n, sub in enumerate(child):
+                    yield from walk(sub, i + 1, path + (key, n))
+        elif child is not None:
+            yield from walk(child, i + 1, path + (key,))
+
+    yield from walk(spec, 0, ())
+
+
+def format_path(path) -> str:
+    """("workflow", "inputs", 0) -> 'workflow.inputs[0]'."""
+    return _packspec().format_path(path)
+
+
+def load_spec(path: str, prog: str):
+    """Read a pack spec through shared/tools/packspec.py, the one spec loader.
+
+    Returns LineDict/LineList nodes, so `lineno()` names the line a finding is on. Exits 2
+    on an unreadable file; raises packspec.SpecError (with its line) when the spec does not
+    parse, so a linter can report that as a finding.
+    """
+    require_yaml(prog)
+    packspec = _packspec()
+    try:
+        data, linemap = packspec.load(path)
+    except FileNotFoundError:
+        die_usage(prog, "file not found: %s" % path)
+    except IsADirectoryError:
+        die_usage(prog, "expected a spec file, got a directory: %s" % path)
+    except OSError as exc:
+        die_usage(prog, "cannot read %s: %s" % (path, exc))
+    return _with_lines(data, (), linemap)
+
+
+def load_spec_or_die(path: str, prog: str):
+    """load_spec for a tool that cannot go on without the spec: a parse error exits 2."""
+    try:
+        return load_spec(path, prog)
+    except spec_error_type() as exc:
+        die_usage(prog, "the spec does not parse: %s" % exc)
 
 
 def lineno(node, key=None, default=1) -> int:

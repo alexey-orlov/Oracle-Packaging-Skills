@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Check a built sales deck against the reference deck's shape.
 
-    lint_deck.py <deck.pptx> [--spec <pack-spec.yaml>] [--channel partner_print]
+    lint_deck.py <deck.pptx> [--spec <pack-spec.md>] [--channel partner_print]
                  [--header "<running header>"] [--geometry <reference-geometry.json>]
                  [--legacy-cover-ok]
     lint_deck.py <deck.pptx> --reference

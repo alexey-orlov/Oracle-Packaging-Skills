@@ -7,7 +7,7 @@ stands between them and the candidate options.
 This runs as **stage 2 of the spec skill** — after the first questions, before the pack's story.
 Its output is the research brief (`research-brief-format.md`), and then
 `workflow.steps[]`, `verticals[]`, `capabilities[]` and `meta.source_engagement` in
-`pack-spec.yaml`.
+`pack-spec.md`.
 
 **This file is read by the research agents, in their own context — never loaded into the
 conversation with the owner** (`cards/manifest.yaml` lists it under that step's `agents`). Its

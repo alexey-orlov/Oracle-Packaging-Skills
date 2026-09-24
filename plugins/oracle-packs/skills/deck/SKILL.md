@@ -1,6 +1,6 @@
 ---
 name: deck
-description: Build the accelerator pack's sales deck (.pptx, filled from the SoftServe reference deck) from a confirmed pack spec — the fixed 10-slide anatomy: cover, problem ↔ solution, verticals, how it works, proof of value, solution layers, architecture, service packages (PoV Jumpstart / Integration / Scaling) with the capability matrix, why it sells for the partner's seller, next steps and contact. Use on /oracle-packs:deck <pack-spec.yaml>, "make the sales deck for <pack>", "rebuild slide 8", or as step 2 of /oracle-packs:build.
+description: Build the accelerator pack's sales deck (.pptx, filled from the SoftServe reference deck) from a confirmed pack spec — the fixed 10-slide anatomy: cover, problem ↔ solution, verticals, how it works, proof of value, solution layers, architecture, service packages (PoV Jumpstart / Integration / Scaling) with the capability matrix, why it sells for the partner's seller, next steps and contact. Use on /oracle-packs:deck <pack-spec.md>, "make the sales deck for <pack>", "rebuild slide 8", or as step 2 of /oracle-packs:build.
 disable-model-invocation: false
 user-invocable: true
 ---
@@ -13,7 +13,7 @@ user-invocable: true
 
 ## Preconditions and inputs
 
-- A confirmed, lint-clean `pack-spec.yaml`. Otherwise stop and send the user to `/oracle-packs:spec`.
+- A confirmed, lint-clean `pack-spec.md`. Otherwise stop and send the user to `/oracle-packs:spec`.
 - Channel: `partner_print` (default) or `internal`. Ask once with a widget if not given, and ask it as "who will see this deck": "Oracle and SoftServe sellers" (default) or "our own team" (adds prices in full, named accounts and internal notes where the pack brief allows). Store the two values; never show them.
 - Pictures chosen: the icon per industry (`verticals[].icon`) and the photographs (`deck.images.cover`, `deck.images.today`, `deck.images.tomorrow`) come from `/oracle-packs:visuals`, chosen by the owner from openly licensed sources. Run it first when the brief has none; build anyway if the owner has not picked yet, and each unchosen slot stays an explicit empty container labelled "image to be chosen" and becomes an open item.
 - Dependencies: Python 3 with `pyyaml`, `python-pptx`, `Pillow` — `shared/tools/py --check` says what is missing. The exemplar deck `assets/exemplar/wfo-sales-deck.pptx` and its slot map ship with the skill; the industry icons come from `shared/data/icons/`. The fit report measures with the brand fonts the plugin ships in `fonts/`; a render shows them only where they are installed — trust the fit report, not the rendered glyph widths.

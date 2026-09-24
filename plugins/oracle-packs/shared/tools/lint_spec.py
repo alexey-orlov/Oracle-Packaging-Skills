@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Validate a pack spec against shared/schema/pack-spec.md.
 
-    python3 shared/tools/lint_spec.py packs/<slug>/pack-spec.yaml
-    python3 shared/tools/lint_spec.py packs/<slug>/pack-spec.yaml --strict
-    python3 shared/tools/lint_spec.py packs/<slug>/pack-spec.yaml --strict --signoff
+    python3 shared/tools/lint_spec.py packs/<slug>/pack-spec.md
+    python3 shared/tools/lint_spec.py packs/<slug>/pack-spec.md --strict
+    python3 shared/tools/lint_spec.py packs/<slug>/pack-spec.md --strict --signoff
     python3 shared/tools/lint_spec.py <spec> --catalog shared/data/oracle-products.yaml \
                                              --roadmap shared/data/roadmap-items.csv
 
@@ -56,11 +56,18 @@ Rule codes
     SPEC022  more than 4 optional Oracle products (warning)
     SPEC023  the capability tree is too fine for a one-page feature list
              (warning): more than 6 areas, 14 categories or 40 features
-    SPEC024  a capabilities[] feature carries an unknown key, or has no status.
-             An unknown key is almost always an unquoted inline mapping whose
-             feature name contained a comma: `{ name: Repair, replace or refer,
-             status: ... }` parses as name="Repair" plus a junk key, so the row
-             silently loses everything after the comma. Valid YAML, wrong data.
+    SPEC024  a record in a list the spec layout knows carries a key the layout
+             does not define (workflow and architecture inputs, outputs and
+             steps, the stack, industries, capability areas, categories and
+             features, Oracle products, metrics, tiers, capability handling,
+             open questions, provenance inputs — packspec.RECORD_LISTS), or a
+             capability feature has no status (warning). An unknown key is
+             almost always an unquoted YAML inline mapping whose value held a
+             comma: `{ name: Repair, replace or refer, status: ... }` parses as
+             name="Repair" plus junk keys, so the row silently loses everything
+             after the comma. Valid YAML, wrong data. A spec converted to Markdown
+             keeps such keys — an extra table column, or an entry under Other
+             fields — so they stay visible until the value is set back whole.
     SPEC025  the metric set carries no business metric (warning): every metric
              is marked `kind: technical`, or `kind` itself is not one of
              business | leading | technical. Sales artifacts print business
@@ -78,6 +85,8 @@ Rule codes
              sits in meta.eyebrow, deck.running_header,
              exec_summary.running_header or one_pager.eyebrow — the family name
              on every print artifact is "Oracle AI & Data Solutions"
+    SPEC029  the spec does not parse — a structural slip, named on its own line;
+             nothing else is checked until it does
 
 --strict    promotes SPEC900/901/902 and SPEC017 to findings: the completeness
             check, usable on a spec at any status. A `draft` stays clean under
@@ -503,41 +512,40 @@ class SpecLint:
                       "workflow has %d step(s) — fewer than 3 hides the work; the target is "
                       "5-7 steps" % n)
 
-    FEATURE_KEYS = {"name", "status", "tier_first_available",
-                    "customization_scope", "specificity", "source", "note"}
+    def check_record_keys(self):
+        """SPEC024 (warning) — every record in a list the layout knows carries only the keys
+        the layout defines for it, and every capability feature has a status.
 
-    def check_capability_keys(self):
-        """SPEC024 (warning) — feature entries carry only known keys, and every one has a status.
-
-        A warning, not a finding: the damage it catches is usually in a feature's provenance
-        rather than in what the artifacts print, and a stale `source` list must not be able to
-        stop a build. It is still worth saying out loud, because the same YAML slip can truncate
-        a feature name and nothing else notices.
+        The lists and their keys are the spec layout's own (packspec.RECORD_LISTS): workflow
+        and architecture inputs, outputs and steps, the stack, industries, capability areas,
+        categories and features, Oracle products, metrics, tiers, capability handling, open
+        questions, provenance inputs, and the label/text lists. A warning, not a finding: the
+        damage is often in a record's provenance rather than in what the artifacts print, and
+        a stale key must not stop a build. It is still said out loud, because the same slip
+        can truncate a value and nothing else notices — an unquoted `{ … }` mapping in YAML
+        splits a value at its commas into bogus keys (`data: work orders, technicians, zones`
+        reads as data "work orders" plus two empty keys), which the Markdown spec then shows as
+        extra columns or under Other fields.
         """
-        caps = self.spec.get("capabilities") or []
-        for area in caps:
-            if not isinstance(area, dict):
-                continue
-            for cat in area.get("categories") or []:
-                if not isinstance(cat, dict):
+        for pattern, keys in sorted(PL.record_lists().items()):
+            for path, items, n, item in PL.iter_records(self.spec, pattern):
+                if not isinstance(item, dict):
                     continue
-                for feat in cat.get("features") or []:
-                    if not isinstance(feat, dict):
-                        continue
-                    name = feat.get("name") or "(unnamed)"
-                    extra = sorted(k for k in feat if k not in self.FEATURE_KEYS)
-                    if extra:
-                        self.rep.warn(self.path, PL.lineno(self.spec, "capabilities"),
+                extra = [k for k in item if k not in keys]
+                if extra:
+                    self.rep.warn(self.path, PL.lineno(item, extra[0], PL.lineno(items, n)),
                                   "SPEC024",
-                                  "capability %r carries unknown key(s) %s \u2014 an inline "
-                                  "mapping whose name held a comma splits the name and the "
-                                  "row loses the rest; quote the name"
-                                  % (name, ", ".join(repr(k) for k in extra)))
-                    if not feat.get("status"):
-                        self.rep.warn(self.path, PL.lineno(self.spec, "capabilities"),
-                                  "SPEC024",
-                                  "capability %r has no status — the feature list will not "
-                                  "build until it does" % name)
+                                  "%s carries key(s) the spec layout does not define: %s — "
+                                  "usually a value YAML split at its commas (an unquoted "
+                                  "`{ … }` mapping); set the whole text back on its key "
+                                  "(`packspec.py set`), or move it to a key the layout knows "
+                                  "(`note`)"
+                                  % (PL.format_path(path), ", ".join("`%s`" % k for k in extra)))
+        for path, items, n, feat in PL.iter_records(self.spec, "capabilities[].categories[].features"):
+            if isinstance(feat, dict) and not feat.get("status"):
+                self.rep.warn(self.path, PL.lineno(items, n), "SPEC024",
+                              "capability %r has no status — the feature list will not build "
+                              "until it does" % (feat.get("name") or "(unnamed)"))
 
     def check_product_counts(self):
         products = self.spec.get("oracle_products")
@@ -840,7 +848,7 @@ def walk_strings(node, base_line):
 def main() -> int:
     ap = argparse.ArgumentParser(prog=PROG, description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("spec", help="path to packs/<slug>/pack-spec.yaml")
+    ap.add_argument("spec", help="path to packs/<slug>/pack-spec.md")
     ap.add_argument("--catalog", default=PL.DEFAULT_CATALOG,
                     help="Oracle product catalog (default: shared/data/oracle-products.yaml)")
     ap.add_argument("--roadmap", default=PL.DEFAULT_ROADMAP,
@@ -858,11 +866,16 @@ def main() -> int:
     spec_path = args.spec
     if not os.path.isfile(spec_path):
         PL.die_usage(PROG, "no such spec file: %s" % spec_path)
-    spec = PL.load_yaml(spec_path, PROG)
+    rep = PL.Report(PROG)
+    try:
+        spec = PL.load_spec(spec_path, PROG)
+    except PL.spec_error_type() as exc:
+        # A structural slip is a finding on its own line; nothing else can be checked.
+        rep.fail(spec_path, exc.line or 1, "SPEC029", "the spec does not parse: %s" % exc.message)
+        return rep.render("0 of %d components checked" % len(COMPONENT_ROWS))
     if not isinstance(spec, dict):
         PL.die_usage(PROG, "%s is not a mapping — expected the pack-spec shape" % spec_path)
 
-    rep = PL.Report(PROG)
     lint = SpecLint(spec_path, spec, rep, args.strict, args.signoff)
 
     catalog = None
@@ -897,7 +910,7 @@ def main() -> int:
     lint.check_kpi_kinds()
     lint.check_retired_header()
     lint.check_workflow_steps()
-    lint.check_capability_keys()
+    lint.check_record_keys()
     lint.check_product_counts()
     lint.check_capability_size()
     lint.check_customer_names(deny)

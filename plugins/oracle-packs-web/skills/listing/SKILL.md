@@ -1,6 +1,6 @@
 ---
 name: listing
-description: Produce the accelerator pack's product listing for the practice mini-site from a confirmed pack spec — a checker-clean `products[]` entry (overview with problem ↔ solution, workflow steps, vertical cases, metrics with qualifiers; technology with the architecture stack and required/optional flags and the capabilities-by-stage view derived from the feature list; the Jumpstart tab with only the PoV price), inserted into the site's content file and previewed at every width. Use on /oracle-packs-web:listing <pack-spec.yaml> --site <mini-site root>, "add <pack> to the mini-site", "update the <pack> product page", or as step 5 of /oracle-packs:build.
+description: Produce the accelerator pack's product listing for the practice mini-site from a confirmed pack spec — a checker-clean `products[]` entry (overview with problem ↔ solution, workflow steps, vertical cases, metrics with qualifiers; technology with the architecture stack and required/optional flags and the capabilities-by-stage view derived from the feature list; the Jumpstart tab with only the PoV price), inserted into the site's content file and previewed at every width. Use on /oracle-packs-web:listing <pack-spec.md> --site <mini-site root>, "add <pack> to the mini-site", "update the <pack> product page", or as step 5 of /oracle-packs:build.
 disable-model-invocation: false
 user-invocable: true
 ---
@@ -15,7 +15,7 @@ The listing is the only artifact end customers read directly. It carries the sam
 
 ## Preconditions
 
-- A confirmed, lint-clean `pack-spec.yaml` (`shared/tools/py shared/tools/lint_spec.py`). A required key the spec does not hold sends the user back to the spec skill; the gap is never filled here.
+- A confirmed, lint-clean `pack-spec.md` (`shared/tools/py shared/tools/lint_spec.py`). A required key the spec does not hold sends the user back to the spec skill; the gap is never filled here.
 - **The mini-site** (card: `site`): `--site <path>`, else `$ORACLE_SITE_ROOT`, else the session's own folder when it holds `site.manifest.json`, else ask; **never guess it**. The root must hold `site.manifest.json`: the site's own description of its paths, checker, preview and publish targets. Where the site and these cards differ, the site wins.
 - **Write every string in sentence case.** The live theme sets display type in sentence case and uppercases only micro-type slots in CSS, so a stored capital is a shout that cannot be undone. `site/data/content-case.js` re-cases pre-rebrand strings only: it is a one-time migration and **gets no new rows**.
 - Node 14+ for the checker and the inserter, Python 3 for the derivation tool and the deny-list converter (`shared/tools/py --check`). State what is missing rather than starting and failing halfway.

@@ -1,6 +1,6 @@
 ---
 name: one-pager
-description: Build the accelerator pack's sales one-pager (HTML rendered to exactly one A4 PDF) from a confirmed pack spec — the deck condensed: hero with name and one-liner, problem ↔ solution with the data-flow line, why it sells for the partner's seller, verticals, the proof strip with its caveat, the service-packages table with the capability matrix, CTA and contact. Use on /oracle-packs:one-pager <pack-spec.yaml>, "make the one-pager for <pack>", "the sales one-pager overflows, fix it", or as step 3 of /oracle-packs:build.
+description: Build the accelerator pack's sales one-pager (HTML rendered to exactly one A4 PDF) from a confirmed pack spec — the deck condensed: hero with name and one-liner, problem ↔ solution with the data-flow line, why it sells for the partner's seller, verticals, the proof strip with its caveat, the service-packages table with the capability matrix, CTA and contact. Use on /oracle-packs:one-pager <pack-spec.md>, "make the one-pager for <pack>", "the sales one-pager overflows, fix it", or as step 3 of /oracle-packs:build.
 disable-model-invocation: false
 user-invocable: true
 ---
@@ -13,7 +13,7 @@ user-invocable: true
 
 ## Preconditions
 
-- A confirmed, lint-clean `pack-spec.yaml`. In the full build, the sales deck is approved first: this page condenses it, and the owner's deck feedback applies here.
+- A confirmed, lint-clean `pack-spec.md`. In the full build, the sales deck is approved first: this page condenses it, and the owner's deck feedback applies here.
 - Channel `partner_print` (default) or `internal`. When it has to be asked, ask it as "who will see this one-pager": "Oracle and SoftServe sellers", or "our own team" (which carries prices in full and named accounts). Store the two values; never show them.
 - Optional `--hero <image>`: an approved image from the owner. Without it the hero renders with no photo. Never fetch imagery from the web.
 - Dependencies: Python 3 with `pyyaml` and `pypdf` (`shared/tools/py --check`), and headless Chrome or Chromium for the PDF (`CHROME_BIN`, then the macOS or Windows default, then PATH). Say what is missing instead of degrading silently.

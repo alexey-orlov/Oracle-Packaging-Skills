@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Record the owner's choice for one picture slot.
 
-    apply_choice.py <pack-spec.yaml> --slot <slot> --file <chosen file>
+    apply_choice.py <pack-spec.md> --slot <slot> --file <chosen file>
                     [--provenance <sidecar.json>] [--note "<why>"]
                     [--add-to-library] [--library <dir>] [--dry-run]
 
@@ -16,9 +16,10 @@ Four things happen, in this order, and either all of them or none:
      folder `shared/tools/pack_paths.py` names ($ORACLE_PACKS_OUT/<slug>, else
      ~/oracle-packs/<slug>), never the repo.
 
-The spec is edited **in place as text**, not re-serialized: comments, block scalars and key order in
-a hand-written spec survive. The edit is verified by re-parsing and comparing everything except the
-key being written; if anything else moved, nothing is saved.
+The spec is written **through the spec writer** (shared/tools/packspec.py), never edited as text:
+the key is set on the loaded data, and the canonical file is written atomically only when its round
+trip is exact — so nothing but this one key can move. A `pack-spec.yaml` is refused, with the
+command that converts it.
 
 `--add-to-library` additionally copies a chosen icon into the shared icon library and adds its row
 to the library's map. It is off by default and never overwrites: a name already in the library is
@@ -30,8 +31,8 @@ is no sidecar to read and no licence to check: the record says where it came fro
 used under the customer's clearance recorded in the pack brief, and the sidecar is written beside
 the copy.
 
-Exit codes: 0 applied · 1 usage or input error (unknown slot, missing file, no provenance) ·
-2 the file's recorded licence is not one this bundle may use · 3 not used here.
+Exit codes: 0 applied · 1 usage or input error (unknown slot, missing file, no provenance, a
+YAML spec) · 2 the file's recorded licence is not one this bundle may use · 3 not used here.
 """
 
 from __future__ import annotations
@@ -48,8 +49,8 @@ from pathlib import Path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from visuals_common import (  # noqa: E402
     CREDITS_HEADER, EXIT_LICENCE, EXIT_OK, EXIT_USAGE, ICON_LICENCES, PHOTO_LICENCES,
-    SUPPLIED_SOURCE, SUPPLIED_TERMS, credits_line, eprint, load_spec, pack_dir, parse_slot,
-    provenance_record, read_sidecar, slot_kind, slot_spec_path, slugify, write_sidecar,
+    SUPPLIED_SOURCE, SUPPLIED_TERMS, credits_line, eprint, load_spec, pack_dir, packspec_module,
+    parse_slot, provenance_record, read_sidecar, slot_kind, slot_spec_path, slugify, write_sidecar,
 )
 
 _HERE = Path(__file__).resolve().parent
@@ -72,7 +73,7 @@ DECISIONS_HEADER = (
 )
 
 
-# --------------------------------------------------------------------- the spec, edited as text
+# ---------------------------------------------------------- the icon library's map, edited as text
 
 def _block_bounds(lines: list[str], start: int, indent: int) -> int:
     """Index one past the last line belonging to a block that starts at `start` with children more
@@ -98,80 +99,15 @@ def _find_top_key(lines: list[str], key: str) -> int | None:
     return None
 
 
-def _render(value: dict, indent: int) -> list[str]:
-    pad = " " * indent
-    out = []
-    for k, v in value.items():
-        s = str(v)
-        quote = '"' if re.search(r"[:#\"']|^\s|\s$", s) else ""
-        out.append(f"{pad}{k}: {quote}{s}{quote}\n")
-    return out
+# ------------------------------------------------------------------ the spec, through the writer
 
-
-def _set_list_item_child(lines: list[str], list_key: str, index: int, child: str,
-                         value: dict) -> list[str]:
-    """verticals[i].icon — replace or insert `child:` inside the i-th item of a top-level list."""
-    top = _find_top_key(lines, list_key)
-    if top is None:
-        raise ValueError(f"the spec has no `{list_key}:` block")
-    end = _block_bounds(lines, top, 0)
-    items = [i for i in range(top + 1, end)
-             if re.match(r"^(\s*)-\s", lines[i]) and
-             (len(lines[i]) - len(lines[i].lstrip(" "))) == (len(lines[top + 1]) - len(lines[top + 1].lstrip(" ")))]
-    if index >= len(items):
-        raise ValueError(f"the spec has {len(items)} item(s) under `{list_key}:`; "
-                         f"there is no number {index}")
-    start = items[index]
-    stop = items[index + 1] if index + 1 < len(items) else end
-    item_indent = len(lines[start]) - len(lines[start].lstrip(" "))
-    child_indent = item_indent + 2
-    block = [" " * child_indent + f"{child}:\n"] + _render(value, child_indent + 2)
-
-    for i in range(start, stop):
-        if re.match(rf"^ {{{child_indent}}}{re.escape(child)}\s*:", lines[i]):
-            j = _block_bounds(lines, i, child_indent)
-            return lines[:i] + block + lines[j:]
-    # not present: insert at the end of the item, after its last non-blank line
-    j = stop
-    while j > start and lines[j - 1].strip() == "":
-        j -= 1
-    return lines[:j] + block + lines[j:]
-
-
-def _set_nested(lines: list[str], path: list[str], value: dict) -> list[str]:
-    """deck.images.today — replace or insert a mapping at a nested path, creating what is missing."""
-    top = _find_top_key(lines, path[0])
-    if top is None:
-        block = [f"\n{path[0]}:\n"]
-        for depth, key in enumerate(path[1:], start=1):
-            block.append("  " * depth + f"{key}:\n")
-        block += _render(value, 2 * len(path))
-        out = lines[:]
-        while out and out[-1].strip() == "":
-            out.pop()
-        return out + block
-
-    start, end, indent = top, _block_bounds(lines, top, 0), 0
-    for depth, key in enumerate(path[1:], start=1):
-        want = indent + 2
-        hit = None
-        for i in range(start + 1, end):
-            if re.match(rf"^ {{{want}}}{re.escape(key)}\s*:", lines[i]):
-                hit = i
-                break
-        if hit is None:
-            block = []
-            for d, k in enumerate(path[depth:], start=depth):
-                block.append("  " * d + f"{k}:\n")
-            block += _render(value, 2 * len(path))
-            j = end
-            while j > start and lines[j - 1].strip() == "":
-                j -= 1
-            return lines[:j] + block + lines[j:]
-        start, indent = hit, want
-        end = _block_bounds(lines, hit, want)
-    return lines[:start] + ["  " * (len(path) - 1) + f"{path[-1]}:\n"] + \
-        _render(value, 2 * len(path)) + lines[end:]
+def yaml_refusal(spec_path: str) -> str | None:
+    """The message refusing a YAML spec (the writer writes Markdown only), or None."""
+    if spec_path.lower().endswith((".yaml", ".yml")):
+        md = os.path.splitext(spec_path)[0] + ".md"
+        return (f"{spec_path} is a YAML spec; the spec writer writes Markdown only. Convert it "
+                f"first: shared/tools/py shared/tools/packspec.py convert {spec_path} --out {md}")
+    return None
 
 
 def _path_tokens(slot: str) -> list:
@@ -183,9 +119,9 @@ def _path_tokens(slot: str) -> list:
 
 
 def _with_value(obj, tokens, value):
-    """A deep copy of the parsed spec with exactly this one path set — what the file must parse to
-    after the edit. Comparing against it proves both that the value landed and that nothing else
-    did; creating the intermediate mappings here is what makes a brand-new `deck:` block legal."""
+    """A deep copy of the spec's data with exactly this one path set — what the writer then
+    renders. Creating the intermediate mappings here is what makes a brand-new `deck:` block
+    legal; a list item that is not there is an IndexError, and nothing is written."""
     out = copy.deepcopy(obj)
     cur = out
     for t in tokens[:-1]:
@@ -202,26 +138,23 @@ def _with_value(obj, tokens, value):
 
 
 def write_spec(spec_path: str, slot: str, value: dict, dry_run: bool) -> str:
-    import yaml
-    with open(spec_path, encoding="utf-8") as fh:
-        lines = fh.readlines()
-    before = yaml.safe_load("".join(lines)) or {}
+    """Set the slot's key through the spec writer: the spec's data plus this one value, written
+    as the canonical Markdown only when its round trip is exact. A dry run checks, writes nothing."""
+    refusal = yaml_refusal(spec_path)
+    if refusal:
+        raise ValueError(refusal)
+    packspec = packspec_module()
     tokens = _path_tokens(slot)
-
-    if isinstance(tokens[1] if len(tokens) > 1 else None, int):
-        new = _set_list_item_child(lines, tokens[0], tokens[1], tokens[2], value)
-    else:
-        new = _set_nested(lines, tokens, value)
-
-    text = "".join(new)
-    after = yaml.safe_load(text) or {}
-    expected = _with_value(before, tokens, value)
-    if after != expected:
-        raise RuntimeError("the edited file does not parse to the spec plus this one picture; "
-                           "nothing written")
-    if not dry_run:
-        with open(spec_path, "w", encoding="utf-8") as fh:
-            fh.write(text)
+    try:
+        after = _with_value(packspec.load(spec_path)[0], tokens, value)
+        if dry_run:
+            problems = packspec.roundtrip_problems(after, spec_path)
+            if problems:
+                raise packspec.SpecError("not written — %s" % problems[0], None, spec_path)
+        else:
+            packspec.save(spec_path, after)
+    except packspec.SpecError as exc:
+        raise RuntimeError(str(exc)) from None
     return ".".join(str(t) for t in tokens)
 
 
@@ -387,6 +320,10 @@ def main(argv: list[str]) -> int:
         return EXIT_USAGE
     if not os.path.exists(args.spec):
         eprint(f"no spec at {args.spec}")
+        return EXIT_USAGE
+    refusal = yaml_refusal(args.spec)
+    if refusal:
+        eprint(refusal + " — nothing was written.")
         return EXIT_USAGE
     if not os.path.exists(args.file):
         eprint(f"no file at {args.file}")

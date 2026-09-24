@@ -1,5 +1,5 @@
 <!-- Fixture: a customer-site listing entry that is clean on every rule and
-     consistent with pack-spec.valid.yaml. Change it only together with the
+     consistent with pack-spec.valid.md. Change it only together with the
      spec fixture — the consistency test compares the two. -->
 
 # Workforce Optimization

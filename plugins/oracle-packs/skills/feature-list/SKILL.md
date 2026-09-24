@@ -1,6 +1,6 @@
 ---
 name: feature-list
-description: Build the accelerator pack's feature list (.docx) from a confirmed pack spec — the Area > Category > Feature matrix with ● available / ◐ partial / ○ roadmap status and the standard customization scope per capability, no pricing. Use on /oracle-packs:feature-list <pack-spec.yaml>, "make the feature list for <pack>", "regenerate the capability matrix", or as step 1 of /oracle-packs:build.
+description: Build the accelerator pack's feature list (.docx) from a confirmed pack spec — the Area > Category > Feature matrix with ● available / ◐ partial / ○ roadmap status and the standard customization scope per capability, no pricing. Use on /oracle-packs:feature-list <pack-spec.md>, "make the feature list for <pack>", "regenerate the capability matrix", or as step 1 of /oracle-packs:build.
 disable-model-invocation: false
 user-invocable: true
 ---
@@ -15,7 +15,7 @@ The feature list is the pack's spine document: the table every other artifact co
 
 ## Preconditions
 
-1. A confirmed, lint-clean `pack-spec.yaml` (`shared/tools/py shared/tools/lint_spec.py`). Otherwise stop and send the user to `/oracle-packs:spec`.
+1. A confirmed, lint-clean `pack-spec.md` (`shared/tools/py shared/tools/lint_spec.py`). Otherwise stop and send the user to `/oracle-packs:spec`.
 2. Dependencies: Python 3 with `pyyaml` and `python-docx` (`plugins/oracle-packs/requirements.txt`). Check with `shared/tools/py --check` and tell the user what to install if it fails; never install into system Python yourself.
 3. This document is the `internal` cut. A copy going to an Oracle seller is linted again on `partner_print` (step 4).
 

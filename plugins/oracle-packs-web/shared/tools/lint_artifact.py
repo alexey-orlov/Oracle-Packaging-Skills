@@ -2,7 +2,7 @@
 """Clearance and naming linter for everything a pack skill produces.
 
     python3 shared/tools/lint_artifact.py out/one-pager.html --channel partner_print
-    python3 shared/tools/lint_artifact.py out/ --channel customer_site --spec packs/x/pack-spec.yaml
+    python3 shared/tools/lint_artifact.py out/ --channel customer_site --spec packs/x/pack-spec.md
 
 It reads .docx (word/document.xml, plus headers, footers and notes), .pptx
 (ppt/slides/*.xml and the speaker notes), .html, .js, .md, .txt, .yaml and .pdf
@@ -586,7 +586,7 @@ def main() -> int:
     ap.add_argument("--channel", required=True,
                     choices=["internal", "partner_print", "customer_site", "demo"],
                     help="who reads this artifact; sets which rules apply")
-    ap.add_argument("--spec", help="packs/<slug>/pack-spec.yaml — enables the clearance "
+    ap.add_argument("--spec", help="packs/<slug>/pack-spec.md — enables the clearance "
                                    "switch, the price, name-variant and `proven` checks")
     ap.add_argument("--denylist", "--deny-list", dest="denylist", default=PL.DEFAULT_DENYLIST,
                     help="deny-list file (default: shared/tools/denylist.txt)")
@@ -602,7 +602,7 @@ def main() -> int:
     if args.spec:
         if not os.path.isfile(args.spec):
             PL.die_usage(PROG, "no such spec file: %s" % args.spec)
-        spec = PL.load_yaml(args.spec, PROG)
+        spec = PL.load_spec_or_die(args.spec, PROG)
         if not isinstance(spec, dict):
             PL.die_usage(PROG, "%s is not a pack spec" % args.spec)
     else:

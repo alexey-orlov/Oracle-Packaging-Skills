@@ -2,8 +2,8 @@
 """derive-stage-view.py — build the listing's `technology.capabilities[]` stage
 view from a pack spec's `capabilities[]`.
 
-    python3 derive-stage-view.py packs/<slug>/pack-spec.yaml
-    python3 derive-stage-view.py pack-spec.yaml --map "Allocation rules=Plan,Review=Approve" --out caps.js
+    python3 derive-stage-view.py packs/<slug>/pack-spec.md
+    python3 derive-stage-view.py pack-spec.md --map "Allocation rules=Plan,Review=Approve" --out caps.js
     python3 derive-stage-view.py pack-spec.json --format json
 
 WHY THIS IS A DERIVATION, NOT A COPY
@@ -56,15 +56,32 @@ STAGE_TARGET = 4
 MIN_ITEMS = 3
 
 
+def _packspec():
+    """The one spec loader, shared/tools/packspec.py: the plugin's synced copy, or the bundle's."""
+    here = os.path.dirname(os.path.abspath(__file__))
+    parents = [here]
+    while os.path.dirname(parents[-1]) != parents[-1]:
+        parents.append(os.path.dirname(parents[-1]))
+    for up in range(3, 7):                  # tools/ -> skill/ -> skills/ -> plugin/ (and the bundle)
+        if len(parents) <= up:
+            break
+        shared = os.path.join(parents[up], "shared", "tools")
+        if os.path.isfile(os.path.join(shared, "packspec.py")):
+            if shared not in sys.path:
+                sys.path.insert(0, shared)
+            break
+    import packspec
+    return packspec
+
+
 def load_spec(path):
     if not os.path.exists(path):
         print("derive-stage-view: not found: %s" % path, file=sys.stderr)
         raise SystemExit(2)
-    raw = open(path, "r", encoding="utf-8").read()
     if path.endswith((".json", ".jsn")):
-        return json.loads(raw)
+        return json.loads(open(path, "r", encoding="utf-8").read())
     try:
-        import yaml  # type: ignore
+        import yaml  # type: ignore  # noqa: F401  (the spec loader needs it)
     except ImportError:
         print(
             "derive-stage-view: PyYAML is not installed in this interpreter.\n"
@@ -74,7 +91,12 @@ def load_spec(path):
             file=sys.stderr,
         )
         raise SystemExit(3)
-    return yaml.safe_load(raw)
+    packspec = _packspec()
+    try:
+        return packspec.load(path)[0]
+    except packspec.SpecError as err:
+        print("derive-stage-view: the spec does not parse: %s" % err, file=sys.stderr)
+        raise SystemExit(2)
 
 
 def features_of(area):
@@ -208,7 +230,7 @@ def as_js(view):
 
 def main():
     ap = argparse.ArgumentParser(add_help=True, description="Derive the listing stage view from a pack spec.")
-    ap.add_argument("spec", help="packs/<slug>/pack-spec.yaml (or .json)")
+    ap.add_argument("spec", help="packs/<slug>/pack-spec.md (or .json)")
     ap.add_argument("--map", default="", help='one-off stage mapping: "Area=Stage,Area=Stage"')
     ap.add_argument("--out", default="", help="write here instead of stdout")
     ap.add_argument("--format", choices=["js", "json"], default="js", help="js (a content.js fragment) or json")

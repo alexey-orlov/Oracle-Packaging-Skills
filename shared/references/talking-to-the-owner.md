@@ -11,7 +11,7 @@ The owner (the person packaging the pack, see `review-loop.md`) is an expert in 
 Before sending anything the owner reads — a question, a widget title, an option label or description, a card, a table, a TLDR, a review pack, a closing message, a document they open — read it as someone who knows only their project and their pack. Any word they would have to ask about is replaced or removed. Never in owner-facing text:
 
 - **Method codes and internals**: T1–T9, P1–P9, R2/R3, "§7", "move 2", "the row-writer", "the four-axis test", "the general-enough test", "adjudication", "sign-off component 3", "the options step", "the intake", "fan-out", "the research agents", "the method".
-- **Files, keys and tools**: `pack-spec.yaml`, `meta.status`, any spec key, "lint", checker or script names, `decisions.md`, plugin or skill names, "widget", "the schema", "the catalog".
+- **Files, keys and tools**: `pack-spec.md`, `meta.status`, any spec key, "lint", checker or script names, `decisions.md`, plugin or skill names, "widget", "the schema", "the catalog".
 - **Packaging vocabulary used as vocabulary**: "triad", "channel" and its values (`partner_print`, `customer_site`), "tier ladder", "specificity tags", "the spine", "re-spine", "vendor ladder", "catalog id"; status glyphs ● ◐ ○ used as counts ("3 ○ rows").
 - **The bundle's own house terms**: "the owner", "the practice", "the bundle", "house format".
 
@@ -22,7 +22,7 @@ Before sending anything the owner reads — a question, a widget title, an optio
 | T1–T9 | The plain trap and its consequence: "this widening has no boundary — a buyer would read it as a slogan"; "the capability list never left what we built for the customer — there is no roadmap row" |
 | P1–P9, "the vendor-gap research" | What was researched: "the research on what the vendors already ship", "how this workflow runs in other industries", "a red-team pass" |
 | "research-brief §7" | "the research summary, section 'What is specific to the customer'" — sections by title, never by number |
-| "the spec", `pack-spec.yaml`, "component" | "the pack brief"; the parts of the pack by name: its name, one-liner, problem and solution, who buys it, industries, capabilities, workflow, architecture, Oracle products, metrics, packages |
+| "the spec", `pack-spec.md`, "component" | "the pack brief"; the parts of the pack by name: its name, one-liner, problem and solution, who buys it, industries, capabilities, workflow, architecture, Oracle products, metrics, packages |
 | "sign off component 4", "confirm" | "confirm the name" — name the part, never its number |
 | "triad" | "name, one-liner, problem and solution" |
 | "channel" | Who will see it: "for our own team", "for Oracle and SoftServe sellers", "for customers on the site", "in the demo" |

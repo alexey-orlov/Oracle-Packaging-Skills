@@ -4,7 +4,7 @@ _The deck, the one-pager and the mini-site draw the SAME picture, detailed to ea
 
 ## The model
 
-`shared/tools/build_diagram.py <pack-spec.yaml> --out packs/<slug>/architecture.json` derives it from the brief: `architecture.inputs[]`, `.stack[]`, `.outputs[]`, `oracle_products[]`, the catalog, `meta.name` in the channel's variant, and the workflow's human step. Also a library (`build_model(spec) -> dict`) the renderers call.
+`shared/tools/build_diagram.py <pack-spec.md> --out packs/<slug>/architecture.json` derives it from the brief: `architecture.inputs[]`, `.stack[]`, `.outputs[]`, `oracle_products[]`, the catalog, `meta.name` in the channel's variant, and the workflow's human step. Also a library (`build_model(spec) -> dict`) the renderers call.
 
 ```
 sources[]      {name, data, detail}     data = the arrow's label in

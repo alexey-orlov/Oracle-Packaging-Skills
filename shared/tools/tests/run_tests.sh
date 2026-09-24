@@ -1,22 +1,27 @@
 #!/usr/bin/env bash
 # Tests for shared/tools: lint_spec.py, lint_artifact.py, check_consistency.py, and the
-# tools and builders around them — the resolver, the pack layout (pack_paths.py, the repo's
-# .gitignore), the spec stamp (spec_stamp.py), the diagram model, the listing tools.
+# tools and builders around them — the spec loader and writer (packspec.py), the resolver,
+# the pack layout (pack_paths.py, the repo's .gitignore), the spec stamp (spec_stamp.py),
+# the diagram model, the listing tools.
 #
 #   shared/tools/tests/run_tests.sh              # runs every tool through shared/tools/py
 #   PY=.venv/bin/python shared/tools/tests/run_tests.sh   # or through a given interpreter
 #   KEEP=1 shared/tools/tests/run_tests.sh       # leave the work dir in place
 #
-# It runs the three tools on fixtures/pack-spec.valid.yaml, on two deliberately
-# broken variants generated from it, and on the artifact fixtures, and asserts
-# the exit code and the rule codes of every run.
+# It runs the three tools on fixtures/pack-spec.valid.md, on deliberately broken
+# variants generated from it, and on the artifact fixtures, and asserts the exit code
+# and the rule codes of every run.
 #
 # Exit 0 all assertions pass · 1 an assertion failed · 2 PyYAML is missing (the
 # suite cannot run; a skipped check is not a check that passed).
 #
-# The broken variants are GENERATED from the valid fixture rather than committed,
-# so they cannot drift from it, and the deny-listed customer name the clearance
-# tests need is read from denylist.txt instead of being committed to this repo.
+# The broken variants are GENERATED from the valid fixture rather than committed, so
+# they cannot drift from it: each loads the fixture through packspec.py, changes the
+# data and writes it back through the writer. The deny-listed customer name the
+# clearance tests need is read from denylist.txt instead of being committed to this
+# repo. The fixture is a minimal spec valid against shared/schema/pack-spec.md;
+# its engagement, figures and prices are invented and its customer is a fictional
+# stand-in — no real engagement is named in this repo.
 
 set -u
 
@@ -74,7 +79,7 @@ if ! "$PY" -c "import yaml" >/dev/null 2>&1; then
   say "  or point PY= at an interpreter that has shared/tools/requirements.txt."
   say ""
   say "Checking the dependency guard itself instead:"
-  LAST="$("$PY" "$TOOLS/lint_spec.py" "$FIX/pack-spec.valid.yaml" 2>&1)"; got=$?
+  LAST="$("$PY" "$TOOLS/lint_spec.py" "$FIX/pack-spec.valid.md" 2>&1)"; got=$?
   [ "$got" = 2 ] && say "  ok   lint_spec exits 2 without PyYAML" \
                  || say "  FAIL lint_spec exited $got without PyYAML, expected 2"
   exit 2
@@ -146,7 +151,7 @@ expect "the key" "test-key"
 say ""
 say "build_feature_list.py — the page count, verified or said so"
 FL_TOOLS="$TOOLS/../../plugins/oracle-packs/skills/feature-list/tools"
-FL_FIX="$TOOLS/../../plugins/oracle-packs/skills/one-pager/tests/fixture-pack-spec.yaml"
+FL_FIX="$TOOLS/../../plugins/oracle-packs/skills/one-pager/tests/fixture-pack-spec.md"
 run_case "with no renderer the build still writes the file" 0 \
   "$PY" -c 'import sys
 sys.path.insert(0, sys.argv[1])
@@ -193,44 +198,59 @@ sed "s|__DENY__|$DENY_NAME|g" "$FIX/artifact-broken.md" > "$WORK/artifact-broken
 cp "$FIX/artifact-clean.md" "$FIX/artifact-inconsistent.md" "$WORK/"
 
 # --------------------------------------------- the two broken spec variants
-"$PY" - "$FIX/pack-spec.valid.yaml" "$WORK" "$DENY_NAME" <<'PYGEN'
-import sys
-src, work, deny = sys.argv[1], sys.argv[2], sys.argv[3]
-text = open(src, encoding="utf-8").read()
+# Each variant is the fixture's data with a few values changed, written through the writer;
+# a variant whose own round trip is not exact is refused before any lint runs on it.
+"$PY" - "$TOOLS" "$FIX/pack-spec.valid.md" "$WORK" "$DENY_NAME" <<'PYGEN'
+import copy, sys
+sys.path.insert(0, sys.argv[1])
+import packspec
+spec, _ = packspec.load(sys.argv[2])
+work, deny = sys.argv[3], sys.argv[4]
+
+def swap(node, old, new):
+    """The same data with `old` replaced by `new` inside every string value."""
+    if isinstance(node, dict):
+        return {k: swap(v, old, new) for k, v in node.items()}
+    if isinstance(node, list):
+        return [swap(v, old, new) for v in node]
+    return node.replace(old, new) if isinstance(node, str) else node
+
+def write(data, name):
+    problems = packspec.roundtrip_problems(data, name)
+    if problems:
+        sys.exit("%s: %s" % (name, problems[0]))
+    open("%s/%s" % (work, name), "w", encoding="utf-8").write(packspec.dump(data))
+
+def item(items, key, value):
+    return next(x for x in items if x.get(key) == value)
 
 # Variant A — clearance and sourcing: a deny-listed name in customer-facing copy,
 # a clearance channel missing, and first-order sources that are not `user:`.
-a = text.replace("source: user:2026-09-18", "source: call-note 2026-09-18")
-a = a.replace("    demo: false\n", "")
-a = a.replace("Re-plan technician zones",
-              "Re-plan %s technician zones" % deny)
-a = a.replace("otherwise: \"proof of value at a global home-appliance manufacturer\"",
-              "otherwise: \"proof of value at %s\"" % deny)
-open(work + "/pack-spec.broken-clearance.yaml", "w", encoding="utf-8").write(a)
+a = swap(spec, "user:2026-09-18", "call-note 2026-09-18")
+del a["clearance"]["customer_name_allowed"]["demo"]
+a = swap(a, "Re-plan technician zones", "Re-plan %s technician zones" % deny)
+a["kpis"][0]["attribution"]["otherwise"] = "proof of value at %s" % deny
+write(a, "pack-spec.broken-clearance.md")
 
 # Variant B — packages and metrics: a PoV over the hard cap, a renamed tier, a
 # second metric set, an off-catalog product, an unknown roadmap id, no open_questions.
-b = text.replace("{ target: 6, min: 4, max: 8, hard_cap: 10 }",
-                 "{ target: 6, min: 4, max: 12, hard_cap: 10 }")
-b = b.replace("      name: Scaling\n", "      name: Scale\n")
-b = b.replace("  roadmap_item_id: workforce-optimization",
-              "  roadmap_item_id: technician-shift-scheduling")
-b = b.replace("  - id: oci-object-storage", "  - id: oci-object-store")
+b = copy.deepcopy(spec)
+item(b["packages"]["tiers"], "id", "pov")["duration_weeks"]["max"] = 12
+item(b["packages"]["tiers"], "id", "scaling")["name"] = "Scale"
+b["meta"]["roadmap_item_id"] = "technician-shift-scheduling"
+products = b["oracle_products"]
+item(products, "id", "oci-object-storage")["id"] = "oci-object-store"
 # the engine pushed into oracle_products, where only Oracle products belong (SPEC018)
-b = b.replace("  - id: oracle-fusion-field-service",
-              "  - id: nvidia-cuopt\n    role: required\n    why: \"the solver\"\n"
-              "  - id: oracle-fusion-field-service")
+products.insert(products.index(item(products, "id", "oracle-fusion-field-service")),
+                {"id": "nvidia-cuopt", "role": "required", "why": "the solver"})
 # an off-catalog id on the stack layer, the other half of SPEC004
-b = b.replace("catalog_id: nvidia-cuopt }", "catalog_id: nvidia-cu-opt }")
-b = b.replace("    source: pov-report 2026-06-30\n",
-              "    source: pov-report 2026-06-30\n"
-              "  - name: Planning cycle time\n"
-              "    formula: \"Time from demand freeze to approved plan\"\n"
-              "    baseline: \"~2 days manual\"\n"
-              "    figure: \"~2 h\"\n"
-              "    attribution: { otherwise: \"modeled\" }\n")
-b = b.replace("open_questions: []\n", "")
-open(work + "/pack-spec.broken-packages.yaml", "w", encoding="utf-8").write(b)
+item(b["architecture"]["stack"], "catalog_id", "nvidia-cuopt")["catalog_id"] = "nvidia-cu-opt"
+b["kpis"].append({"name": "Planning cycle time",
+                  "formula": "Time from demand freeze to approved plan",
+                  "baseline": "~2 days manual", "figure": "~2 h",
+                  "attribution": {"otherwise": "modeled"}})
+del b["open_questions"]
+write(b, "pack-spec.broken-packages.md")
 print("generated two broken spec variants")
 PYGEN
 [ $? -eq 0 ] || { say "run_tests: could not generate the broken variants"; exit 2; }
@@ -239,10 +259,12 @@ PYGEN
 # `owner_role`. SPEC025/026/027 must all fire, or a pack ships acceptance criteria as
 # its sales tiles (the DHL one-pager, 2026-09-23). The retired family name rides along
 # in the eyebrow, where SPEC028 has to refuse it.
-"$PY" - "$FIX/pack-spec.valid.yaml" "$WORK" <<'PYMETRICS'
-import sys, yaml
+"$PY" - "$FIX/pack-spec.valid.md" "$WORK" "$TOOLS" <<'PYMETRICS'
+import sys
 src, work = sys.argv[1], sys.argv[2]
-spec = yaml.safe_load(open(src, encoding="utf-8"))
+sys.path.insert(0, sys.argv[3])
+import packspec
+spec = packspec.load(src)[0]
 spec["meta"]["eyebrow"] = "OCI AI Accelerators"
 spec["kpis"] = [
     {"name": "Reviewer agreement", "formula": "Share of decisions two reviewers agree on",
@@ -252,23 +274,29 @@ spec["kpis"] = [
      "baseline": "-", "figure": "12,000", "figure_status": "pov_result",
      "attribution": {"otherwise": "proof of value"}, "caveat": "Illustrative, not contractual"},
 ]
-yaml.safe_dump(spec, open(work + "/pack-spec.technical-metrics.yaml", "w", encoding="utf-8"),
-               sort_keys=False, allow_unicode=True)
+problems = packspec.roundtrip_problems(spec)
+if problems:
+    sys.exit(problems[0])
+open(work + "/pack-spec.technical-metrics.md", "w", encoding="utf-8").write(packspec.dump(spec))
 print("generated the technical-metrics variant")
 PYMETRICS
 [ $? -eq 0 ] || { say "run_tests: could not generate the technical-metrics variant"; exit 2; }
 
 # Variant C — a workflow of 8 steps: mechanics promoted to steps (SPEC019).
-"$PY" - "$FIX/pack-spec.valid.yaml" "$WORK" <<'PYSTEPS'
-import sys, copy, yaml
+"$PY" - "$FIX/pack-spec.valid.md" "$WORK" "$TOOLS" <<'PYSTEPS'
+import sys, copy
 src, work = sys.argv[1], sys.argv[2]
-spec = yaml.safe_load(open(src, encoding="utf-8"))
+sys.path.insert(0, sys.argv[3])
+import packspec
+spec = packspec.load(src)[0]
 steps = spec["workflow"]["steps"]
 while len(steps) < 8:
     s = copy.deepcopy(steps[-1]); s["n"] = len(steps) + 1
     s["name"] = "Mechanics promoted to a step %d" % s["n"]; steps.append(s)
-yaml.safe_dump(spec, open(work + "/pack-spec.broken-workflow.yaml", "w", encoding="utf-8"),
-               sort_keys=False, allow_unicode=True)
+problems = packspec.roundtrip_problems(spec)
+if problems:
+    sys.exit(problems[0])
+open(work + "/pack-spec.broken-workflow.md", "w", encoding="utf-8").write(packspec.dump(spec))
 print("generated the 8-step workflow variant")
 PYSTEPS
 [ $? -eq 0 ] || { say "run_tests: could not generate the workflow variant"; exit 2; }
@@ -301,7 +329,7 @@ PYOFFICE
 
 CAT="$FIX/catalog.yaml"
 ROAD="$FIX/roadmap.csv"
-VALID="$FIX/pack-spec.valid.yaml"
+VALID="$FIX/pack-spec.valid.md"
 
 # ------------------------------------------------------------------ lint_spec
 say ""
@@ -317,29 +345,251 @@ run_case "valid fixture is clean under --strict" 0 \
   "$PY" "$TOOLS/lint_spec.py" "$VALID" --catalog "$CAT" --roadmap "$ROAD" --strict
 
 run_case "broken variant A (clearance and sourcing)" 1 \
-  "$PY" "$TOOLS/lint_spec.py" "$WORK/pack-spec.broken-clearance.yaml" \
+  "$PY" "$TOOLS/lint_spec.py" "$WORK/pack-spec.broken-clearance.md" \
   --catalog "$CAT" --roadmap "$ROAD"
 expect "variant A" SPEC003 SPEC010 SPEC013
 
 run_case "broken variant B (packages and metrics)" 1 \
-  "$PY" "$TOOLS/lint_spec.py" "$WORK/pack-spec.broken-packages.yaml" \
+  "$PY" "$TOOLS/lint_spec.py" "$WORK/pack-spec.broken-packages.md" \
   --catalog "$CAT" --roadmap "$ROAD"
 expect "variant B" SPEC004 SPEC005 SPEC007 SPEC008 SPEC009 SPEC011 SPEC012 SPEC014 SPEC018
 expect "variant B" "architecture.stack[2].catalog_id"
 
 run_case "broken variant C (workflow of 8 steps)" 1 \
-  "$PY" "$TOOLS/lint_spec.py" "$WORK/pack-spec.broken-workflow.yaml" \
+  "$PY" "$TOOLS/lint_spec.py" "$WORK/pack-spec.broken-workflow.md" \
   --catalog "$CAT" --roadmap "$ROAD"
 expect "variant C" SPEC019
 
 run_case "broken variant D (proof criteria as the metric set)" 1 \
-  "$PY" "$TOOLS/lint_spec.py" "$WORK/pack-spec.technical-metrics.yaml" \
+  "$PY" "$TOOLS/lint_spec.py" "$WORK/pack-spec.technical-metrics.md" \
   --catalog "$CAT" --roadmap "$ROAD"
 expect "variant D" SPEC025 SPEC026 SPEC027 SPEC028
 expect "variant D" "no business metric in the set" "Oracle AI & Data Solutions"
 
 run_case "a missing spec is a usage error" 2 \
-  "$PY" "$TOOLS/lint_spec.py" "$WORK/not-here.yaml"
+  "$PY" "$TOOLS/lint_spec.py" "$WORK/not-here.md"
+
+# ----------------------------------------------------- packspec.py, the spec in Markdown
+# The one spec loader and writer (docs/SPEC-MARKDOWN.md). Every spec in the repo — the packs,
+# the worked example, the fixtures — round-trips exactly: load(dump(d)) == d, and a file
+# already in the canonical form re-renders to itself. A structural slip is a finding on its
+# own line, never a guess; a key the layout does not know is kept and named.
+say ""
+say "packspec.py — the spec in Markdown"
+PACKSPEC="$TOOLS/packspec.py"
+REPO="$(cd "$TESTS/../../.." && pwd)"
+for spec in "$REPO"/packs/*/pack-spec.md "$REPO"/packs/*/pack-spec.yaml \
+            "$REPO"/examples/*/pack-spec.md "$FIX"/pack-spec.valid.md \
+            "$REPO"/plugins/*/skills/*/tests/fixture-pack-spec*.md; do
+  [ -f "$spec" ] || continue
+  run_case "${spec#"$REPO"/} round-trips exactly" 0 "$PY" -c 'import sys
+sys.path.insert(0, sys.argv[1])
+import packspec
+path = sys.argv[2]
+data, _ = packspec.load(path)
+problems = packspec.roundtrip_problems(data, path)
+if path.endswith(".md") and packspec.dump(data) != open(path, encoding="utf-8").read():
+    problems.append("the file is not in the canonical form (packspec.py check names the lines)")
+print("; ".join(problems) or "exact")
+sys.exit(1 if problems else 0)' "$TOOLS" "$spec"
+done
+
+# The schema's template is the writer's own output (its `<` shown bare), so it cannot drift
+# from the layout; and every key the layout knows is in the template or named in the contract,
+# so a key added to the layout without a line in the schema fails here.
+run_case "shared/schema/pack-spec.md: the template is canonical and every key is documented" 0 \
+  "$PY" -c 'import re, sys
+sys.path.insert(0, sys.argv[1])
+import packspec
+doc = open(sys.argv[2], encoding="utf-8").read()
+m = re.search(r"\n```markdown\n(.*?\n)```\n", doc, re.S)
+if not m:
+    sys.exit("no ```markdown template block")
+shown = m.group(1)
+head, sep, body = shown.partition("\n---\n")          # the front matter is YAML: no escapes
+text = head + sep + re.sub(r"(?<!\\)<", r"\\<", body)
+data, _ = packspec.loads(text, "md", "the template")
+problems = packspec.roundtrip_problems(data, "the template")
+if packspec.dump(data) != text:
+    problems.append("the template is not in the canonical form (packspec.py check names the lines)")
+carried = set()
+def walk(v):
+    if isinstance(v, dict):
+        carried.update(k for k in v if isinstance(k, str))
+        for x in v.values():
+            walk(x)
+    elif isinstance(v, list):
+        for x in v:
+            walk(x)
+walk(data)
+contract = doc[m.end():]
+spans = re.findall(r"`([^`]+)`", contract)
+named = lambda k: any(re.search(r"(^|[^A-Za-z0-9_])%s($|[^A-Za-z0-9_])" % re.escape(k), s) for s in spans)
+missing = sorted({"%s.%s" % (p, k) if p else k for p, fields in packspec.SCHEMA.items()
+                  for k in fields if k not in carried and not named(k)})
+if missing:
+    problems.append("keys neither in the template nor in the contract: " + ", ".join(missing))
+print("; ".join(problems) or "canonical; every key documented")
+sys.exit(1 if problems else 0)' "$TOOLS" "$REPO/shared/schema/pack-spec.md"
+
+# Four slips a hand edit makes, each named on its own line: a row with a cell missing, an
+# unknown section, a `|` inside a cell not written `\|`, a price that does not read.
+STRICT="$WORK/strict"
+mkdir -p "$STRICT"
+"$PY" - "$TOOLS" "$VALID" "$STRICT" <<'PYSTRICT'
+import sys
+sys.path.insert(0, sys.argv[1])
+import packspec
+data, _ = packspec.load(sys.argv[2])
+out = sys.argv[3]
+lines = packspec.dump(data).split("\n")
+at = lambda prefix: next(i for i, ln in enumerate(lines) if ln.startswith(prefix))
+cases = []
+def write(name, new, line):
+    open("%s/%s.md" % (out, name), "w", encoding="utf-8").write("\n".join(new))
+    cases.append("%s %d" % (name, line))
+row = at("| oci-gpu-instances |")
+cut = lines[row][:lines[row].rstrip("|").rstrip().rfind("|")].rstrip() + " |"
+write("missing-cell", lines[:row] + [cut] + lines[row + 1:], row + 1)
+head = at("## Workflow")
+write("unknown-heading", lines[:head] + ["## Timeline", ""] + lines[head:], head + 1)
+write("unescaped-pipe", lines[:row] + [lines[row].replace("Runs the optimization engine",
+                                                         "Runs the | engine")] + lines[row + 1:], row + 1)
+price = at("- **Services price:** €90K")
+write("malformed-money", lines[:price] + [lines[price].replace("€90K", "€90Q")] + lines[price + 1:], price + 1)
+open(out + "/lines.txt", "w").write("\n".join(cases) + "\n")
+print("wrote %d broken Markdown specs" % len(cases))
+PYSTRICT
+[ $? -eq 0 ] || { say "run_tests: could not write the broken Markdown specs"; exit 2; }
+for name in missing-cell unknown-heading unescaped-pipe malformed-money; do
+  line="$(sed -n "s/^$name //p" "$STRICT/lines.txt")"
+  run_case "packspec check: a $name fails" 1 "$PY" "$PACKSPEC" check "$STRICT/$name.md"
+  expect "$name" "$name.md:$line:"
+  case "$name" in
+    unknown-heading) expect "the unknown heading" "unknown section \`## Timeline\`" ;;
+    missing-cell|unescaped-pipe) expect "$name" "cells and the header" ;;
+    malformed-money) expect "$name" "is not a price" ;;
+  esac
+done
+line="$(sed -n "s/^malformed-money //p" "$STRICT/lines.txt")"
+run_case "lint_spec: a spec that does not parse is a finding on its line" 1 \
+  "$PY" "$TOOLS/lint_spec.py" "$STRICT/malformed-money.md" --catalog "$CAT" --roadmap "$ROAD"
+expect "the parse finding" "malformed-money.md:$line: SPEC029" "is not a price"
+
+# The command line, on a clean copy of the valid fixture: convert writes only an exact round
+# trip; check is clean on what the writer wrote; set re-renders through the writer, takes a
+# typed key in its own syntax and sets the sibling source; get prints JSON.
+CLI="$WORK/cli"
+mkdir -p "$CLI"
+"$PY" - "$TOOLS" "$VALID" "$CLI/source.yaml" <<'PYCLI'
+import sys, yaml
+sys.path.insert(0, sys.argv[1])
+import packspec
+data, _ = packspec.load(sys.argv[2])
+data["workflow"]["inputs"] = [{"system": "Oracle Fusion Field Service",
+                               "data": "work orders, technicians, zones"}]
+yaml.safe_dump(data, open(sys.argv[3], "w", encoding="utf-8"), sort_keys=False, allow_unicode=True)
+print("wrote a clean YAML copy of the valid fixture")
+PYCLI
+run_case "convert writes Markdown from YAML" 0 \
+  "$PY" "$PACKSPEC" convert "$CLI/source.yaml" --out "$CLI/pack-spec.md"
+expect "convert" "the round trip is exact"
+run_case "check is clean on what the writer wrote" 0 "$PY" "$PACKSPEC" check "$CLI/pack-spec.md"
+run_case "get prints a value as JSON" 0 "$PY" "$PACKSPEC" get "$CLI/pack-spec.md" meta.slug
+expect "get" '"workforce-optimization"'
+run_case "set takes a price in its own syntax" 0 \
+  "$PY" "$PACKSPEC" set "$CLI/pack-spec.md" "packages.tiers[pov].services_price" "€95K · indicative"
+run_case "and get reads it back as data" 0 \
+  "$PY" "$PACKSPEC" get "$CLI/pack-spec.md" "packages.tiers[0].services_price"
+expect "the price" '"value": 95000' '"currency": "EUR"' '"status": "indicative"'
+run_case "set --source sets the sibling source" 0 \
+  "$PY" "$PACKSPEC" set "$CLI/pack-spec.md" one_liner.short "Plan the week in minutes." \
+  --source user:2026-09-24
+run_case "the source is set" 0 "$PY" "$PACKSPEC" get "$CLI/pack-spec.md" one_liner.source
+expect "the source" '"user:2026-09-24"'
+run_case "set --source on the name sets meta.name_source" 0 \
+  "$PY" "$PACKSPEC" set "$CLI/pack-spec.md" meta.name "Workforce Optimization" \
+  --source user:2026-09-25
+run_case "the name's source is set" 0 "$PY" "$PACKSPEC" get "$CLI/pack-spec.md" meta.name_source
+expect "the name's source" '"user:2026-09-25"'
+run_case "set refuses a malformed price" 1 \
+  "$PY" "$PACKSPEC" set "$CLI/pack-spec.md" "packages.tiers[0].services_price" "€95Q · indicative"
+expect "the refused price" "is not a price"
+run_case "the file is still canonical after the sets" 0 "$PY" "$PACKSPEC" check "$CLI/pack-spec.md"
+run_case "set writes Markdown specs only" 2 \
+  "$PY" "$PACKSPEC" set "$CLI/source.yaml" meta.status draft
+# A new pack's spec starts with its first value: set creates the file, and only there.
+mkdir -p "$CLI/new-pack"
+run_case "the first set creates a new spec" 0 \
+  "$PY" "$PACKSPEC" set "$CLI/new-pack/pack-spec.md" meta.slug new-pack
+expect "the new spec" "(a new spec)"
+run_case "and the next one adds to it, with its source" 0 \
+  "$PY" "$PACKSPEC" set "$CLI/new-pack/pack-spec.md" one_liner.full \
+  "Plan the week in minutes." --source user:2026-09-24
+run_case "the new spec is canonical" 0 "$PY" "$PACKSPEC" check "$CLI/new-pack/pack-spec.md"
+run_case "no spec is started in a folder that does not exist" 2 \
+  "$PY" "$PACKSPEC" set "$CLI/no-such-folder/pack-spec.md" meta.slug nowhere
+run_case "nor beside a YAML spec, which is converted instead" 2 \
+  "$PY" "$PACKSPEC" set "$CLI/source.md" meta.slug demo
+expect "the refusal beside YAML" "convert it instead"
+run_case "a YAML spec still loads, for one release" 0 \
+  "$PY" "$PACKSPEC" get "$CLI/source.yaml" meta.slug
+expect "the YAML notice" "is a YAML spec, still read for one release" "packspec.py convert"
+run_case "and says so in one line" 0 \
+  test "$(printf '%s\n' "$LAST" | grep -c 'still read for one release')" -eq 1
+"$PY" -c 'import sys
+text = open(sys.argv[1], encoding="utf-8").read()
+open(sys.argv[2], "w", encoding="utf-8").write(text.replace("\n## Workflow\n", "\n\n\n## Workflow\n"))' \
+  "$CLI/pack-spec.md" "$CLI/spaced.md"
+run_case "check names a line that is not canonical" 1 "$PY" "$PACKSPEC" check "$CLI/spaced.md"
+expect "not canonical" "not canonical"
+"$PY" - "$TOOLS" "$CLI/pack-spec.md" "$CLI/unknown.md" <<'PYUNKNOWN'
+import sys
+sys.path.insert(0, sys.argv[1])
+import packspec
+data, _ = packspec.load(sys.argv[2])
+data["architecture"]["outputs"] = [{"system": "BI", "data": "KPIs per plan", "technicians": None}]
+data["verticals"][0]["zones"] = None
+data["packages"]["tiers"][1]["weeks"] = "12"
+data["kpis"][0]["approve"] = None
+open(sys.argv[3], "w", encoding="utf-8").write(packspec.dump(data))
+print("wrote a spec with keys the layout does not know")
+PYUNKNOWN
+run_case "check names each key the layout does not know" 1 "$PY" "$PACKSPEC" check "$CLI/unknown.md"
+expect "the unknown keys" "architecture.outputs[0].technicians" "verticals[0].zones" \
+  "packages.tiers[1].weeks" "kpis[0].approve"
+run_case "SPEC024 names them in every record list (a warning)" 0 \
+  "$PY" "$TOOLS/lint_spec.py" "$CLI/unknown.md" --catalog "$CAT" --roadmap "$ROAD"
+expect "SPEC024" "SPEC024 architecture.outputs[0]" "SPEC024 verticals[0]" \
+  "SPEC024 packages.tiers[1]" "SPEC024 kpis[0]"
+cp "$CLI/source.yaml" "$CLI/pack-spec.yaml"
+run_case "two specs for one pack in one folder are refused" 1 \
+  "$PY" "$PACKSPEC" get "$CLI/pack-spec.md" meta.slug
+expect "the twins" "two specs for one pack"
+rm -f "$CLI/pack-spec.yaml"
+
+# The visuals tool records a picture through the same writer: the key lands, the file stays
+# canonical, and a YAML spec is refused before any file is copied. The decisions log goes to
+# a work folder under $WORK, never ~/oracle-packs.
+say ""
+say "apply_choice.py — a picture recorded through the writer"
+AC="$WORK/ac"
+mkdir -p "$AC/demo-pack" "$AC/yaml-pack"
+cp "$CLI/pack-spec.md" "$AC/demo-pack/pack-spec.md"      # the clean copy the CLI tests wrote
+cp "$CLI/source.yaml" "$AC/yaml-pack/pack-spec.yaml"
+LOGO_FILE="$REPO/plugins/oracle-packs/skills/feature-list/assets/softserve-wordmark-ink.png"
+run_case "a supplied logo is recorded" 0 \
+  env ORACLE_PACKS_OUT="$WORK/ac-out" "$PY" "$VISUALS_TOOLS/apply_choice.py" \
+  "$AC/demo-pack/pack-spec.md" --slot customer_logo --file "$LOGO_FILE"
+run_case "its key is in the spec" 0 \
+  "$PY" "$PACKSPEC" get "$AC/demo-pack/pack-spec.md" deck.images.customer_logo.file
+expect "the recorded logo" '"visuals/'
+run_case "and the spec is still canonical" 0 "$PY" "$PACKSPEC" check "$AC/demo-pack/pack-spec.md"
+run_case "a YAML spec is refused" 1 \
+  env ORACLE_PACKS_OUT="$WORK/ac-out" "$PY" "$VISUALS_TOOLS/apply_choice.py" \
+  "$AC/yaml-pack/pack-spec.yaml" --slot customer_logo --file "$LOGO_FILE"
+expect "the refusal" "packspec.py convert" "nothing was written"
+run_case "before anything was copied" 1 test -e "$AC/yaml-pack/visuals"
 
 # -------------------------------------------------------------- lint_artifact
 say ""
@@ -463,25 +713,29 @@ run_case "an absent component is not a finding" 0 \
 expect "absent components" "–"
 
 run_case "a missing spec is a usage error" 2 \
-  "$PY" "$TOOLS/check_consistency.py" "$WORK/not-here.yaml" "$WORK/artifact-clean.md"
+  "$PY" "$TOOLS/check_consistency.py" "$WORK/not-here.md" "$WORK/artifact-clean.md"
 
 # CON003 reads a week figure as a tier duration. A planned next step and the source
 # engagement's own length are not tier claims: the DHL executive summary's next step
 # "Run the contracted 12 weeks … engagement" failed it although no tier said 12
 # (2026-09-23). They pass; a wrong tier duration still fails, and so does the
 # engagement's length printed against a tier — the drift the check exists for.
-"$PY" - "$VALID" "$WORK" <<'PYWEEKS'
-import sys, yaml
+"$PY" - "$VALID" "$WORK" "$TOOLS" <<'PYWEEKS'
+import sys
 src, work = sys.argv[1], sys.argv[2]
-spec = yaml.safe_load(open(src, encoding="utf-8"))
+sys.path.insert(0, sys.argv[3])
+import packspec
+spec = packspec.load(src)[0]
 spec["meta"]["source_engagement"]["delivered"] = (
     "PoC over 10 weeks, Jun 2026, zone and technician allocation on field-service data")
 spec["exec_summary"] = {"next_steps": [
     {"title": "Repeat the proof of value in a second region",
      "detail": "the same 10 weeks, on that region's own data"},
     "Hold the partner readout within 2 weeks of the go / no-go"]}
-yaml.safe_dump(spec, open(work + "/pack-spec.engagement-weeks.yaml", "w", encoding="utf-8"),
-               sort_keys=False, allow_unicode=True)
+problems = packspec.roundtrip_problems(spec)
+if problems:
+    sys.exit(problems[0])
+open(work + "/pack-spec.engagement-weeks.md", "w", encoding="utf-8").write(packspec.dump(spec))
 print("generated the engagement-weeks variant")
 PYWEEKS
 cat > "$WORK/weeks-engagement.md" <<'EOF'
@@ -500,7 +754,7 @@ EOF
 cat > "$WORK/weeks-engagement-on-a-tier.md" <<'EOF'
 PoV Jumpstart runs 10 weeks, as the first engagement did.
 EOF
-WEEKS_SPEC="$WORK/pack-spec.engagement-weeks.yaml"
+WEEKS_SPEC="$WORK/pack-spec.engagement-weeks.md"
 run_case "the engagement's weeks in a next step and an engagement line pass" 0 \
   "$PY" "$TOOLS/check_consistency.py" "$WEEKS_SPEC" "$WORK/weeks-engagement.md"
 expect_absent "next-step and engagement weeks" CON003
@@ -519,37 +773,45 @@ expect "the engagement's length on a tier" CON003 "10 weeks"
 say ""
 say "build_diagram.py / diagram_to_site.py / check_diagram.py"
 REPO="$(cd "$TESTS/../../.." && pwd)"
-DECK_FIX="$REPO/plugins/oracle-packs/skills/deck/tests/fixture-pack-spec.yaml"
+DECK_FIX="$REPO/plugins/oracle-packs/skills/deck/tests/fixture-pack-spec.md"
 if [ ! -f "$DECK_FIX" ]; then
   bad "the deck fixture is missing: $DECK_FIX"
 else
   mkdir -p "$WORK/pack"
   # The one-pager's capability matrix needs an explicit level per row; the deck fixture
   # carries prose, so the shared copy these renderers build from gets the levels added.
-  "$PY" - "$DECK_FIX" "$WORK/pack/pack-spec.yaml" <<'EOF'
-import re, sys
-out = []
-for line in open(sys.argv[1], encoding="utf-8"):
-    out.append(line)
-    m = re.match(r"^(\s*)- area: ", line)
-    if m:
-        out.append(m.group(1) + "  levels: {pov: partial, integration: included, scaling: advanced}\n")
-open(sys.argv[2], "w", encoding="utf-8").writelines(out)
+  # The same copy with its first source's data emptied is the no-edge variant below.
+  "$PY" - "$TOOLS" "$DECK_FIX" "$WORK/pack/pack-spec.md" "$WORK/no-edge/pack-spec.md" <<'EOF'
+import os, sys
+sys.path.insert(0, sys.argv[1])
+import packspec
+spec, _ = packspec.load(sys.argv[2])
+for row in spec["packages"]["capability_handling"]:
+    row["levels"] = {"pov": "partial", "integration": "included", "scaling": "advanced"}
+
+def write(data, path):
+    problems = packspec.roundtrip_problems(data, path)
+    if problems:
+        sys.exit("%s: %s" % (path, problems[0]))
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    open(path, "w", encoding="utf-8").write(packspec.dump(data))
+
+write(spec, sys.argv[3])
+spec["architecture"]["inputs"][0]["data"] = ""     # a source whose arrow says nothing
+write(spec, sys.argv[4])
 EOF
 
   run_case "the fixture's architecture model is valid" 0 \
-    "$PY" "$TOOLS/build_diagram.py" "$WORK/pack/pack-spec.yaml" --check
+    "$PY" "$TOOLS/build_diagram.py" "$WORK/pack/pack-spec.md" --check
   expect "the model" "Workforce optimization by SoftServe" "NVIDIA cuOpt" "Reviewer approves"
 
-  "$PY" "$TOOLS/build_diagram.py" "$WORK/pack/pack-spec.yaml" \
+  "$PY" "$TOOLS/build_diagram.py" "$WORK/pack/pack-spec.md" \
         --out "$WORK/pack/architecture.json" >/dev/null 2>&1
   MODEL="$WORK/pack/architecture.json"
 
   # a source whose arrow says nothing is not a diagram the model will hand over
-  sed 's|^      data: technicians, availability, bookings, default allocations|      data: ""|' \
-      "$WORK/pack/pack-spec.yaml" > "$WORK/pack-spec.no-edge.yaml"
   run_case "a source with no edge fails the model" 1 \
-    "$PY" "$TOOLS/build_diagram.py" "$WORK/pack-spec.no-edge.yaml" --check
+    "$PY" "$TOOLS/build_diagram.py" "$WORK/no-edge/pack-spec.md" --check
   expect "a source with no edge" "has no edge"
 
   # the site figure, generated from the model and wrapped as diagrams.js is
@@ -562,7 +824,7 @@ EOF
 
   # the one-pager's strip (HTML only: the PDF step needs Chrome, the picture does not)
   "$PY" "$REPO/plugins/oracle-packs/skills/one-pager/tools/build_one_pager.py" \
-        "$WORK/pack/pack-spec.yaml" --out "$WORK/op" --no-pdf >/dev/null 2>&1
+        "$WORK/pack/pack-spec.md" --out "$WORK/op" --no-pdf >/dev/null 2>&1
   OP="$WORK/op/workforce-optimization-one-pager-partner_print.html"
   if [ -f "$OP" ]; then
     run_case "the one-pager's strip draws the model" 0 \
@@ -575,7 +837,7 @@ EOF
   DECK=""
   if "$PY" -c "import pptx" >/dev/null 2>&1; then
     "$PY" "$REPO/plugins/oracle-packs/skills/deck/tools/build_deck_v2.py" \
-          "$WORK/pack/pack-spec.yaml" --out "$WORK/deck" >/dev/null 2>&1
+          "$WORK/pack/pack-spec.md" --out "$WORK/deck" >/dev/null 2>&1
     DECK="$WORK/deck/workforce-optimization-sales-deck.pptx"
     if [ -f "$DECK" ]; then
       run_case "the deck's architecture slide draws the model" 0 \
@@ -932,7 +1194,7 @@ if ! command -v git >/dev/null 2>&1 || \
   say "  (skipped: $REPO is not a git checkout)"
 else
   P="packs/zz-layout-check"
-  for shared in "$P/pack-spec.yaml" "$P/architecture.json" "$P/visuals/today-A.jpg"; do
+  for shared in "$P/pack-spec.md" "$P/pack-spec.yaml" "$P/architecture.json" "$P/visuals/today-A.jpg"; do
     run_case "$shared is kept in the repo" 1 git -C "$REPO" check-ignore -q "$shared"
   done
   for local_only in "$P/intake.md" "$P/inventory.md" "$P/inventory/E1-scope.md" \
@@ -954,7 +1216,7 @@ run_case "the spec in the checkout, the work in ORACLE_PACKS_OUT" 0 \
   "$PY" -c 'import json, os, sys
 got, fake, out = json.loads(sys.argv[1]), sys.argv[2], sys.argv[3]
 want = {"spec_dir": os.path.join(fake, "packs", "demo-pack"),
-        "spec": os.path.join(fake, "packs", "demo-pack", "pack-spec.yaml"),
+        "spec": os.path.join(fake, "packs", "demo-pack", "pack-spec.md"),
         "work": os.path.join(out, "demo-pack"),
         "artifacts": os.path.join(out, "demo-pack", "artifacts")}
 off = {k: got.get(k) for k, v in want.items()
@@ -967,10 +1229,22 @@ run_case "--create made the spec folder" 0 test -d "$FAKE/packs/demo-pack"
 run_case "--create made the work folder" 0 test -d "$WORK/out/demo-pack"
 run_case "--create made the artifacts folder" 0 test -d "$WORK/out/demo-pack/artifacts"
 run_case "and nothing else in the repo" 0 test -z "$(ls -A "$FAKE/packs/demo-pack")"
-cp "$VALID" "$FAKE/packs/demo-pack/pack-spec.yaml"
+cp "$VALID" "$FAKE/packs/demo-pack/pack-spec.md"
 run_case "an existing spec" 0 \
   env ORACLE_PACKS_OUT="$WORK/out" "$PY" "$TOOLS/pack_paths.py" demo-pack --repo "$FAKE"
 expect "an existing spec" "spec_exists=true" "spec_sha=" "spec_commit=" "spec_dirty="
+# For one release a pack whose only spec is still pack-spec.yaml is found; where both
+# files stand, the Markdown one is named, and the refusal to read the pair is said.
+mkdir -p "$FAKE/packs/yaml-pack"
+cp "$CLI/source.yaml" "$FAKE/packs/yaml-pack/pack-spec.yaml"
+run_case "a pack with only pack-spec.yaml still resolves" 0 \
+  env ORACLE_PACKS_OUT="$WORK/out" "$PY" "$TOOLS/pack_paths.py" yaml-pack --repo "$FAKE" --json
+expect "the YAML spec" "yaml-pack/pack-spec.yaml" '"spec_exists": true'
+expect_absent "the YAML spec" '"spec_sha": "none"'
+cp "$VALID" "$FAKE/packs/yaml-pack/pack-spec.md"
+run_case "with both files, the Markdown spec is the one named" 0 \
+  env ORACLE_PACKS_OUT="$WORK/out" "$PY" "$TOOLS/pack_paths.py" yaml-pack --repo "$FAKE" --json
+expect "both files" 'yaml-pack/pack-spec.md"' '"spec_sha": "none"' "two specs for one pack"
 run_case "ORACLE_PACKS_ROOT names the checkout" 0 \
   env ORACLE_PACKS_ROOT="$FAKE" ORACLE_PACKS_OUT="$WORK/out" "$PY" "$TOOLS/pack_paths.py" demo-pack
 expect "ORACLE_PACKS_ROOT" "fake-checkout/packs/demo-pack"
@@ -997,17 +1271,33 @@ expect "the bad slug" "is not a pack slug"
 say ""
 say "spec_stamp.py, CON006 and CON007"
 STAMP_DIR="$WORK/stamp"
-STAMP_SPEC="$STAMP_DIR/pack-spec.yaml"
+STAMP_SPEC="$STAMP_DIR/pack-spec.md"
 mkdir -p "$STAMP_DIR"
 cp "$VALID" "$STAMP_SPEC"
-run_case "stamp() names the spec's sha and its commit" 0 \
-  "$PY" -c 'import hashlib, re, sys
+run_case "stamp() names the sha of the spec's data and its commit" 0 \
+  "$PY" -c 'import hashlib, json, re, sys
 sys.path.insert(0, sys.argv[1])
-import spec_stamp
+import packspec, spec_stamp
 s = spec_stamp.stamp(sys.argv[2])
 print(s)
-sha = hashlib.sha256(open(sys.argv[2], "rb").read()).hexdigest()[:12]
+data = packspec.load(sys.argv[2])[0]
+sha = hashlib.sha256(json.dumps(data, sort_keys=True, default=str).encode("utf-8")).hexdigest()[:12]
 sys.exit(0 if re.fullmatch(r"pack-spec sha256:%s commit:\S+" % sha, s) else 1)' "$TOOLS" "$STAMP_SPEC"
+# The same data written as YAML (its own folder: one folder may not hold both) has the same
+# sha, so converting a pack never marks its built artifacts stale.
+mkdir -p "$STAMP_DIR/as-yaml"
+"$PY" -c 'import sys, yaml
+sys.path.insert(0, sys.argv[1])
+import packspec
+yaml.safe_dump(packspec.load(sys.argv[2])[0], open(sys.argv[3], "w", encoding="utf-8"),
+               sort_keys=False, allow_unicode=True)' "$TOOLS" "$STAMP_SPEC" "$STAMP_DIR/as-yaml/pack-spec.yaml"
+run_case "the same data in YAML has the same sha" 0 \
+  "$PY" -c 'import sys
+sys.path.insert(0, sys.argv[1])
+import spec_stamp
+a, b = spec_stamp.spec_sha(sys.argv[2]), spec_stamp.spec_sha(sys.argv[3])
+print(a, b)
+sys.exit(0 if a == b else 1)' "$TOOLS" "$STAMP_SPEC" "$STAMP_DIR/as-yaml/pack-spec.yaml"
 run_case "a stamped and an unstamped .docx are written" 0 \
   "$PY" -c 'import sys
 sys.path.insert(0, sys.argv[1])
@@ -1025,7 +1315,16 @@ run_case "a file built from this spec" 0 \
 expect_absent "the current stamp" CON006 CON007
 run_case "spec_stamp.py reads the stamp back" 0 "$PY" "$TOOLS/spec_stamp.py" "$STAMP_DIR/stamped.docx"
 expect "the stamp read back" "pack-spec sha256:"
-printf '# edited after the build\n' >> "$STAMP_SPEC"
+# A whitespace-only edit — blank lines a hand edit leaves — changes the bytes, not the data.
+"$PY" -c 'import sys
+path = sys.argv[1]
+text = open(path, encoding="utf-8").read()
+open(path, "w", encoding="utf-8").write(text.replace("\n## Workflow\n", "\n\n\n## Workflow\n"))' "$STAMP_SPEC"
+run_case "a whitespace-only edit does not mark the file stale" 0 \
+  "$PY" "$TOOLS/check_consistency.py" "$STAMP_SPEC" "$STAMP_DIR/stamped.docx"
+expect_absent "the whitespace edit" CON006
+run_case "the spec is edited after the build" 0 \
+  "$PY" "$PACKSPEC" set "$STAMP_SPEC" meta.status draft
 run_case "the spec moved on after the build: a warning, not a failure" 0 \
   "$PY" "$TOOLS/check_consistency.py" "$STAMP_SPEC" "$STAMP_DIR/stamped.docx"
 expect "an earlier spec" CON006 "rebuild before sending"

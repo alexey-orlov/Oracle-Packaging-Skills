@@ -1,6 +1,6 @@
 ---
 name: visuals
-description: Choose the pack's pictures with the owner — one icon per industry, the two photographs for the today → tomorrow slide, and the delivered customer's logo where their name is cleared — from openly licensed sources only, the logo excepted: that one the owner supplies. Records where each came from and writes the choices into the pack for the deck, the one-pager and the site. Use on /oracle-packs:visuals <pack-spec.yaml>, "pick the pictures for <pack>", "find icons for the industries", "we need photos for the before-and-after slide", "add the customer's logo", or as the step before the sales deck in /oracle-packs:build.
+description: Choose the pack's pictures with the owner — one icon per industry, the two photographs for the today → tomorrow slide, and the delivered customer's logo where their name is cleared — from openly licensed sources only, the logo excepted: that one the owner supplies. Records where each came from and writes the choices into the pack for the deck, the one-pager and the site. Use on /oracle-packs:visuals <pack-spec.md>, "pick the pictures for <pack>", "find icons for the industries", "we need photos for the before-and-after slide", "add the customer's logo", or as the step before the sales deck in /oracle-packs:build.
 disable-model-invocation: false
 user-invocable: true
 ---
@@ -17,7 +17,7 @@ This step searches openly licensed sources, puts three candidates per picture in
 
 ## Preconditions and inputs
 
-- A confirmed, lint-clean `pack-spec.yaml` (`shared/tools/py shared/tools/lint_spec.py`). Otherwise stop and send the owner to `/oracle-packs:spec` — the industries and the problem/solution wording build the searches. The spec is the packaging-skills repo's: `shared/tools/py shared/tools/pack_paths.py <slug>` prints `<repo>` and `<work>`; `git -C <repo> pull --ff-only` before writing into it.
+- A confirmed, lint-clean `pack-spec.md` (`shared/tools/py shared/tools/lint_spec.py`). Otherwise stop and send the owner to `/oracle-packs:spec` — the industries and the problem/solution wording build the searches. The spec is the packaging-skills repo's: `shared/tools/py shared/tools/pack_paths.py <slug>` prints `<repo>` and `<work>`; `git -C <repo> pull --ff-only` before writing into it.
 - Dependencies: Python 3 with `pyyaml` and `Pillow` (`plugins/oracle-packs/requirements.txt`), plus an SVG renderer: `qlmanage` (on every Mac), else `rsvg-convert` or `cairosvg`. Check with `shared/tools/py --check`; tell the owner what to install if it fails, never install into system Python yourself.
 - **Say what is reachable before you start.** Run one search and read what the tool reports: which sources answered, which need a key. When a source that carries contemporary working-life pictures needs a key this machine has not got, say so *before* the first question.
 

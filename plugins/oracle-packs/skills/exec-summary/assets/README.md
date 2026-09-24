@@ -28,7 +28,7 @@ shared/tools/py --check
 ## Run it
 
 ```bash
-shared/tools/py tools/build_exec_summary.py <pack-spec.yaml> --out <dir> \
+shared/tools/py tools/build_exec_summary.py <pack-spec.md> --out <dir> \
         [--host-deck <deck.pptx>] [--with-closing] [--fit-report]
 shared/tools/py tools/build_exec_summary.py --help
 ```
@@ -45,7 +45,7 @@ shared/tools/py tools/build_exec_summary.py --help
 Smoke test:
 
 ```bash
-shared/tools/py tools/build_exec_summary.py ../deck/tests/fixture-pack-spec.yaml \
+shared/tools/py tools/build_exec_summary.py ../deck/tests/fixture-pack-spec.md \
         --out /tmp/es-smoke --fit-report
 ```
 

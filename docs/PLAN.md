@@ -8,7 +8,7 @@ Turn one delivered Oracle + NVIDIA AI engagement into a repeatable **accelerator
 
 | Order | Artifact | Skill | Plugin | Output |
 |---|---|---|---|---|
-| 0 | Pack spec (the spine) | `/oracle-packs:spec` | oracle-packs | `packs/<slug>/pack-spec.yaml` + research brief |
+| 0 | Pack spec (the spine) | `/oracle-packs:spec` | oracle-packs | `packs/<slug>/pack-spec.md` + research brief |
 | 1 | Feature list | `/oracle-packs:feature-list` | oracle-packs | `.docx` (Area > Category > Feature, ● ◐ ○, customization scope) |
 | 2 | Sales deck | `/oracle-packs:deck` | oracle-packs | `.pptx` on the SoftServe brand base, 10-slide anatomy |
 | 3 | Sales one-pager | `/oracle-packs:one-pager` | oracle-packs | HTML → one A4 PDF, the WfO anatomy |

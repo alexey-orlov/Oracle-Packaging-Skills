@@ -346,12 +346,36 @@ def die(msg: str, code: int = EXIT_USAGE) -> None:
     sys.exit(code)
 
 
+def packspec_module():
+    """The one spec loader, shared/tools/packspec.py: the plugin's synced copy, or the bundle's.
+
+    Imported here, on first use, so the tools that do not read a spec need no PyYAML."""
+    here = os.path.dirname(os.path.abspath(__file__))
+    parents = [here]
+    while os.path.dirname(parents[-1]) != parents[-1]:
+        parents.append(os.path.dirname(parents[-1]))
+    for up in range(3, 7):                  # tools/ -> skill/ -> skills/ -> plugin/ (and the bundle)
+        if len(parents) <= up:
+            break
+        shared = os.path.join(parents[up], "shared", "tools")
+        if os.path.isfile(os.path.join(shared, "packspec.py")):
+            if shared not in sys.path:
+                sys.path.insert(0, shared)
+            break
+    import packspec
+    return packspec
+
+
 def load_spec(path: str) -> dict:
-    import yaml  # imported here so the tools that do not read a spec need no PyYAML
-    with open(path, encoding="utf-8") as fh:
-        return yaml.safe_load(fh) or {}
+    """The spec's data, read through packspec.py. A spec that does not parse exits 1 with its line."""
+    packspec = packspec_module()
+    try:
+        data, _lines = packspec.load(path)
+    except packspec.SpecError as err:
+        die("the spec does not parse: %s" % err)
+    return data
 
 
 def pack_dir(spec_path: str) -> str:
-    """The pack folder is the spec's own folder — packs/<slug>/pack-spec.yaml."""
+    """The pack folder is the spec's own folder — packs/<slug>/pack-spec.md."""
     return os.path.dirname(os.path.abspath(spec_path))

@@ -13,7 +13,7 @@ Both files say which spec they were built from (shared/tools/spec_stamp.py): the
 page count.
 
 Usage
-    build_one_pager.py <pack-spec.yaml> --out <dir> [--channel partner_print|internal]
+    build_one_pager.py <pack-spec.md> --out <dir> [--channel partner_print|internal]
                        [--hero <image>] [--no-pdf]
 
 Exit codes
@@ -55,6 +55,12 @@ for _up in range(2, 6):                     # the spec stamp: the plugin's synce
         sys.path.insert(0, str(_shared))
         break
 import spec_stamp  # noqa: E402  (which spec the page was built from: the HTML's meta, the PDF's /PackSpec)
+for _up in range(2, 6):                     # the spec loader: the plugin's synced shared/tools, or the bundle's
+    _shared = HERE.parents[_up] / "shared" / "tools" if len(HERE.parents) > _up else None
+    if _shared is not None and (_shared / "packspec.py").is_file():
+        sys.path.insert(0, str(_shared))
+        break
+import packspec  # noqa: E402  (the one spec loader: every tool reads the spec through it)
 
 STAMP_META = re.compile(r"""<meta\b[^>]*\bname\s*=\s*["']pack-spec["']""", re.IGNORECASE)
 
@@ -292,7 +298,8 @@ def level_for(entry, tier_id, label):
         return "none"
     raise SpecError(
         f"packages.capability_handling[{label!r}].{tier_id} does not say which cell to draw. "
-        f"Give it a glyph prefix (◐ / ● / ●●), or add `levels: {{{tier_id}: partial|included|advanced|none}}`."
+        f"Give it a glyph prefix (◐ / ● / ●●), or set its level: packspec.py set <spec> "
+        f"\"packages.capability_handling[{label}].levels.{tier_id}\" partial|included|advanced|none."
     )
 
 
@@ -601,7 +608,7 @@ def architecture_model(spec, channel="partner_print"):
             module = importlib.util.module_from_spec(spec_mod)
             spec_mod.loader.exec_module(module)
             try:
-                return module.load_or_build(spec, SPEC_DIR / "pack-spec.yaml", channel=channel)
+                return module.load_or_build(spec, SPEC_DIR / "pack-spec.md", channel=channel)
             except module.DiagramError as err:
                 raise SpecError(f"the architecture picture cannot be drawn: {err}")
     return None
@@ -868,7 +875,7 @@ def main(argv=None) -> int:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="Exit codes: 0 ok | 1 spec error | 2 clearance violation | 3 more than one page | 4 no Chrome.",
     )
-    parser.add_argument("spec", type=Path, help="path to packs/<slug>/pack-spec.yaml")
+    parser.add_argument("spec", type=Path, help="path to packs/<slug>/pack-spec.md")
     parser.add_argument("--out", type=Path, required=True, help="output directory (created if missing)")
     parser.add_argument("--channel", choices=CHANNELS, default="partner_print",
                         help="naming, attribution and contact rules to apply (default: partner_print)")
@@ -885,7 +892,11 @@ def main(argv=None) -> int:
         print(f"build_one_pager: no such hero image: {args.hero}", file=sys.stderr)
         return 1
 
-    spec = yaml.safe_load(args.spec.read_text(encoding="utf-8")) or {}
+    try:
+        spec, _lines = packspec.load(args.spec)
+    except packspec.SpecError as err:
+        print(f"build_one_pager: the spec does not parse: {err}", file=sys.stderr)
+        return 1
 
     global SPEC_DIR
 

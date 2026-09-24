@@ -56,7 +56,7 @@ finds neither.
 
 ```sh
 shared/tools/py plugins/oracle-packs/skills/feature-list/tools/build_feature_list.py \
-    <repo>/packs/<slug>/pack-spec.yaml \
+    <repo>/packs/<slug>/pack-spec.md \
     --out <work>/artifacts
 ```
 
@@ -101,11 +101,14 @@ Both builders share one fixture, in the one-pager skill:
 
 ```sh
 shared/tools/py plugins/oracle-packs/skills/feature-list/tools/build_feature_list.py \
-    plugins/oracle-packs/skills/one-pager/tests/fixture-pack-spec.yaml --out /tmp/fl-check
+    plugins/oracle-packs/skills/one-pager/tests/fixture-pack-spec.md --out /tmp/fl-check
 ```
 
-It is an anonymized Workforce Optimization spec — no customer name, statuses arranged to exercise
-all three glyphs, and two features carrying notes so the footnote markers are exercised too.
+It is an anonymized Workforce Optimization spec and never ships as the real one — no customer
+name (every channel attributes to the anonymized descriptor), statuses arranged to exercise all
+three glyphs rather than the delivered pack's real ones, prices and figures kept from the July 2026
+reference artifacts only for realistic geometry, and two features carrying notes so the footnote
+markers are exercised too.
 Expected: 4 areas / 13 categories / 38 features, 19 available · 6 partial · 13 roadmap. At 38
 features it does not fit one row per feature, so it lands on compact mode at 7.5pt (about two
 thirds of the page) — itself a demonstration that 38 features is a tree past its size.
@@ -133,11 +136,11 @@ thirds of the page) — itself a demonstration that 38 features is a tree past i
    error that reaches a customer as a promise.
 8. **Reviewed by the owner** against the spec, then delivered.
 
-## A note on YAML
+## The capability table in the spec
 
-`capabilities[]` is long and is usually written in YAML flow style (`- { name: ..., status: ... }`).
-An **unquoted flow value containing a comma is silently truncated at the comma** — `name: Dispatcher
-UI (map, table views)` becomes `Dispatcher UI (map`, with no error, and a two-item `source:` list
-turns its second item into a junk key. Quote any value containing a comma, a colon or a brace. This
-bit the fixture during the build of this tool; `lint_spec.py` now warns (SPEC024) when a feature
-carries a key it does not recognize, which is how the damage usually shows itself.
+In `pack-spec.md` the capabilities are one table per area, a row per feature with its category
+first, and values go in through `shared/tools/packspec.py set` rather than by editing cells. A spec
+converted from YAML can still carry the old flow-style damage — an unquoted value split at its
+commas, so `name: Dispatcher UI (map, table views)` read as `Dispatcher UI (map` plus a junk key —
+which the Markdown shows as an extra column. It bit this tool's fixture while it was built;
+`lint_spec.py` warns (SPEC024) naming the key.

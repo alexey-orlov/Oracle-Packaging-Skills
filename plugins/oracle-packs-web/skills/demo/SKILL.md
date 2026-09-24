@@ -1,6 +1,6 @@
 ---
 name: demo
-description: Build the accelerator pack's interactive walkthrough (a static, self-contained guided demo) from a confirmed pack spec and the sources the user supplies — the real product's flow and screens, generalized to what the pack sells, on synthetic data, leading with the before → after value on the pack's own KPIs, with drill-down to the change behind each number and a manual override that recomputes. Use on /oracle-packs-web:demo <pack-spec.yaml>, "make the interactive demo for <pack>", "walkthrough for the mini-site", or as step 6 of /oracle-packs:build. Always asks for sources (video, screenshots, written overview or a detailed brief) before building.
+description: Build the accelerator pack's interactive walkthrough (a static, self-contained guided demo) from a confirmed pack spec and the sources the user supplies — the real product's flow and screens, generalized to what the pack sells, on synthetic data, leading with the before → after value on the pack's own KPIs, with drill-down to the change behind each number and a manual override that recomputes. Use on /oracle-packs-web:demo <pack-spec.md>, "make the interactive demo for <pack>", "walkthrough for the mini-site", or as step 6 of /oracle-packs:build. Always asks for sources (video, screenshots, written overview or a detailed brief) before building.
 disable-model-invocation: false
 user-invocable: true
 ---
@@ -13,7 +13,7 @@ user-invocable: true
 
 ## Preconditions
 
-- A confirmed, lint-clean `pack-spec.yaml`.
+- A confirmed, lint-clean `pack-spec.md`.
 - **Sources, asked first, always** (card: `sources`). Without at least one, stop and say why.
 - Node 22+ and a Chrome binary for the capture script; a local static server for QA. Check `node --version` and `CHROME_BIN` before planning around them; exit 3 from either is a deferred condition, never a result.
 

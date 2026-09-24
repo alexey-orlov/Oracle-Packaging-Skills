@@ -73,7 +73,7 @@ shared/tools/py $V/suggest_icons.py "Telecom & cable" --context "<the 'what matt
 shared/tools/py $V/fetch_icon.py antenna --out <work>/candidates/vertical-2 --slot vertical:2
 shared/tools/py $V/search_photos.py "control room" --out <work>/candidates/tomorrow --slot tomorrow --n 3
 shared/tools/py $V/contact_sheet.py <work>/candidates/tomorrow --out <work>/candidates/tomorrow.png --title "Today → tomorrow"
-shared/tools/py $V/apply_choice.py <repo>/packs/<slug>/pack-spec.yaml --slot tomorrow \
+shared/tools/py $V/apply_choice.py <repo>/packs/<slug>/pack-spec.md --slot tomorrow \
     --file <work>/candidates/tomorrow/tomorrow-A-....jpg --note "<the owner's reason>"
 ```
 
@@ -110,6 +110,7 @@ the standard library.
 2. **The owner chose each one**, from three candidates, looking at the contact sheet — which was
    opened beside the conversation *before* the question.
 3. **The spec still passes its checks** (`shared/tools/lint_spec.py`) and its diff shows only the
-   picture keys: `apply_choice.py` edits the file as text and refuses to save if anything else moved.
+   picture keys: `apply_choice.py` writes through the spec writer (`shared/tools/packspec.py`),
+   which re-renders the file only when its round trip is exact, and refuses a YAML spec.
 4. **Slots with no choice are named as open**, and the deck draws an empty container for them —
    never a stand-in, never a numeral.
