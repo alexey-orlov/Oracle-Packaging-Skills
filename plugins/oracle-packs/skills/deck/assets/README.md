@@ -6,14 +6,13 @@
 |---|---|
 | `exemplar/wfo-sales-deck.pptx` | **the exemplar** — the reference Workforce Optimization sales deck, 15 MB, 10 slides. The deck is built by filling *its* slides. Read-only: the builder works on an in-memory copy and the file is never edited. |
 | `exemplar/slots.json` | semantic slot → shape id on each exemplar slide, with the exemplar's SHA-256. Re-derive it if the exemplar is ever replaced. |
-| `softserve-deck-base.pptx` | 41 KB single-slide SoftServe shell (master, theme, logo, one layout). Only the legacy builder uses it. |
+| `softserve-deck-base.pptx` | 41 KB single-slide SoftServe shell (master, theme, logo, one layout). The executive summary builds on it when no host deck is given. |
 | `../references/exemplar-builder.md` | how the filling works, how every ambiguous shape was resolved, and where the builder does compute a number |
 | `../references/deck-anatomy.md` | the 10-slide anatomy: purpose, components, which exemplar slide, what varies, what is removed, word budgets |
 | `../references/brand-tokens.md` | colours, fonts + fallbacks, the base's layouts, the text-fit rule |
 | `../references/reference-geometry.json` | the exemplar measured — per slide the rounded-shape and picture counts, fonts and sizes, the cover block, the icon and picture slots, the table type floors. What `lint_deck.py` holds a build to. |
 | `../tools/build_deck_v2.py` | **the builder** |
 | `../tools/exemplar.py` | the filling helpers (open, arrange, duplicate, fill, clone, connectors) |
-| `../tools/build_deck.py` | the legacy builder — redraws on the 41 KB shell, for a machine without the exemplar |
 | `../tools/lint_deck.py` | the deck linter — run it before anyone sees the deck |
 | `../tools/deckkit.py` | shared primitives (brand tokens, shapes, spec access, fit estimator) |
 | `../tools/render_probe.sh` | what can render a .pptx on this machine, and how |
@@ -82,27 +81,10 @@ Tests:
 
 ```bash
 PY=shared/tools/py tests/test_lint_deck.sh       # the four linter verdicts
-shared/tools/py tests/test_build_deck_v2.py      # both specs, 49 assertions
+shared/tools/py tests/test_build_deck_v2.py      # both specs, 66 checks
 ```
 
 Output: `<dir>/<slug>-sales-deck.pptx`, 10 slides.
-
-## The legacy builder
-
-```bash
-shared/tools/py tools/build_deck.py <pack-spec.md> --out <dir> [--channel …] [--base <pptx>]
-```
-
-It redraws every slide on `softserve-deck-base.pptx` from measurements. Use it
-only where the exemplar is not available — an install that stripped the 15 MB
-asset, or a machine building from the base alone. It produces the same anatomy,
-but it re-derives hundreds of design decisions that the exemplar otherwise
-supplies for free, and every fidelity finding in `docs/DECK-FIDELITY.md` came
-from exactly that. The shell carries no photo layout, so its cover is ink only
-and **fails the deck linter's cover check by design**; `lint_deck.py
---legacy-cover-ok` demotes that one failure to a loud warning so the rest can
-still be checked, and such a deck is never delivered as final — set
-`deck.images.cover`, or build with the exemplar builder.
 
 ## What "done" means
 

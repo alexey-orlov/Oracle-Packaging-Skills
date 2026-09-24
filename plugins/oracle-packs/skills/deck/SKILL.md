@@ -60,7 +60,6 @@ Fit report clean, deck linter clean, contact sheet reviewed, the diagram check c
 - [ ] Slide 8 draws the pack's reviewed architecture model, and `check_diagram.py` says so — no second review of the picture here.
 - [ ] The architecture was put to the owner in plain sentences — every box, every arrow — not as "see slide 8".
 - [ ] Every industry card carries a picture; any that kept a stand-in is named for the owner to choose one.
-- [ ] The cover carries the family's picture — the linter's cover check passed on its own, without `--legacy-cover-ok`.
-- [ ] A deck redrawn by the legacy builder said so in the review pack, and was not handed over as final with an ink-only cover.
+- [ ] The cover carries the family's picture — the linter's cover check passed.
 - [ ] Every message, question, option and table passed the reader's test: no method codes, no file or key names, no packaging vocabulary as vocabulary, reasons instead of rule names.
 - [ ] Everything the owner reviewed was opened beside the conversation before the question was asked.

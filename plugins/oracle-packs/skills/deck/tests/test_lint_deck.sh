@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Tests for lint_deck.py and the two deck builders.
+# Tests for lint_deck.py and the deck builder.
 #
 #   plugins/oracle-packs/skills/deck/tests/test_lint_deck.sh
 #   PY=.venv/bin/python plugins/oracle-packs/skills/deck/tests/test_lint_deck.sh
@@ -7,9 +7,8 @@
 #
 # The linter's budgets are measured from the exemplar deck, so the suite holds it
 # to these verdicts: clean on the exemplar itself (--reference), clean on the
-# exemplar builder's fixture deck, RED on the legacy builder's fixture deck (its
-# cover is ink only — the stripped base has no photo layout) and clean on that
-# same deck under --legacy-cover-ok, and red on a copy broken the five ways the
+# exemplar builder's fixture deck, RED on a copy whose cover lost its hero picture
+# (the ink-only cover the owner rejected), and red on a copy broken the five ways the
 # owner's review caught — the tier eyebrow back on the cover, the retired running
 # header, a numeral where an industry icon belongs, a card with rounded corners,
 # and a card pushed out of its ladder row. The proof slide gets its own pass: a
@@ -74,7 +73,6 @@ for d in "$SKILL/../../shared/tools" "$SKILL/../../../../shared/tools"; do
 done
 [ -n "$SHARED_TOOLS" ] || { say "test_lint_deck: shared/tools/packspec.py not found"; exit 2; }
 DECK="$WORK/v2/workforce-optimization-sales-deck.pptx"
-LEGACY="$WORK/v1/workforce-optimization-sales-deck.pptx"
 
 say ""
 say "the reference the budgets are measured from"
@@ -92,22 +90,22 @@ run_case "the built deck is clean" 0 \
 expect "the built deck" "the cover's hero"
 
 say ""
-say "build_deck.py (the legacy redrawing builder, for a machine without the exemplar)"
-run_case "the legacy fixture builds" 0 \
-  "$PY" "$SKILL/tools/build_deck.py" "$SPEC" --out "$WORK/v1" --channel partner_print
-# The stripped base carries no photo layout, so the legacy cover is ink only —
-# exactly the black cover the owner rejected. It must come back red on its own,
-# and pass only under the documented legacy flag.
-run_case "the legacy deck fails on the cover" 1 \
-  "$PY" "$SKILL/tools/lint_deck.py" "$LEGACY" --spec "$SPEC" --channel partner_print
-expect "the legacy deck" "the cover has no hero picture" \
-  "not the reference's \"Title-AI\" photo layout" \
-  "build with the exemplar builder"
-run_case "the legacy deck passes under --legacy-cover-ok" 0 \
-  "$PY" "$SKILL/tools/lint_deck.py" "$LEGACY" --spec "$SPEC" --channel partner_print \
-  --legacy-cover-ok
-expect "the legacy flag" "WARNING: the cover has no hero picture" \
-  "not deliverable as final"
+say "a cover with no hero picture"
+# The reference's cover layout carries the family's hero picture. A copy whose cover
+# has lost it is exactly the ink-only cover the owner rejected: it must come back red.
+"$PY" - "$DECK" "$WORK/no-hero.pptx" <<'PYNOHERO'
+import sys
+from pptx import Presentation
+prs = Presentation(sys.argv[1])
+cover = prs.slides[0]
+for sp in list(cover.slide_layout.shapes) + list(cover.shapes):
+    if sp.shape_type is not None and "PICTURE" in str(sp.shape_type):
+        sp._element.getparent().remove(sp._element)
+prs.save(sys.argv[2])
+PYNOHERO
+run_case "a cover with no hero fails" 1 \
+  "$PY" "$SKILL/tools/lint_deck.py" "$WORK/no-hero.pptx" --spec "$SPEC" --channel partner_print
+expect "the hero-less cover" "the cover has no hero picture" "build with the exemplar"
 
 # --- break it the four ways the owner's review caught ------------------------
 "$PY" - "$DECK" "$WORK/broken.pptx" <<'PYBREAK'

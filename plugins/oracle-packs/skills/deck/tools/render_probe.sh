@@ -172,5 +172,5 @@ EOF
 fi
 
 echo
-echo "Reminder: the fit report in build_deck.py is the text-overflow check."
+echo "Reminder: the builder's --fit-report is the text-overflow check."
 echo "A render proves layout and colour; it does not prove the brand font fits."

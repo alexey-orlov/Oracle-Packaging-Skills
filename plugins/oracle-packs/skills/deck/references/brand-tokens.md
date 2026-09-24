@@ -1,7 +1,7 @@
 # SoftServe deck brand tokens
 
-_Read by tools, not by the model. The measured constants `tools/build_deck.py`
-(the legacy redraw builder) and the executive-summary skill draw a slide with.
+_Read by tools, not by the model. The measured constants the executive-summary
+skill draws its slide with.
 The runtime card is `references/cards/render-qa.md`._
 
 Everything a builder needs to put a slide on the SoftServe EMEA master. Measured
@@ -21,8 +21,8 @@ and nothing has to be re-derived.
 **The sales deck no longer starts here.** `build_deck_v2.py` fills the exemplar
 deck (`assets/exemplar/wfo-sales-deck.pptx`), which brings its own master, theme,
 layouts — the dark `Title-AI` cover among them — and every geometry this page
-lists. The base is what the **legacy** builder (`build_deck.py`) and the
-executive-summary skill draw on, and what the tokens below are for.
+lists. The base is what the executive-summary skill draws on when no host deck is
+given, and what the tokens below are for.
 
 | Layout | Placeholders (idx) | Notes |
 |---|---|---|

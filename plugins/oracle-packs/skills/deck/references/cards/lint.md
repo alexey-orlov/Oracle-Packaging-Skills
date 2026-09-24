@@ -16,6 +16,4 @@
 
 **It must exit 0** before any render. Fix findings in the brief or the build, never by loosening the check or shrinking type below the floor.
 
-**The one flag, and what it is not.** `--legacy-cover-ok` serves only the legacy redrawing builder (`tools/build_deck.py`, when the exemplar is missing), turning the cover's hero and proof-slide composition checks into loud warnings. A deck that needed it is not final: set `deck.images.cover` or use the exemplar builder. Never use it on a normal build.
-
 **Reads:** the built .pptx and the spec. **Writes:** nothing.

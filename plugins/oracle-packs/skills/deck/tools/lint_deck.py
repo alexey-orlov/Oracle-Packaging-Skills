@@ -3,7 +3,6 @@
 
     lint_deck.py <deck.pptx> [--spec <pack-spec.md>] [--channel partner_print]
                  [--header "<running header>"] [--geometry <reference-geometry.json>]
-                 [--legacy-cover-ok]
     lint_deck.py <deck.pptx> --reference
 
 Mechanical checks only — the things that drift silently between builds and that
@@ -39,14 +38,6 @@ which are about a pack brief, not about geometry. The proof slide's labels and
 stat tiles are checked in reference mode too; the exemplar passes them by
 construction, as does the cover-hero check. It is the regression test that the
 budgets are still the reference's own.
-
-`--legacy-cover-ok` is the legacy redraw path's flag: it turns the two checks
-that path cannot pass — the cover's hero (check 4) and the proof slide's
-composition (check 8) — from failures into loud warnings. `tools/build_deck.py`
-redraws the deck on the stripped base, which carries no photo layout and no
-reference slide 5, so its cover is ink only and its proof slide is its own. A
-deck built that way is never delivered as final: set `deck.images.cover`, or
-build with the exemplar builder (`tools/build_deck_v2.py`).
 
 Exit 0 clean (warnings do not change the exit code) · 1 something failed · 2 the
 deck or the arguments cannot be read.
@@ -277,8 +268,7 @@ def expectations(spec_path, channel, header_arg):
 # the checks
 # ---------------------------------------------------------------------------
 
-def run_checks(deck_path, exp, geometry, reference: bool = False,
-               legacy_cover_ok: bool = False):
+def run_checks(deck_path, exp, geometry, reference: bool = False):
     from pptx import Presentation
     prs = Presentation(str(deck_path))
     slides = list(prs.slides)
@@ -373,12 +363,7 @@ def run_checks(deck_path, exp, geometry, reference: bool = False,
                    if sp.shape_type is not None and "PICTURE" in str(sp.shape_type))
         if pics == 0:
             cover_fail.append(f"the cover has no hero picture — {remedy}")
-    if cover_fail and legacy_cover_ok:
-        warn.extend(cover_fail)
-        warn.append("the cover was passed by --legacy-cover-ok: this is the legacy "
-                    "redraw path only, and this deck is not deliverable as final")
-    else:
-        fail.extend(cover_fail)
+    fail.extend(cover_fail)
 
     # 5 — the reference's own faces only
     seen = {}
@@ -455,10 +440,9 @@ def run_checks(deck_path, exp, geometry, reference: bool = False,
     proof_cfg = geometry.get("proof") or {}
     proof = shapes.get(PROOF, [])
     tol = float(proof_cfg.get("match_tol_in", 0.25))
-    # The labels and the tiles are found where the reference put them, so they can
-    # only be measured on a deck built from the exemplar. The legacy redraw draws
-    # its own slide 5; under its flag these become warnings, like the cover.
-    proof_shape = warn if legacy_cover_ok else fail
+    # The labels and the tiles are found where the reference put them: the deck is
+    # built from the exemplar, so they are where the reference has them.
+    proof_shape = fail
 
     for i, quad in enumerate(proof_cfg.get("quadrants") or [], start=1):
         want = str(quad.get("label", ""))
@@ -485,10 +469,6 @@ def run_checks(deck_path, exp, geometry, reference: bool = False,
                                f"{' and no '.join(missing)} — the three tiles are never "
                                f"empty: the cleared figures, or the metrics being "
                                f"measured with their baselines")
-    if legacy_cover_ok and proof_shape is warn:
-        warn.append("the proof slide was measured on the legacy redraw path, which "
-                    "draws its own slide 5 — the reference's composition cannot be "
-                    "held to on it, and such a deck is not deliverable as final")
 
     if reference:
         note.append("reference mode: the customer's logo is not checked against a "
@@ -618,12 +598,6 @@ def main(argv=None) -> int:
                     help="the deck IS the exemplar: skip the checks that compare it "
                          "against a pack brief (header, cover tier line, the "
                          "architecture's naming and flows)")
-    ap.add_argument("--legacy-cover-ok", action="store_true",
-                    help="the legacy redraw path only (tools/build_deck.py on the "
-                         "stripped base, which has neither the photo layout nor the "
-                         "reference's slide 5): report the cover-hero and proof-slide "
-                         "composition checks as loud warnings instead of failures. "
-                         "Such a deck is never delivered as final.")
     args = ap.parse_args(argv)
 
     deck = Path(args.deck)
@@ -644,8 +618,7 @@ def main(argv=None) -> int:
               file=sys.stderr)
         return 2
     try:
-        fail, note, warn = run_checks(deck, exp, geometry, reference=args.reference,
-                                      legacy_cover_ok=args.legacy_cover_ok)
+        fail, note, warn = run_checks(deck, exp, geometry, reference=args.reference)
     except Exception as exc:
         print(f"lint_deck: cannot read the deck: {exc}", file=sys.stderr)
         return 2

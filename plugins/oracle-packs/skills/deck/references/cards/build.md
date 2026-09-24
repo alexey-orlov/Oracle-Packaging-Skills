@@ -14,6 +14,5 @@ Per-slide content and order: cards `slides-1-5` and `slides-6-10`, the same ten 
 4. An empty spec key shows the honest state ("results to follow", "scoped per engagement"), never a placeholder posing as fact.
 5. The reference pack's customer logo never ships: replaced from this brief or removed; an empty frame is labelled "image to be chosen".
 6. Delivered as a standalone .pptx on the exemplar's master, `<Pack name> - Sales deck - Oracle.pptx`; a section for someone else's deck is the executive-summary skill's job.
-7. `tools/build_deck.py` is the **legacy** builder: it redraws the ten slides on the brand shell (no photo layout), so its cover is ink only and **fails the linter's cover check by design** (`--legacy-cover-ok` makes that a warning). Use it only without the exemplar, say in the review pack that the deck was redrawn, not filled, and never deliver it as final without the hero: set `deck.images.cover` or use the exemplar builder.
 
 **Reads:** the whole spec. **Writes:** the .pptx; the fit report, architecture summary and pictures still to choose go to stdout.

@@ -220,10 +220,7 @@ mapping (see `why_it_sells`).
   destination check accepts a box per output system.
 - **The cover hero is a linter check, not only a builder rule.** The cover must
   sit on the reference's own `Title-AI` photo layout with a picture reaching it,
-  so an ink-only cover cannot pass unnoticed. The legacy redraw builder fails it
-  by construction — the 41 KB shell has no photo layout — and only
-  `--legacy-cover-ok` demotes that one failure to a warning, on the documented
-  legacy path and never on a deck being delivered.
+  so an ink-only cover cannot pass unnoticed.
 - **`lint_artifact.py` ART101 no longer fires on correct spellings.** The catalog
   marks `NVIDIA Nemo` and `Nvidia NIM` `not_this` for a capital letter, and
   `covered_by_good_name` used to suppress only a match a *longer* accepted name
