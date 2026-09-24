@@ -1,6 +1,6 @@
 # Client-facing document conventions
 
-_Carried over from the practice owner's standing rules for any client-facing offer, proposal or delivered document, plus the living-documents rule for updating anything already delivered. Built up from his reviews between 2026-07-07 and 2026-09-16; each rule keeps the date it was set. Read BEFORE drafting a client document, a one-pager, deck copy or marketing copy, and BEFORE touching an existing deliverable._
+_Carried over from the practice owner's standing rules for any client-facing offer, proposal or delivered document, plus the living-documents rule for updating anything already delivered. Built up from their reviews between 2026-07-07 and 2026-09-16; each rule keeps the date it was set. Read BEFORE drafting a client document, a one-pager, deck copy or marketing copy, and BEFORE touching an existing deliverable._
 
 ## Offers / proposals (2026-07-07)
 
@@ -34,7 +34,7 @@ The owner edits them directly after delivery — restyling to a corporate templa
 content changes. Before matching, updating, or basing new work on ANY existing deliverable,
 READ the current file from disk — never work from the generating script or from the
 conversation's memory of it, and never regenerate over a hand-edited file (the script is
-stale the moment he edits; port his edits first, or build inside the edited file's shell).
+stale the moment they edit; port their edits first, or build inside the edited file's shell).
 
 ## Marketing copy: persona first, scaffolding last (2026-09-16)
 

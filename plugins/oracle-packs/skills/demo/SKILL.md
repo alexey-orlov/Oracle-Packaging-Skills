@@ -28,7 +28,7 @@ user-invocable: true
 5. **Build** `index.html`, `demo.css`, `demo.js` and `data.js` under `<work>/artifacts/demo/` (or, when the walkthrough goes onto the site, under the site manifest's `paths.demos/<slug>/`, finding and reading the site as the listing skill's `site` card says). Cards: `build`, `word-budgets`. Ship a thin vertical slice first, then the full run. Agents read: `assets/tour-engine.md`. The `index.html` head carries `<meta name="pack-spec" content="…">` with the line `shared/tools/py shared/tools/spec_stamp.py --spec <spec>` prints, so the walkthrough says which spec it was built from.
 6. **Red-team, then audit fidelity.** Card: `red-team`. Both before showing it to anyone.
 7. **QA and lint.** Card: `qa`. `node tools/capture-demo-frames.mjs --demo <url> --scenario <json> --out <dir>`; `LOGS: none` is the gate; then `shared/tools/py shared/tools/lint_artifact.py <demo dir> --channel demo --spec <spec>`.
-8. **Review pack.** Card: `review-pack`. The walkthrough is the one thing that may be published as a claude.ai artifact — synthetic and customer-free by rule: open it there and hand over the link. One rebuild round; a single-step change is the fast path.
+8. **Review pack.** Card: `review-pack`. One rebuild round; a single-step change is the fast path.
 9. **Hand to the listing.** Card: `handoff`. The captures become its step frames and poster; the demo is published standalone and linked.
 
 **Model routing.** The mechanical majority — source extraction, research fan-out, builds from a settled design, QA loops, captures, conversions — goes to a cheaper capable model. Spend the strongest model only on the design decisions, the data model where the numbers must reconcile, the red-team pass and the final review. **Say which steps used which.** Its copy still gets a mechanical pass before it ships. Every subagent follows `shared/references/running-agents.md`.
@@ -44,4 +44,4 @@ Done = flow and design confirmed by the user; the value band leads; every number
 - [ ] No customer mark anywhere; every synthetic figure listed for the owner.
 - [ ] Every capability area visible, every KPI in the band, no claim beyond the spec.
 - [ ] `LOGS: none` on the capture, and the counter moved on every click.
-- [ ] Everything the owner reviewed was open beside the conversation before the question was asked, and nothing he read used internal letters, codes or file names.
+- [ ] Everything the owner reviewed was open beside the conversation before the question was asked, and nothing they read used internal letters, codes or file names.

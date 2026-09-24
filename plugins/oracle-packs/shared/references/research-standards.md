@@ -1,6 +1,6 @@
 # Research & analysis output standards
 
-_Carried over from the practice owner's standing expectations for ANY research, analysis or comparative output (distilled from his instructions, 2026-06-12). In this bundle they govern the generalization research behind a pack spec, the vendor and competitor capability check, the vertical differentiation pass, and every feature list — which is exactly a framework-population task. Skills cite this file instead of restating the rules._
+_Carried over from the practice owner's standing expectations for ANY research, analysis or comparative output (distilled from their instructions, 2026-06-12). In this bundle they govern the generalization research behind a pack spec, the vendor and competitor capability check, the vertical differentiation pass, and every feature list — which is exactly a framework-population task. Skills cite this file instead of restating the rules._
 
 ## Epistemic discipline
 

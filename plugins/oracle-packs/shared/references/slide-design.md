@@ -1,6 +1,6 @@
 # Slide-deck & one-pager design rules
 
-_Carried over from the practice owner's standing design rules, built up from his design feedback on partner-facing decks and one-pagers between 2026-07-10 and 2026-09-11. Each rule keeps the date it was set. Read BEFORE building or editing any deck, one-pager or executive-summary slide in this bundle._
+_Carried over from the practice owner's standing design rules, built up from their design feedback on partner-facing decks and one-pagers between 2026-07-10 and 2026-09-11. Each rule keeps the date it was set. Read BEFORE building or editing any deck, one-pager or executive-summary slide in this bundle._
 
 1. **Size containers to content** (2026-07-10) — a box more than ~half empty means the type
    is too small or the box too big; prefer large editorial statements over small text
