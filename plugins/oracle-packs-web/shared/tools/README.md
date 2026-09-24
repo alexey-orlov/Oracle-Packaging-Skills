@@ -60,13 +60,12 @@ not a check that passed.
 shared/tools/py shared/tools/packspec.py get <spec> <key.path>                    the value, as JSON
 shared/tools/py shared/tools/packspec.py set <spec> <key.path> <value> [--source <src>]
 shared/tools/py shared/tools/packspec.py check <spec>
-shared/tools/py shared/tools/packspec.py convert <in.yaml> --out <out.md> [--force]
 ```
 
 The spec is one Markdown file per pack, `packs/<slug>/pack-spec.md`, in the fixed layout
-`shared/schema/pack-spec.md` sets out (the design: `docs/SPEC-MARKDOWN.md`). Every tool reads it
-through `packspec.load(path) -> (data, linemap)`: `data` is exactly the mapping the YAML spec
-gave, so no builder changed, and `linemap` gives each key's line for findings. The contract is
+`shared/schema/pack-spec.md` sets out. Every tool reads it through
+`packspec.load(path) -> (data, linemap)`: `data` is the spec as a mapping, and `linemap` gives
+each key's line for findings. The contract is
 tested on every spec in the repo: **lossless** (`load(dump(d)) == d`), **canonical**
 (`dump(load(md)) == md`), **strict** (a slip — a row with a cell too many or too few, an unknown
 section or label, an unescaped `|` in a cell, a price that does not read — is a finding on its
@@ -77,10 +76,8 @@ entry in the fenced YAML under `## Other fields`, and is named).
 (`€95K · indicative`, `6–8 weeks (target 8, hard cap 10)`, `yes`); `--source` sets the key's
 sibling `source`; the first `set` on a path with no spec creates it. Every write re-renders the
 whole file and is refused unless its round trip is exact. `check` names each line that does not
-parse or is not in the canonical form, and each key the layout does not know. `convert` writes the
-Markdown from a YAML spec only when the round trip is exact, and says what YAML comments it could
-not carry. A `pack-spec.yaml` still loads for one release, with one line on stderr saying to
-convert it; a folder holding both files is refused. Exit 0 done · 1 a finding · 2 usage.
+parse or is not in the canonical form, and each key the layout does not know. Exit 0 done ·
+1 a finding · 2 usage.
 
 ## pack_paths.py
 
@@ -88,9 +85,8 @@ convert it; a folder holding both files is refused. Exit 0 done · 1 a finding �
 shared/tools/py shared/tools/pack_paths.py <slug> [--repo <dir>] [--create] [--json]
 ```
 
-Where a pack's files go (the owner's layout, 2026-09-24). The spec, the architecture
-model and the pictures the spec names live in this repo's `packs/<slug>/`, committed and
-shared; everything else — the artifacts, the intake, the inventory and its extracts of
+Where a pack's files go (the owner's layout, 2026-09-24). The spec and the pictures it
+names live in this repo's `packs/<slug>/`, committed and shared; everything else — the artifacts, the intake, the inventory and its extracts of
 customer documents, sources, research, the decisions log — goes to the work folder,
 `$ORACLE_PACKS_OUT/<slug>/`, else `~/oracle-packs/<slug>/`, and never enters the repo.
 The repo is `--repo`, else `$ORACLE_PACKS_ROOT`, else the working directory or its
@@ -99,8 +95,7 @@ nearest ancestor holding `.claude-plugin/marketplace.json` named
 `ORACLE_PACKS_ROOT` or pass `--repo`. It prints `slug`, `repo`, `spec_dir`, `spec`,
 `work`, `artifacts` and `spec_exists` as `key=value` lines (or one JSON object), plus
 `spec_sha`, `spec_commit` and `spec_dirty` when the spec exists — and `spec_error`, with
-`spec_sha=none`, when it does not parse. `spec` is `pack-spec.md`; for one release a pack whose
-only spec is still `pack-spec.yaml` resolves to that. `--create` makes `spec_dir`, `work` and
+`spec_sha=none`, when it does not parse. `spec` is `pack-spec.md`. `--create` makes `spec_dir`, `work` and
 `artifacts`, nothing else.
 
 ## spec_stamp.py

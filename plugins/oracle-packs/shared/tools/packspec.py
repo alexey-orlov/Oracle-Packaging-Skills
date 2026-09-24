@@ -12,7 +12,7 @@
 builder changes; `linemap` maps key paths to the line each was written on, for lint
 messages: `linemap[("kpis", 0, "figure")]` is that key's line, `linemap[()]` the spec's first
 line, `linemap.starts[path]` where a mapping or list value begins. Every tool reads a spec
-through `load`; none keeps its own parser. A `.yaml` spec is still read, for one release.
+through `load`; none keeps its own parser.
 
 The contract
     lossless    load(dump(d)) == d, for every spec
@@ -57,7 +57,6 @@ The command line
     packspec.py check <spec>                      parses, re-renders, names each line that is
                                                   not canonical and each key the layout does
                                                   not know
-    packspec.py convert <in.yaml> --out <out.md>  writes only when the round trip is exact
 
     A key path: meta.name · packages.tiers[0].services_price · packages.tiers[pov].name — a
     bracket holds an index, or the id / name / area / layer / n of a list item; quote a key
@@ -3180,66 +3179,27 @@ def _check_shape(data, source):
 
 
 def spec_format(path) -> str:
-    """"md" or "yaml", by the file's extension."""
-    ext = os.path.splitext(str(path))[1].lower()
-    if ext == ".md":
+    """"md", by the file's extension; anything else is not a pack spec."""
+    if os.path.splitext(str(path))[1].lower() == ".md":
         return "md"
-    if ext in (".yaml", ".yml"):
-        return "yaml"
-    raise SpecError("a pack spec is a .md file (or, for one more release, .yaml)", None, str(path))
+    raise SpecError("a pack spec is a .md file", None, str(path))
 
 
-def loads(text: str, fmt: str = "md", source: str = "<string>"):
-    """(data, linemap) of spec text in `fmt` ("md" or "yaml")."""
-    if fmt == "md":
-        data, linemap = loads_markdown(text, source)
-    elif fmt in ("yaml", "yml"):
-        data, linemap = loads_yaml(text, source)
-    else:
-        raise SpecError("unknown spec format %r" % fmt, None, source)
+def loads(text: str, source: str = "<string>"):
+    """(data, linemap) of a Markdown spec's text."""
+    data, linemap = loads_markdown(text, source)
     _check_shape(data, source)
     return data, linemap
 
 
-def twin_of(path):
-    """The other spec file for the same pack in the same folder, or None."""
-    stem = os.path.splitext(str(path))[0]
-    for ext in (".md", ".yaml", ".yml"):
-        other = stem + ext
-        if os.path.abspath(other) != os.path.abspath(str(path)) and os.path.exists(other):
-            return other
-    return None
-
-
-_YAML_NOTED = set()
-
-
-def _note_yaml(path):
-    """One line on stderr, once per YAML spec per run: it still loads, for this release."""
-    key = os.path.abspath(path)
-    if key in _YAML_NOTED:
-        return
-    _YAML_NOTED.add(key)
-    sys.stderr.write("%s: %s is a YAML spec, still read for one release — convert it: "
-                     "packspec.py convert %s --out %s\n"
-                     % (PROG, path, path, os.path.splitext(path)[0] + ".md"))
-
 
 def load(path):
-    """(data, linemap) of the spec at `path`. Raises SpecError, or OSError when unreadable.
-    A folder holding both a .md and a .yaml spec is refused; a .yaml spec alone still loads,
-    for one release, with one line on stderr saying to convert it."""
+    """(data, linemap) of the spec at `path`. Raises SpecError, or OSError when unreadable."""
     path = str(path)
-    fmt = spec_format(path)
-    twin = twin_of(path)
-    if twin:
-        raise SpecError("two specs for one pack: %s and %s — keep the Markdown one (convert, "
-                        "check, then delete the YAML)" % (path, twin), None, path)
+    spec_format(path)
     with open(path, "r", encoding="utf-8") as fh:
         text = fh.read()
-    if fmt == "yaml":
-        _note_yaml(path)
-    return loads(text, fmt, source=path)
+    return loads(text, source=path)
 
 
 def canonical_json(data) -> str:
@@ -3293,7 +3253,7 @@ def roundtrip_problems(data, source="<spec>"):
     """[] when load(dump(data)) == data and the dump is canonical; else what went wrong."""
     try:
         text = dump(data)
-        back, _ = loads(text, "md", source)
+        back, _ = loads(text, source)
     except SpecError as exc:
         return ["the rendered Markdown does not parse: %s" % exc]
     if back != data:
@@ -3420,16 +3380,13 @@ def save(path, data):
 
 
 def cmd_set(args):
-    if spec_format(args.spec) != "md":
-        return _usage("set writes Markdown specs; convert this one first: packspec.py convert "
-                      "%s --out %s" % (args.spec, os.path.splitext(args.spec)[0] + ".md"))
+    try:
+        spec_format(args.spec)
+    except SpecError as exc:
+        return _usage(exc.message)
     created = not os.path.exists(args.spec)
     if created:
-        # the first value of a new spec: the folder must exist, and no YAML spec may stand in it
-        twin = twin_of(args.spec)
-        if twin:
-            return _usage("%s already holds %s — convert it instead: packspec.py convert %s "
-                          "--out %s" % (os.path.dirname(args.spec) or ".", twin, twin, args.spec))
+        # the first value of a new spec: the folder must exist
         if not os.path.isdir(os.path.dirname(os.path.abspath(args.spec))):
             return _usage("no folder for %s — pack_paths.py <slug> --create makes it" % args.spec)
         data = {}
@@ -3479,26 +3436,24 @@ def cmd_set(args):
 
 def check_spec(path):
     """(problems, data): every finding as (line, message)."""
-    fmt = spec_format(path)
     problems = []
     data, lm = load(path)
-    if fmt == "md":
-        with open(path, encoding="utf-8") as fh:
-            text = fh.read()
-        canon = dump(data)
-        if canon != text:
-            have, want = text.split("\n"), canon.split("\n")
-            matcher = difflib.SequenceMatcher(a=have, b=want, autojunk=False)
-            for tag, i1, i2, j1, j2 in matcher.get_opcodes():
-                if tag == "equal":
-                    continue
-                found = have[i1] if i1 < i2 else "(nothing)"
-                expected = want[j1] if j1 < j2 else "(nothing)"
-                problems.append((min(i1 + 1, len(have)),
-                                 "not canonical: `%s` — the writer puts `%s` here"
-                                 % (found[:80], expected[:80])))
-                if len(problems) >= 20:
-                    break
+    with open(path, encoding="utf-8") as fh:
+        text = fh.read()
+    canon = dump(data)
+    if canon != text:
+        have, want = text.split("\n"), canon.split("\n")
+        matcher = difflib.SequenceMatcher(a=have, b=want, autojunk=False)
+        for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+            if tag == "equal":
+                continue
+            found = have[i1] if i1 < i2 else "(nothing)"
+            expected = want[j1] if j1 < j2 else "(nothing)"
+            problems.append((min(i1 + 1, len(have)),
+                             "not canonical: `%s` — the writer puts `%s` here"
+                             % (found[:80], expected[:80])))
+            if len(problems) >= 20:
+                break
     else:
         for message in roundtrip_problems(data, path):
             problems.append((1, message))
@@ -3526,49 +3481,6 @@ def cmd_check(args):
     return 1 if problems else 0
 
 
-def cmd_convert(args):
-    if spec_format(args.src) != "yaml":
-        return _usage("convert reads a .yaml spec")
-    if spec_format(args.out) != "md":
-        return _usage("convert writes a .md spec")
-    try:
-        with open(args.src, encoding="utf-8") as fh:
-            src_text = fh.read()
-        data, _ = loads(src_text, "yaml", source=args.src)
-    except OSError as exc:
-        return _usage(str(exc))
-    except SpecError as exc:
-        _say(str(exc))
-        return 1
-    problems = roundtrip_problems(data, args.out)
-    if problems:
-        _say("%s: nothing written — %s" % (args.src, "; ".join(problems)))
-        return 1
-    text = dump(data)
-    if os.path.exists(args.out):
-        with open(args.out, encoding="utf-8") as fh:
-            current = fh.read()
-        if current == text:
-            _say("%s: already converted, identical" % args.out)
-            return 0
-        if not args.force:
-            return _usage("%s exists and differs — pass --force to replace it" % args.out)
-    _write_atomic(args.out, text)
-    comments = sum(1 for ln in src_text.split("\n") if ln.lstrip().startswith("#"))
-    unknown = unknown_keys(data)
-    _say("%s: written, %d lines; the round trip is exact" % (args.out, text.count("\n")))
-    if unknown:
-        _say("  %d key(s) the layout does not know, kept (a table column of their own, or "
-             "under ## Other fields): %s"
-             % (len(unknown), ", ".join(format_path(p, k, has_key=True) for p, k in unknown[:8])
-                + (" …" if len(unknown) > 8 else "")))
-    if comments:
-        _say("  %d YAML comment line(s) are not data and are not carried over — move what they "
-             "say into a `note` first if it matters" % comments)
-    if os.path.dirname(os.path.abspath(args.src)) == os.path.dirname(os.path.abspath(args.out)):
-        _say("  next: delete %s — a folder holding both is refused" % args.src)
-    return 0
-
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="packspec.py", description=__doc__,
@@ -3584,14 +3496,9 @@ def main(argv=None) -> int:
     s.add_argument("--source", default=None, help="also set the sibling `source` key")
     c = sub.add_parser("check", help="parse, re-render, name non-canonical lines and unknown keys")
     c.add_argument("spec")
-    v = sub.add_parser("convert", help="write a .yaml spec as Markdown, when the round trip is exact")
-    v.add_argument("src")
-    v.add_argument("--out", required=True)
-    v.add_argument("--force", action="store_true", help="replace an existing, different --out")
     args = ap.parse_args(argv)
     try:
-        return {"get": cmd_get, "set": cmd_set, "check": cmd_check,
-                "convert": cmd_convert}[args.cmd](args)
+        return {"get": cmd_get, "set": cmd_set, "check": cmd_check}[args.cmd](args)
     except SpecError as exc:
         return _usage(str(exc))
 

@@ -111,6 +111,6 @@ the standard library.
    opened beside the conversation *before* the question.
 3. **The spec still passes its checks** (`shared/tools/lint_spec.py`) and its diff shows only the
    picture keys: `apply_choice.py` writes through the spec writer (`shared/tools/packspec.py`),
-   which re-renders the file only when its round trip is exact, and refuses a YAML spec.
+   which re-renders the file only when its round trip is exact.
 4. **Slots with no choice are named as open**, and the deck draws an empty container for them —
    never a stand-in, never a numeral.

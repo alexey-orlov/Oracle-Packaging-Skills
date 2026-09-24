@@ -13,6 +13,5 @@ node_modules/
 # those files quote the customer's own documents and carry internal figures (2026-09-24).
 # The architecture model is built from the spec by every renderer and never stored.
 packs/*/*
-!packs/*/pack-spec.yaml
 !packs/*/pack-spec.md
 !packs/*/visuals/

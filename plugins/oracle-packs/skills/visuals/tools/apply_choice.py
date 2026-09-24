@@ -18,8 +18,7 @@ Four things happen, in this order, and either all of them or none:
 
 The spec is written **through the spec writer** (shared/tools/packspec.py), never edited as text:
 the key is set on the loaded data, and the canonical file is written atomically only when its round
-trip is exact — so nothing but this one key can move. A `pack-spec.yaml` is refused, with the
-command that converts it.
+trip is exact — so nothing but this one key can move.
 
 `--add-to-library` additionally copies a chosen icon into the shared icon library and adds its row
 to the library's map. It is off by default and never overwrites: a name already in the library is
@@ -101,15 +100,6 @@ def _find_top_key(lines: list[str], key: str) -> int | None:
 
 # ------------------------------------------------------------------ the spec, through the writer
 
-def yaml_refusal(spec_path: str) -> str | None:
-    """The message refusing a YAML spec (the writer writes Markdown only), or None."""
-    if spec_path.lower().endswith((".yaml", ".yml")):
-        md = os.path.splitext(spec_path)[0] + ".md"
-        return (f"{spec_path} is a YAML spec; the spec writer writes Markdown only. Convert it "
-                f"first: shared/tools/py shared/tools/packspec.py convert {spec_path} --out {md}")
-    return None
-
-
 def _path_tokens(slot: str) -> list:
     base, idx = parse_slot(slot)
     spec_path = slot_spec_path(slot)
@@ -140,9 +130,6 @@ def _with_value(obj, tokens, value):
 def write_spec(spec_path: str, slot: str, value: dict, dry_run: bool) -> str:
     """Set the slot's key through the spec writer: the spec's data plus this one value, written
     as the canonical Markdown only when its round trip is exact. A dry run checks, writes nothing."""
-    refusal = yaml_refusal(spec_path)
-    if refusal:
-        raise ValueError(refusal)
     packspec = packspec_module()
     tokens = _path_tokens(slot)
     try:
@@ -320,10 +307,6 @@ def main(argv: list[str]) -> int:
         return EXIT_USAGE
     if not os.path.exists(args.spec):
         eprint(f"no spec at {args.spec}")
-        return EXIT_USAGE
-    refusal = yaml_refusal(args.spec)
-    if refusal:
-        eprint(refusal + " — nothing was written.")
         return EXIT_USAGE
     if not os.path.exists(args.file):
         eprint(f"no file at {args.file}")

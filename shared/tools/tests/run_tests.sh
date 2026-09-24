@@ -378,7 +378,7 @@ say ""
 say "packspec.py — the spec in Markdown"
 PACKSPEC="$TOOLS/packspec.py"
 REPO="$(cd "$TESTS/../../.." && pwd)"
-for spec in "$REPO"/packs/*/pack-spec.md "$REPO"/packs/*/pack-spec.yaml \
+for spec in "$REPO"/packs/*/pack-spec.md \
             "$REPO"/examples/*/pack-spec.md "$FIX"/pack-spec.valid.md \
             "$REPO"/plugins/*/skills/*/tests/fixture-pack-spec*.md; do
   [ -f "$spec" ] || continue
@@ -408,7 +408,7 @@ if not m:
 shown = m.group(1)
 head, sep, body = shown.partition("\n---\n")          # the front matter is YAML: no escapes
 text = head + sep + re.sub(r"(?<!\\)<", r"\\<", body)
-data, _ = packspec.loads(text, "md", "the template")
+data, _ = packspec.loads(text, "the template")
 problems = packspec.roundtrip_problems(data, "the template")
 if packspec.dump(data) != text:
     problems.append("the template is not in the canonical form (packspec.py check names the lines)")
@@ -476,24 +476,21 @@ run_case "lint_spec: a spec that does not parse is a finding on its line" 1 \
   "$PY" "$TOOLS/lint_spec.py" "$STRICT/malformed-money.md" --catalog "$CAT" --roadmap "$ROAD"
 expect "the parse finding" "malformed-money.md:$line: SPEC029" "is not a price"
 
-# The command line, on a clean copy of the valid fixture: convert writes only an exact round
-# trip; check is clean on what the writer wrote; set re-renders through the writer, takes a
-# typed key in its own syntax and sets the sibling source; get prints JSON.
+# The command line, on a clean copy of the valid fixture: check is clean on what the writer
+# wrote; set re-renders through the writer, takes a typed key in its own syntax and sets the
+# sibling source; get prints JSON.
 CLI="$WORK/cli"
 mkdir -p "$CLI"
-"$PY" - "$TOOLS" "$VALID" "$CLI/source.yaml" <<'PYCLI'
-import sys, yaml
+"$PY" - "$TOOLS" "$VALID" "$CLI/pack-spec.md" <<'PYCLI'
+import sys
 sys.path.insert(0, sys.argv[1])
 import packspec
 data, _ = packspec.load(sys.argv[2])
 data["workflow"]["inputs"] = [{"system": "Oracle Fusion Field Service",
                                "data": "work orders, technicians, zones"}]
-yaml.safe_dump(data, open(sys.argv[3], "w", encoding="utf-8"), sort_keys=False, allow_unicode=True)
-print("wrote a clean YAML copy of the valid fixture")
+packspec.save(sys.argv[3], data)
+print("wrote a clean copy of the valid fixture")
 PYCLI
-run_case "convert writes Markdown from YAML" 0 \
-  "$PY" "$PACKSPEC" convert "$CLI/source.yaml" --out "$CLI/pack-spec.md"
-expect "convert" "the round trip is exact"
 run_case "check is clean on what the writer wrote" 0 "$PY" "$PACKSPEC" check "$CLI/pack-spec.md"
 run_case "get prints a value as JSON" 0 "$PY" "$PACKSPEC" get "$CLI/pack-spec.md" meta.slug
 expect "get" '"workforce-optimization"'
@@ -518,6 +515,7 @@ expect "the refused price" "is not a price"
 run_case "the file is still canonical after the sets" 0 "$PY" "$PACKSPEC" check "$CLI/pack-spec.md"
 run_case "set writes Markdown specs only" 2 \
   "$PY" "$PACKSPEC" set "$CLI/source.yaml" meta.status draft
+expect "the refusal" "a pack spec is a .md file"
 # A new pack's spec starts with its first value: set creates the file, and only there.
 mkdir -p "$CLI/new-pack"
 run_case "the first set creates a new spec" 0 \
@@ -529,14 +527,6 @@ run_case "and the next one adds to it, with its source" 0 \
 run_case "the new spec is canonical" 0 "$PY" "$PACKSPEC" check "$CLI/new-pack/pack-spec.md"
 run_case "no spec is started in a folder that does not exist" 2 \
   "$PY" "$PACKSPEC" set "$CLI/no-such-folder/pack-spec.md" meta.slug nowhere
-run_case "nor beside a YAML spec, which is converted instead" 2 \
-  "$PY" "$PACKSPEC" set "$CLI/source.md" meta.slug demo
-expect "the refusal beside YAML" "convert it instead"
-run_case "a YAML spec still loads, for one release" 0 \
-  "$PY" "$PACKSPEC" get "$CLI/source.yaml" meta.slug
-expect "the YAML notice" "is a YAML spec, still read for one release" "packspec.py convert"
-run_case "and says so in one line" 0 \
-  test "$(printf '%s\n' "$LAST" | grep -c 'still read for one release')" -eq 1
 "$PY" -c 'import sys
 text = open(sys.argv[1], encoding="utf-8").read()
 open(sys.argv[2], "w", encoding="utf-8").write(text.replace("\n## Workflow\n", "\n\n\n## Workflow\n"))' \
@@ -562,21 +552,14 @@ run_case "SPEC024 names them in every record list (a warning)" 0 \
   "$PY" "$TOOLS/lint_spec.py" "$CLI/unknown.md" --catalog "$CAT" --roadmap "$ROAD"
 expect "SPEC024" "SPEC024 architecture.outputs[0]" "SPEC024 verticals[0]" \
   "SPEC024 packages.tiers[1]" "SPEC024 kpis[0]"
-cp "$CLI/source.yaml" "$CLI/pack-spec.yaml"
-run_case "two specs for one pack in one folder are refused" 1 \
-  "$PY" "$PACKSPEC" get "$CLI/pack-spec.md" meta.slug
-expect "the twins" "two specs for one pack"
-rm -f "$CLI/pack-spec.yaml"
 
-# The visuals tool records a picture through the same writer: the key lands, the file stays
-# canonical, and a YAML spec is refused before any file is copied. The decisions log goes to
-# a work folder under $WORK, never ~/oracle-packs.
+# The visuals tool records a picture through the same writer: the key lands and the file
+# stays canonical. The decisions log goes to a work folder under $WORK, never ~/oracle-packs.
 say ""
 say "apply_choice.py — a picture recorded through the writer"
 AC="$WORK/ac"
-mkdir -p "$AC/demo-pack" "$AC/yaml-pack"
+mkdir -p "$AC/demo-pack"
 cp "$CLI/pack-spec.md" "$AC/demo-pack/pack-spec.md"      # the clean copy the CLI tests wrote
-cp "$CLI/source.yaml" "$AC/yaml-pack/pack-spec.yaml"
 LOGO_FILE="$REPO/plugins/oracle-packs/skills/feature-list/assets/softserve-wordmark-ink.png"
 run_case "a supplied logo is recorded" 0 \
   env ORACLE_PACKS_OUT="$WORK/ac-out" "$PY" "$VISUALS_TOOLS/apply_choice.py" \
@@ -585,11 +568,6 @@ run_case "its key is in the spec" 0 \
   "$PY" "$PACKSPEC" get "$AC/demo-pack/pack-spec.md" deck.images.customer_logo.file
 expect "the recorded logo" '"visuals/'
 run_case "and the spec is still canonical" 0 "$PY" "$PACKSPEC" check "$AC/demo-pack/pack-spec.md"
-run_case "a YAML spec is refused" 1 \
-  env ORACLE_PACKS_OUT="$WORK/ac-out" "$PY" "$VISUALS_TOOLS/apply_choice.py" \
-  "$AC/yaml-pack/pack-spec.yaml" --slot customer_logo --file "$LOGO_FILE"
-expect "the refusal" "packspec.py convert" "nothing was written"
-run_case "before anything was copied" 1 test -e "$AC/yaml-pack/visuals"
 
 # -------------------------------------------------------------- lint_artifact
 say ""
@@ -1323,7 +1301,7 @@ if ! command -v git >/dev/null 2>&1 || \
   say "  (skipped: $REPO is not a git checkout)"
 else
   P="packs/zz-layout-check"
-  for shared in "$P/pack-spec.md" "$P/pack-spec.yaml" "$P/visuals/today-A.jpg"; do
+  for shared in "$P/pack-spec.md" "$P/visuals/today-A.jpg"; do
     run_case "$shared is kept in the repo" 1 git -C "$REPO" check-ignore -q "$shared"
   done
   for local_only in "$P/intake.md" "$P/inventory.md" "$P/inventory/E1-scope.md" \
@@ -1363,18 +1341,6 @@ cp "$VALID" "$FAKE/packs/demo-pack/pack-spec.md"
 run_case "an existing spec" 0 \
   env ORACLE_PACKS_OUT="$WORK/out" "$PY" "$TOOLS/pack_paths.py" demo-pack --repo "$FAKE"
 expect "an existing spec" "spec_exists=true" "spec_sha=" "spec_commit=" "spec_dirty="
-# For one release a pack whose only spec is still pack-spec.yaml is found; where both
-# files stand, the Markdown one is named, and the refusal to read the pair is said.
-mkdir -p "$FAKE/packs/yaml-pack"
-cp "$CLI/source.yaml" "$FAKE/packs/yaml-pack/pack-spec.yaml"
-run_case "a pack with only pack-spec.yaml still resolves" 0 \
-  env ORACLE_PACKS_OUT="$WORK/out" "$PY" "$TOOLS/pack_paths.py" yaml-pack --repo "$FAKE" --json
-expect "the YAML spec" "yaml-pack/pack-spec.yaml" '"spec_exists": true'
-expect_absent "the YAML spec" '"spec_sha": "none"'
-cp "$VALID" "$FAKE/packs/yaml-pack/pack-spec.md"
-run_case "with both files, the Markdown spec is the one named" 0 \
-  env ORACLE_PACKS_OUT="$WORK/out" "$PY" "$TOOLS/pack_paths.py" yaml-pack --repo "$FAKE" --json
-expect "both files" 'yaml-pack/pack-spec.md"' '"spec_sha": "none"' "two specs for one pack"
 run_case "ORACLE_PACKS_ROOT names the checkout" 0 \
   env ORACLE_PACKS_ROOT="$FAKE" ORACLE_PACKS_OUT="$WORK/out" "$PY" "$TOOLS/pack_paths.py" demo-pack
 expect "ORACLE_PACKS_ROOT" "fake-checkout/packs/demo-pack"
@@ -1413,21 +1379,6 @@ print(s)
 data = packspec.load(sys.argv[2])[0]
 sha = hashlib.sha256(json.dumps(data, sort_keys=True, default=str).encode("utf-8")).hexdigest()[:12]
 sys.exit(0 if re.fullmatch(r"pack-spec sha256:%s commit:\S+" % sha, s) else 1)' "$TOOLS" "$STAMP_SPEC"
-# The same data written as YAML (its own folder: one folder may not hold both) has the same
-# sha, so converting a pack never marks its built artifacts stale.
-mkdir -p "$STAMP_DIR/as-yaml"
-"$PY" -c 'import sys, yaml
-sys.path.insert(0, sys.argv[1])
-import packspec
-yaml.safe_dump(packspec.load(sys.argv[2])[0], open(sys.argv[3], "w", encoding="utf-8"),
-               sort_keys=False, allow_unicode=True)' "$TOOLS" "$STAMP_SPEC" "$STAMP_DIR/as-yaml/pack-spec.yaml"
-run_case "the same data in YAML has the same sha" 0 \
-  "$PY" -c 'import sys
-sys.path.insert(0, sys.argv[1])
-import spec_stamp
-a, b = spec_stamp.spec_sha(sys.argv[2]), spec_stamp.spec_sha(sys.argv[3])
-print(a, b)
-sys.exit(0 if a == b else 1)' "$TOOLS" "$STAMP_SPEC" "$STAMP_DIR/as-yaml/pack-spec.yaml"
 run_case "a stamped and an unstamped .docx are written" 0 \
   "$PY" -c 'import sys
 sys.path.insert(0, sys.argv[1])

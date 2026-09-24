@@ -10,10 +10,7 @@ of the customer's documents, stays on the machine of the person running the skil
     <repo>/packs/<slug>/     committed and shared: pack-spec.md and visuals/ (the pictures
                              the spec names, with their provenance .json files and
                              credits.md). The architecture model is built from the spec by
-                             every renderer and never stored. For one
-                             release a pack whose only spec is still pack-spec.yaml resolves
-                             to that file; where both stand, `spec` is the Markdown one (and
-                             packspec.load refuses the pair until the YAML is deleted)
+                             every renderer and never stored.
     <work>/                  $ORACLE_PACKS_OUT/<slug>, else ~/oracle-packs/<slug>: artifacts/
                              (every built file), intake.md, inventory.md, inventory/ (extracts
                              of customer documents), sources/, research-brief.md, research/,
@@ -58,7 +55,6 @@ PROG = "pack_paths"
 REPO_NAME = "oracle-packaging-skills"
 MARKETPLACE = os.path.join(".claude-plugin", "marketplace.json")
 SPEC_NAME = "pack-spec.md"
-YAML_SPEC_NAME = "pack-spec.yaml"   # still found for one release, when it is the only spec
 SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
 NOT_FOUND = ("no checkout of the packaging-skills repo found: clone it and set "
@@ -175,12 +171,8 @@ def spec_git_state(spec_path: str, repo=None):
 
 # ------------------------------------------------------------------------------- paths
 def spec_file(spec_dir: str) -> str:
-    """pack-spec.md — or, for one release, pack-spec.yaml when that is the only spec."""
-    markdown = os.path.join(spec_dir, SPEC_NAME)
-    legacy = os.path.join(spec_dir, YAML_SPEC_NAME)
-    if not os.path.isfile(markdown) and os.path.isfile(legacy):
-        return legacy
-    return markdown
+    """The pack's spec: pack-spec.md in its folder."""
+    return os.path.join(spec_dir, SPEC_NAME)
 
 
 def layout(slug: str, repo: str, environ=None) -> dict:
