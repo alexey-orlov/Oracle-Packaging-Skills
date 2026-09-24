@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 """Regenerate the versioned roadmap extract under shared/data/.
 
-Outputs (see shared/data/roadmap.README.md):
+Output (see shared/data/roadmap.README.md):
   roadmap-items.csv      id,block,item,status,l1_pattern,l2_pattern
-  roadmap-l2-patterns.csv  l1,l2,definition
-  pack-crosswalk.csv     pack_slug,pack_name_current,roadmap_item_id,site_slug,tracker_name,older_names
-  pack-tracker.csv       pack,artifact,status,due_date          (only when --tracker resolves)
+
+The skills read this one file: the spec's `roadmap_item_id` must be an id in it (SPEC005).
 
 Sources are read-only. Nothing outside --out is written.
 
@@ -49,8 +48,8 @@ from xml.etree import ElementTree as ET
 #
 #     export ORACLE_PACKS_DIR="<the shared drive>/Projects/Oracle/Packs"
 #
-# and the three defaults below resolve under it; or pass --roadmap / --mapping /
-# --tracker explicitly. With neither, the tool says which one is missing and
+# and the two defaults below resolve under it; or pass --roadmap / --mapping
+# explicitly. With neither, the tool says which one is missing and
 # stops — an unset source is an environment problem, never an empty CSV.
 # --------------------------------------------------------------------------
 PACKS_DIR = os.path.expanduser(os.environ.get("ORACLE_PACKS_DIR", ""))
@@ -63,14 +62,11 @@ def _under_packs(*parts: str) -> str:
 DEFAULT_ROADMAP = _under_packs("Use case maps", "AI use case roadmap 2026-09-22.md")
 DEFAULT_MAPPING = _under_packs(
     "Use case maps", "AI workflow patterns - AIDP-NVIDIA-OracleAI mapping.xlsx")
-DEFAULT_TRACKER = _under_packs("Oracle packages.xlsx")
 DEFAULT_OUT = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data"
 )
 
 CARD_SHEET = "Card labels v2"
-PATTERN_SHEET_HINT = "Patterns v2"          # real tab: "Patterns v2 (red-team 2026-09)"
-TRACKER_SHEET = "Packaging activities"
 
 # --------------------------------------------------------------------------
 # Customer-tag clearance.
@@ -325,34 +321,6 @@ def read_card_labels(path: str) -> dict[str, tuple[str, str]]:
     return out
 
 
-def read_l2_definitions(path: str) -> list[tuple[str, str, str]]:
-    rows = read_sheet(path, PATTERN_SHEET_HINT)
-    out = []
-    for row in rows[1:]:
-        if len(row) < 3:
-            continue
-        l1, l2, definition = row[0].strip(), row[1].strip(), row[2].strip()
-        if not (l1 and l2 and definition):
-            continue
-        out.append((l1, l2, definition))
-    return out
-
-
-def read_tracker(path: str) -> list[tuple[str, str, str, str]]:
-    """Packaging activities tab -> (pack, artifact, status, due_date). No people."""
-    rows = read_sheet(path, TRACKER_SHEET)
-    out, current = [], ""
-    for row in rows[1:]:
-        cells = [(row[i].strip() if i < len(row) else "") for i in range(4)]
-        pack, artifact, status, due = cells
-        if pack:
-            current = pack
-        if not artifact:
-            continue
-        out.append((current, artifact, status, due))
-    return out
-
-
 # --------------------------------------------------------------------------
 # The free-text join. Card label -> roadmap item, where they drifted apart.
 # Left = card label in `Card labels v2` (customer tag already stripped).
@@ -366,95 +334,6 @@ CARD_TO_ITEM_ALIASES = {
     "warehouse pick-path optimisation": "Warehouse pick-path optimization",
 }
 
-# --------------------------------------------------------------------------
-# Pack crosswalk. Curated, not derivable — the join is free text with no ids.
-# roadmap_item is the roadmap ITEM NAME; the script resolves it to the minted
-# id and fails if it no longer exists on the map.
-# older_names: ";"-separated other strings this use case has gone by across
-# the estate (tracker, mini-site, card labels, work-split sheet).
-# --------------------------------------------------------------------------
-CROSSWALK = [
-    dict(
-        pack_slug="workforce-optimization",
-        pack_name_current="Workforce optimization",
-        roadmap_item="Workforce optimization",
-        site_slug="workforce-optimization",
-        tracker_name="Workforce optimization",
-        older_names=["Technician shift scheduling", "Workforce shift scheduling",
-                     "Workforce Scheduling Optimizer"],
-    ),
-    dict(
-        pack_slug="large-document-extraction",
-        pack_name_current="Large docs processing and review",
-        roadmap_item="Large document extraction & validation",
-        site_slug="large-document-extraction",
-        tracker_name="Large document extraction and validation",
-        older_names=["Contract metadata extraction", "Intelligent Document Extraction",
-                     "Enterprise document processing workflow",
-                     "Large Document Extraction and review package"],
-    ),
-    dict(
-        pack_slug="account-insights",
-        pack_name_current="Account insights",
-        roadmap_item="Account insights",
-        site_slug="account-insights",
-        tracker_name="AI Signal-Impact Engine",
-        older_names=["Account insight briefings", "AI Signal-Impact Engine"],
-    ),
-    dict(
-        pack_slug="",
-        pack_name_current="",
-        roadmap_item="Complaint evidence assembly",
-        site_slug="case-evidence-collection",
-        tracker_name="",
-        older_names=["Case evidence collection"],
-    ),
-    dict(
-        pack_slug="",
-        pack_name_current="",
-        roadmap_item="Plan-vs-actual investigation",
-        site_slug="plan-vs-actual-investigation",
-        tracker_name="",
-        older_names=["Plan vs actual investigation"],
-    ),
-    dict(
-        pack_slug="",
-        pack_name_current="",
-        roadmap_item="Cross-system ERP Q&A",
-        site_slug="cross-system-erp-qa",
-        tracker_name="",
-        older_names=[],
-    ),
-    dict(
-        pack_slug="",
-        pack_name_current="",
-        roadmap_item="Business metrics Q&A",
-        site_slug="business-metrics-qa",
-        tracker_name="",
-        older_names=[],
-    ),
-    dict(
-        pack_slug="",
-        pack_name_current="",
-        roadmap_item="Fleet route optimization",
-        site_slug="",
-        tracker_name="",
-        older_names=[],
-    ),
-    dict(
-        pack_slug="",
-        pack_name_current="",
-        roadmap_item="Visual inspection & classification",
-        site_slug="",
-        tracker_name="",
-        older_names=[],
-    ),
-]
-
-
-# --------------------------------------------------------------------------
-# Build
-# --------------------------------------------------------------------------
 def build_items(roadmap_path: str, mapping_path: str) -> tuple[list[list[str]], dict]:
     raw = read_roadmap(roadmap_path)
     cards = read_card_labels(mapping_path)
@@ -483,27 +362,6 @@ def build_items(roadmap_path: str, mapping_path: str) -> tuple[list[list[str]], 
             stats["unmatched"].append(item)
         rows.append([ident, rec["block"], item, rec["status"], l1, l2])
     return rows, stats
-
-
-def build_crosswalk(item_rows: list[list[str]]) -> list[list[str]]:
-    by_name = {r[2].lower(): r[0] for r in item_rows}
-    out = []
-    for entry in CROSSWALK:
-        key = entry["roadmap_item"].lower()
-        if key not in by_name:
-            raise SystemExit(
-                f"crosswalk references {entry['roadmap_item']!r}, which is not on "
-                "the roadmap any more — update CROSSWALK in this script"
-            )
-        out.append([
-            entry["pack_slug"],
-            entry["pack_name_current"],
-            by_name[key],
-            entry["site_slug"],
-            entry["tracker_name"],
-            "; ".join(entry["older_names"]),
-        ])
-    return out
 
 
 # --------------------------------------------------------------------------
@@ -547,8 +405,6 @@ def main() -> int:
                          "defaults under $ORACLE_PACKS_DIR")
     ap.add_argument("--mapping", default=DEFAULT_MAPPING,
                     help="the AI workflow patterns .xlsx; defaults under $ORACLE_PACKS_DIR")
-    ap.add_argument("--tracker", default=DEFAULT_TRACKER,
-                    help="the packaging tracker .xlsx; skipped with a warning if missing")
     ap.add_argument("--out", default=DEFAULT_OUT, help="output directory")
     ap.add_argument("--deny-list", default=None,
                     help="optional file of exact customer names (one per line, "
@@ -571,25 +427,10 @@ def main() -> int:
             return 1
 
     item_rows, stats = build_items(args.roadmap, args.mapping)
-    l2_rows = [list(t) for t in read_l2_definitions(args.mapping)]
-    cross_rows = build_crosswalk(item_rows)
-
-    tracker_rows = None
-    if os.path.exists(args.tracker):
-        tracker_rows = [list(t) for t in read_tracker(args.tracker)]
-    else:
-        print(f"WARNING: tracker not found, leaving pack-tracker.csv alone: "
-              f"{args.tracker}", file=sys.stderr)
 
     # --- clearance sweep -------------------------------------------------
     deny = load_deny_list(args.deny_list)
-    violations = (
-        clearance_sweep(item_rows, "roadmap-items.csv", deny)
-        + clearance_sweep(l2_rows, "roadmap-l2-patterns.csv", deny)
-        + clearance_sweep(cross_rows, "pack-crosswalk.csv", deny)
-        + (clearance_sweep(tracker_rows, "pack-tracker.csv", deny)
-           if tracker_rows else [])
-    )
+    violations = clearance_sweep(item_rows, "roadmap-items.csv", deny)
     if violations:
         print("ERROR: customer name reached an output field:", file=sys.stderr)
         for v in violations:
@@ -621,9 +462,6 @@ def main() -> int:
           f"(L1/L2 matched {stats['matched']}, unmatched {len(stats['unmatched'])})")
     for u in stats["unmatched"]:
         print(f"  no pattern row for item: {u!r}")
-    print(f"L2 patterns   : {len(l2_rows)}")
-    print(f"crosswalk     : {len(cross_rows)}")
-    print(f"tracker       : {len(tracker_rows) if tracker_rows is not None else 'skipped'}")
 
     if args.check:
         print("--check: nothing written")
@@ -632,14 +470,6 @@ def main() -> int:
     os.makedirs(args.out, exist_ok=True)
     write_csv(items_csv, ["id", "block", "item", "status", "l1_pattern", "l2_pattern"],
               item_rows)
-    write_csv(os.path.join(args.out, "roadmap-l2-patterns.csv"),
-              ["l1", "l2", "definition"], l2_rows)
-    write_csv(os.path.join(args.out, "pack-crosswalk.csv"),
-              ["pack_slug", "pack_name_current", "roadmap_item_id", "site_slug",
-               "tracker_name", "older_names"], cross_rows)
-    if tracker_rows is not None:
-        write_csv(os.path.join(args.out, "pack-tracker.csv"),
-                  ["pack", "artifact", "status", "due_date"], tracker_rows)
 
     print(f"\nwritten to {args.out}  (generated {_dt.date.today().isoformat()})")
     print("Update the `generated:` date and the source mtimes in "

@@ -94,7 +94,7 @@ Add the two installed resolvers in absolute form as well — `Bash(<home>/.claud
 .claude-plugin/marketplace.json     the marketplace (two plugins)
 shared/                             single source, synced into each plugin by tools/sync-shared.sh
   references/                       engagement context · naming and clearance · pack anatomy · PoV rules · review loop · talking to the owner · slide-design · client-documents · research-standards · coaching rules · running agents
-  data/                             oracle-products.yaml (the only allowed product names) · roadmap-items.csv (+ L2 patterns, crosswalk, tracker) · regen script
+  data/                             oracle-products.yaml (the only allowed product names) · roadmap-items.csv (the only allowed roadmap ids) · icons/ (the deck's industry icon library)
   schema/pack-spec.md               the spec schema and template
   tools/                            py (the interpreter resolver) · requirements.txt · packspec.py (the spec's loader and writer) · pack_paths.py · spec_stamp.py · lint_spec.py · lint_artifact.py · check_consistency.py · denylist.txt · tests/
 plugins/oracle-packs/               spec · feature-list · deck · one-pager · exec-summary · visuals · build; fonts/ (the brand faces, private)
