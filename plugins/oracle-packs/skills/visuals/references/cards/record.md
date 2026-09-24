@@ -1,6 +1,6 @@
 # Recording a choice
 
-**What this is.** One command per chosen picture. It copies the file into the pack, writes the slot's key into the pack brief, appends the credits row and logs the decision — all four, or none.
+**What this is.** One command per chosen picture. It copies the file into the repo's `packs/<slug>/visuals/`, writes the slot's key into the pack brief, appends the credits row and logs the decision in the local work folder — all four, or none.
 
     shared/tools/py tools/apply_choice.py <spec> --slot <slot> --file <the chosen file> \
         [--note "<the owner's reason, in their words>"] [--add-to-library]
@@ -14,4 +14,4 @@
 5. Only a file the owner actually chose is recorded — nothing invented, nothing substituted, nothing "close enough".
 6. The brief is edited in place as text and re-verified by the tool; if anything but the slot's own key moved, nothing is saved. Do not hand-edit the brief to work around that.
 
-**Fills:** the slot's key — `verticals[i].icon`, `deck.images.today`, `deck.images.tomorrow`, and the rest of the slot list the tool holds. **Writes:** `packs/<slug>/visuals/`, `packs/<slug>/visuals/credits.md`, `packs/<slug>/decisions.md`.
+**Fills:** the slot's key — `verticals[i].icon`, `deck.images.today`, `deck.images.tomorrow`, and the rest of the slot list the tool holds. **Writes:** in the repo, `packs/<slug>/visuals/` and its `credits.md`; locally, `<work>/decisions.md`.

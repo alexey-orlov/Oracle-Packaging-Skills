@@ -1,9 +1,9 @@
 # shared/tools — the linters every pack skill runs
 
-Six command-line tools and their shared library. They are the executable form of
-`shared/schema/pack-spec.md` and `shared/references/naming-and-clearance.md`: when
-a rule moves, those files are rewritten first and the tools follow in the same
-pass. A skill that produces an artifact is not done until the relevant tool here
+The command-line tools every pack skill runs, and their shared library. They are
+the executable form of `shared/schema/pack-spec.md` and
+`shared/references/naming-and-clearance.md`: when a rule moves, those files are
+rewritten first and the tools follow in the same pass. A skill that produces an artifact is not done until the relevant tool here
 is green on it.
 
 Python 3, standard library only, plus **PyYAML** for anything that reads YAML.
@@ -11,14 +11,18 @@ Call every tool through `py`, the interpreter resolver beside them: it finds a
 Python that has the packages in `requirements.txt`, or provisions one in
 `~/.oracle-packs/venv` on first use — never in system Python — and runs the tool
 with it (`py --check` shows which). A tool run without the packages exits 2 and
-prints the install line. No tool writes into the repository; they read and report.
+prints the install line. The linters read and report and never write;
+`build_diagram.py` writes the architecture model beside the spec, and
+`pack_paths.py --create` makes the pack's folders.
 
 ```
 py                    the interpreter resolver every tool runs through (--which, --check)
 requirements.txt      the Python packages; a copy of plugins/oracle-packs/requirements.txt
+pack_paths.py         where a pack's files go: the spec in the repo, the work on this machine
+spec_stamp.py         the spec stamp every builder writes into its file, and reads back
 lint_spec.py          validates a pack spec against the schema
 lint_artifact.py      clearance, naming, vocabulary, prices and figures per channel
-check_consistency.py  every artifact of a pack against its spec
+check_consistency.py  every artifact of a pack against its spec, and the spec it was built from
 build_diagram.py      the pack's ONE architecture model, for all three pictures
 check_diagram.py      the deck, the one-pager and the site figure against that model
 denylist.txt          the customer names and marks that must never ship (internal)
@@ -47,6 +51,39 @@ count. Anything a tool **could not** evaluate — a missing catalog, a `.pdf` wi
 no `pdftotext` installed, a check that needs `--spec` — is listed as
 `not evaluated:` and counted in the summary, because a check that could not run is
 not a check that passed.
+
+## pack_paths.py
+
+```
+shared/tools/py shared/tools/pack_paths.py <slug> [--repo <dir>] [--create] [--json]
+```
+
+Where a pack's files go (the owner's layout, 2026-09-24). The spec, the architecture
+model and the pictures the spec names live in this repo's `packs/<slug>/`, committed and
+shared; everything else — the artifacts, the intake, the inventory and its extracts of
+customer documents, sources, research, the decisions log — goes to the work folder,
+`$ORACLE_PACKS_OUT/<slug>/`, else `~/oracle-packs/<slug>/`, and never enters the repo.
+The repo is `--repo`, else `$ORACLE_PACKS_ROOT`, else the working directory or its
+nearest ancestor holding `.claude-plugin/marketplace.json` named
+`oracle-packaging-skills`; none found exits 2 with one line saying to clone it and set
+`ORACLE_PACKS_ROOT` or pass `--repo`. It prints `slug`, `repo`, `spec_dir`, `spec`,
+`work`, `artifacts` and `spec_exists` as `key=value` lines (or one JSON object), plus
+`spec_sha`, `spec_commit` and `spec_dirty` when the spec exists. `--create` makes
+`spec_dir`, `work` and `artifacts`, nothing else.
+
+## spec_stamp.py
+
+```
+shared/tools/py shared/tools/spec_stamp.py <artifact>...     each file's stamp, or "no stamp"
+shared/tools/py shared/tools/spec_stamp.py --spec <spec>      the stamp a build writes now
+```
+
+Every builder writes `pack-spec sha256:<12 hex> commit:<short hash|uncommitted|none>`
+into its file — `dc:identifier` in a `.docx` or `.pptx`, `<meta name="pack-spec">` in the
+one-pager's HTML, `/PackSpec` in its PDF — so a file built on one machine still says
+which spec it reflects. `uncommitted` is a spec git reports modified or untracked; `none`
+is a spec outside a git checkout. `check_consistency.py` reads it back (CON006, CON007),
+and `/oracle-packs:build` logs it with each approval.
 
 ## lint_spec.py
 
@@ -157,6 +194,13 @@ appear, against the spec. **An absent component is information, not a finding** 
 artifacts omit by design — so the output is a matrix of artifact × component with
 ✓ identical, ✗ differs, – absent, and only ✗ sets the exit code.
 
+It also asks **which spec each artifact was built from**. Every builder writes a
+stamp into its file — `pack-spec sha256:<12 hex> commit:<short hash|uncommitted|none>`
+(`spec_stamp.py`) — and the stamp's sha is compared with the sha of the spec given
+here. The matrix's last column, `spec`, shows it: ✓ built from this spec · ✗ from an
+earlier version · – no stamp. Both stamp rules are warnings: they never change the
+exit code, and the fix is a rebuild from the current spec.
+
 | code | rule |
 |---|---|
 | CON001 | the one-liner differs from `one_liner.full` / `.short` |
@@ -164,6 +208,8 @@ artifacts omit by design — so the output is a matrix of artifact × component 
 | CON003 | a duration in weeks matches no tier's `duration_weeks` — except a figure inside one of the spec's own `exec_summary.next_steps`, or the engagement's own length (stated in `meta.source_engagement`) in a sentence about the engagement; never when that sentence names a tier |
 | CON004 | a EUR figure matches no price in the spec |
 | CON005 | a KPI is printed with a figure the spec does not carry |
+| CON006 | the artifact's stamp names another version of the spec: "built from an earlier version of the spec — rebuild before sending" (warning) |
+| CON007 | a `.docx`, `.pptx`, `.html` or `.pdf` with no stamp: "no spec stamp: built before 2026-09-24 or by hand; which spec it reflects is unknown" (warning). Other formats — a listing entry, a markdown file — carry no stamp by design and are not reported |
 
 ## build_diagram.py
 

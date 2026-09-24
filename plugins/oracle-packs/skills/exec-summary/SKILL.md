@@ -20,7 +20,7 @@ user-invocable: true
 
 ## Procedure
 
-1. **Build.** Cards: `build` and `blocks`, plus `shared/references/anatomy/artifact-exec-summary.md` for the six blocks. Read the spec, settle the channel, then:
+1. **Build.** Cards: `build` and `blocks`, plus `shared/references/anatomy/artifact-exec-summary.md` for the six blocks. Read the spec, settle the channel, then (`<dir>` is the pack's `artifacts` folder from `shared/tools/pack_paths.py <slug>` — never the repo):
    `shared/tools/py tools/build_exec_summary.py <spec> --out <dir> --fit-report [--channel internal|partner_print] [--host-deck <pptx>]`
    The fit report must be clean; overflow is cut, not shrunk (`--allow-overflow` is for review builds and is never how a slide ships).
 2. **The automatic checks.** Card: `check`. Render the slide and look at it (`../deck/tools/render_probe.sh` prints how), then:
@@ -56,4 +56,4 @@ Everything the owner reviews is open beside the conversation *before* the questi
 - [ ] Nothing the owner saw carries a rule code, file name, spec key or packaging vocabulary.
 - [ ] The render was open beside the conversation before the question was asked.
 - [ ] Any wording change went into the spec, not into the .pptx.
-- [ ] The decision is logged in `packs/<slug>/decisions.md`.
+- [ ] The decision is logged in `<work>/decisions.md`.

@@ -56,12 +56,14 @@ finds neither.
 
 ```sh
 shared/tools/py plugins/oracle-packs/skills/feature-list/tools/build_feature_list.py \
-    packs/<slug>/pack-spec.yaml \
-    --out packs/<slug>/artifacts
+    <repo>/packs/<slug>/pack-spec.yaml \
+    --out <work>/artifacts
 ```
 
 `shared/tools/py` runs it with an interpreter that has the packages, provisioning one on first use;
-`shared/tools/py --check` shows which.
+`shared/tools/py --check` shows which. `<repo>` and `<work>` are what
+`shared/tools/py shared/tools/pack_paths.py <slug>` prints: the spec is read from the
+packaging-skills repo, and the document is written to the local work folder, never the repo.
 
 `--help` lists every option. Paths are arguments — nothing is hard-coded to one machine.
 
@@ -74,7 +76,8 @@ shared/tools/py plugins/oracle-packs/skills/feature-list/tools/build_feature_lis
 | `--fit none` | One row per feature at 7.5pt over as many pages as it takes, header row repeating. |
 | `--check-pages` / `--no-check-pages` | Verify the real page count by exporting to PDF — Pages.app on macOS, else LibreOffice (`soffice --headless`), counted with pypdf (default: on wherever either is installed; hard 90- and 120-second limits). The report names the renderer that verified the count; a count nobody could verify is a `WARNING: page count NOT verified` line, never an error. |
 
-Writes `<slug>-feature-list.docx` into `--out`, and prints the area / category / feature counts, the
+Writes `<slug>-feature-list.docx` into `--out`, with the spec stamp (`shared/tools/spec_stamp.py`)
+in its identifier property, and prints the stamp, the area / category / feature counts, the
 status split, the layout it used and the estimated fill — so a miscount or an unexpectedly tight
 page is visible without opening the file.
 

@@ -283,7 +283,8 @@ Alex's own red-team, run on the Lakehouse packaging options and then standardize
   standing instruction on this compression: "Too much text; less is more; condense to the essence
   of meaning, TLDR."
 - **User adjudicates:** reads it and picks an option, or sends it back.
-- **Output:** `packs/<slug>/research-brief.md`, referenced from `provenance.research_brief`.
+- **Output:** `<work>/research-brief.md` — the pack's local work folder, never the repo —
+  referenced from `provenance.research_brief`.
 - **Stop and ask when:** the brief cannot be read in 10 minutes — cut the least load-bearing
   section rather than shrinking every section evenly.
 

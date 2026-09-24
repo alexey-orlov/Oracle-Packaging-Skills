@@ -1,6 +1,6 @@
 # Pack spec — schema and template
 
-One YAML file per pack, at `packs/<slug>/pack-spec.yaml` under the folder the user names, else `$ORACLE_PACKS_ROOT`, else the working directory — on the user's own machine, never part of the plugin. It is the single source of truth: every artifact skill reads its values from here and never re-derives them. Values are confirmed by the user through `/oracle-packs:spec`; a build skill that finds a required key missing stops and sends the user back to the spec skill instead of filling the gap itself.
+One YAML file per pack, at `packs/<slug>/pack-spec.yaml` in the packaging-skills repo — committed and shared, so every colleague builds from the same spec; `shared/tools/pack_paths.py <slug>` finds the checkout (`--repo`, else `$ORACLE_PACKS_ROOT`, else the working directory). Beside it live only the architecture model (`architecture.json`) and the pictures the spec names (`visuals/`). Everything else a pack produces — the artifacts, the intake, the inventory and its extracts, the sources, the research, the decisions log — lives in the local work folder, `$ORACLE_PACKS_OUT/<slug>/`, else `~/oracle-packs/<slug>/`, and never enters the repo. The spec is the single source of truth: every artifact skill reads its values from here and never re-derives them. Values are confirmed by the user through `/oracle-packs:spec`; a build skill that finds a required key missing stops and sends the user back to the spec skill instead of filling the gap itself.
 
 Conventions: every fact carries a `source` (file, call, URL, or `user:<date>` for something the user typed) so the linter can trace it. The four first-order components carry theirs on a fixed key — `problem_solution.source`, `one_liner.source`, `icp.source` and, because the name lives inside `meta`, `meta.name_source` — and the linter reads exactly those. Money in EUR as written on the source artifact. Durations in weeks. `status` values are the ones listed; free text goes in `note`.
 
@@ -62,7 +62,7 @@ icp:                                      # component 3
   source: user:2026-09-18
 
 verticals:                                # component 5
-  # `icon:` is written by /oracle-packs:visuals when the user picks one — { file, file_white, name, source, licence }, paths relative to the pack folder; absent means the deck draws an empty container
+  # `icon:` is written by /oracle-packs:visuals when the user picks one — { file, file_white, name, source, licence }, paths relative to the spec's folder (`visuals/...`, in the repo); absent means the deck draws an empty container
   - name: Industrial equipment service
     framing: { problem: "...", solution: "..." }
     what_matters_here: "..."
@@ -195,7 +195,7 @@ packages:                                 # component 12 — PoV Jumpstart / Int
   value_for_client: "..."                 # optional; the proof slide's VALUE FOR CLIENT block (falls back to problem_solution.solution)
 
 deck:
-  images:                                 # written by /oracle-packs:visuals; each is { file, source, creator, licence, source_url }, file relative to the pack folder. A slot absent = the deck draws an empty container, never a stand-in
+  images:                                 # written by /oracle-packs:visuals; each is { file, source, creator, licence, source_url }, file relative to the spec's folder (`visuals/...`, in the repo). A slot absent = the deck draws an empty container, never a stand-in
     today: { file: visuals/today-A-....jpg, source: Pexels, creator: <photographer>, licence: Pexels License, source_url: <the page> }
     tomorrow: { file: visuals/tomorrow-B-....jpg, source: Openverse / rawpixel, creator: <creator>, licence: CC0 1.0, source_url: <the page> }
 
@@ -204,9 +204,10 @@ contacts:                                 # the three addresses: naming-and-clea
   site: { mailbox: <the practice mailbox>, named: <alliances contact> }
   internal: { name: <the person doing the packaging>, email: <the R&D request mailbox> }
 
-provenance:
-  inputs: [ { path: ..., kind: sow | deck | video | transcript | feature-list | call-note, read: 2026-09-18 } ]
-  research_brief: packs/<slug>/research-brief.md
+provenance:                               # the spec lives in the repo; the files named here never enter it
+  inputs: [ { path: ..., kind: sow | deck | video | transcript | feature-list | call-note, read: 2026-09-18 } ]   # where each raw input sits (the shared drive, the work folder's sources/)
+  research_brief: research-brief.md       # relative to the pack's work folder, $ORACLE_PACKS_OUT/<slug>/ (else ~/oracle-packs/<slug>/)
+  inventory: [inventory/<extract>.md]     # optional; the extracts of customer documents, relative to the work folder
 
 open_questions:
   - "..."                                 # anything the user deferred; artifacts print nothing that depends on an open question

@@ -13,7 +13,7 @@
 
 **Delivery.** The PDF and its editable HTML twin, named `<Pack name> - Sales one-pager - Oracle.pdf` and `<Pack name> - Sales one-pager - Oracle.html`. The HTML ships with it on purpose: it is the editable source, the PDF is a render of it.
 
-**Done means** one A4 page, both checkers clean, the editorial pass made, the review pack shown, and the owner's decision logged in `packs/<slug>/decisions.md`.
+**Done means** one A4 page, both checkers clean, the editorial pass made, the review pack shown, and the owner's decision logged in `<work>/decisions.md`.
 
 **Bad.** "Built the one-pager, lint clean, 2 blocks OVER budget — approve?"
 **Good.** "Here is the page. The packages table is the fullest block and the proof story is at its limit; the infrastructure price is marked indicative because the spec marks it so."

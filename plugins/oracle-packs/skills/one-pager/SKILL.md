@@ -20,7 +20,7 @@ user-invocable: true
 
 ## Procedure
 
-1. **Build.** Card: `build`, plus `shared/references/anatomy/artifact-one-pager.md` for the section order. Read the spec, settle the channel, then:
+1. **Build.** Card: `build`, plus `shared/references/anatomy/artifact-one-pager.md` for the section order. Read the spec, settle the channel, then (`<dir>` is the pack's `artifacts` folder from `shared/tools/pack_paths.py <slug>` — never the repo):
    `shared/tools/py tools/build_one_pager.py <spec> --out <dir> --channel <channel> [--hero <image>]`
    The tool renders the HTML, prints it to PDF and fails when the result is more than one page, naming the longest blocks.
 2. **Overflow.** Card: `overflow`. Only when the build exits 3. Overflow means cuts, not smaller type: put the cuts to the owner in plain words, by the block's name on the page, and apply the agreed wording through the spec skill's fast path so every artifact stays consistent. Rebuild.
@@ -59,4 +59,4 @@ Everything the owner reviews is open beside the conversation *before* the questi
 - [ ] Nothing the owner saw carries a rule code, file name, spec key or packaging vocabulary.
 - [ ] The render was open beside the conversation before the question was asked.
 - [ ] Any wording change went into the spec, not into the built file.
-- [ ] The decision is logged in `packs/<slug>/decisions.md`.
+- [ ] The decision is logged in `<work>/decisions.md`.

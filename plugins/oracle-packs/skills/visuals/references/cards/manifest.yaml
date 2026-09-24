@@ -52,3 +52,4 @@ steps:
     title: What is chosen, and what is still open
     session:
       - references/cards/close.md
+      - ../spec/references/cards/save.md           # the spec skill's card; one home, no copy

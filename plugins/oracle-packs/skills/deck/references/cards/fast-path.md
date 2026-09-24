@@ -14,6 +14,6 @@
 
 - Fit report, deck linter, clearance and consistency all clean on the rebuilt file.
 - The corrected slide was actually looked at, not assumed.
-- The approval is recorded in `packs/<slug>/decisions.md`, and the file is delivered as `<Pack name> - Sales deck - Oracle.pptx`.
+- The approval is recorded in `<work>/decisions.md`, and the file is delivered as `<Pack name> - Sales deck - Oracle.pptx`.
 
 **Reads / writes:** the pack brief, through the spec skill's fast path; the rebuilt .pptx.

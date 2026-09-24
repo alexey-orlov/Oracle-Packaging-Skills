@@ -8,6 +8,10 @@ not a warning: the one-pager is always one A4 page (Alex, 2026-09-18), so the
 tool exits non-zero and names the blocks that are over their word budget, for the
 skill to propose cuts.
 
+Both files say which spec they were built from (shared/tools/spec_stamp.py): the HTML in
+<meta name="pack-spec">, the PDF in its /PackSpec metadata, written with pypdf after the
+page count.
+
 Usage
     build_one_pager.py <pack-spec.yaml> --out <dir> [--channel partner_print|internal]
                        [--hero <image>] [--no-pdf]
@@ -44,6 +48,15 @@ except ImportError:  # pragma: no cover
 
 HERE = Path(__file__).resolve().parent
 TEMPLATE = HERE.parent / "assets" / "one-pager-template.html"
+
+for _up in range(2, 6):                     # the spec stamp: the plugin's synced shared/tools, or the bundle's
+    _shared = HERE.parents[_up] / "shared" / "tools" if len(HERE.parents) > _up else None
+    if _shared is not None and (_shared / "spec_stamp.py").is_file():
+        sys.path.insert(0, str(_shared))
+        break
+import spec_stamp  # noqa: E402  (which spec the page was built from: the HTML's meta, the PDF's /PackSpec)
+
+STAMP_META = re.compile(r"""<meta\b[^>]*\bname\s*=\s*["']pack-spec["']""", re.IGNORECASE)
 
 CHANNELS = ("partner_print", "internal")
 
@@ -806,6 +819,47 @@ def page_report(pdf_path: Path):
     return len(reader.pages), (round(float(box.width), 2), round(float(box.height), 2))
 
 
+def ensure_stamp_meta(rendered: str, stamp: str) -> str:
+    """The shipped template carries <meta name="pack-spec">; a --template that does not gets it
+    after its <head>, so every one-pager says which spec it was built from."""
+    if STAMP_META.search(rendered):
+        return rendered
+    head = re.search(r"<head\b[^>]*>", rendered, re.IGNORECASE)
+    if not head:
+        print("build_one_pager: the template has no <head> -- the HTML carries no spec stamp",
+              file=sys.stderr)
+        return rendered
+    tag = f'\n<meta name="pack-spec" content="{html.escape(stamp, quote=True)}">'
+    return rendered[:head.end()] + tag + rendered[head.end():]
+
+
+def stamp_pdf(pdf_path: Path, stamp: str) -> bool:
+    """Write the spec stamp into the printed PDF's metadata as /PackSpec, keeping Chrome's own.
+
+    Runs after the page count. Without pypdf the PDF goes unstamped with one note on stderr;
+    the HTML twin carries the stamp either way.
+    """
+    try:
+        from pypdf import PdfReader, PdfWriter
+    except ImportError:
+        print("build_one_pager: pypdf is not installed -- the PDF carries no spec stamp "
+              "(the HTML does)", file=sys.stderr)
+        return False
+    tmp = pdf_path.with_name(pdf_path.name + ".stamping")
+    try:
+        writer = PdfWriter(clone_from=PdfReader(str(pdf_path)))
+        writer.add_metadata({"/PackSpec": stamp})
+        with open(tmp, "wb") as fh:
+            writer.write(fh)
+        os.replace(tmp, pdf_path)
+    except Exception as err:                    # noqa: BLE001 - say so; the build itself stands
+        tmp.unlink(missing_ok=True)
+        print(f"build_one_pager: could not write the spec stamp into the PDF ({err}); "
+              f"the HTML carries it", file=sys.stderr)
+        return False
+    return True
+
+
 # ---------------------------------------------------------------------------
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(
@@ -836,9 +890,12 @@ def main(argv=None) -> int:
     global SPEC_DIR
 
     SPEC_DIR = Path(args.spec).resolve().parent
+    built_from = spec_stamp.stamp(args.spec)    # which spec this page reflects (CON006 / CON007)
     try:
         context, forbidden = build_context(spec, args.channel, args.hero)
-        rendered = render(args.template.read_text(encoding="utf-8"), context)
+        context["spec_stamp"] = built_from
+        rendered = ensure_stamp_meta(render(args.template.read_text(encoding="utf-8"), context),
+                                     built_from)
     except SpecError as err:
         print(f"build_one_pager: {err}", file=sys.stderr)
         return 1
@@ -849,6 +906,7 @@ def main(argv=None) -> int:
     html_path = args.out / f"{stem}.html"
     html_path.write_text(rendered, encoding="utf-8")
     print(f"HTML  {html_path}  ({len(rendered) // 1024} KB)")
+    print(f"      spec stamp: {built_from}")
 
     # clearance guard: a name this channel may not carry must not reach the page
     visible = html.unescape(re.sub(r"<[^>]+>", " ", rendered))
@@ -882,8 +940,10 @@ def main(argv=None) -> int:
 
     pages, size = page_report(pdf_path)
     if pages is None:
-        print(f"PDF   {pdf_path}  (pypdf not installed -- page count NOT verified)", file=sys.stderr)
+        print(f"PDF   {pdf_path}  (pypdf not installed -- page count NOT verified, and the PDF "
+              f"carries no spec stamp)", file=sys.stderr)
         return 4
+    stamp_pdf(pdf_path, built_from)
     print(f"PDF   {pdf_path}  ({pages} page{'s' if pages != 1 else ''}, {size[0]} x {size[1]} pt)")
 
     if pages > 1:

@@ -29,12 +29,23 @@ Rule codes
             engagement — unless that sentence names a tier
     CON004  a EUR figure matches no price the spec carries
     CON005  a KPI figure differs from the spec's figure for that KPI
+    CON006  the artifact's spec stamp names another version of the spec: built from an
+            earlier version — rebuild before sending (warning)
+    CON007  a .docx, .pptx, .html or .pdf with no spec stamp: built before 2026-09-24 or
+            by hand, so which spec it reflects is unknown (warning). Other formats carry
+            no stamp by design and are not reported
     CON900  a file was skipped (unsupported format, or pdftotext missing) — warning
+
+The stamp is the line every builder writes into its file (shared/tools/spec_stamp.py):
+`pack-spec sha256:<12 hex> commit:<...>`. Only the sha is compared, against the sha of the
+spec given here. Warnings never change the exit code.
 
 Matrix legend
     ✓   present and identical to the spec
     ✗   present and differs (a finding)
     –   absent (by design; nothing to check)
+    The last column, "spec", is the stamp: ✓ built from this spec · ✗ from an earlier
+    version (CON006) · – no stamp
 
 Rule text: shared/references/naming-and-clearance.md §3 (one metric set, one
 tier vocabulary, prices with their disclaimers) and shared/schema/pack-spec.md.
@@ -50,11 +61,19 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import packlint as PL  # noqa: E402
+import spec_stamp  # noqa: E402
 
 PROG = "check_consistency"
 
 COMPONENTS = [("one_liner", "one-liner"), ("tiers", "tier names"),
               ("duration", "PoV duration"), ("prices", "prices"), ("kpis", "KPI figures")]
+
+# The matrix's last column: the spec stamp, not a component (CON006 / CON007).
+STAMP_COLUMN = ("spec", "spec")
+
+CON006_TEXT = "built from an earlier version of the spec — rebuild before sending"
+CON007_TEXT = ("no spec stamp: built before 2026-09-24 or by hand; which spec it reflects "
+               "is unknown")
 
 LEGACY_TIER = re.compile(r"(?<!PoV )\bJumpstart\b|\bQuick ?Start\b|\bPoC package\b"
                          r"|\b(?:Integration)\s*(?:and|&|/)\s*Scale\b"
@@ -116,6 +135,7 @@ class Consistency:
         self.spec_path = spec_path
         self.rep = rep
         self.matrix = []                     # (artifact, {component: state})
+        self.spec_sha = spec_stamp.spec_sha(spec_path)
         self.one_liners = [str(v) for v in
                            (PL.dig(spec, "one_liner", "full"), PL.dig(spec, "one_liner", "short"))
                            if PL.is_filled(v)]
@@ -239,15 +259,38 @@ class Consistency:
         return out
 
     # -- per-artifact -------------------------------------------------------
-    def run(self, doc):
+    def run(self, doc, stamp_state=ABSENT):
         states = {
             "one_liner": self.check_one_liner(doc),
             "tiers": self.check_tiers(doc),
             "duration": self.check_duration(doc),
             "prices": self.check_prices(doc),
             "kpis": self.check_kpis(doc),
+            "spec": stamp_state,
         }
         self.matrix.append((doc.path, states))
+
+    def check_stamp(self, path):
+        """Which spec the file was built from, by the stamp its builder wrote into it.
+
+        ✓ this spec · ✗ an earlier version (CON006) · – no stamp (CON007, for the formats
+        the builders stamp). Both are warnings: the text checks still run, and the fix is a
+        rebuild, which the skill decides — the exit code stays theirs.
+        """
+        if not spec_stamp.readable(path):
+            self.rep.cannot_check("the spec stamp of %s: pypdf is not installed" % path)
+            return ABSENT
+        found = spec_stamp.read_stamp(path)
+        sha = spec_stamp.stamp_sha(found)
+        if sha is None:
+            if spec_stamp.stampable(path):
+                self.rep.warn(path, 1, "CON007", CON007_TEXT)
+            return ABSENT
+        if sha != self.spec_sha:
+            self.rep.warn(path, 1, "CON006", "%s (stamped sha256:%s, the spec is sha256:%s)"
+                          % (CON006_TEXT, sha, self.spec_sha))
+            return DIFFERS
+        return PRESENT
 
     def check_one_liner(self, doc):
         """The full or the short variant, verbatim, is the spec's one-liner.
@@ -399,13 +442,15 @@ class Consistency:
     def render_matrix(self):
         if not self.matrix:
             return ""
-        labels = [label for _, label in COMPONENTS]
+        columns = COMPONENTS + [STAMP_COLUMN]
+        labels = [label for _, label in columns]
         width = max([len(os.path.basename(p)) for p, _ in self.matrix] + [8]) + 2
-        out = ["", "artifact × component  (✓ identical to the spec · ✗ differs · – absent)"]
+        out = ["", "artifact × component  (✓ identical to the spec · ✗ differs · – absent; "
+                   "spec: ✓ built from this spec · ✗ from an earlier version · – no stamp)"]
         out.append("  %-*s %s" % (width, "artifact", "  ".join("%-*s" % (len(l), l) for l in labels)))
         for path, states in self.matrix:
             cells = []
-            for key, label in COMPONENTS:
+            for key, label in columns:
                 cells.append("%-*s" % (len(label), states[key].center(len(label))))
             out.append("  %-*s %s" % (width, os.path.basename(path), "  ".join(cells)))
         out.append("")
@@ -434,13 +479,16 @@ def main() -> int:
 
     read = 0
     for path in files:
+        # The stamp does not depend on the text: a .pdf skipped for want of pdftotext still
+        # says which spec it was built from.
+        stamp_state = checker.check_stamp(path)
         doc, reason = PL.extract(path)
         if doc is None:
             rep.warn(path, 1, "CON900", reason)
             rep.cannot_check(reason)
             continue
         read += 1
-        checker.run(doc)
+        checker.run(doc, stamp_state)
 
     return rep.render("%d artifact(s) against %s" % (read, os.path.basename(args.spec)),
                       tail=checker.render_matrix())

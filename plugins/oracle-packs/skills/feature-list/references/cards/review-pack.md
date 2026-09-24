@@ -20,4 +20,4 @@
 **Good.** "In Signal intake, four capabilities are available today, one partially, and two are on the roadmap."
 **Bad.** "Signal intake: 4 ● · 1 ◐ · 2 ○."
 
-**Reads:** the built document and the spec. **Writes:** the owner's approval into `packs/<slug>/decisions.md`.
+**Reads:** the built document and the spec. **Writes:** the owner's approval into `<work>/decisions.md`.

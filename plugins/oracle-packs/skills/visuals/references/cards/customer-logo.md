@@ -14,4 +14,4 @@
 4. Recorded through `apply_choice.py` like every other picture, so the file, the brief key and the credits row move together. Its record says it was supplied by the owner and is used under the customer's clearance in the brief — there is no licence to look up.
 5. The brief still passes `shared/tools/py shared/tools/lint_spec.py <spec>` afterwards.
 
-**Fills:** `deck.images.customer_logo`. **Writes:** `packs/<slug>/visuals/`, `credits.md`, `decisions.md`.
+**Fills:** `deck.images.customer_logo`. **Writes:** `packs/<slug>/visuals/`, `credits.md`, `<work>/decisions.md`.

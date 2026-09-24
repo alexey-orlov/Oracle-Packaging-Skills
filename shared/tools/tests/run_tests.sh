@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-# Tests for shared/tools: lint_spec.py, lint_artifact.py, check_consistency.py.
+# Tests for shared/tools: lint_spec.py, lint_artifact.py, check_consistency.py, and the
+# tools and builders around them — the resolver, the pack layout (pack_paths.py, the repo's
+# .gitignore), the spec stamp (spec_stamp.py), the diagram model, the listing tools.
 #
 #   shared/tools/tests/run_tests.sh              # runs every tool through shared/tools/py
 #   PY=.venv/bin/python shared/tools/tests/run_tests.sh   # or through a given interpreter
@@ -915,6 +917,149 @@ EOF
   run_case "a known contactPerson is inserted" 0 \
     node "$INSERTER" --content "$LP/content.js" --entry "$LP/entry-good-lead.js"
 fi
+
+# ------------------------------------------------- where a pack's files go (2026-09-24)
+# The spec lives in the packaging-skills repo; the artifacts and every other working file
+# live in the local work folder. The repo's .gitignore keeps a pack's spec, its
+# architecture model and its pictures and nothing else — the working record quotes the
+# customer's documents and carries internal figures — and pack_paths.py names both places.
+# The slug below is made up, so no tracked file can mask a rule.
+say ""
+say "the repo keeps only the spec"
+REPO="$(cd "$TESTS/../../.." && pwd)"
+if ! command -v git >/dev/null 2>&1 || \
+   ! git -C "$REPO" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  say "  (skipped: $REPO is not a git checkout)"
+else
+  P="packs/zz-layout-check"
+  for shared in "$P/pack-spec.yaml" "$P/architecture.json" "$P/visuals/today-A.jpg"; do
+    run_case "$shared is kept in the repo" 1 git -C "$REPO" check-ignore -q "$shared"
+  done
+  for local_only in "$P/intake.md" "$P/inventory.md" "$P/inventory/E1-scope.md" \
+                    "$P/sources/scope.pdf" "$P/research/P1-domain.md" "$P/research-brief.md" \
+                    "$P/decisions.md" "$P/artifacts/zz-layout-check-feature-list.docx"; do
+    run_case "$local_only never enters the repo" 0 git -C "$REPO" check-ignore -q "$local_only"
+  done
+fi
+
+say ""
+say "pack_paths.py"
+FAKE="$WORK/fake-checkout"
+mkdir -p "$FAKE/.claude-plugin" "$WORK/nowhere" "$WORK/not-a-checkout"
+printf '{ "name": "oracle-packaging-skills", "plugins": [] }\n' > "$FAKE/.claude-plugin/marketplace.json"
+run_case "--json names where the files go" 0 \
+  env ORACLE_PACKS_OUT="$WORK/out" "$PY" "$TOOLS/pack_paths.py" demo-pack --repo "$FAKE" --json
+PP_JSON="$LAST"
+run_case "the spec in the checkout, the work in ORACLE_PACKS_OUT" 0 \
+  "$PY" -c 'import json, os, sys
+got, fake, out = json.loads(sys.argv[1]), sys.argv[2], sys.argv[3]
+want = {"spec_dir": os.path.join(fake, "packs", "demo-pack"),
+        "spec": os.path.join(fake, "packs", "demo-pack", "pack-spec.yaml"),
+        "work": os.path.join(out, "demo-pack"),
+        "artifacts": os.path.join(out, "demo-pack", "artifacts")}
+off = {k: got.get(k) for k, v in want.items()
+       if os.path.realpath(str(got.get(k))) != os.path.realpath(v)}
+print(off or "the four paths as expected")
+sys.exit(1 if off or got.get("spec_exists") is not False else 0)' "$PP_JSON" "$FAKE" "$WORK/out"
+run_case "--create" 0 \
+  env ORACLE_PACKS_OUT="$WORK/out" "$PY" "$TOOLS/pack_paths.py" demo-pack --repo "$FAKE" --create
+run_case "--create made the spec folder" 0 test -d "$FAKE/packs/demo-pack"
+run_case "--create made the work folder" 0 test -d "$WORK/out/demo-pack"
+run_case "--create made the artifacts folder" 0 test -d "$WORK/out/demo-pack/artifacts"
+run_case "and nothing else in the repo" 0 test -z "$(ls -A "$FAKE/packs/demo-pack")"
+cp "$VALID" "$FAKE/packs/demo-pack/pack-spec.yaml"
+run_case "an existing spec" 0 \
+  env ORACLE_PACKS_OUT="$WORK/out" "$PY" "$TOOLS/pack_paths.py" demo-pack --repo "$FAKE"
+expect "an existing spec" "spec_exists=true" "spec_sha=" "spec_commit=" "spec_dirty="
+run_case "ORACLE_PACKS_ROOT names the checkout" 0 \
+  env ORACLE_PACKS_ROOT="$FAKE" ORACLE_PACKS_OUT="$WORK/out" "$PY" "$TOOLS/pack_paths.py" demo-pack
+expect "ORACLE_PACKS_ROOT" "fake-checkout/packs/demo-pack"
+run_case "found from a folder inside the checkout" 0 \
+  env -u ORACLE_PACKS_ROOT ORACLE_PACKS_OUT="$WORK/out" \
+  sh -c 'cd "$1" && exec "$2" "$3" demo-pack' _ "$FAKE/packs" "$PY" "$TOOLS/pack_paths.py"
+expect "found from the working directory" "fake-checkout/packs/demo-pack"
+run_case "no checkout and no ORACLE_PACKS_ROOT is a usage error" 2 \
+  env -u ORACLE_PACKS_ROOT \
+  sh -c 'cd "$1" && exec "$2" "$3" demo-pack' _ "$WORK/nowhere" "$PY" "$TOOLS/pack_paths.py"
+expect "no checkout" \
+  "no checkout of the packaging-skills repo found: clone it and set ORACLE_PACKS_ROOT, or pass --repo"
+run_case "and says so in one line" 0 test "$(printf '%s\n' "$LAST" | grep -c .)" -eq 1
+run_case "an ORACLE_PACKS_ROOT that is no checkout is a usage error" 2 \
+  env ORACLE_PACKS_ROOT="$WORK/not-a-checkout" "$PY" "$TOOLS/pack_paths.py" demo-pack
+expect "not a checkout" "is not a checkout of the packaging-skills repo"
+run_case "a bad slug is a usage error" 2 "$PY" "$TOOLS/pack_paths.py" Demo_Pack --repo "$FAKE"
+expect "the bad slug" "is not a pack slug"
+
+# ------------------------------------------ the spec stamp: which spec a file was built from
+# Every builder writes `pack-spec sha256:<12> commit:<...>` into its file, and
+# check_consistency.py compares the sha with the spec's: CON006 when the spec has moved on
+# since the build, CON007 when a stampable file carries none. Both are warnings.
+say ""
+say "spec_stamp.py, CON006 and CON007"
+STAMP_DIR="$WORK/stamp"
+STAMP_SPEC="$STAMP_DIR/pack-spec.yaml"
+mkdir -p "$STAMP_DIR"
+cp "$VALID" "$STAMP_SPEC"
+run_case "stamp() names the spec's sha and its commit" 0 \
+  "$PY" -c 'import hashlib, re, sys
+sys.path.insert(0, sys.argv[1])
+import spec_stamp
+s = spec_stamp.stamp(sys.argv[2])
+print(s)
+sha = hashlib.sha256(open(sys.argv[2], "rb").read()).hexdigest()[:12]
+sys.exit(0 if re.fullmatch(r"pack-spec sha256:%s commit:\S+" % sha, s) else 1)' "$TOOLS" "$STAMP_SPEC"
+run_case "a stamped and an unstamped .docx are written" 0 \
+  "$PY" -c 'import sys
+sys.path.insert(0, sys.argv[1])
+import spec_stamp
+from docx import Document
+stamped = Document()
+stamped.add_paragraph("Workforce Optimization")
+stamped.core_properties.identifier = spec_stamp.stamp(sys.argv[2])
+stamped.save(sys.argv[3])
+bare = Document()
+bare.add_paragraph("Workforce Optimization")
+bare.save(sys.argv[4])' "$TOOLS" "$STAMP_SPEC" "$STAMP_DIR/stamped.docx" "$STAMP_DIR/unstamped.docx"
+run_case "a file built from this spec" 0 \
+  "$PY" "$TOOLS/check_consistency.py" "$STAMP_SPEC" "$STAMP_DIR/stamped.docx"
+expect_absent "the current stamp" CON006 CON007
+run_case "spec_stamp.py reads the stamp back" 0 "$PY" "$TOOLS/spec_stamp.py" "$STAMP_DIR/stamped.docx"
+expect "the stamp read back" "pack-spec sha256:"
+printf '# edited after the build\n' >> "$STAMP_SPEC"
+run_case "the spec moved on after the build: a warning, not a failure" 0 \
+  "$PY" "$TOOLS/check_consistency.py" "$STAMP_SPEC" "$STAMP_DIR/stamped.docx"
+expect "an earlier spec" CON006 "rebuild before sending"
+run_case "a file with no stamp: a warning, not a failure" 0 \
+  "$PY" "$TOOLS/check_consistency.py" "$STAMP_SPEC" "$STAMP_DIR/unstamped.docx"
+expect "no stamp" CON007 "no spec stamp"
+
+# The builders stamp what they write: the feature list and the one-pager's HTML and the
+# deck built above, and the one-pager's PDF through pypdf (Chrome is not run here).
+for built in "$WORK/fl-none/workforce-optimization-feature-list.docx" "${OP:-}" "${DECK:-}"; do
+  { [ -n "$built" ] && [ -f "$built" ]; } || continue
+  run_case "$(basename "$built") carries its spec stamp" 0 \
+    "$PY" -c 'import sys
+sys.path.insert(0, sys.argv[1])
+import spec_stamp
+found = spec_stamp.read_stamp(sys.argv[2])
+print(found)
+sys.exit(0 if spec_stamp.stamp_sha(found) else 1)' "$TOOLS" "$built"
+done
+run_case "the one-pager's PDF takes the stamp as /PackSpec" 0 \
+  "$PY" -c 'import shutil, sys
+from pathlib import Path
+sys.path.insert(0, sys.argv[1])
+sys.path.insert(0, sys.argv[2])
+import build_one_pager, spec_stamp
+pdf = Path(sys.argv[4])
+shutil.copy(sys.argv[3], str(pdf))
+s = spec_stamp.stamp(sys.argv[5])
+written = build_one_pager.stamp_pdf(pdf, s)
+found = spec_stamp.read_stamp(str(pdf))
+print(found)
+sys.exit(0 if written and found == s else 1)' \
+  "$REPO/plugins/oracle-packs/skills/one-pager/tools" "$TOOLS" "$WORK/one-pager.pdf" \
+  "$STAMP_DIR/one-pager.pdf" "$STAMP_SPEC"
 
 # --------------------------------------------------------------- context_budget
 # EVERY skill's manifest must stay inside its per-step reading budget; a card that

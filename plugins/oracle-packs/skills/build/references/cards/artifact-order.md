@@ -20,4 +20,4 @@
 5. The map lists artifacts by name and format only, never by the skill that builds them.
 6. Artifacts the owner dropped are skipped, and what the owner sees is renumbered.
 
-**Reads:** the artifact set settled in `packs/<slug>/intake.md` or by the opening question (card: `plan-and-ask`).
+**Reads:** the artifact set settled in `<work>/intake.md` or by the opening question (card: `plan-and-ask`).

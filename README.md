@@ -36,7 +36,7 @@ claude plugin install oracle-packs@oracle-packaging-skills
 claude plugin install oracle-packs-web@oracle-packaging-skills   # only if you build listings or demos
 ```
 
-For the listing and the demo, clone the mini-site repository and point `ORACLE_SITE_ROOT` at the checkout (or pass `--site`). A release runs `tools/sync-shared.sh` first, so each plugin carries the current `shared/` (`--check` reports drift).
+Clone this repository as well: the pack specs live in its `packs/`, so run the skills from inside the checkout or point `ORACLE_PACKS_ROOT` at it. For the listing and the demo, clone the mini-site repository and point `ORACLE_SITE_ROOT` at the checkout (or pass `--site`). A release runs `tools/sync-shared.sh` first, so each plugin carries the current `shared/` (`--check` reports drift).
 
 > **Note — on the owner's Mac (done 2026-09-18):** the repo folder itself is registered as a local marketplace (`source: directory`) and both plugins are installed at user scope, so `/oracle-packs:…` and `/oracle-packs-web:…` work in every session. Sessions do **not** read this repo: they read a snapshot copied into `~/.claude/plugins/cache/oracle-packaging-skills/<plugin>/<version>/`, and `claude plugin update` re-copies only when the `version` in the plugin's `.claude-plugin/plugin.json` is higher than the installed one — at the same version it reports "already at the latest version" and keeps the old snapshot (2026-09-22: four days of edits had reached no session this way). A release is therefore: bump `version` in **both** `plugins/*/.claude-plugin/plugin.json` (both, because `sync-shared.sh` touches both plugins), then
 >
@@ -58,12 +58,13 @@ For the listing and the demo, clone the mini-site repository and point `ORACLE_S
 |---|---|
 | `ORACLE_PACKS_PY` | the interpreter to try first |
 | `ORACLE_PACKS_VENV` | where the managed venv lives (default `~/.oracle-packs/venv`) |
-| `ORACLE_PACKS_ROOT` | optional: the folder `packs/<slug>/` goes under when the user names none; packs default to the working directory |
+| `ORACLE_PACKS_ROOT` | the checkout of this repo that holds `packs/`; unset, it is found from the working directory — that folder or its nearest parent that is a checkout |
+| `ORACLE_PACKS_OUT` | the root of the local work folders, one `<slug>/` per pack: default `~/oracle-packs` (`%USERPROFILE%\oracle-packs` on Windows), later the practice OneDrive |
 | `ORACLE_SITE_ROOT` | the mini-site checkout, for the listing and the demo |
 | `PEXELS_API_KEY`, `UNSPLASH_ACCESS_KEY` | the photo libraries' keys; on a Mac the Keychain entry of the same name works too |
 | `CHROME_BIN` | Chrome, when it is not where the builders look |
 
-Pack folders are produced where the user runs the skills (or under `$ORACLE_PACKS_ROOT`) and stay on that user's machine; they are never part of the plugin.
+A pack's spec lives in this repo at `packs/<slug>/pack-spec.yaml`, with the architecture model and the pictures it names beside it, committed and pushed so every colleague builds from the same spec. Everything else a run produces — the built artifacts, the intake, the inventory and its extracts of customer documents, the sources, the research, the decisions log — goes to the local work folder `$ORACLE_PACKS_OUT/<slug>/` (default `~/oracle-packs/<slug>/`), and `shared/tools/pack_paths.py <slug>` prints both places. That working record never enters the repo, because it quotes the customer's own documents and carries internal figures: one intake note held a contract value.
 
 **6. Brand fonts.** Azurio and Replica LL TT ship in the plugin's `fonts/` folder, privately, for practice members: not redistributable, and never copied into an artifact or a customer file. The builders read the shipped files, so fit is exact on every machine (with the folder empty they fall back to metric stand-ins with headroom). To see a render as the owner sees it, install them: `shared/tools/py shared/tools/install_fonts.py`.
 
@@ -95,9 +96,10 @@ shared/                             single source, synced into each plugin by to
   references/                       engagement context · naming and clearance · pack anatomy · PoV rules · review loop · talking to the owner · slide-design · client-documents · research-standards · coaching rules · running agents
   data/                             oracle-products.yaml (the only allowed product names) · roadmap-items.csv (+ L2 patterns, crosswalk, tracker) · regen script
   schema/pack-spec.md               the spec schema and template
-  tools/                            py (the interpreter resolver) · requirements.txt · lint_spec.py · lint_artifact.py · check_consistency.py · denylist.txt · tests/
+  tools/                            py (the interpreter resolver) · requirements.txt · pack_paths.py · spec_stamp.py · lint_spec.py · lint_artifact.py · check_consistency.py · denylist.txt · tests/
 plugins/oracle-packs/               spec · feature-list · deck · one-pager · exec-summary · visuals · build; fonts/ (the brand faces, private)
 plugins/oracle-packs-web/           listing · demo
+packs/<slug>/                       one pack's shared files, and only these (.gitignore keeps out the rest): pack-spec.yaml · architecture.json (the architecture model) · visuals/ (the pictures the spec names, their provenance .json files, credits.md)
 examples/workforce-optimization/    the worked example spec
 docs/PLAN.md                        the build plan and the rules overview
 docs/DECISIONS.md                   the owner decisions the skills implement

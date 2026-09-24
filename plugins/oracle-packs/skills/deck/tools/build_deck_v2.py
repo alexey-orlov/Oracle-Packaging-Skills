@@ -42,6 +42,13 @@ from deckkit import (  # noqa: E402  (deliberate: import, never edit)
 import exemplar as ex  # noqa: E402
 import build_diagram as diagram  # noqa: E402  (the one architecture model, shared by all three artifacts)
 
+for _up in range(2, 6):                     # the spec stamp: the plugin's synced shared/tools, or the bundle's
+    _shared = HERE.parents[_up] / "shared" / "tools" if len(HERE.parents) > _up else None
+    if _shared is not None and (_shared / "spec_stamp.py").is_file():
+        sys.path.insert(0, str(_shared))
+        break
+import spec_stamp  # noqa: E402  (which spec the deck was built from, written into its properties)
+
 EXEMPLAR_DEFAULT = HERE.parent / "assets" / "exemplar" / "wfo-sales-deck.pptx"
 SLOTS_DEFAULT = HERE.parent / "assets" / "exemplar" / "slots.json"
 ICON_MAP_DEFAULT = HERE.parent / "assets" / "icons" / "map.yaml"
@@ -1450,7 +1457,7 @@ def running_header(spec: Spec) -> tuple[str, str | None]:
 
 
 def build(spec: Spec, exemplar_path: Path, slots_path: Path, out_dir: Path,
-          fit: FitLog, icon_map: Path) -> tuple[Path, Build]:
+          fit: FitLog, icon_map: Path, stamp: str | None = None) -> tuple[Path, Build]:
     slots = json.loads(Path(slots_path).read_text(encoding="utf-8"))
     prs = ex.open_exemplar(exemplar_path)
     icons = load_icon_map(icon_map)
@@ -1498,6 +1505,8 @@ def build(spec: Spec, exemplar_path: Path, slots_path: Path, out_dir: Path,
 
     out_dir.mkdir(parents=True, exist_ok=True)
     out = out_dir / f"{spec.get('meta.slug', 'pack')}-sales-deck.pptx"
+    if stamp:
+        prs.core_properties.identifier = stamp      # which spec this file reflects (CON006 / CON007)
     prs.save(str(out))
     return out, b
 
@@ -1530,14 +1539,16 @@ def main(argv=None) -> int:
         print(f"error: {exc}", file=sys.stderr)
         return 2
     fit = FitLog()
+    built_from = spec_stamp.stamp(args.spec)
     try:
         out, b = build(spec, Path(args.exemplar), Path(args.slots), Path(args.out),
-                       fit, Path(args.icons))
+                       fit, Path(args.icons), stamp=built_from)
     except SpecError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
 
     print(f"built {out}  (10 slides from the exemplar, channel={args.channel})")
+    print(f"spec stamp: {built_from}")
     if b.diagram:
         print("architecture diagram:")
         for line in b.diagram:

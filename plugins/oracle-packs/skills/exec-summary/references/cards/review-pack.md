@@ -13,7 +13,7 @@
 
 **Delivery.** `<Pack name> - Executive summary - Oracle.pptx`, plus the slide number where it should be inserted whenever a host deck was given.
 
-**Done means** built on the right master, fit and lint clean, consistent with the spec, review pack shown, and the owner's decision logged in `packs/<slug>/decisions.md`.
+**Done means** built on the right master, fit and lint clean, consistent with the spec, review pack shown, and the owner's decision logged in `<work>/decisions.md`.
 
 **Bad.** "Exec summary built, fit report clean, 0 lint findings — approve?"
 **Good.** "Here is the slide, built on your section deck so it drops in as slide 14. The three metrics are on it; the workflow and the feature names are not, because they belong on the deck and the feature list."

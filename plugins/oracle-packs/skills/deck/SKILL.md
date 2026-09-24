@@ -20,7 +20,7 @@ user-invocable: true
 
 ## Procedure
 
-1. **Build.** *Card: `build.md`, with `slides-1-5.md` and `slides-6-10.md`.* Every slide's content comes from named spec keys; an empty key shows the honest state, never a placeholder that reads as fact.
+1. **Build.** *Card: `build.md`, with `slides-1-5.md` and `slides-6-10.md`.* Every slide's content comes from named spec keys; an empty key shows the honest state, never a placeholder that reads as fact. `<dir>` is the pack's `artifacts` folder from `shared/tools/pack_paths.py <slug>` — never the repo.
 
        shared/tools/py tools/build_deck_v2.py <spec> --out <dir> --channel <channel> --fit-report
 
@@ -51,7 +51,7 @@ Everything the owner reviews is opened beside the conversation *before* the ques
 
 ## Definition of done
 
-Fit report clean, deck linter clean, contact sheet reviewed, the diagram check clean on slide 8, clearance and consistency clean, the architecture put to the owner in words, editorial pass done, the approval recorded in `packs/<slug>/decisions.md`, the file delivered as `<Pack name> - Sales deck - Oracle.pptx`.
+Fit report clean, deck linter clean, contact sheet reviewed, the diagram check clean on slide 8, clearance and consistency clean, the architecture put to the owner in words, editorial pass done, the approval recorded in `<work>/decisions.md`, the file delivered as `<Pack name> - Sales deck - Oracle.pptx`.
 
 ## Self-check before closing
 

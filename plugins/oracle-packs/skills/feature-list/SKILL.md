@@ -21,7 +21,7 @@ The feature list is the pack's spine document: the table every other artifact co
 
 ## 1. Build
 
-Cards: `build`, `statuses-and-wording`. Read the spec, not the delivered artifacts. Then `shared/tools/py tools/build_feature_list.py <spec> --out <dir>`. The build guarantees one A4 page by walking a fit ladder and, where Pages or LibreOffice is installed, verifying the real page count. Read the rung it printed, and pass on any `WARNING` line.
+Cards: `build`, `statuses-and-wording`. Read the spec, not the delivered artifacts. Then `shared/tools/py tools/build_feature_list.py <spec> --out <dir>`, where `<dir>` is the pack's `artifacts` folder from `shared/tools/pack_paths.py <slug>` — never the repo. The build guarantees one A4 page by walking a fit ladder and, where Pages or LibreOffice is installed, verifying the real page count. Read the rung it printed, and pass on any `WARNING` line.
 
 ## 2. If it does not fit
 
@@ -53,7 +53,7 @@ Everything the owner reviews opens beside the conversation *before* the question
 
 ## Done, and the self-check
 
-Done = the docx built from the spec on one A4 page, lint clean, counts matching, the review pack shown, the owner's approval recorded in `packs/<slug>/decisions.md`.
+Done = the docx built from the spec on one A4 page, lint clean, counts matching, the review pack shown, the owner's approval recorded in `<work>/decisions.md`.
 
 - [ ] One A4 page, estimated and — where Pages or LibreOffice is available — verified; header is the mini-site lockup (Azurio title, Replica LL TT body, both set by the build); top block = approved one-liner + who it is for.
 - [ ] No page footer; at most three footnotes, each the caveat alone in 15 words or fewer.

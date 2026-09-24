@@ -117,3 +117,9 @@ steps:
     title: Stage 6 — The whole brief
     session:
       - references/cards/brief.md
+      - references/cards/save.md
+
+  - id: save
+    title: Saving the pack to the shared repo — after any change to a confirmed spec (fast path)
+    session:
+      - references/cards/save.md

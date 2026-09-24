@@ -17,7 +17,7 @@ picture with no recorded licence does not go into a pack, and a source that coul
 | `../tools/fetch_icon.py <name> --out <dir>` | Fetches one icon and renders it twice — white for the deck's dark panels, ink `#26282B` for light grounds — as 512 px PNGs on a transparent ground, with a `.json` sidecar. `--set lucide` for the fallback set, `--color white|ink|both`, `--size`. |
 | `../tools/search_photos.py "<terms>" --out <dir>` | Downloads up to `--n` photograph candidates with a provenance sidecar each. `--source auto` tries the modern libraries first and falls back to the archival one; `--slot`, `--min-width` (default 1600), `--orientation`. |
 | `../tools/contact_sheet.py <dir> --out <sheet.png>` | One labelled sheet, a row per slot, candidates lettered across it, each with creator · source · licence. Icons are drawn on both grounds in one cell. At most 2400 px wide. |
-| `../tools/apply_choice.py <spec> --slot <slot> --file <path>` | Records the choice: copies the file into `packs/<slug>/visuals/`, writes the spec key, appends the credits row and the decisions line. `--note` for the owner's reason, `--dry-run` to see it without writing, `--add-to-library` to add a chosen icon to the shared library. |
+| `../tools/apply_choice.py <spec> --slot <slot> --file <path>` | Records the choice: copies the file into `packs/<slug>/visuals/` beside the spec in the packaging-skills repo, writes the spec key, appends the credits row there, and appends the decisions line to `<work>/decisions.md` in the local work folder (`shared/tools/pack_paths.py`). `--note` for the owner's reason, `--dry-run` to see it without writing, `--add-to-library` to add a chosen icon to the shared library. |
 | `../tools/visuals_common.py` | The slot list, the licence allow-lists, the provenance record and the network helpers. Not run directly. |
 
 Every tool takes `--help`. Paths are arguments; nothing is hard-coded to one machine.
@@ -70,15 +70,17 @@ to the owner before the first photograph question rather than after.
 ```sh
 V=plugins/oracle-packs/skills/visuals/tools
 shared/tools/py $V/suggest_icons.py "Telecom & cable" --context "<the 'what matters here' line>"
-shared/tools/py $V/fetch_icon.py antenna --out /tmp/vis/icons --slot vertical:2
-shared/tools/py $V/search_photos.py "control room" --out /tmp/vis/photos --slot tomorrow --n 3
-shared/tools/py $V/contact_sheet.py /tmp/vis/photos --out /tmp/vis/sheet.png --title "Today → tomorrow"
-shared/tools/py $V/apply_choice.py packs/<slug>/pack-spec.yaml --slot tomorrow \
-    --file /tmp/vis/photos/tomorrow-A-....jpg --note "<the owner's reason>"
+shared/tools/py $V/fetch_icon.py antenna --out <work>/candidates/vertical-2 --slot vertical:2
+shared/tools/py $V/search_photos.py "control room" --out <work>/candidates/tomorrow --slot tomorrow --n 3
+shared/tools/py $V/contact_sheet.py <work>/candidates/tomorrow --out <work>/candidates/tomorrow.png --title "Today → tomorrow"
+shared/tools/py $V/apply_choice.py <repo>/packs/<slug>/pack-spec.yaml --slot tomorrow \
+    --file <work>/candidates/tomorrow/tomorrow-A-....jpg --note "<the owner's reason>"
 ```
 
 `shared/tools/py` runs each tool with an interpreter that has the packages, provisioning one on first
-use; `shared/tools/py --check` shows which.
+use; `shared/tools/py --check` shows which. `<repo>` and `<work>` are what
+`shared/tools/py shared/tools/pack_paths.py <slug>` prints: candidates and contact sheets stay in the
+local work folder, and only the chosen file reaches the repo's `packs/<slug>/visuals/`.
 
 ## Test fixture
 

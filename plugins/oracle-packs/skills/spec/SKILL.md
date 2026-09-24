@@ -17,26 +17,26 @@ You produce one file the other skills trust: `packs/<slug>/pack-spec.yaml`, vali
 
 ## 0. Before you start
 
-1. Working folder `packs/<slug>/`, under the directory the user names, else `$ORACLE_PACKS_ROOT`, else the working directory; it stays on this machine, never in the plugin. If a `pack-spec.yaml` is already there, read it, resume at the first unsettled part, and say so.
+1. `shared/tools/py shared/tools/pack_paths.py <slug> --create` prints the repo and `<work>`. The spec, architecture model and pictures live in the repo's `packs/<slug>/`; everything else — intake, inventory and extracts, sources, research brief, research, decisions log — goes to `<work>/`, never the repo. `git -C <repo> pull --ff-only` before reading or writing the spec; a pull that cannot run is deferred and retried, never skipped silently. An existing `pack-spec.yaml`: read it, resume at the first unsettled part, say so.
 2. Load `shared/data/oracle-products.yaml` (the only allowed product names) and `shared/data/roadmap-items.csv` (the only allowed roadmap ids) at the step that needs them, not before.
 3. Roles: research agents, extraction and lookups on the mechanical model; the synthesis, the story candidates and the final consistency pass on the strongest available. Name the split once. Never more than four research agents at once. Every subagent follows `shared/references/running-agents.md`.
 4. **Show the map first** — one short message: the six stages below in the owner's words, how many questions each will actually ask after skipping, and the total. Every widget title then carries `<Stage> · n of N · <question name>`, and every stage ends with one line: what is done, what is next.
 
 ## 1. Before we start
 
-Cards: `intake-a`, `intake-b`, `intake-c`. Inventory the inputs first — every file with what it is, text extracted where you can (python-docx, python-pptx, `pdftotext`, the transcript itself), written to `packs/<slug>/inventory.md`; a file you cannot open is reported as unreadable, never treated as absent. Then ask only what the inventory did not answer, **all of it in one or two widget calls**. Propose before you ask: state what you found and where, and let the owner correct it. Answers go to `packs/<slug>/intake.md`.
+Cards: `intake-a`, `intake-b`, `intake-c`. Inventory the inputs first — every file with what it is, text extracted where you can (python-docx, python-pptx, `pdftotext`, the transcript itself), written to `<work>/inventory.md`. Then ask only what the inventory did not answer, **all of it in one or two widget calls**. Propose before you ask: state what you found and where, and let the owner correct it. Answers go to `<work>/intake.md`.
 
 ## 2. Research
 
-Card: `research`. No questions here. Fan the five topics out to agents, each reading its own prompt from `references/generalization-method.md` §4 — that file never enters this conversation. Report progress in plain words, check each agent's output file is actually growing, then read `references/research-brief-format.md` and synthesize `packs/<slug>/research-brief.md` yourself, opening it beside the conversation before the next question.
+Card: `research`. No questions here. Fan the five topics out to agents, each reading its own prompt from `references/generalization-method.md` §4 — that file never enters this conversation. Report progress in plain words, then read `references/research-brief-format.md` and synthesize `<work>/research-brief.md` yourself, opening it beside the conversation before the next question.
 
 ## 3. Your call on the research
 
-Card: `research-review`. At most four questions, **one widget call**, only what the research genuinely raised. Where the research is confident and the owner has no stake in the answer, state it and move on.
+Card: `research-review`. At most four questions, **one widget call**, only what the research genuinely raised.
 
 ## 4. The pack's story
 
-Card: `story`. Two or three complete candidates — name, one-liner, problem, solution, who buys it — as **one comparison table**, every cell grounded in the research summary or the inputs, then one widget carrying only the pick. Free text that is a value is applied as given; a direction is re-proposed once. Log the choice in `packs/<slug>/decisions.md`.
+Card: `story`. Two or three complete candidates — name, one-liner, problem, solution, who buys it — as **one comparison table**, every cell grounded in the research summary or the inputs, then one widget carrying only the pick. Free text that is a value is applied as given; a direction is re-proposed once. Log the choice in `<work>/decisions.md`.
 
 ## 5. Everything else, drafted in one pass
 
@@ -48,7 +48,7 @@ While drafting: when something essential is missing, ask rather than invent — 
 
 ## 6. The whole brief
 
-Card: `brief`. One table, one widget — exactly confirm · change · stop. Then set the status, run `shared/tools/py shared/tools/lint_spec.py packs/<slug>/pack-spec.yaml` silently, report it in one plain line, and invoke `/oracle-packs:build packs/<slug>/pack-spec.yaml` at once, in the same session.
+Cards: `brief`, `save`. One table, one widget — exactly confirm · change · stop. Then set the status, run `shared/tools/py shared/tools/lint_spec.py packs/<slug>/pack-spec.yaml` silently, save it, report it in one plain line, and invoke `/oracle-packs:build packs/<slug>/pack-spec.yaml` at once, in the same session.
 
 ## Showing it to the owner
 
@@ -56,11 +56,11 @@ Everything the owner reviews is opened beside the conversation *before* the ques
 
 ## Fast path
 
-When the user asks for one thing ("re-propose the one-liner", "add an industry", "change the price"), load that part's card only, redo it, re-lint, and stop. Never re-run the flow for one field.
+When the user asks for one thing ("re-propose the one-liner", "add an industry", "change the price"), load that part's card only, redo it, re-lint, save it (card `save`), and stop. Never re-run the flow for one field.
 
 ## Done, and the self-check
 
-Done = `pack-spec.yaml` settled and lint-clean; `research-brief.md`, `intake.md`, `inventory.md`, `decisions.md` in the pack folder; the closing message lists the open items and the artifacts to build next. Before you close:
+Done = `pack-spec.yaml` settled, lint-clean and pushed from the repo's `packs/<slug>/`; `research-brief.md`, `intake.md`, `inventory.md`, `decisions.md` in `<work>/`; the closing message lists the open items and the artifacts to build next. Before you close:
 
 - [ ] Every part has a source; the story's parts carry `user:` sources.
 - [ ] No customer name in any component text; clearance set per audience.

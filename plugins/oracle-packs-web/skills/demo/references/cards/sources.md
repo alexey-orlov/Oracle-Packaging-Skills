@@ -13,4 +13,4 @@
 
 **Reconstructing from a recording:** frames at their timestamps, the narration transcribed on-device, any spec sheet shown on screen read out.
 
-**Fills / reads:** the user's answer; the next step writes `packs/<slug>/demo/flow.md`.
+**Fills / reads:** the user's answer; the next step writes `<work>/demo/flow.md`.

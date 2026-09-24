@@ -22,8 +22,9 @@ the same size instead of one substituted face per glyph. An optional `Tier first
 column reports `tier_first_available` per feature.
 
 There is no page footer (the owner, 2026-09-22): the spec version and the build date go into
-the file's own properties. Footnotes carry the caveat alone, and the build says so when there
-are more than three of them or one runs long.
+the file's own properties, and the spec stamp (shared/tools/spec_stamp.py: the spec's sha and
+commit) into its identifier, so the file says which spec it was built from. Footnotes carry
+the caveat alone, and the build says so when there are more than three of them or one runs long.
 
 The feature list carries NO pricing; the build refuses to write a document in which a tier
 price has leaked in.
@@ -76,6 +77,14 @@ try:
     from docx.shared import Inches, Mm, Pt, RGBColor, Twips
 except ImportError:  # pragma: no cover
     sys.exit("build_feature_list: python-docx is required -- pip install -r plugins/oracle-packs/requirements.txt")
+
+HERE = Path(__file__).resolve().parent
+for _up in range(2, 6):                     # the spec stamp: the plugin's synced shared/tools, or the bundle's
+    _shared = HERE.parents[_up] / "shared" / "tools" if len(HERE.parents) > _up else None
+    if _shared is not None and (_shared / "spec_stamp.py").is_file():
+        sys.path.insert(0, str(_shared))
+        break
+import spec_stamp  # noqa: E402  (which spec the file was built from, written into its properties)
 
 # --- brand, from the mini-site's stylesheet (site/assets/site.css) ----------
 DISPLAY_FONT = "Azurio"          # the title only, regular weight, sentence case
@@ -1340,6 +1349,7 @@ def main(argv=None) -> int:
 
     args.out.mkdir(parents=True, exist_ok=True)
     path = args.out / f"{dig(spec, 'meta.slug', 'pack')}-feature-list.docx"
+    built_from = spec_stamp.stamp(args.spec)    # which spec this file reflects (CON006 / CON007)
     last = None
 
     for mode, size in rungs:
@@ -1360,6 +1370,7 @@ def main(argv=None) -> int:
                   f"Pricing belongs on the one-pager and the deck, never here.", file=sys.stderr)
             return 2
 
+        document.core_properties.identifier = built_from
         document.save(str(path))
         if not add_font_table_entries(path):
             print("build_feature_list: could not name the brand faces in word/fontTable.xml; "
@@ -1391,7 +1402,7 @@ def main(argv=None) -> int:
             verified = "page count not verified (--no-check-pages): the estimate is the contract"
 
         report(path, spec, rows, title, headers, mode, size, table_h, budget,
-               args.fit, verified, warning, measurer.source_line())
+               args.fit, verified, warning, measurer.source_line(), built_from)
         return 0
 
     print(fit_report(rows, last[2], last[3], f"{last[0]} at {last[1]:g}pt"), file=sys.stderr)
@@ -1399,7 +1410,7 @@ def main(argv=None) -> int:
 
 
 def report(path, spec, rows, title, headers, mode, size, table_h, budget, fit, verified,
-           warning=None, measured=None):
+           warning=None, measured=None, built_from=None):
     areas = len({r["area"] for r in rows})
     categories = len({(r["area"], r["category"]) for r in rows})
     counts = {k: sum(1 for r in rows if r["status"] == k) for k in GLYPHS}
@@ -1407,6 +1418,8 @@ def report(path, spec, rows, title, headers, mode, size, table_h, budget, fit, v
               else "one row per feature")
     print(f"DOCX  {path}")
     print(f"      {title}")
+    if built_from:
+        print(f"      spec stamp: {built_from}")
     print(f"      {areas} areas / {categories} categories / {len(rows)} features, "
           f"{len(headers)} columns")
     print(f"      status: {counts['available']} available, {counts['partial']} partial, "

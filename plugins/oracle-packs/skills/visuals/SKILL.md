@@ -17,7 +17,7 @@ This step searches openly licensed sources, puts three candidates per picture in
 
 ## Preconditions and inputs
 
-- A confirmed, lint-clean `pack-spec.yaml` (`shared/tools/py shared/tools/lint_spec.py`). Otherwise stop and send the owner to `/oracle-packs:spec` — the industries and the problem/solution wording build the searches.
+- A confirmed, lint-clean `pack-spec.yaml` (`shared/tools/py shared/tools/lint_spec.py`). Otherwise stop and send the owner to `/oracle-packs:spec` — the industries and the problem/solution wording build the searches. The spec is the packaging-skills repo's: `shared/tools/py shared/tools/pack_paths.py <slug>` prints `<repo>` and `<work>`; `git -C <repo> pull --ff-only` before writing into it.
 - Dependencies: Python 3 with `pyyaml` and `Pillow` (`plugins/oracle-packs/requirements.txt`), plus an SVG renderer: `qlmanage` (on every Mac), else `rsvg-convert` or `cairosvg`. Check with `shared/tools/py --check`; tell the owner what to install if it fails, never install into system Python yourself.
 - **Say what is reachable before you start.** Run one search and read what the tool reports: which sources answered, which need a key. When a source that carries contemporary working-life pictures needs a key this machine has not got, say so *before* the first question.
 
@@ -25,7 +25,7 @@ This step searches openly licensed sources, puts three candidates per picture in
 
 1. **List the pictures and count the questions.** One icon per entry in `verticals[]`, plus `today` and `tomorrow`, plus the customer's logo where clearance allows it — not the cover, which carries the family's shared picture unless the owner asks for one of this pack's own. Say the count in one line, in the owner's words: "Six pictures to pick: an icon for each of your four industries, and the two photographs for the before-and-after slide." That count is the `N` every question title carries.
 
-2. **The icon for each industry.** *Cards: `icons.md` and `sources.md`.* Propose three, fetch them in both colours, lay them out as one sheet, open the sheet beside the conversation, then ask.
+2. **The icon for each industry.** *Cards: `icons.md` and `sources.md`.* Propose three, fetch them in both colours, lay them out as one sheet, open the sheet beside the conversation, then ask. Candidates and sheets go under the pack's work folder — `<dir>` is `<work>/candidates/<slot>` (`shared/tools/pack_paths.py <slug>`) — never into the repo.
 
        shared/tools/py tools/suggest_icons.py "<industry>" --context "<its 'what matters here' line>"
        shared/tools/py tools/fetch_icon.py <name> --out <dir> --slot vertical:<i>
@@ -37,11 +37,11 @@ This step searches openly licensed sources, puts three candidates per picture in
 
 4. **The customer's logo.** *Card: `customer-logo.md`.* Only when `clearance.customer_name_allowed` is true for some audience. One question — a widget offering "I'll give the path" free text, or skip — from the owner's engagement materials. **Never search the web for a logo:** a company's mark is a trademark, not an openly licensed picture.
 
-5. **Record each choice.** *Card: `record.md`.* One command per picture; it copies the file, writes the key, credits it and logs the decision.
+5. **Record each choice.** *Card: `record.md`.* One command per picture; it copies the file into the repo's `packs/<slug>/visuals/` — the spec names it, and a colleague's build needs it — writes the key, credits it and logs the decision in `<work>/decisions.md`.
 
        shared/tools/py tools/apply_choice.py <spec> --slot <slot> --file <the chosen file> --note "<their reason>"
 
-6. **Close.** *Card: `close.md`.* What was chosen, where the files are, and every slot still open with what would unblock it. That list is the open items; do not bury it.
+6. **Close.** *Cards: `close.md`, and the spec skill's `save`.* Save the pictures and the brief to the shared repo (`<what>` = `pictures`). Then what was chosen, where the files are, and every slot still open with what would unblock it. That list is the open items; do not bury it.
 
 **How we talk to the owner:** `${CLAUDE_PLUGIN_ROOT}/skills/spec/references/cards/owner-language.md`, loaded at start-up, governs every message, question and option.
 
@@ -51,7 +51,7 @@ Everything the owner reviews is opened beside the conversation *before* the ques
 
 ## Definition of done
 
-Every industry has an icon, both photographs are chosen, and the logo is recorded or named as open. Every file is in `packs/<slug>/visuals/` with its credits row, the brief carries the choices and still passes `lint_spec.py`, and the decisions are logged in `packs/<slug>/decisions.md`.
+Every industry has an icon, both photographs are chosen, and the logo is recorded or named as open. Every chosen file is in the repo's `packs/<slug>/visuals/` with its credits row, the brief carries the choices and still passes `lint_spec.py`, both are saved to the shared repo, and the decisions are logged in `<work>/decisions.md`.
 
 ## Self-check before closing
 

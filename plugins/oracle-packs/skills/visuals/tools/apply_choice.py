@@ -8,11 +8,13 @@
 Four things happen, in this order, and either all of them or none:
 
   1. the chosen file (and, for an icon, its other colour render) is copied into
-     `packs/<slug>/visuals/`;
+     `packs/<slug>/visuals/` beside the spec, in the packaging-skills repo;
   2. the spec key for the slot is written — `verticals[i].icon`, `deck.images.today`,
      `deck.images.tomorrow`, `one_pager.images.hero` (the list is in visuals_common.SLOT_KINDS);
   3. a row is appended to `packs/<slug>/visuals/credits.md`;
-  4. a line is appended to `packs/<slug>/decisions.md`.
+  4. a line is appended to the pack's decisions log, `<work>/decisions.md` — the local work
+     folder `shared/tools/pack_paths.py` names ($ORACLE_PACKS_OUT/<slug>, else
+     ~/oracle-packs/<slug>), never the repo.
 
 The spec is edited **in place as text**, not re-serialized: comments, block scalars and key order in
 a hand-written spec survive. The edit is verified by re-parsing and comparing everything except the
@@ -41,6 +43,7 @@ import os
 import re
 import shutil
 import sys
+from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from visuals_common import (  # noqa: E402
@@ -48,6 +51,14 @@ from visuals_common import (  # noqa: E402
     SUPPLIED_SOURCE, SUPPLIED_TERMS, credits_line, eprint, load_spec, pack_dir, parse_slot,
     provenance_record, read_sidecar, slot_kind, slot_spec_path, slugify, write_sidecar,
 )
+
+_HERE = Path(__file__).resolve().parent
+for _up in range(2, 6):                     # pack_paths: the plugin's synced shared/tools, or the bundle's
+    _shared = _HERE.parents[_up] / "shared" / "tools" if len(_HERE.parents) > _up else None
+    if _shared is not None and (_shared / "pack_paths.py").is_file():
+        sys.path.insert(0, str(_shared))
+        break
+import pack_paths  # noqa: E402  (the decisions log lives in the local work folder, not the repo)
 
 DEFAULT_LIBRARY = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))),
@@ -250,8 +261,22 @@ def append_credits(visuals: str, rec: dict) -> str:
     return path
 
 
-def append_decision(pack: str, slot: str, rec: dict, note: str) -> str:
-    path = os.path.join(pack, "decisions.md")
+def work_folder(spec_path: str, spec: dict) -> str:
+    """The pack's local work folder (pack_paths.py): the decisions log never enters the repo.
+
+    The slug is the spec's folder name (`packs/<slug>/`), else `meta.slug`. A spec kept in a
+    folder with neither a valid slug keeps its log beside it, as before 2026-09-24.
+    """
+    meta_slug = str(((spec or {}).get("meta") or {}).get("slug") or "")
+    for candidate in (os.path.basename(pack_dir(spec_path)), meta_slug):
+        if pack_paths.SLUG_RE.match(candidate):
+            return pack_paths.work_dir(candidate)
+    return pack_dir(spec_path)
+
+
+def append_decision(work: str, slot: str, rec: dict, note: str) -> str:
+    os.makedirs(work, exist_ok=True)
+    path = os.path.join(work, "decisions.md")
     fresh = not os.path.exists(path)
     with open(path, "a", encoding="utf-8") as fh:
         if fresh:
@@ -435,7 +460,8 @@ def main(argv: list[str]) -> int:
     credits = decisions = lib = None
     if not args.dry_run:
         credits = append_credits(visuals, rec_for_credits)
-        decisions = append_decision(pack, args.slot, rec_for_credits, args.note)
+        decisions = append_decision(work_folder(args.spec, spec), args.slot, rec_for_credits,
+                                    args.note)
         if args.add_to_library and kind == "icon":
             vname = ""
             base, idx = parse_slot(args.slot)
@@ -453,7 +479,7 @@ def main(argv: list[str]) -> int:
     if credits:
         print(f"  credits {os.path.relpath(credits, pack)}")
     if decisions:
-        print(f"  logged  {os.path.relpath(decisions, pack)}")
+        print(f"  logged  {decisions}")
     if lib:
         print(f"  library {lib}")
     return EXIT_OK

@@ -1,6 +1,6 @@
 # Research brief format
 
-The summary the owner reads **after** the research and **before** they pick a pack story. Written by `/oracle-packs:spec` stage 2 to `packs/<slug>/research-brief.md`, cited by `provenance.research_brief`. The method that fills it is `generalization-method.md`, read by the research agents; the epistemic rules are `shared/references/research-standards.md`. Rewrite this file in place when the format changes.
+The summary the owner reads **after** the research and **before** they pick a pack story. Written by `/oracle-packs:spec` stage 2 to `<work>/research-brief.md` (the pack's local work folder, `shared/tools/pack_paths.py`; never the repo), cited by `provenance.research_brief`. The method that fills it is `generalization-method.md`, read by the research agents; the epistemic rules are `shared/references/research-standards.md`. Rewrite this file in place when the format changes.
 
 **One decision it serves:** which generalized pack we are building; anything that does not support that choice is cut. It is internal — counts, internal framings and open risks belong here, and the artifact skills strip them later. **Its reader** is the owner, who knows the delivered engagement and nothing about how the research ran: no step or test ids, no file or key names, no packaging vocabulary. Findings are named by what they are — "the research on what the vendors already ship" — never by the prompt behind them.
 

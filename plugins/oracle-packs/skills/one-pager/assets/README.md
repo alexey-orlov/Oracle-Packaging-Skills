@@ -9,13 +9,15 @@ Optimization build source (2026-07-17) and the content replaced by tokens. Rende
 
 ```sh
 shared/tools/py plugins/oracle-packs/skills/one-pager/tools/build_one_pager.py \
-    packs/<slug>/pack-spec.yaml \
-    --out packs/<slug>/artifacts \
+    <repo>/packs/<slug>/pack-spec.yaml \
+    --out <work>/artifacts \
     --channel partner_print \
     --hero /path/to/approved-hero.jpg          # optional
 ```
 
-`--help` lists every option. Paths are arguments — nothing is hard-coded to one machine.
+`--help` lists every option. Paths are arguments — nothing is hard-coded to one machine. `<repo>`
+and `<work>` are what `shared/tools/py shared/tools/pack_paths.py <slug>` prints: the spec is read
+from the packaging-skills repo, and the page is written to the local work folder, never the repo.
 
 | Flag | Effect |
 |---|---|
@@ -26,7 +28,9 @@ shared/tools/py plugins/oracle-packs/skills/one-pager/tools/build_one_pager.py \
 | `--template <file>` | Render a variant template instead of this one. |
 
 Outputs `<slug>-one-pager-<channel>.html` and `.pdf` into `--out`. The HTML is kept on purpose: it
-is the editable source, and the PDF is a render of it.
+is the editable source, and the PDF is a render of it. Both carry the spec stamp
+(`shared/tools/spec_stamp.py`): the HTML in `<meta name="pack-spec">` (the template's
+`{{ spec_stamp }}` slot), the PDF in its `/PackSpec` metadata.
 
 ## Dependencies
 

@@ -17,4 +17,4 @@
 **Good.** "Two of the capability rows come from the research rather than from what we built — confirm them, or move them to the roadmap."
 **Bad.** "`capabilities[2].status` failed the third check; rerun the linter."
 
-**Reads:** the artifact skill's review pack. The approval is logged at delivery (card: `delivery`).
+**Reads:** the artifact skill's review pack. **Writes:** the approval into `<work>/decisions.md`, with the file's spec stamp.

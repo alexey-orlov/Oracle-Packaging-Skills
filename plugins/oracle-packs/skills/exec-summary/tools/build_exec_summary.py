@@ -35,6 +35,13 @@ from deckkit import (                                         # noqa: E402
     stacked_height, strip_slides, textbox,
 )
 
+for _up in range(2, 6):                     # the spec stamp: the plugin's synced shared/tools, or the bundle's
+    _shared = _HERE.parents[_up] / "shared" / "tools" if len(_HERE.parents) > _up else None
+    if _shared is not None and (_shared / "spec_stamp.py").is_file():
+        sys.path.insert(0, str(_shared))
+        break
+import spec_stamp                                             # noqa: E402  (which spec the slide was built from)
+
 BASE_DEFAULT = (_HERE.parents[1] / "deck" / "assets" / "softserve-deck-base.pptx")
 
 # The family name on every print artifact, as the mini-site's lockup carries it.
@@ -516,7 +523,8 @@ def add_closing(prs, fit: FitLog, line: str | None = None):
 
 
 def build(spec: Spec, base: Path, out_dir: Path, fit: FitLog,
-          host: Path | None, with_closing: bool, title: str | None) -> Path:
+          host: Path | None, with_closing: bool, title: str | None,
+          stamp: str | None = None) -> Path:
     if host:
         prs = Presentation(str(host))
         strip_slides(prs)
@@ -531,6 +539,9 @@ def build(spec: Spec, base: Path, out_dir: Path, fit: FitLog,
     out_dir.mkdir(parents=True, exist_ok=True)
     slug = spec.get("meta.slug", "pack")
     out = out_dir / f"{slug}-exec-summary.pptx"
+    if stamp:
+        # which spec this file reflects (CON006 / CON007); it replaces a host deck's own identifier
+        prs.core_properties.identifier = stamp
     prs.save(str(out))
     return out
 
@@ -571,15 +582,17 @@ def main(argv=None) -> int:
         print(f"error: {exc}", file=sys.stderr)
         return 2
     fit = FitLog()
+    built_from = spec_stamp.stamp(args.spec)
     try:
         out = build(spec, Path(args.base), Path(args.out), fit,
                     Path(args.host_deck) if args.host_deck else None,
-                    args.with_closing, args.title)
+                    args.with_closing, args.title, stamp=built_from)
     except SpecError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
 
     print(f"built {out}")
+    print(f"spec stamp: {built_from}")
     print(fit.report(verbose=args.fit_report))
     if fit.problems() and not args.allow_overflow:
         return 1

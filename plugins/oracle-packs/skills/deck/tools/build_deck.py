@@ -38,6 +38,13 @@ from deckkit import (                                        # noqa: E402
     stacked_height, textbox, wrap_count,
 )
 
+for _up in range(2, 6):                     # the spec stamp: the plugin's synced shared/tools, or the bundle's
+    _shared = _HERE.parents[_up] / "shared" / "tools" if len(_HERE.parents) > _up else None
+    if _shared is not None and (_shared / "spec_stamp.py").is_file():
+        sys.path.insert(0, str(_shared))
+        break
+import spec_stamp                                            # noqa: E402  (which spec the deck was built from)
+
 BASE_DEFAULT = _HERE.parent / "assets" / "softserve-deck-base.pptx"
 
 # The shared icon library — plugin copy first, then a source checkout, the same
@@ -1291,7 +1298,8 @@ BUILDERS = [
 ]
 
 
-def build(spec: Spec, base: Path, out_dir: Path, fit: FitLog) -> tuple[Path, dict, str]:
+def build(spec: Spec, base: Path, out_dir: Path, fit: FitLog,
+          stamp: str | None = None) -> tuple[Path, dict, str]:
     prs = open_base(base)
     layout = pick_layout(prs, "ShortTitle-Empty", "Title-1Column")
     header_tpl = spec.get("deck.running_header") or DEFAULT_HEADER
@@ -1312,6 +1320,8 @@ def build(spec: Spec, base: Path, out_dir: Path, fit: FitLog) -> tuple[Path, dic
     out_dir.mkdir(parents=True, exist_ok=True)
     slug = spec.get("meta.slug", "pack")
     out = out_dir / f"{slug}-sales-deck.pptx"
+    if stamp:
+        prs.core_properties.identifier = stamp      # which spec this file reflects (CON006 / CON007)
     prs.save(str(out))
     return out, model, header
 
@@ -1342,13 +1352,15 @@ def main(argv=None) -> int:
         return 2
     spec.spec_dir = Path(args.spec).resolve().parent   # picture paths hang off it
     fit = FitLog()
+    built_from = spec_stamp.stamp(args.spec)
     try:
-        out, model, header = build(spec, Path(args.base), Path(args.out), fit)
+        out, model, header = build(spec, Path(args.base), Path(args.out), fit, stamp=built_from)
     except SpecError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
 
     print(f"built {out}  ({len(BUILDERS)} slides, channel={args.channel})")
+    print(f"spec stamp: {built_from}")
     print(f"running header on slides 2-10: {header}")
     print(fit.report(verbose=args.fit_report))
     print("")

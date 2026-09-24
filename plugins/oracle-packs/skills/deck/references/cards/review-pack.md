@@ -20,4 +20,4 @@
 **Good.** "Three of your four industries have a picture. Transport kept a stand-in, so it still needs one you choose."
 **Bad.** "`verticals[2].icon` unresolved; exemplar fallback applied."
 
-**Writes:** the owner's approval and the decisions taken, into `packs/<slug>/decisions.md`.
+**Writes:** the owner's approval and the decisions taken, into `<work>/decisions.md`.

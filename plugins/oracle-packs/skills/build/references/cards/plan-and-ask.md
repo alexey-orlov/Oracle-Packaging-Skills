@@ -2,7 +2,7 @@
 
 **What this is.** The message that opens the run: the artifacts in order, each reviewed before the next, plus the one question the intake left open.
 
-**Do not re-ask what stage 1 settled.** Read `packs/<slug>/intake.md`: it holds which artifacts the owner wants — the answer to "Which of these do you want at the end?" — and often who will see the printed documents. When it answers, ask nothing: state it in the map and build.
+**Do not re-ask what stage 1 settled.** Read `<work>/intake.md`: it holds which artifacts the owner wants — the answer to "Which of these do you want at the end?" — and often who will see the printed documents. When it answers, ask nothing: state it in the map and build.
 
 **The map**, one short message in the owner's words: the artifacts by name, in order (card: `artifact-order`), each reviewed before the next; where the files land; and that the printed documents are cut for Oracle and SoftServe sellers (`partner_print`) unless the owner says "our own team" (`internal`: prices in full and named accounts where the pack brief allows) — in reply, or at any review, in free text.
 
@@ -19,4 +19,4 @@
 3. No question bundles several artifacts into one option. Skipping means all six.
 4. Neither `partner_print`/`internal` nor the plugin behind an artifact reaches owner-facing text.
 
-**Reads:** `packs/<slug>/intake.md`. **Settles:** the artifact set and the channel.
+**Reads:** `<work>/intake.md`. **Settles:** the artifact set and the channel.
