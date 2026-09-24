@@ -965,18 +965,22 @@ fi
 # ------------------------------------------ the figure-less metric caveat, one wording
 # Where no cleared figure stands, the deck's proof tiles, the one-pager's strip and the
 # executive summary all say "to be measured in the proof of value"; the one-pager and
-# the executive summary add "results to follow." One wording in three builders, so the
-# artifacts of one pack cannot disagree on tense (2026-09-23).
+# the executive summary add "results to follow." One wording, held in shared/tools/
+# specfmt.py and used by all three builders, so the artifacts of one pack cannot
+# disagree on tense (2026-09-23).
 say ""
 say "the figure-less metric caveat"
+run_case "specfmt holds the words" 0 \
+  env PYTHONPATH="$TOOLS" "$PY" -c 'import sys, specfmt
+ok = (specfmt.FIGURELESS_PHRASE == "to be measured in the proof of value"
+      and specfmt.FIGURELESS_CAVEAT == "To be measured in the proof of value; results to follow.")
+sys.exit(0 if ok else 1)'
 for f in deck/tools/build_deck_v2.py one-pager/tools/build_one_pager.py \
          exec-summary/tools/build_exec_summary.py; do
-  run_case "$(basename "$f") says 'to be measured in the proof of value'" 0 \
+  run_case "$(basename "$f") prints specfmt's words" 0 \
+    grep -q "FIGURELESS_" "$PLUGIN/skills/build/$f"
+  run_case "$(basename "$f") carries no copy of them" 1 \
     grep -q -i "to be measured in the proof of value" "$PLUGIN/skills/build/$f"
-done
-for f in one-pager/tools/build_one_pager.py exec-summary/tools/build_exec_summary.py; do
-  run_case "$(basename "$f") adds 'results to follow.'" 0 \
-    grep -q "in the proof of value; results to follow." "$PLUGIN/skills/build/$f"
 done
 
 # ----------------------------------------------- one price format on every artifact
@@ -1001,6 +1005,30 @@ for block, want in cases:
     page = html.unescape(op.money(block))
     if deck != want or page != want:
         bad.append(f"{block}: deck {deck!r}, one-pager {page!r}, want {want!r}")
+print("\n".join(bad) or "all agree")
+sys.exit(1 if bad else 0)'
+else
+  say "  (skipped: python-pptx is not installed)"
+fi
+
+# The duration too: the one-pager honoured `duration_label` while the deck and the
+# executive summary ignored it (2026-09-24). One function, three builders.
+say ""
+say "one duration format on every artifact"
+if "$PY" -c "import pptx" >/dev/null 2>&1; then
+  run_case "specfmt, the deck kit and the one-pager print one duration" 0 \
+    env PYTHONPATH="$TOOLS:$PLUGIN/skills/build/one-pager/tools" "$PY" -c 'import html, sys
+import deckkit, build_one_pager as op
+cases = [({"duration_weeks": {"min": 4, "max": 8}}, "4–8 weeks"),
+         ({"duration_weeks": {"target": 6}}, "6 weeks"),
+         ({"duration_weeks": 10}, "10 weeks"),
+         ({"duration_label": "6 weeks, then monthly", "duration_weeks": {"target": 6}}, "6 weeks, then monthly")]
+bad = []
+for tier, want in cases:
+    deck = deckkit.fmt_duration(tier)
+    page = html.unescape(op.duration(tier))
+    if deck != want or page != want:
+        bad.append(f"{tier}: deck {deck!r}, one-pager {page!r}, want {want!r}")
 print("\n".join(bad) or "all agree")
 sys.exit(1 if bad else 0)'
 else

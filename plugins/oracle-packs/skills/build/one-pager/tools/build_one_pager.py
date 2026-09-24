@@ -250,16 +250,9 @@ def money(block, footnote_mark="*"):
 
 
 def duration(tier):
-    if tier.get("duration_label"):
-        return html.escape(str(tier["duration_label"]))
-    weeks = tier.get("duration_weeks") or {}
-    if not isinstance(weeks, dict):
-        return f"{weeks} weeks"
-    low, high, target = weeks.get("min"), weeks.get("max"), weeks.get("target")
-    if low and high and low != high:
-        return f"{low}&ndash;{high} weeks"
-    single = target or low or high
-    return f"{single} weeks" if single else TBD
+    """A package's duration, as every artifact prints it (shared/tools/specfmt.py)."""
+    text = specfmt.duration_text(tier)
+    return html.escape(text) if text else TBD
 
 
 def level_for(entry, tier_id, label):
@@ -387,7 +380,7 @@ def build_context(spec: dict, channel: str, hero: Path | None) -> tuple[dict, li
             stats.append({"figure": chip, "prefix": None, "suffix": None, "text": True,
                           "label": kpi.get("one_pager_label") or kpi.get("label") or kpi.get("name", "")})
         if not caveats:
-            caveats.append("To be measured in the proof of value; results to follow.")   # once, under the strip, not per tile; the same words as the executive summary
+            caveats.append(specfmt.FIGURELESS_CAVEAT)   # once, under the strip, not per tile; the executive summary's words
     logo = op.get("proof_logo") if name_allowed else None
     if name_allowed and not logo:
         deck_logo = dig(spec, "deck.images.customer_logo", None)   # the deck's cleared logo: one file for both

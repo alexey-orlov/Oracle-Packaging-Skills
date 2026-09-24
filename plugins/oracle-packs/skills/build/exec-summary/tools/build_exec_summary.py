@@ -33,7 +33,7 @@ from pptx import Presentation                                 # noqa: E402
 from deckkit import (                                         # noqa: E402
     C, FitLog, TITLE_BOX, copy_slide_number, Spec, SpecError, autofit_paras, autofit_pt, fmt_duration,
     fmt_price, log_box, new_slide, open_base, panel, pick_layout, rect,
-    stacked_height, strip_slides, textbox,
+    stacked_height, strip_slides, textbox, specfmt_module,
 )
 
 import spec_stamp                                             # noqa: E402  (which spec the slide was built from)
@@ -73,7 +73,7 @@ LABEL = {"sz": 8, "b": True, "color": C["blue"]}
 # The anatomy's idiom for absence: one grey line, label-sized, saying what is missing.
 ABSENT = {"sz": 8, "color": C["muted_light"], "align": "r"}
 
-FIGURELESS_CAVEAT = "To be measured in the proof of value; results to follow."
+FIGURELESS_CAVEAT = specfmt_module().FIGURELESS_CAVEAT
 
 # Who may be named where, in the words the notes use.
 CHANNEL_WORDS = (("internal", "the internal cut"), ("partner_print", "partner print"),
@@ -288,7 +288,7 @@ def block_packages(s, spec: Spec, fit: FitLog) -> tuple[bool, bool]:
         else:
             absent_line(s, fit, px, y + 0.09, price_w, "Services price: to be defined",
                         f"tier {i+1} price")
-        duration = fmt_duration(t.get("duration_weeks"), tbd="")
+        duration = fmt_duration(t, tbd="")
         if duration:
             textbox(s, px, y + 0.32, price_w, 0.18,
                     [{"t": duration, "sz": 8.5, "color": C["muted"], "align": "r"}])

@@ -816,11 +816,6 @@ def fmt_price(price: dict | None, tbd: str = "To be defined") -> tuple[str, bool
     return (text, footnote) if text else (tbd, False)
 
 
-def fmt_duration(d: dict | None, tbd: str = "To be defined") -> str:
-    if not d:
-        return tbd
-    lo, hi, target = d.get("min"), d.get("max"), d.get("target")
-    if lo and hi and lo != hi:
-        return f"{lo}–{hi} weeks"
-    v = target or lo or hi
-    return f"{v} weeks" if v else tbd
+def fmt_duration(tier: dict | None, tbd: str = "To be defined") -> str:
+    """A package's duration, as every artifact prints it (shared/tools/specfmt.py)."""
+    return specfmt_module().duration_text(tier) or tbd

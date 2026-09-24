@@ -37,7 +37,7 @@ for _up in range(2, 6):                     # the plugin's shared/tools
         break
 
 from deckkit import (  # noqa: E402  (deliberate: import, never edit)
-    FitLog, Spec, SpecError, fmt_duration, fmt_price, product_name,
+    FitLog, Spec, SpecError, fmt_duration, fmt_price, product_name, specfmt_module,
 )
 import exemplar as ex  # noqa: E402
 import build_diagram as diagram  # noqa: E402  (the one architecture model, shared by all three artifacts)
@@ -659,7 +659,7 @@ class Build:
             else:   # the metric's name where the figure will stand, and what it measures
                 figure = re.sub(r"\s*[↑↓→]+\s*$", "", clean(kpi.get("chip"))) or clean(kpi.get("name"))
                 label = (clean(kpi.get("label") or kpi.get("name"))
-                         + " — to be measured in the proof of value")   # the same words as the one-pager and the executive summary
+                         + " — " + specfmt_module().FIGURELESS_PHRASE)   # the one-pager's and the executive summary's words
             v = ex.by_id(slide, stat["value"])
             l = ex.by_id(slide, stat["label"])
             ex.fill_text(v, figure)
@@ -1404,7 +1404,7 @@ class Build:
                     ex.fill_cell(table.cell(rows[row_key], ci), text)
             for ci, tier in enumerate(tiers[:len(col_w) - 1], start=1):
                 ex.fill_cell(table.cell(rows["timing"], ci),
-                             fmt_duration(tier.get("duration_weeks")))
+                             fmt_duration(tier))
 
         handling = list(self.spec.get("packages.capability_handling", []) or [])
         first = rows["capability_first"]
