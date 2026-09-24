@@ -5,7 +5,7 @@
 It exists for three jobs:
 
 1. **A reading model for `/oracle-packs:spec`** — what a complete, evidence-bound spec looks like, including how absences and disagreements are recorded rather than smoothed over.
-2. **The acceptance fixture for the builder skills** — regenerating the five delivered WfO artifacts from this file, and matching them, is the end-to-end test in `docs/PLAN.md` §7 step 4.
+2. **A round-trip case for the spec loader** — the suite loads and re-renders it on every run.
 3. **A worked example of `shared/references/pack-anatomy.md`** — every component in that reference has its filled counterpart here.
 
 ## Status

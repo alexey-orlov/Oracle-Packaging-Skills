@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""The pack spec: one Markdown file per pack, one loader, one writer (docs/SPEC-MARKDOWN.md).
+"""The pack spec: one Markdown file per pack, one loader, one writer.
 
     from packspec import load, dump, save, SpecError
     data, linemap = load("packs/<slug>/pack-spec.md")

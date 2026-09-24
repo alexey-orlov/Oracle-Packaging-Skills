@@ -370,7 +370,7 @@ run_case "a missing spec is a usage error" 2 \
   "$PY" "$TOOLS/lint_spec.py" "$WORK/not-here.md"
 
 # ----------------------------------------------------- packspec.py, the spec in Markdown
-# The one spec loader and writer (docs/SPEC-MARKDOWN.md). Every spec in the repo — the packs,
+# The one spec loader and writer. Every spec in the repo — the packs,
 # the worked example, the fixtures — round-trips exactly: load(dump(d)) == d, and a file
 # already in the canonical form re-renders to itself. A structural slip is a finding on its
 # own line, never a guess; a key the layout does not know is kept and named.

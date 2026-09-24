@@ -10,9 +10,9 @@ card, a corner, a fill or a font: geometry, type, colour, corner radius, table
 idiom, icons and the running header come from `assets/exemplar/wfo-sales-deck.pptx`
 by construction.
 
-This is stage 2 of `docs/DECK-FIDELITY.md`. It exists because the redrawn builder
-had to re-derive hundreds of design decisions from measurements, and every one of
-them could drift — the owner's seven findings were all drift of that kind.
+The deck is filled, never redrawn: a redraw re-derives hundreds of design decisions
+from measurements, and every one of them can drift — the owner's seven findings on
+the first redrawn deck (2026-09-22) were all drift of that kind.
 
 ## How a build runs
 
@@ -69,7 +69,7 @@ looking at it, then reading the shape's XML.
 - **Cover text is one placeholder, not two.** Shape 3 holds the pack name (p0,
   44 pt) and the one-liner (p1, 25 pt). Shape 2 is the tier ladder
   ("PROOF OF VALUE · ROLL-OUT · SCALING"). The tier line is a finding
-  (DECK-FIDELITY #2), so its text is replaced by the ICP line — same shape, same
+  (the owner's review, 2026-09-22), so its text is replaced by the ICP line — same shape, same
   type, no tier eyebrow anywhere on the deck.
 - **The problem card body (ref 2, shape 9) has five paragraph shapes in one box**:
   a lead with a bold clause, a blank spacer, "This leads to the following
@@ -80,9 +80,10 @@ looking at it, then reading the shape's XML.
   therefore placed into *formatting-distinct* runs (bold/size/colour/typeface), so
   "bold lead + regular tail" lands correctly whatever the run soup underneath.
 - **The verticals' icons (ref 3) are 1.06 in white PNGs**, centred on a 2.245 in
-  blue panel. They are replaced in place when `assets/icons/map.yaml` exists; with
-  no map, or no keyword match, the exemplar's own icon stays and the build says so.
-  A numeral is never printed (DECK-FIDELITY #4).
+  blue panel. Each is replaced in place by the icon the owner picked
+  (`verticals[].icon`, its white render), else by the shared icon library's keyword
+  match; with neither, the exemplar's own icon stays and the build says so. A
+  numeral is never printed.
 - **Slides 4 and 5 carry the source customer's logo** (a Bosch PNG). It is removed
   unless `clearance.customer_name_allowed[channel]` is true **and**
   `deck.images.customer_logo` is given. With the logo gone, the headline moves to

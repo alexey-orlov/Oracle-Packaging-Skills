@@ -4,7 +4,7 @@
     build_deck_v2.py <pack-spec.md> --out <dir> [--channel partner_print|internal]
                      [--fit-report] [--allow-overflow] [--exemplar <pptx>]
 
-Stage 2 of docs/DECK-FIDELITY.md — "clone, don't redraw". The reference
+"Clone, don't redraw." The reference
 Workforce Optimization deck ships as `assets/exemplar/wfo-sales-deck.pptx`; this
 builder opens a copy of it in memory, keeps the slides the anatomy maps to,
 duplicates the one slide type the reference lacks, and then only ever

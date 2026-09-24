@@ -101,9 +101,7 @@ plugins/oracle-packs/               spec · feature-list · deck · one-pager ·
 plugins/oracle-packs-web/           listing · demo
 packs/<slug>/                       one pack's shared files, and only these (.gitignore keeps out the rest): pack-spec.md · visuals/ (the pictures the spec names, their provenance .json files, credits.md)
 examples/workforce-optimization/    the worked example spec
-docs/PLAN.md                        the build plan and the rules overview
 docs/DECISIONS.md                   the owner decisions the skills implement
-docs/TEST-REPORT.md                 the integration pass: what ran, what was fixed, what is still rough
 docs/settings.example.json          the permission allow-list for the toolchain
 ```
 
