@@ -5,9 +5,8 @@
 # charged to that step's budget; `agents` files are read by a subagent in its
 # own fresh context and are reported, not charged.
 #
-# Not listed anywhere, on purpose: `references/deck-anatomy.md` (long form —
-# the runtime cards are slides-1-5.md and slides-6-10.md),
-# `references/reference-geometry.json` (read by tools/lint_deck.py),
+# Not listed anywhere, on purpose: `references/reference-geometry.json` (read by
+# tools/lint_deck.py),
 # `references/brand-tokens.md` and `references/exemplar-builder.md` (builder
 # documentation). See docs/CONTEXT-BUDGET.md.
 #

@@ -8,9 +8,8 @@
 # Not listed anywhere, on purpose: `assets/reference-demo/` and
 # `assets/tour-engine.js` are CODE the builder copies and adapts — open the one
 # file you are adapting, never the folder, and never into the conversation. The
-# long references the cards replace (`references/demo-playbook.md`,
-# `references/demo-data-model.md`, `assets/tour-engine.md`) reach a subagent or
-# nothing at all.
+# long references (`references/demo-data-model.md`, `assets/tour-engine.md`) reach
+# a subagent only.
 #
 # Checked by: shared/tools/context_budget.py (see docs/CONTEXT-BUDGET.md).
 

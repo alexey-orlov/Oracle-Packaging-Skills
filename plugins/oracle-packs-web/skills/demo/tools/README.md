@@ -4,6 +4,12 @@
 |---|---|
 | `capture-demo-frames.mjs` | Drives a walkthrough in headless Chrome over the DevTools protocol: scripted click-through for QA, and screenshot capture for the listing's step frames and poster. |
 
+## Serving a walkthrough for QA
+
+Serve the demo's folder over HTTP bound to 127.0.0.1 (`python3 -m http.server --bind 127.0.0.1`)
+and browse `http://127.0.0.1:<port>` — not `localhost`, whose cache goes stale — or open it as a
+`file://` URL: the walkthroughs are static and have no build step.
+
 ## Requirements — check before planning around them
 
 - **Node ≥ 22.** The script uses the built-in `fetch` and `WebSocket`; there is nothing to `npm install`. It prints a clear message and **exits 3** on an older Node. Exit 3 means *the environment cannot do this yet* — retry after fixing it; never record it as a result.

@@ -8,7 +8,6 @@
 | `exemplar/slots.json` | semantic slot → shape id on each exemplar slide, with the exemplar's SHA-256. Re-derive it if the exemplar is ever replaced. |
 | `softserve-deck-base.pptx` | 41 KB single-slide SoftServe shell (master, theme, logo, one layout). The executive summary builds on it when no host deck is given. |
 | `../references/exemplar-builder.md` | how the filling works, how every ambiguous shape was resolved, and where the builder does compute a number |
-| `../references/deck-anatomy.md` | the 10-slide anatomy: purpose, components, which exemplar slide, what varies, what is removed, word budgets |
 | `../references/brand-tokens.md` | colours, fonts + fallbacks, the base's layouts, the text-fit rule |
 | `../references/reference-geometry.json` | the exemplar measured — per slide the rounded-shape and picture counts, fonts and sizes, the cover block, the icon and picture slots, the table type floors. What `lint_deck.py` holds a build to. |
 | `../tools/build_deck_v2.py` | **the builder** |

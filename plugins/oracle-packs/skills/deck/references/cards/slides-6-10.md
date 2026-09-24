@@ -1,6 +1,6 @@
 # Slides 6–10 — what each carries
 
-**What this is.** Slides 6–10: the spec keys each carries, and what must be true of it. Long form: `references/deck-anatomy.md`.
+**What this is.** Slides 6–10: the spec keys each carries, and what must be true of it.
 
 **6 Why it sells for the partner's seller.** `packages.why_it_sells_for_the_partner` · `packages.target_oci_consumption` · the channel's contact.
 

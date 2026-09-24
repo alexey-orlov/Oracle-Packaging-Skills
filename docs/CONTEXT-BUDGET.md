@@ -48,9 +48,7 @@ The same restructuring cut `/oracle-packs:spec`'s run from about 30 questions to
 | `spec/references/generalization-method.md` | 6,071 | `agents` only — each research agent reads its own prompt. |
 | `demo/assets/reference-demo/` + `tour-engine.js` | 26,463 | Code to copy and adapt, never reading material. In no list; the build card says to open the one file being adapted, never the folder. |
 | `listing/references/listing-schema.md` | 4,175 | Long form; the runtime cards are `entry-identity`, `entry-overview`, `entry-case-study`, `entry-technology`, `entry-jumpstart`. |
-| `deck/references/deck-anatomy.md` | 3,816 | Long form; the runtime cards are `slides-1-5.md` and `slides-6-10.md`. |
 | `listing/assets/exemplar-product-entry.js` | 3,543 | `agents` only, on the copy step. Generated from the live site by `tools/refresh-exemplar.mjs`, never edited by hand. |
-| `demo/references/demo-playbook.md` | 2,887 | Split across the demo's per-step cards. |
 | `feature-list/references/feature-list-anatomy.md` | 2,421 | Long form; the runtime cards are `build`, `does-not-fit`, `footnotes`, `statuses-and-wording`. |
 | `listing/references/listing-rules.md` | 2,121 | Long form; the runtime cards are `claim-rules`, `copy-rules`, `exemplar-altitude`. |
 | `shared/references/talking-to-the-owner.md` | 1,785 | Long form. The runtime card is each skill's `owner-language.md` (≤400 words). |

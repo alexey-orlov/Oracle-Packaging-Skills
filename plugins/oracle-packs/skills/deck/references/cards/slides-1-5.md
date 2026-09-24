@@ -1,6 +1,6 @@
 # Slides 1–5 — what each carries
 
-**What this is.** Slides 1–5: the keys each carries and what must be true of it. Long form: `deck-anatomy.md`.
+**What this is.** Slides 1–5: the keys each carries and what must be true of it.
 
 **1 Cover.** `meta.name` (the channel's variant) · `one_liner.short` · `icp` · `deck.images.cover`.
 
