@@ -39,7 +39,7 @@ A bare filesystem path is turned into a `file://` URL, so a demo can be captured
 with no web server:
 
 ```sh
-node capture-demo-frames.mjs --demo ../assets/reference-demo/index.html --out ./qa --scenario tour.json
+node capture-demo-frames.mjs --demo <site>/site/demo/workforce-optimization/index.html --out ./qa --scenario tour.json
 ```
 
 | Option | Default | Notes |

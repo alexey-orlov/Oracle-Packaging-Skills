@@ -1146,33 +1146,33 @@ process.exit(m.diagram === "new-pack" && m.alt === "Flow diagram: the \"new\" pa
 fi
 
 # ------------------------------------------------ the exemplar and the site
-# The listing exemplar is GENERATED from the site manifest's exemplarProduct by
-# refresh-exemplar.mjs, never edited by hand: the hand copy drifted (a retired key,
-# "Scale" for "Scaling", old category ids) and would have failed the site's own
-# checker (2026-09-23). Against the live site, drift is a WARNING, not a failure: the
-# site moves on its own schedule and must not block an unrelated release. Against a
-# scratch site the tool must blank the account-bound URLs, write what the inserter
-# reads, pass --check on its own output, fail it once the site's entry changes, and
-# refuse a deny-listed name without printing it.
+# The listing's exemplar is extracted from the site manifest's exemplarProduct at each
+# run by exemplar.mjs and never stored in the plugin: a stored copy drifted (a retired
+# key, "Scale" for "Scaling", old category ids) and would have failed the site's own
+# checker (2026-09-23). Against a scratch site the tool must blank the account-bound
+# URLs, write what the inserter reads, pass --check on its own output, fail it once the
+# site's entry changes, and refuse a deny-listed name without printing it.
 say ""
-say "refresh-exemplar.mjs (the exemplar and the site)"
+say "exemplar.mjs (the exemplar, from the site)"
 if ! command -v node >/dev/null 2>&1; then
   say "  (skipped: no node)"
 else
   LISTING_TOOLS="$PLUGIN/skills/listing/tools"
-  REFRESH="$LISTING_TOOLS/refresh-exemplar.mjs"
+  REFRESH="$LISTING_TOOLS/exemplar.mjs"
+  run_case "--out is required" 2 node "$REFRESH" --site "$WORK"
+  # Against the live site, a failed extraction is a WARNING: the site moves on its own
+  # schedule and must not block an unrelated release, but the listing cannot run without it.
   SITE_ROOT="${ORACLE_SITE_ROOT:-$HOME/Documents/GitHub/Oracle-Solutions-Site}"
-  if [ ! -f "$SITE_ROOT/site.manifest.json" ]; then
-    say "  (skipped: no site root)"
+  if [ -f "$SITE_ROOT/site.manifest.json" ]; then
+    LAST="$(node "$REFRESH" --site "$SITE_ROOT" --out "$WORK/live-exemplar.js" 2>&1)"; got=$?
+    if [ "$got" = 0 ]; then
+      ok "the live site's exemplar extracts"
+    else
+      printf '%s\n' "$LAST" | sed 's/^/       | /'
+      warn "WARNING: the live site's exemplar did not extract (exit $got) — the listing's site step will fail the same way"
+    fi
   else
-    LAST="$(node "$REFRESH" --site "$SITE_ROOT" --check 2>&1)"; got=$?
-    case "$got" in
-      0) ok "the exemplar matches the site's exemplar product" ;;
-      1) printf '%s\n' "$LAST" | sed 's/^/       | /'
-         warn "WARNING: the exemplar drifts from the site's exemplar product — run node plugins/oracle-packs/skills/listing/tools/refresh-exemplar.mjs --site $SITE_ROOT" ;;
-      *) printf '%s\n' "$LAST" | sed 's/^/       | /'
-         warn "WARNING: the exemplar could not be checked against the site (exit $got) — see the line above" ;;
-    esac
+    say "  (live site skipped: no site root)"
   fi
 
   MS="$WORK/mini-site"

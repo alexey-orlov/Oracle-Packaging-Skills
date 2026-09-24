@@ -5,7 +5,7 @@
       "Bash(node --check *)",
       "Bash(node tools/check-grammar.js*)",
       "Bash(node tools/insert-product.mjs *)",
-      "Bash(node tools/refresh-exemplar.mjs *)",
+      "Bash(node tools/exemplar.mjs *)",
       "Bash(node tools/sync-links.js*)",
       "Bash(qlmanage *)",
       "Bash(perl -e 'alarm 60; exec @ARGV' qlmanage *)",

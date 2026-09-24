@@ -1,13 +1,13 @@
 ---
 name: listing
-description: Produce the accelerator pack's product listing for the practice mini-site from a confirmed pack spec — a checker-clean `products[]` entry (overview with problem ↔ solution, workflow steps, vertical cases, metrics with qualifiers; technology with the architecture stack and required/optional flags and the capabilities-by-stage view derived from the feature list; the Jumpstart tab with only the PoV price), inserted into the site's content file and previewed at every width. Use on /oracle-packs:listing <pack-spec.md> --site <mini-site root>, "add <pack> to the mini-site", "update the <pack> product page", or as step 5 of /oracle-packs:build.
+description: Produce the accelerator pack's product listing for the practice mini-site from a confirmed pack spec — a checker-clean `products[]` entry (overview with problem ↔ solution, workflow steps, vertical cases, metrics with qualifiers; technology with the architecture stack and required/optional flags and the capabilities-by-stage view derived from the feature list; the Jumpstart tab with only the PoV price), inserted into the site's content file and previewed at every width. Use on /oracle-packs:listing <pack-spec.md> --site <mini-site root>, "add <pack> to the mini-site", "update the <pack> product page", or as the listing step of /oracle-packs:build.
 disable-model-invocation: false
 user-invocable: true
 ---
 
 # /oracle-packs:listing — the customer-facing product page
 
-> **Paths.** `shared/...` means `${CLAUDE_PLUGIN_ROOT}/shared/...`; `tools/...`, `assets/...` and `references/...` are this skill's own folder.
+> **Paths.** `shared/...` means `${CLAUDE_PLUGIN_ROOT}/shared/...`; `tools/...` and `references/...` are this skill's own folder.
 
 **Load only what the step needs.** Each step below names its cards (`Card:`); read those when you reach it and nothing else — never the whole folder, never a card for a step you are not on, never a long reference a card already points to.
 
@@ -27,8 +27,8 @@ The listing is the only artifact end customers read directly. It carries the sam
 1. **Read the site.** Card: `site`. Find the root, pull it, read its manifest, and compare its contract round with this skill's before anything is written.
 2. **Map the tile and the overview tab.** Cards: `layout`, `entry-identity`, `entry-overview`, `entry-case-study`. Fill every key from the spec; a slot with no fact behind it is filled qualitatively, never omitted.
 3. **Map the technology and Jumpstart tabs.** Cards: `entry-technology`, `entry-jumpstart`. The stage view is derived, not re-typed: `shared/tools/py tools/derive-stage-view.py <spec>`.
-4. **Write the copy** on the strongest model, then give it a mechanical pass. Cards: `copy-rules`, `claim-rules`, `exemplar-altitude`. The exemplar entry is long: a fresh-context agent reads it and returns the strings, or you open only the keys you are filling. Agents read: `assets/exemplar-product-entry.js`, `shared/references/naming-and-clearance.md`. Every subagent follows `shared/references/running-agents.md`.
-5. **Insert.** Cards: `insert`, `switches`, `shared/references/architecture-diagram.md`. `node tools/insert-product.mjs --content <site>/<paths.content> --entry <entry file> --figure-alt "<the figure in one sentence>"` (the product page finds its figure through that `media` entry), then the figure and the switch block at the manifest's `paths.diagrams` and `paths.config`, then the kit-links entry at `paths.links` (the tool's `--links`), then run the manifest's `paths.syncLinks` from the site root. The figure is **generated from the pack's architecture model, never written by hand** — `shared/tools/py tools/diagram_to_site.py <spec> --slug <slug>`, the model built from the spec in the packaging-skills repo (`shared/tools/py shared/tools/pack_paths.py <slug>` prints its path) — so the site, the deck and the one-pager draw one picture.
+4. **Write the copy** on the strongest model, then give it a mechanical pass. Cards: `copy-rules`, `claim-rules`, `exemplar-altitude`. The exemplar entry, extracted from the site at step 1, is long: a fresh-context agent reads it and returns the strings, or you open only the keys you are filling. Agents read: `shared/references/naming-and-clearance.md`. Every subagent follows `shared/references/running-agents.md`.
+5. **Insert.** Cards: `insert`, `shared/references/architecture-diagram.md`. `node tools/insert-product.mjs --content <site>/<paths.content> --entry <entry file> --figure-alt "<the figure in one sentence>"` (the product page finds its figure through that `media` entry), then the figure and the switch block at the manifest's `paths.diagrams` and `paths.config`, then the kit-links entry in `paths.links`, the only file that stores a link (the tool's `--links`), then the manifest's `paths.syncLinks` from the site root, which validates it. The figure is **generated from the pack's architecture model, never written by hand** — `shared/tools/py tools/diagram_to_site.py <spec> --slug <slug>`, the model built from the spec in the packaging-skills repo (`shared/tools/py shared/tools/pack_paths.py <slug>` prints its path) — so the site, the deck and the one-pager draw one picture.
 6. **Gates.** Cards: `gates`, `claim-rules`. `shared/tools/py tools/denylist-to-json.py --out <site>/<paths.denyList>` **first** — the customer-name gate fails open, so an unconfigured deny-list warning is a failed gate. Then the site's own checker (the manifest's `checker.run`, from the site root), a clean console on every route, the deny-list sweep, `shared/tools/py shared/tools/lint_artifact.py <entry file> --channel customer_site --spec <spec>`, and `check_consistency.py <spec> <entry file>`. The owner hears one plain line about all of it.
 7. **Preview.** Card: `preview`. Every changed screen at the manifest's `preview.widths`, the H1 at `preview.h1Width`, no horizontal overflow.
 8. **Review pack.** Card: `review-pack`. The screenshots open in the side panel, the entry as text in the conversation. One rebuild round.
@@ -47,7 +47,7 @@ Done = entry inserted, three gates green, consistency clean, preview screenshots
 - [ ] No customer name or logo in copy, alt text, captions, file names or anything under the publish root.
 - [ ] The stage view was derived from the feature list, and drops features rather than adding any.
 - [ ] The architecture figure was generated from the pack's model, and `check_diagram.py` says the site still draws it.
-- [ ] The kit-links entry exists in the site's `links.json` with all six keys and `links.js` is current (`paths.syncLinks`).
+- [ ] The kit-links entry exists in the site's `links.json` with all six keys, no link is repeated in another file, and `paths.syncLinks` passes.
 - [ ] Every heading is inside its budget on the rendered page at 375 px.
 - [ ] The open items were listed for the owner, not resolved by the builder.
 - [ ] Everything the owner reviewed was open beside the conversation before the question was asked.

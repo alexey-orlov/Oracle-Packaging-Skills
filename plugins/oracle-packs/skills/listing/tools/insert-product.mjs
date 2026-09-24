@@ -35,7 +35,7 @@
  * INPUTS
  *   --entry <file>         a file holding ONE product object literal. Leading and
  *                          trailing comments are fine, and so are the extra blocks
- *                          of assets/exemplar-product-entry.js: the first balanced
+ *                          of an exemplar tools/exemplar.mjs wrote: the first balanced
  *                          {...} carrying a `slug:` key — bare, or JSON-quoted
  *                          `"slug":` as the generated exemplar writes it — is taken
  *                          and the rest ignored.
@@ -134,7 +134,7 @@ function matchBracket(src, openIdx) {
 /* The first balanced {...} that carries a `slug:` key — so the exemplar file,
    which also holds a config block and a diagram block, yields the right one.
    SLUG_KEY accepts the key bare (`slug:`) or JSON-quoted (`"slug":`): the site
-   writes keys bare, tools/refresh-exemplar.mjs serializes the exemplar as JSON. */
+   writes keys bare, tools/exemplar.mjs serializes the exemplar as JSON. */
 const SLUG_KEY = "\\bslug[\"']?\\s*:\\s*";
 function firstObjectWith(src, keyRe) {
   for (let i = 0; i < src.length; i++) {

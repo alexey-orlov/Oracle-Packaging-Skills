@@ -9,7 +9,7 @@ user-invocable: true
 
 > **Paths.** `shared/...` means `${CLAUDE_PLUGIN_ROOT}/shared/...`; `tools/...`, `assets/...` and `references/...` are this skill's own folder.
 
-**Load only what the step needs.** Each step below names its cards (`Card:`); read those when you reach it and nothing else — never the whole folder, never a card for a step you are not on, never a long reference a card already points to. `assets/reference-demo/` and `assets/tour-engine.js` are **code to copy from, not reading material**: open the one file you are adapting, never the folder.
+**Load only what the step needs.** Each step below names its cards (`Card:`); read those when you reach it and nothing else — never the whole folder, never a card for a step you are not on, never a long reference a card already points to. The site's reference walkthrough and `assets/tour-engine.js` are **code to copy from, not reading material**: open the one file you are adapting, never the folder.
 
 **Start-up:** `shared/cards/owner-language.md` (how every message to the owner is written) and `shared/cards/review-protocol.md` (how everything the owner reviews is shown, changed and approved).
 
@@ -17,6 +17,7 @@ user-invocable: true
 
 - A confirmed, lint-clean `pack-spec.md`.
 - **Sources, asked first, always** (card: `sources`). Without at least one, stop and say why.
+- A checkout of the mini-site, found as the listing's `site` card says: it holds the reference walkthrough, `<paths.demos>/<exemplarProduct>/` in its manifest's names.
 - Node 22+ and a Chrome binary for the capture script; a local static server for QA. Check `node --version` and `CHROME_BIN` before planning around them; exit 3 from either is a deferred condition, never a result.
 
 ## The procedure

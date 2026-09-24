@@ -12,8 +12,9 @@ inside a step in the third one only; the "never cover what this step is
 describing" rule existed in one. The third demo cost four review rounds, partly
 for that reason. Build the fourth on this.
 
-**The reference demo does not use it.** `reference-demo/` is the shipped,
-reviewed build, kept working exactly as it was delivered. This module is for the
+**The reference demo does not use it.** The site's reference walkthrough
+(`<paths.demos>/<exemplarProduct>/`) is the shipped, reviewed build, kept working exactly as it
+was delivered. This module is for the
 next demo. Do not rewire the reference to prove the module works — build on the
 module and keep the reference as the fidelity yardstick.
 

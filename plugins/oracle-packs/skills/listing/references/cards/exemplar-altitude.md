@@ -1,6 +1,6 @@
 # The altitude to write at
 
-**What this is.** `assets/exemplar-product-entry.js` is the live site's `exemplarProduct` entry — **the spec, not a template**. Generated, never edited by hand: `node tools/refresh-exemplar.mjs --site <site>` rewrites it whenever `--check` reports drift (card `site`). Where a key carries an example, that cell's altitude, length and phrasing is the specification; the source documents are evidence, the exemplar is the register.
+**What this is.** `<work>/.scratch/exemplar.js`, extracted from the live site at the `site` step, is the site's `exemplarProduct` entry: **the spec, not a template**, and never edited. Where a key carries an example, that cell's altitude, length and phrasing is the specification; the source documents are evidence, the exemplar is the register.
 
 **How to read it.** Never open the whole file into the conversation. A fresh-context agent reads it and returns the strings, or you read **only the two or three keys you are filling**. Distilling to the register is the job; a dump of everything the research found fails it.
 
