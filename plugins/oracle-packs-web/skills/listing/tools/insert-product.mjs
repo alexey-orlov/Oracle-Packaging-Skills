@@ -3,6 +3,7 @@
  * insert-product.mjs — splice one product entry into a practice site's data files.
  *
  *   node insert-product.mjs --entry entry.js --content <site>/site/data/content.js \
+ *        --figure-alt "<one sentence describing the architecture figure>" \
  *        [--config <site>/site/data/config.js --config-entry entry.js] \
  *        [--links <site>/links.json [--demo-path demo/<slug>/index.html]] \
  *        [--before <slug>] [--dry-run]
@@ -24,6 +25,9 @@
  *   - touch config.js unless both --config and --config-entry are given;
  *   - write an entry with no `contactPerson`, or one that is not an id in the site's
  *     `shared.people` (site round 13), where the site defines `shared.people`;
+ *   - insert a product with no `--figure-alt` where content.js has a `media` map: the
+ *     product page draws its architecture figure only through `media["<slug>"]`, so a
+ *     product without that entry renders with no figure and nothing reports it;
  *   - add a kit-links entry that links.json already carries, or write to a
  *     links.json that is not valid JSON or has no `products` object. Every
  *     refusal comes before the first write: a refused run writes nothing anywhere.
@@ -36,6 +40,9 @@
  *                          `"slug":` as the generated exemplar writes it — is taken
  *                          and the rest ignored.
  *   --content <file>       the target site/data/content.js.
+ *   --figure-alt <text>    the architecture figure's one-sentence description. Adds
+ *                          `media["<slug>"] = { diagram: "<slug>", alt: <text> }`, which
+ *                          is how the product page finds the figure in diagrams.js.
  *   --config <file>        the target site/data/config.js (optional).
  *   --config-entry <file>  a file holding ONE `"<slug>": { … }` switch block, or
  *                          the exemplar file, from which the block whose key is
@@ -93,6 +100,8 @@ const LINKS = opt("links") ? need(opt("links"), "links") : "";
 const DEMO_PATH = opt("demo-path");
 const BEFORE = opt("before");
 const DRY = has("dry-run");
+const FIGURE_ALT = opt("figure-alt");
+if (has("figure-alt") && !FIGURE_ALT) die(2, "--figure-alt needs the figure's one-sentence description");
 if (CONFIG && !CONFIG_ENTRY) die(2, "--config needs --config-entry");
 if (CONFIG_ENTRY && !CONFIG) die(2, "--config-entry needs --config");
 if (has("links") && !LINKS) die(2, "--links needs a file: the site's links.json");
@@ -144,9 +153,15 @@ function slugOf(text) {
   return m ? m[1] : "";
 }
 
+/* The site's content.js resolves logo paths through window.brandAsset(), which the
+   site's assets/brand.js defines; the site's own checker runs brand.js first, and so
+   does this sandbox — without it the live content.js does not evaluate (2026-09-24). */
+const BRAND_JS = join(dirname(CONTENT), "..", "assets", "brand.js");
+const PRELUDE = existsSync(BRAND_JS) ? readFileSync(BRAND_JS, "utf8") : "";
 function evalSite(src, filename) {
   const box = { window: {} };
   vm.createContext(box);
+  if (PRELUDE) vm.runInContext(PRELUDE, box, { filename: "brand.js" });
   vm.runInContext(src, box, { filename });
   return box.window;
 }
@@ -227,6 +242,44 @@ if (people && typeof people === "object" && !Array.isArray(people)) {
   }
 }
 
+/* ---------------------------------------------------------------- media */
+/* The product page draws its figure only through content.js media["<slug>"] (the
+   site's UI.figure), so the entry is written here, in the same run as the product,
+   or the new product shows no architecture figure and nothing says so (2026-09-24).
+   A content.js (or a fixture) with no media map is left alone. */
+let mediaNote = "";
+if (after.media && typeof after.media === "object" && !Array.isArray(after.media)) {
+  if (!FIGURE_ALT) {
+    die(1, 'the site draws a product\'s figure only through content.js media["' + slug +
+      '"] — pass --figure-alt "<one sentence describing the figure>" — nothing written');
+  }
+  if (Object.prototype.hasOwnProperty.call(after.media, slug)) {
+    die(1, 'content.js media already carries "' + slug + '" — nothing written');
+  }
+  const mIdx = out.search(/\n\s*media\s*:\s*\{/);
+  if (mIdx === -1) die(1, "no `media: {` map found in content.js");
+  const mOpen = out.indexOf("{", mIdx);
+  const mClose = matchBracket(out, mOpen);
+  if (mClose === -1) die(1, "the `media: {` map is not balanced");
+  const mIndent = (out.slice(0, mOpen).match(/\n(\s*)media\s*:\s*\{?\s*$/) || ["", "  "])[1];
+  const mHead = out.slice(0, mClose).replace(/\s*$/, "");
+  const mSep = mHead.endsWith(",") || mHead.endsWith("{") ? "" : ",";
+  const mEntry = JSON.stringify(slug) + ": {\n" + mIndent + "    diagram: " + JSON.stringify(slug) +
+    ",\n" + mIndent + "    alt: " + JSON.stringify(FIGURE_ALT) + "\n" + mIndent + "  }";
+  out = mHead + mSep + "\n" + mIndent + "  " + mEntry + "\n" + mIndent + out.slice(mClose);
+  let withMedia;
+  try {
+    withMedia = evalSite(out, "content.js (media spliced)").SITE_CONTENT;
+  } catch (e) {
+    die(1, "content.js does not evaluate after the media entry — nothing written: " + e.message);
+  }
+  if (!withMedia || !withMedia.media || !withMedia.media[slug] || withMedia.media[slug].diagram !== slug ||
+      withMedia.products.length !== after.products.length) {
+    die(1, 'the media entry for "' + slug + '" did not land as expected — nothing written');
+  }
+  mediaNote = " · media entry added (the product page's figure)";
+}
+
 /* --------------------------------------------------------------- config */
 let cfgOut = "", cfgNote = "";
 if (CONFIG) {
@@ -303,7 +356,7 @@ if (LINKS) {
 /* ---------------------------------------------------------------- write */
 const summary =
   'insert-product: "' + slug + '" ' + where + " — content.js " +
-  before.products.length + " → " + after.products.length + " products" +
+  before.products.length + " → " + after.products.length + " products" + mediaNote +
   (CONFIG ? " · config.js switch block added" + cfgNote : "") + linksNote;
 
 if (DRY) { console.log("[dry-run] " + summary); console.log("[dry-run] nothing written"); process.exit(0); }

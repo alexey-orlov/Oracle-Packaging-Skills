@@ -1084,6 +1084,50 @@ sys.exit(0 if all(v == "" for k, v in e.items() if k != "interactiveDemo") else 
   run_case "the backup landed under .work/insert-product/" 0 test -f "$BAK"
   run_case "the backup is the catalog as it was" 0 cmp -s "$BAK" "$LK/content.pristine.js"
   run_case "no backup beside the file" 1 test -e "$MSITE/site/data/content.js.bak"
+
+  # The product page draws its architecture figure only through content.js
+  # media["<slug>"]; the inserter once wrote the product and its diagram but not that
+  # entry, so a new product rendered with no figure (2026-09-24). The live content.js
+  # also calls window.brandAsset(), defined by the site's assets/brand.js, which the
+  # inserter has to run first, as the site's own checker does.
+  say ""
+  say "insert-product.mjs writes the figure's media entry"
+  MD="$WORK/media-site/site/data"
+  mkdir -p "$MD" "$WORK/media-site/site/assets"
+  cat > "$WORK/media-site/site/assets/brand.js" <<'EOF'
+window.BRAND = { ssMark: "" };
+window.brandAsset = function (key, fallback) { return window.BRAND[key] || fallback; };
+EOF
+  cat > "$MD/content.js" <<'EOF'
+window.SITE_CONTENT = {
+  site: { wordmark: window.brandAsset("ssMark", "assets/img/wordmark.svg") },
+  media: {
+    "existing-pack": {
+      diagram: "existing-pack",
+      alt: "Flow diagram: the existing pack"
+    }
+  },
+  products: [
+    { slug: "existing-pack", name: "Existing pack" }
+  ]
+};
+EOF
+  cp "$MD/content.js" "$MD/content.pristine.js"
+  run_case "a site with a media map and no --figure-alt is refused" 1 \
+    node "$INSERTER" --content "$MD/content.js" --entry "$LK/entry.js"
+  expect "the refusal" "figure-alt" "nothing written"
+  run_case "the refused run left the catalog as it was" 0 cmp -s "$MD/content.js" "$MD/content.pristine.js"
+  run_case "a run with --figure-alt" 0 \
+    node "$INSERTER" --content "$MD/content.js" --entry "$LK/entry.js" \
+    --figure-alt 'Flow diagram: the "new" pack, end to end'
+  expect "the run" "media entry added"
+  run_case "media carries the new product's figure" 0 node -e '
+const vm = require("vm"); const fs = require("fs"); const box = { window: {} }; vm.createContext(box);
+vm.runInContext(fs.readFileSync(process.argv[2], "utf8"), box);
+vm.runInContext(fs.readFileSync(process.argv[1], "utf8"), box);
+const m = box.window.SITE_CONTENT.media["new-pack"] || {};
+process.exit(m.diagram === "new-pack" && m.alt === "Flow diagram: the \"new\" pack, end to end" ? 0 : 1);' \
+    "$MD/content.js" "$WORK/media-site/site/assets/brand.js"
 fi
 
 # ------------------------------------------------ the exemplar and the site
