@@ -8,9 +8,9 @@ colleague builds from the same one; everything a run produces, and everything it
 of the customer's documents, stays on the machine of the person running the skills:
 
     <repo>/packs/<slug>/     committed and shared: pack-spec.md and visuals/ (the pictures
-                             the spec names, with their provenance .json files and
-                             credits.md). The architecture model is built from the spec by
-                             every renderer and never stored.
+                             the spec names; each one's provenance is on its spec entry).
+                             The architecture model is built from the spec by every renderer
+                             and never stored.
     <work>/                  $ORACLE_PACKS_OUT/<slug>, else ~/oracle-packs/<slug>: artifacts/
                              (every built file), intake.md, inventory.md, inventory/ (extracts
                              of customer documents), sources/, research-brief.md, research/,

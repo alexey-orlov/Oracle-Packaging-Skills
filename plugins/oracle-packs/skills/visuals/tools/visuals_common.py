@@ -206,8 +206,9 @@ def check_photo_licence(code: str) -> dict:
 # ---------------------------------------------------------------------------------- provenance
 
 def provenance_record(**kw) -> dict:
-    """The sidecar every downloaded candidate carries. Missing values are '-' so a credits line is
-    never silently short."""
+    """The sidecar every downloaded candidate carries in the work folder, until the owner picks one
+    and apply_choice.py copies its provenance onto the spec entry. Missing values are '-' so a
+    record is never silently short."""
     rec = {
         "slot": kw.get("slot") or "-",
         "kind": kw.get("kind") or "-",
@@ -252,32 +253,6 @@ def read_sidecar(path: str) -> dict:
         )
     with open(side, encoding="utf-8") as fh:
         return json.load(fh)
-
-
-def credits_line(rec: dict) -> str:
-    """One markdown row for packs/<slug>/visuals/credits.md."""
-    lic = rec.get("licence_name") or rec.get("licence") or "-"
-    return "| `{file}` | {slot} | {source} | {creator} | {lic} | {url} | {date} |".format(
-        file=os.path.basename(rec.get("file", "-")),
-        slot=rec.get("slot", "-"),
-        source=rec.get("source", "-"),
-        creator=rec.get("creator", "-"),
-        lic=lic,
-        url=rec.get("source_url", "-"),
-        date=rec.get("fetched", "-"),
-    )
-
-
-CREDITS_HEADER = (
-    "# Picture credits\n"
-    "\n"
-    "Every picture in this pack, where it came from and under what licence. Written by the\n"
-    "`/oracle-packs:visuals` step, one row per chosen file. Kept even where the licence asks for no\n"
-    "attribution: the record is what lets anyone re-check the right to use a file later.\n"
-    "\n"
-    "| File | Slot | Source | Creator | Licence | Page | Chosen |\n"
-    "|---|---|---|---|---|---|---|\n"
-)
 
 
 # ------------------------------------------------------------------------------------- network

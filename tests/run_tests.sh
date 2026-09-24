@@ -570,6 +570,25 @@ run_case "its key is in the spec" 0 \
 expect "the recorded logo" '"visuals/'
 run_case "and the spec is still canonical" 0 "$PY" "$PACKSPEC" check "$AC/demo-pack/pack-spec.md"
 
+# A chosen icon: its provenance lands on the spec entry and nowhere else in the repo — no
+# sidecar and no credits file beside the picture (2026-09-24: a sidecar once carried a
+# scratchpad path with a user name into the shared repo).
+mkdir -p "$AC/cand"
+cp "$LOGO_FILE" "$AC/cand/vertical-0-gear-ink.png"
+cp "$LOGO_FILE" "$AC/cand/vertical-0-gear-white.png"
+printf '{"slot": "vertical:0", "kind": "icon", "file": "/tmp/scratch/vertical-0-gear-ink.png", "title": "gear", "creator": "Tabler Icons", "source": "Tabler Icons", "source_url": "https://tabler.io/icons/icon/gear", "licence": "mit", "licence_name": "MIT"}\n' \
+  > "$AC/cand/vertical-0-gear-ink.json"
+run_case "a chosen icon is recorded" 0 \
+  env ORACLE_PACKS_OUT="$WORK/ac-out" "$PY" "$VISUALS_TOOLS/apply_choice.py" \
+  "$AC/demo-pack/pack-spec.md" --slot vertical:0 --file "$AC/cand/vertical-0-gear-ink.png"
+run_case "its entry carries the creator and the page" 0 \
+  "$PY" "$PACKSPEC" get "$AC/demo-pack/pack-spec.md" "verticals[0].icon"
+expect "the icon's provenance" '"creator": "Tabler Icons"' '"source_url": "https://tabler.io/icons/icon/gear"' '"file_white"'
+run_case "no sidecar or credits file lands in the pack" 1 \
+  sh -c 'ls "$1"/*.json "$1"/credits.md 2>/dev/null | grep -q .' _ "$AC/demo-pack/visuals"
+run_case "the decision is logged in the work folder" 0 \
+  grep -q "picture for \*\*vertical:0\*\*" "$WORK/ac-out/demo-pack/decisions.md"
+
 # -------------------------------------------------------------- lint_artifact
 say ""
 say "lint_artifact.py"

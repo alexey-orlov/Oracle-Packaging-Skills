@@ -17,7 +17,7 @@ picture with no recorded licence does not go into a pack, and a source that coul
 | `../tools/fetch_icon.py <name> --out <dir>` | Fetches one icon and renders it twice — white for the deck's dark panels, ink `#26282B` for light grounds — as 512 px PNGs on a transparent ground, with a `.json` sidecar. `--set lucide` for the fallback set, `--color white|ink|both`, `--size`. |
 | `../tools/search_photos.py "<terms>" --out <dir>` | Downloads up to `--n` photograph candidates with a provenance sidecar each. `--source auto` tries the modern libraries first and falls back to the archival one; `--slot`, `--min-width` (default 1600), `--orientation`. |
 | `../tools/contact_sheet.py <dir> --out <sheet.png>` | One labelled sheet, a row per slot, candidates lettered across it, each with creator · source · licence. Icons are drawn on both grounds in one cell. At most 2400 px wide. |
-| `../tools/apply_choice.py <spec> --slot <slot> --file <path>` | Records the choice: copies the file into `packs/<slug>/visuals/` beside the spec in the packaging-skills repo, writes the spec key, appends the credits row there, and appends the decisions line to `<work>/decisions.md` in the local work folder (`shared/tools/pack_paths.py`). `--note` for the owner's reason, `--dry-run` to see it without writing, `--add-to-library` to add a chosen icon to the shared library. |
+| `../tools/apply_choice.py <spec> --slot <slot> --file <path>` | Records the choice: copies the file into `packs/<slug>/visuals/` beside the spec in the packaging-skills repo, writes the spec key with the picture's provenance, and appends the decisions line to `<work>/decisions.md` in the local work folder (`shared/tools/pack_paths.py`). `--note` for the owner's reason, `--dry-run` to see it without writing, `--add-to-library` to add a chosen icon to the shared library. |
 | `../tools/visuals_common.py` | The slot list, the licence allow-lists, the provenance record and the network helpers. Not run directly. |
 
 Every tool takes `--help`. Paths are arguments; nothing is hard-coded to one machine.
@@ -44,8 +44,9 @@ line in `shared/references/visual-assets.md`:
 | `hero` | photo | `one_pager.images.hero` | reserved — the one-pager banner, not yet asked for by a builder |
 
 The shape written into the spec is documented in `shared/schema/pack-spec.md`. An icon writes both
-renders (`file` = ink, `file_white` = white); a photograph writes the file plus its source, creator
-and licence, so a builder never has to open the credits file to print a caption.
+renders (`file` = ink, `file_white` = white). Every entry carries the picture's source, creator,
+licence and page: the spec entry is its only record in the repo, so no sidecar or credits file sits
+beside the picture.
 
 ## What needs a key
 
@@ -105,8 +106,8 @@ the standard library.
 
 ## Done means
 
-1. **Every picture has a recorded licence** from the allowed list, and a row in
-   `packs/<slug>/visuals/credits.md`.
+1. **Every picture has a recorded licence** from the allowed list, on its spec entry with its
+   source, creator and page.
 2. **The owner chose each one**, from three candidates, looking at the contact sheet — which was
    opened beside the conversation *before* the question.
 3. **The spec still passes its checks** (`shared/tools/lint_spec.py`) and its diff shows only the

@@ -5,14 +5,15 @@
                     [--provenance <sidecar.json>] [--note "<why>"]
                     [--add-to-library] [--library <dir>] [--dry-run]
 
-Four things happen, in this order, and either all of them or none:
+Three things happen, in this order, and either all of them or none:
 
   1. the chosen file (and, for an icon, its other colour render) is copied into
-     `packs/<slug>/visuals/` beside the spec, in the packaging-skills repo;
+     `packs/<slug>/visuals/` beside the spec, in the packaging-skills repo — the picture only;
   2. the spec key for the slot is written — `verticals[i].icon`, `deck.images.today`,
-     `deck.images.tomorrow`, `one_pager.images.hero` (the list is in visuals_common.SLOT_KINDS);
-  3. a row is appended to `packs/<slug>/visuals/credits.md`;
-  4. a line is appended to the pack's decisions log, `<work>/decisions.md` — the local work
+     `deck.images.tomorrow`, `one_pager.images.hero` (the list is in visuals_common.SLOT_KINDS) —
+     carrying the picture's whole provenance: source, creator, licence and its page. That entry
+     is the only record in the repo: no sidecar and no credits file travel with the picture;
+  3. a line is appended to the pack's decisions log, `<work>/decisions.md` — the local work
      folder `shared/tools/pack_paths.py` names ($ORACLE_PACKS_OUT/<slug>, else
      ~/oracle-packs/<slug>), never the repo.
 
@@ -26,9 +27,8 @@ reported, not replaced.
 
 A `supplied` slot — today only `customer_logo` — is the one exception to the licence gate. That
 file comes from the owner's own engagement materials rather than from a picture library, so there
-is no sidecar to read and no licence to check: the record says where it came from and that it is
-used under the customer's clearance recorded in the pack brief, and the sidecar is written beside
-the copy.
+is no sidecar to read and no licence to check: the spec entry says where it came from and that it
+is used under the customer's clearance recorded in the pack brief.
 
 Exit codes: 0 applied · 1 usage or input error (unknown slot, missing file, no provenance, a
 YAML spec) · 2 the file's recorded licence is not one this bundle may use · 3 not used here.
@@ -47,9 +47,9 @@ from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from visuals_common import (  # noqa: E402
-    CREDITS_HEADER, EXIT_LICENCE, EXIT_OK, EXIT_USAGE, ICON_LICENCES, PHOTO_LICENCES,
-    SUPPLIED_SOURCE, SUPPLIED_TERMS, credits_line, eprint, load_spec, pack_dir, packspec_module,
-    parse_slot, provenance_record, read_sidecar, slot_kind, slot_spec_path, slugify, write_sidecar,
+    EXIT_LICENCE, EXIT_OK, EXIT_USAGE, ICON_LICENCES, PHOTO_LICENCES,
+    SUPPLIED_SOURCE, SUPPLIED_TERMS, eprint, load_spec, pack_dir, packspec_module,
+    parse_slot, provenance_record, read_sidecar, slot_kind, slot_spec_path, slugify,
 )
 
 _HERE = Path(__file__).resolve().parent
@@ -164,21 +164,8 @@ def copy_in(chosen: str, visuals: str, slot: str, rec: dict) -> list[str]:
         suffix = "-white" if src.endswith("-white.png") else ("-ink" if src.endswith("-ink.png") else "")
         dst = os.path.join(visuals, f"{stem.removesuffix('-ink').removesuffix('-white')}{suffix}{ext}")
         shutil.copy2(src, dst)
-        side = os.path.splitext(src)[0] + ".json"
-        if os.path.exists(side):
-            shutil.copy2(side, os.path.splitext(dst)[0] + ".json")
         copied.append(dst)
     return copied
-
-
-def append_credits(visuals: str, rec: dict) -> str:
-    path = os.path.join(visuals, "credits.md")
-    fresh = not os.path.exists(path)
-    with open(path, "a", encoding="utf-8") as fh:
-        if fresh:
-            fh.write(CREDITS_HEADER)
-        fh.write(credits_line(rec) + "\n")
-    return path
 
 
 def work_folder(spec_path: str, spec: dict) -> str:
@@ -342,22 +329,20 @@ def main(argv: list[str]) -> int:
 
     copied = [] if args.dry_run else copy_in(args.file, visuals, args.slot, rec)
     chosen = copied[0] if copied else args.file
-    if kind == "supplied" and copied:
-        # The owner's file arrives with no sidecar; write one beside the copy so the record
-        # travels with the picture like every other file in the pack. It is removed with the copy
-        # if the spec edit is then refused.
-        write_sidecar(chosen, dict(rec, file=chosen, slot=args.slot))
     if kind == "icon":
         ink = next((p for p in copied if p.endswith("-ink.png")), chosen)
         white = next((p for p in copied if p.endswith("-white.png")), None)
         value = {"file": os.path.relpath(ink, pack), "name": rec.get("title", "-"),
-                 "source": rec.get("source", "-"), "licence": rec.get("licence_name", "-")}
+                 "source": rec.get("source", "-"), "creator": rec.get("creator", "-"),
+                 "licence": rec.get("licence_name", "-"), "source_url": rec.get("source_url", "-")}
         if white:
             value["file_white"] = os.path.relpath(white, pack)
     elif kind == "supplied":
         value = {"file": os.path.relpath(chosen, pack),
                  "source": SUPPLIED_SOURCE,
                  "licence": SUPPLIED_TERMS}
+        if args.note:
+            value["note"] = args.note
     else:
         value = {"file": os.path.relpath(chosen, pack),
                  "source": rec.get("source", "-"),
@@ -371,17 +356,14 @@ def main(argv: list[str]) -> int:
         # Either all four things happen or none: the copies go back out again.
         eprint(f"the spec was not changed: {exc}")
         for p in copied:
-            for f in (p, os.path.splitext(p)[0] + ".json"):
-                if os.path.exists(f):
-                    os.remove(f)
+            if os.path.exists(p):
+                os.remove(p)
         return EXIT_USAGE
 
-    rec_for_credits = dict(rec, file=chosen, slot=args.slot)
-    credits = decisions = lib = None
+    rec_chosen = dict(rec, file=chosen, slot=args.slot)
+    decisions = lib = None
     if not args.dry_run:
-        credits = append_credits(visuals, rec_for_credits)
-        decisions = append_decision(work_folder(args.spec, spec), args.slot, rec_for_credits,
-                                    args.note)
+        decisions = append_decision(work_folder(args.spec, spec), args.slot, rec_chosen, args.note)
         if args.add_to_library and kind == "icon":
             vname = ""
             base, idx = parse_slot(args.slot)
@@ -396,8 +378,6 @@ def main(argv: list[str]) -> int:
     for p in copied:
         print(f"  copied  {os.path.relpath(p, pack)}")
     print(f"  spec    {key} ← {value['file']}")
-    if credits:
-        print(f"  credits {os.path.relpath(credits, pack)}")
     if decisions:
         print(f"  logged  {decisions}")
     if lib:

@@ -39,7 +39,7 @@ This step searches openly licensed sources, puts three candidates per picture in
 
 4. **The customer's logo.** *Card: `customer-logo.md`.* Only when `clearance.customer_name_allowed` is true for some audience. One question — a widget offering "I'll give the path" free text, or skip — from the owner's engagement materials. **Never search the web for a logo:** a company's mark is a trademark, not an openly licensed picture.
 
-5. **Record each choice.** *Card: `record.md`.* One command per picture; it copies the file into the repo's `packs/<slug>/visuals/` — the spec names it, and a colleague's build needs it — writes the key, credits it and logs the decision in `<work>/decisions.md`.
+5. **Record each choice.** *Card: `record.md`.* One command per picture; it copies the file into the repo's `packs/<slug>/visuals/` — the spec names it, and a colleague's build needs it — writes the key with the picture's source, creator, licence and page, and logs the decision in `<work>/decisions.md`.
 
        shared/tools/py tools/apply_choice.py <spec> --slot <slot> --file <the chosen file> --note "<their reason>"
 
@@ -47,11 +47,11 @@ This step searches openly licensed sources, puts three candidates per picture in
 
 ## Definition of done
 
-Every industry has an icon, both photographs are chosen, and the logo is recorded or named as open. Every chosen file is in the repo's `packs/<slug>/visuals/` with its credits row, the brief carries the choices and still passes `lint_spec.py`, both are saved to the shared repo, and the decisions are logged in `<work>/decisions.md`.
+Every industry has an icon, both photographs are chosen, and the logo is recorded or named as open. Every chosen file is in the repo's `packs/<slug>/visuals/`, the brief carries the choices with their provenance and still passes `lint_spec.py`, both are saved to the shared repo, and the decisions are logged in `<work>/decisions.md`.
 
 ## Self-check before closing
 
-- [ ] Every picture came from the allowed list, with its licence and creator in the credits file; nothing came from a search engine or a stock-library preview, and no logo came off the web at all.
+- [ ] Every picture came from the allowed list, with its licence and creator on its brief entry; nothing came from a search engine or a stock-library preview, and no logo came off the web at all.
 - [ ] The contact sheet was opened beside the conversation *before* each question, and the letters in the question match the letters on the sheet.
 - [ ] Every question, option and closing line passed the reader's test: no codes, no file or key names, no packaging vocabulary, reasons instead of rule names.
 - [ ] The today and tomorrow photographs read as a pair — same era, same register, both landscape.

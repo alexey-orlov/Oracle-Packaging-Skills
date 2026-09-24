@@ -120,6 +120,8 @@ Teams keeping up with the companies they cover — customers, partners, holdings
   - **Source:** Tabler Icons
   - **Licence:** MIT
   - **File, white:** visuals/vertical-3-chart-line-white.png
+  - **Creator:** Tabler Icons
+  - **Source URL:** https://tabler.io/icons/icon/chart-line
 
 ## Capabilities
 

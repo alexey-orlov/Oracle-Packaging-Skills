@@ -90,13 +90,13 @@ The delivered customer's own mark is the one picture here that is **not** found 
 - **Never searched for, on any source.** A company's mark is a trademark, not an openly licensed picture, and a copy lifted off a search result or a brand-resources page carries no right to use it. None of the licences above applies to it, so the licence gate does not run.
 - **What permits the use is the clearance, not a licence.** The logo is asked for only where `clearance.customer_name_allowed` is true for some audience, and the record says, in those words, that it is used under the customer's clearance recorded in the pack brief. Clearance is revocable: a logo already in a pack goes out again when it is withdrawn.
 - **No stand-in.** Not a lookalike, not a redrawn version, not an industry icon in its place. With no file, the deck removes the slot and moves the headline — an explicit absence, which is the standing rule.
-- Recorded through `apply_choice.py` like every other picture, so the file, the brief key, the credits row and the decision move together; its sidecar is written beside the copy, since the owner's file arrives without one.
+- Recorded through `apply_choice.py` like every other picture, so the file, its brief entry and the decision move together.
 
 ---
 
 ## 5. What is recorded, and where
 
-Every candidate downloaded carries a `.json` sidecar beside it; every **chosen** file gets a row in `packs/<slug>/visuals/credits.md`:
+Every candidate downloaded carries a `.json` sidecar beside it, in the work folder. When the owner picks one, `apply_choice.py` copies its provenance onto the picture's entry in the pack brief, which is its only record in the repo:
 
 | Field | Why |
 |---|---|
@@ -106,9 +106,8 @@ Every candidate downloaded carries a `.json` sidecar beside it; every **chosen**
 | creator | the photographer or the set |
 | licence | the exact licence, by name |
 | page | the page a human can open to check |
-| date | when it was chosen |
 
-A picture with no such row is not in the pack. This is also what makes a later question — "can we still use this on the public site?" — answerable in a minute instead of a morning.
+A picture whose entry lacks these is not in the pack; the date it was chosen is in the decisions log. This is also what makes a later question — "can we still use this on the public site?" — answerable in a minute instead of a morning.
 
 ---
 

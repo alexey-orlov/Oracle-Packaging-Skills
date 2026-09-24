@@ -11,7 +11,7 @@
 1. Asked only when `clearance.customer_name_allowed` is true for at least one audience — never otherwise, and never re-asked once the brief has a file.
 2. **Never searched for on the web.** A company's mark is a trademark, not an openly licensed picture, and a copy off a search result carries no right to use it. The only file this step accepts is one the owner hands over from the engagement materials.
 3. No stand-in, no lookalike, no redrawn version. Skipped is skipped: the slot goes to the closing message as open, with what would unblock it.
-4. Recorded through `apply_choice.py` like every other picture, so the file, the brief key and the credits row move together. Its record says it was supplied by the owner and is used under the customer's clearance in the brief — there is no licence to look up.
+4. Recorded through `apply_choice.py` like every other picture, so the file and its brief entry move together. Its record says it was supplied by the owner and is used under the customer's clearance in the brief — there is no licence to look up.
 5. The brief still passes `shared/tools/py shared/tools/lint_spec.py <spec>` afterwards.
 
-**Fills:** `deck.images.customer_logo`. **Writes:** `packs/<slug>/visuals/`, `credits.md`, `<work>/decisions.md`.
+**Fills:** `deck.images.customer_logo`. **Writes:** `packs/<slug>/visuals/`, `<work>/decisions.md`.

@@ -105,7 +105,7 @@ plugins/oracle-packs/               the plugin
   fonts/                            the brand faces, private
   requirements.txt                  the Python dependencies
 tests/run_tests.sh                  the suite: every tool, every card's spec keys, every skill's context budget
-packs/<slug>/                       one pack's shared files, and only these (.gitignore keeps out the rest): pack-spec.md · visuals/ (the pictures the spec names, their provenance .json files, credits.md)
+packs/<slug>/                       one pack's shared files, and only these (.gitignore keeps out the rest): pack-spec.md · visuals/ (the pictures the spec names; each one's source, creator, licence and page are on its spec entry)
 examples/workforce-optimization/    the worked example spec
 docs/DECISIONS.md                   the owner decisions the skills implement
 docs/settings.example.json          the permission allow-list for the toolchain
