@@ -14,7 +14,7 @@
 | `../tools/build_deck_v2.py` | **the builder** |
 | `../tools/exemplar.py` | the filling helpers (open, arrange, duplicate, fill, clone, connectors) |
 | `../tools/lint_deck.py` | the deck linter — run it before anyone sees the deck |
-| `../tools/deckkit.py` | shared primitives (brand tokens, shapes, spec access, fit estimator) |
+| `shared/tools/deckkit.py` | shared primitives (brand tokens, shapes, spec access, fit estimator), one copy for the deck and the executive summary |
 | `../tools/render_probe.sh` | what can render a .pptx on this machine, and how |
 | `../tests/fixture-pack-spec.md` | anonymized Workforce optimization spec — the acceptance fixture for both builders and the executive summary. Not a delivered artifact and not a source of truth for pricing: its figures are the July collateral's, kept so the builders fit realistic string lengths |
 | `../tests/fixture-pack-spec_v2-variability.md` | a second spec, not a real pack (3 verticals with one empty card, 7 capability rows, 2 architecture inputs and 2 outputs, 3 layers, a 3-product engine) that must build with no drawing change |
@@ -118,8 +118,6 @@ Output: `<dir>/<slug>-sales-deck.pptx`, 10 slides.
   a message pointing back at `/oracle-packs:spec`. Do not fill the gap here.
 - The builder keeps going when one slide raises, and records the failure as a
   note, so you get nine reviewable slides instead of nothing. Check the notes.
-- `deckkit.py` is duplicated in `../../exec-summary/tools/` so each skill copies
-  standalone. If you change one, copy it to the other.
 - A shape inside a group carries its coordinates in the group's child space, so
   its own frame is not what renders (`exemplar.group_scale_x` converts). The
   engine box on slide 8 is the one that bites.

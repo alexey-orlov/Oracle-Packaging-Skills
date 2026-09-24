@@ -22,9 +22,10 @@ import sys
 from pathlib import Path
 
 _HERE = Path(__file__).resolve().parent
-for _cand in (_HERE, _HERE.parents[1] / "deck" / "tools"):
-    if (_cand / "deckkit.py").exists():
-        sys.path.insert(0, str(_cand))
+for _up in range(2, 6):                     # shared/tools: deckkit, the spec stamp, the spec loader
+    _shared = _HERE.parents[_up] / "shared" / "tools" if len(_HERE.parents) > _up else None
+    if _shared is not None and (_shared / "deckkit.py").is_file():
+        sys.path.insert(0, str(_shared))
         break
 
 from pptx import Presentation                                 # noqa: E402
@@ -35,11 +36,6 @@ from deckkit import (                                         # noqa: E402
     stacked_height, strip_slides, textbox,
 )
 
-for _up in range(2, 6):                     # the spec stamp: the plugin's synced shared/tools, or the bundle's
-    _shared = _HERE.parents[_up] / "shared" / "tools" if len(_HERE.parents) > _up else None
-    if _shared is not None and (_shared / "spec_stamp.py").is_file():
-        sys.path.insert(0, str(_shared))
-        break
 import spec_stamp                                             # noqa: E402  (which spec the slide was built from)
 
 BASE_DEFAULT = (_HERE.parents[1] / "deck" / "assets" / "softserve-deck-base.pptx")

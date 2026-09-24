@@ -973,7 +973,7 @@ say "one price format on every artifact"
 if "$PY" -c "import pptx" >/dev/null 2>&1; then
   SKILLS_DIR="$(cd "$TESTS/../../.." && pwd)/plugins/oracle-packs/skills"
   run_case "specfmt, the deck kit and the one-pager print one amount" 0 \
-    env PYTHONPATH="$SKILLS_DIR/deck/tools:$SKILLS_DIR/one-pager/tools" "$PY" -c 'import html, sys
+    env PYTHONPATH="$TOOLS:$SKILLS_DIR/one-pager/tools" "$PY" -c 'import html, sys
 import deckkit, build_one_pager as op
 cases = [({"value": 2000000, "currency": "EUR"}, "€2M"),
          ({"range": [300000, 1500000], "currency": "EUR"}, "€300K–€1.5M"),

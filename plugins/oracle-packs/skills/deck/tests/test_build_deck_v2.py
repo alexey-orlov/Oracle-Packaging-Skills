@@ -22,6 +22,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 SKILL = HERE.parent
 sys.path.insert(0, str(SKILL / "tools"))
+sys.path.insert(0, str(SKILL.parents[1] / "shared" / "tools"))   # deckkit, the spec loader
 
 from pptx import Presentation                       # noqa: E402
 from pptx.oxml.ns import qn                         # noqa: E402

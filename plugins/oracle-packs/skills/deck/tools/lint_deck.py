@@ -52,9 +52,10 @@ import sys
 from pathlib import Path
 
 _HERE = Path(__file__).resolve().parent
-for _cand in (_HERE, _HERE.parents[1] / "deck" / "tools"):
-    if (_cand / "deckkit.py").exists():
-        sys.path.insert(0, str(_cand))
+for _up in range(2, 6):                     # shared/tools: deckkit and the spec loader
+    _shared = _HERE.parents[_up] / "shared" / "tools" if len(_HERE.parents) > _up else None
+    if _shared is not None and (_shared / "deckkit.py").is_file():
+        sys.path.insert(0, str(_shared))
         break
 
 GEOMETRY_DEFAULT = _HERE.parent / "references" / "reference-geometry.json"

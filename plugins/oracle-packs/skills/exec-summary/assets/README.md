@@ -6,7 +6,7 @@
 |---|---|
 | `../references/exec-summary-anatomy.md` | the one-slide anatomy, measured from the Sep 11 section slides and the Jul 17 executive summary |
 | `../tools/build_exec_summary.py` | the builder |
-| `../tools/deckkit.py` | shared primitives — a copy of the deck skill's, so this skill stands alone |
+| `shared/tools/deckkit.py` | shared primitives (brand tokens, shapes, spec access, fit estimator), one copy for the deck and this slide |
 
 This skill ships **no deck base of its own**. Without `--host-deck` it builds on
 the deck skill's `../deck/assets/softserve-deck-base.pptx`; brand tokens and the
@@ -74,4 +74,3 @@ when `--with-closing` found a `Close` layout.
 - The capability tree is areas and categories only — feature names belong on the
   feature list. If the tree needs more than about ten category rows, the builder
   tells you to trim it for this slide.
-- `deckkit.py` here is a copy of the deck skill's. Keep the two in sync.

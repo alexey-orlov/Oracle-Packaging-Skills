@@ -1,16 +1,10 @@
-"""SoftServe deck primitives shared by the deck and exec-summary builders.
+"""SoftServe deck primitives shared by the deck and exec-summary builders and the deck linter.
 
 Brand tokens, shape/text helpers, the pack-spec accessor and the headless
 text-fit estimator. No machine-specific paths: fonts are probed at run time
 from a candidate list — the brand face the plugin ships in its fonts/ folder
-first, then Helvetica-metric stand-ins — and the deck base ships next to the
-skill.
-
-This file is duplicated verbatim in:
-    skills/deck/tools/deckkit.py
-    skills/exec-summary/tools/deckkit.py
-so each skill stays copy-standalone. Keep the two in sync — the builders
-prefer the copy sitting next to them and fall back to the sibling skill's.
+first, then Helvetica-metric stand-ins — and the deck base ships with the deck
+skill. One copy, in shared/tools, beside the spec loader it reads through.
 """
 
 from __future__ import annotations
@@ -62,16 +56,10 @@ C = {
 }
 
 FONT_BODY = "Replica LL TT"     # the master's body face
-FONT_MONO = "Roboto Mono"       # small keys / numerals
-FONT_TITLE = "+mj-lt"           # theme major latin (Azurio) — never hardcode
 
 # Canvas + master furniture (inches), 13.33 x 7.5 in
 CANVAS_W, CANVAS_H = 13.333, 7.5
-MARGIN_L = 0.42
-CONTENT_W = 12.49
-HEADER_BOX = (6.79, 0.31, 5.48, 0.23)      # running header placeholder
 TITLE_BOX = (0.39, 1.18, 12.05, 0.43)      # Title-1Column title placeholder
-DECK_TITLE_BOX = (0.39, 1.40, 11.80, 0.95)  # sales-deck content-slide title
 FOOTNOTE_Y = 6.80
 
 
@@ -79,10 +67,20 @@ FOOTNOTE_Y = 6.80
 # Fonts for the headless fit estimate: the shipped brand face, else stand-ins
 # --------------------------------------------------------------------------
 
-# The brand face ships privately in the plugin's own fonts/ folder (<plugin>/fonts, three levels
-# above this tools/ folder), for practice members; measured with it, the estimate is the real one.
-# A folder with no files in it is passed over quietly and the stand-ins below take over.
-PLUGIN_FONTS = Path(__file__).resolve().parents[3] / "fonts"
+# The brand face ships privately in the plugin's own fonts/ folder (<plugin>/fonts), for practice
+# members; measured with it, the estimate is the real one. A folder with no files in it is passed
+# over quietly and the stand-ins below take over.
+def _plugin_fonts() -> Path:
+    here = Path(__file__).resolve()
+    for folder in here.parents:
+        if (folder / ".claude-plugin" / "plugin.json").is_file():
+            return folder / "fonts"
+        if (folder / "plugins" / "oracle-packs" / "fonts").is_dir():     # a source checkout
+            return folder / "plugins" / "oracle-packs" / "fonts"
+    return here.parent / "fonts"
+
+
+PLUGIN_FONTS = _plugin_fonts()
 _SHIPPED_FACES = {
     False: str(PLUGIN_FONTS / "ReplicaLLTT-Regular.ttf"),
     True: str(PLUGIN_FONTS / "ReplicaLLTT-Bold.ttf"),
@@ -453,10 +451,6 @@ def panel(slide, x, y, w, h, fill=C["panel_grey"], accent: str | None = None,
     return body
 
 
-def line_h(slide, x, y, w, color=C["hairline"], thickness=0.01):
-    return rect(slide, x, y, w, thickness, fill=color, line=None)
-
-
 _ALIGN = {"l": PP_ALIGN.LEFT, "c": PP_ALIGN.CENTER, "r": PP_ALIGN.RIGHT,
           "j": PP_ALIGN.JUSTIFY}
 
@@ -579,11 +573,7 @@ _CATALOG_CACHE: dict[str, dict[str, str]] | None = None
 
 
 def _catalog_paths() -> list[Path]:
-    here = Path(__file__).resolve()
-    out = []
-    for up in (3, 5):                       # plugin root, then a source checkout
-        if len(here.parents) > up:
-            out.append(here.parents[up] / "shared" / "data" / "oracle-products.yaml")
+    out = [Path(__file__).resolve().parent.parent / "data" / "oracle-products.yaml"]   # shared/data
     env = os.environ.get("ORACLE_PRODUCT_CATALOG")
     if env:
         out.insert(0, Path(env))
@@ -636,29 +626,19 @@ class SpecError(RuntimeError):
     pass
 
 
-def _shared_tools_on_path(module: str) -> None:
-    """Put the shared/tools folder that holds <module>.py on sys.path: the plugin's own, or the bundle's."""
-    here = Path(__file__).resolve().parent
-    for up in range(2, 6):
-        if len(here.parents) <= up:
-            break
-        shared = here.parents[up] / "shared" / "tools"
-        if (shared / f"{module}.py").is_file():
-            if str(shared) not in sys.path:
-                sys.path.insert(0, str(shared))
-            return
+_HERE = str(Path(__file__).resolve().parent)          # shared/tools: the spec loader and specfmt
+if _HERE not in sys.path:
+    sys.path.insert(0, _HERE)
 
 
 def packspec_module():
-    """The one spec loader, shared/tools/packspec.py."""
-    _shared_tools_on_path("packspec")
+    """The one spec loader, shared/tools/packspec.py, beside this file."""
     import packspec
     return packspec
 
 
 def specfmt_module():
-    """How a spec value prints on every artifact, shared/tools/specfmt.py."""
-    _shared_tools_on_path("specfmt")
+    """How a spec value prints on every artifact, shared/tools/specfmt.py, beside this file."""
     import specfmt
     return specfmt
 
@@ -844,13 +824,3 @@ def fmt_duration(d: dict | None, tbd: str = "To be defined") -> str:
         return f"{lo}–{hi} weeks"
     v = target or lo or hi
     return f"{v} weeks" if v else tbd
-
-
-def wrap_to(text: str, width: int) -> str:
-    import textwrap
-    return "\n".join(textwrap.wrap(text, width))
-
-
-def sibling_kit_path() -> Path:
-    """Where a sibling skill's deckkit lives (for the import fallback)."""
-    return Path(__file__).resolve().parents[2] / "deck" / "tools"
