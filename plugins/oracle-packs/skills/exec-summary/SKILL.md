@@ -9,7 +9,9 @@ user-invocable: true
 
 > **Paths.** `shared/...` means `${CLAUDE_PLUGIN_ROOT}/shared/...`; `tools/...`, `assets/...` and `references/...` are this skill's own folder.
 
-**Load only what the step needs.** `references/cards/manifest.yaml` lists, per step, exactly which files that step reads. Read those and nothing else — never the whole folder, never a card for a step you are not on, never a long reference a card already points to. Each card says what its part is, the checks a build must pass, and the spec keys it reads; the checks are the specification, not prose to paraphrase.
+**Load only what the step needs.** Each step below names its cards (`Card:`); read those when you reach it and nothing else — never the whole folder, never a card for a step you are not on, never a long reference a card already points to. Each card says what its part is, the checks a build must pass, and the spec keys it reads; the checks are the specification, not prose to paraphrase.
+
+**Start-up:** `shared/cards/owner-language.md` (how every message to the owner is written) and `shared/cards/review-protocol.md` (how everything the owner reviews is shown, changed and approved).
 
 ## Preconditions
 
@@ -38,14 +40,6 @@ user-invocable: true
 - No new visual language: the host deck's own shapes and colours, and the deck's existing diagram rather than an invented one.
 - The proof block is all or none; an absent component is drawn as an empty panel, never dropped and never half-filled.
 - Deliver a standalone `<Pack name> - Executive summary - Oracle.pptx`, and, when a host deck was given, the slide number where it should be inserted.
-
-## Talking to the owner
-
-Every message, question and option passes the reader's test in `${CLAUDE_PLUGIN_ROOT}/skills/spec/references/cards/owner-language.md`, loaded at start-up.
-
-## Showing it to the owner
-
-Everything the owner reviews is open beside the conversation *before* the question, so they answer while looking at the thing (`shared/references/review-loop.md` §3). Here: the rendered slide opens in the side panel (`SendUserFile`, `display: "render"`) with the .pptx attached, then the question. Internal pack material is never published as a claude.ai artifact. In a plain terminal, print the path and a text rendering, and say so.
 
 ## Self-check before closing
 

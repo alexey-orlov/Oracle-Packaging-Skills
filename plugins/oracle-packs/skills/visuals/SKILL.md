@@ -9,7 +9,9 @@ user-invocable: true
 
 > **Paths.** `shared/...` means `${CLAUDE_PLUGIN_ROOT}/shared/...`; `tools/...`, `assets/...` and `references/...` without a prefix are relative to this skill's own folder.
 
-> **Load only what the step needs.** `references/cards/manifest.yaml` lists, per step, which files that step reads. Read those and nothing else — never the whole folder, never a card for a step you are not on. Every subagent follows `shared/references/running-agents.md`.
+> **Load only what the step needs.** Each step below names its cards (`Card:`); read those when you reach it and nothing else — never the whole folder, never a card for a step you are not on. Every subagent follows `shared/references/running-agents.md`.
+
+**Start-up:** `shared/cards/owner-language.md` (how every message to the owner is written) and `shared/cards/review-protocol.md` (how everything the owner reviews is shown, changed and approved).
 
 This step searches openly licensed sources, puts three candidates per picture in front of the owner, and records what they choose.
 
@@ -25,7 +27,7 @@ This step searches openly licensed sources, puts three candidates per picture in
 
 1. **List the pictures and count the questions.** One icon per entry in `verticals[]`, plus `today` and `tomorrow`, plus the customer's logo where clearance allows it — not the cover, which carries the family's shared picture unless the owner asks for one of this pack's own. Say the count in one line, in the owner's words: "Six pictures to pick: an icon for each of your four industries, and the two photographs for the before-and-after slide." That count is the `N` every question title carries.
 
-2. **The icon for each industry.** *Cards: `icons.md` and `sources.md`.* Propose three, fetch them in both colours, lay them out as one sheet, open the sheet beside the conversation, then ask. Candidates and sheets go under the pack's work folder — `<dir>` is `<work>/candidates/<slot>` (`shared/tools/pack_paths.py <slug>`) — never into the repo.
+2. **The icon for each industry.** *Cards: `icons.md` and `sources.md`.* Propose three, fetch them in both colours, lay them out as one sheet, open the sheet beside the conversation, then ask; in a plain terminal, print the sheet's path and each candidate with its source and licence. Candidates and sheets go under the pack's work folder — `<dir>` is `<work>/candidates/<slot>` (`shared/tools/pack_paths.py <slug>`) — never into the repo.
 
        shared/tools/py tools/suggest_icons.py "<industry>" --context "<its 'what matters here' line>"
        shared/tools/py tools/fetch_icon.py <name> --out <dir> --slot vertical:<i>
@@ -41,13 +43,7 @@ This step searches openly licensed sources, puts three candidates per picture in
 
        shared/tools/py tools/apply_choice.py <spec> --slot <slot> --file <the chosen file> --note "<their reason>"
 
-6. **Close.** *Cards: `close.md`, and the spec skill's `save`.* Save the pictures and the brief to the shared repo (`<what>` = `pictures`). Then what was chosen, where the files are, and every slot still open with what would unblock it. That list is the open items; do not bury it.
-
-**How we talk to the owner:** `${CLAUDE_PLUGIN_ROOT}/skills/spec/references/cards/owner-language.md`, loaded at start-up, governs every message, question and option.
-
-## Showing it to the owner
-
-Everything the owner reviews is opened beside the conversation *before* the question (`shared/references/review-loop.md` §3). In the Claude desktop app the contact sheet opens in the side panel (`SendUserFile`, `display: "render"`), then the widget. Never publish a pack's pictures as a claude.ai artifact — pack material stays on the machine. In a plain terminal, print the sheet's path and the candidates with source and licence, and say so.
+6. **Close.** *Cards: `close`, and the spec skill's `../spec/references/cards/save.md`.* Save the pictures and the brief to the shared repo (`<what>` = `pictures`). Then what was chosen, where the files are, and every slot still open with what would unblock it. That list is the open items; do not bury it.
 
 ## Definition of done
 

@@ -10,7 +10,7 @@ Its output is the research brief (`research-brief-format.md`), and then
 `pack-spec.md`.
 
 **This file is read by the research agents, in their own context — never loaded into the
-conversation with the owner** (`cards/manifest.yaml` lists it under that step's `agents`). Its
+conversation with the owner** (the spec's `SKILL.md` names it on that step's `Agents read:` line). Its
 vocabulary is internal: no test or prompt id here, and no word from it, ever appears in anything
 the owner reads. What the owner is asked after the research is on `cards/research-review.md`; the
 candidate pack stories are on `cards/story.md`.

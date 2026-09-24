@@ -9,7 +9,9 @@ user-invocable: true
 
 > **Paths.** `shared/...` means `${CLAUDE_PLUGIN_ROOT}/shared/...`; `tools/...`, `assets/...` and `references/...` are this skill's own folder.
 
-**Load only what the step needs.** `references/cards/manifest.yaml` lists, per step, exactly which files that step reads. Read those and nothing else — never the whole folder, never a card for a step you are not on, never a long reference a card already points to.
+**Load only what the step needs.** Each step below names its cards (`Card:`); read those when you reach it and nothing else — never the whole folder, never a card for a step you are not on, never a long reference a card already points to.
+
+**Start-up:** `shared/cards/owner-language.md` (how every message to the owner is written) and `shared/cards/review-protocol.md` (how everything the owner reviews is shown, changed and approved).
 
 The listing is the only artifact end customers read directly. It carries the same components as the print artifacts, in the site's own grammar: persona-first copy, no packaging vocabulary, no counts, no customer names, only the proof-of-value price, one status word per proof.
 
@@ -25,20 +27,14 @@ The listing is the only artifact end customers read directly. It carries the sam
 1. **Read the site.** Card: `site`. Find the root, pull it, read its manifest, and compare its contract round with this skill's before anything is written.
 2. **Map the tile and the overview tab.** Cards: `entry-identity`, `entry-overview`, `entry-case-study`, plus `shared/references/anatomy/artifact-listing.md` for the section order. Fill every key from the spec; a slot with no fact behind it is filled qualitatively, never omitted.
 3. **Map the technology and Jumpstart tabs.** Cards: `entry-technology`, `entry-jumpstart`. The stage view is derived, not re-typed: `shared/tools/py tools/derive-stage-view.py <spec>`.
-4. **Write the copy** on the strongest model, then give it a mechanical pass. Cards: `copy-rules`, `claim-rules`, `exemplar-altitude`. The exemplar entry is long: a fresh-context agent reads it and returns the strings, or you open only the keys you are filling. Every subagent follows `shared/references/running-agents.md`.
-5. **Insert.** Cards: `insert`, `switches`. `node tools/insert-product.mjs --content <site>/<paths.content> --entry <entry file> --figure-alt "<the figure in one sentence>"` (the product page finds its figure through that `media` entry), then the figure and the switch block at the manifest's `paths.diagrams` and `paths.config`, then the kit-links entry at `paths.links` (the tool's `--links`), then run the manifest's `paths.syncLinks` from the site root. The figure is **generated from the pack's architecture model, never written by hand** — `shared/tools/py tools/diagram_to_site.py <spec> --slug <slug>`, the model built from the spec in the packaging-skills repo (`shared/tools/py shared/tools/pack_paths.py <slug>` prints its path) — so the site, the deck and the one-pager draw one picture.
+4. **Write the copy** on the strongest model, then give it a mechanical pass. Cards: `copy-rules`, `claim-rules`, `exemplar-altitude`. The exemplar entry is long: a fresh-context agent reads it and returns the strings, or you open only the keys you are filling. Agents read: `assets/exemplar-product-entry.js`, `shared/references/naming-and-clearance.md`. Every subagent follows `shared/references/running-agents.md`.
+5. **Insert.** Cards: `insert`, `switches`, `shared/references/architecture-diagram.md`. `node tools/insert-product.mjs --content <site>/<paths.content> --entry <entry file> --figure-alt "<the figure in one sentence>"` (the product page finds its figure through that `media` entry), then the figure and the switch block at the manifest's `paths.diagrams` and `paths.config`, then the kit-links entry at `paths.links` (the tool's `--links`), then run the manifest's `paths.syncLinks` from the site root. The figure is **generated from the pack's architecture model, never written by hand** — `shared/tools/py tools/diagram_to_site.py <spec> --slug <slug>`, the model built from the spec in the packaging-skills repo (`shared/tools/py shared/tools/pack_paths.py <slug>` prints its path) — so the site, the deck and the one-pager draw one picture.
 6. **Gates.** Cards: `gates`, `claim-rules`. `shared/tools/py tools/denylist-to-json.py --out <site>/<paths.denyList>` **first** — the customer-name gate fails open, so an unconfigured deny-list warning is a failed gate. Then the site's own checker (the manifest's `checker.run`, from the site root), a clean console on every route, the deny-list sweep, `shared/tools/py shared/tools/lint_artifact.py <entry file> --channel customer_site --spec <spec>`, and `check_consistency.py <spec> <entry file>`. The owner hears one plain line about all of it.
 7. **Preview.** Card: `preview`. Every changed screen at the manifest's `preview.widths`, the H1 at `preview.h1Width`, no horizontal overflow.
-8. **Review pack.** Card: `review-pack`. One rebuild round.
+8. **Review pack.** Card: `review-pack`. The screenshots open in the side panel, the entry as text in the conversation. One rebuild round.
 9. **Publish only when asked.** Card: `publish`. The target and every other publish value come from the site manifest's `publish` block, never from memory.
 
 **Fast path.** When the owner asks for one thing ("re-word the one-liner", "swap an industry"), load that part's card only, redo it, re-run the gates, and stop.
-
-**Every message, question and option the owner sees passes the reader's test in `references/cards/owner-language.md`.**
-
-## Showing it to the owner
-
-Everything the owner reviews is opened beside the conversation *before* the question, so they answer while looking at the thing (`shared/references/review-loop.md` §3). In the desktop app a text file opens in the Files pane (`mcp__ccd_view__show_pane`, pane `file`); a render opens in the side panel (`SendUserFile`, `display: "render"`) with the editable file attached. Internal pack material is never published as a claude.ai artifact — artifacts stay reserved for the mini-site demos. In a plain terminal, print the path and a text rendering, and say so. Here: the screenshots in the side panel, the entry as text in the conversation.
 
 ## Done, and the self-check
 

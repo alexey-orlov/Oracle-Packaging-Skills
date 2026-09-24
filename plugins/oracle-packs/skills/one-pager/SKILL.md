@@ -9,7 +9,9 @@ user-invocable: true
 
 > **Paths.** `shared/...` means `${CLAUDE_PLUGIN_ROOT}/shared/...`; `tools/...`, `assets/...` and `references/...` are this skill's own folder.
 
-**Load only what the step needs.** `references/cards/manifest.yaml` lists, per step, exactly which files that step reads. Read those and nothing else — never the whole folder, never a card for a step you are not on, never a long reference a card already points to. Each card says what its part is, the checks a build must pass, and the spec keys it reads; the checks are the specification, not prose to paraphrase.
+**Load only what the step needs.** Each step below names its cards (`Card:`); read those when you reach it and nothing else — never the whole folder, never a card for a step you are not on, never a long reference a card already points to. Each card says what its part is, the checks a build must pass, and the spec keys it reads; the checks are the specification, not prose to paraphrase.
+
+**Start-up:** `shared/cards/owner-language.md` (how every message to the owner is written) and `shared/cards/review-protocol.md` (how everything the owner reviews is shown, changed and approved).
 
 ## Preconditions
 
@@ -42,14 +44,6 @@ user-invocable: true
 - "Why it sells" is written for the partner's seller, in one card, and appears on no customer-facing artifact.
 - The closing block carries the channel's contact; an address is a link, never a filled button.
 - Deliver the PDF and the editable HTML twin: `<Pack name> - Sales one-pager - Oracle.pdf` and `.html`.
-
-## Talking to the owner
-
-Every message, question and option passes the reader's test in `${CLAUDE_PLUGIN_ROOT}/skills/spec/references/cards/owner-language.md`, loaded at start-up.
-
-## Showing it to the owner
-
-Everything the owner reviews is open beside the conversation *before* the question, so they answer while looking at the thing (`shared/references/review-loop.md` §3). Here: the PDF page opens in the side panel (`SendUserFile`, `display: "render"`) with the HTML twin attached, then the question. Internal pack material is never published as a claude.ai artifact. In a plain terminal, print the path and a text rendering, and say so.
 
 ## Self-check before closing
 

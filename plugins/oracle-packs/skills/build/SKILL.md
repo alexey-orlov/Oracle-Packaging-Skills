@@ -9,7 +9,9 @@ user-invocable: true
 
 > **Paths.** `shared/...` means `${CLAUDE_PLUGIN_ROOT}/shared/...` (the plugin's one shared folder); `references/...` and `tools/...` are this skill's own folder.
 
-**Load only what the step needs.** `references/cards/manifest.yaml` lists, per step, exactly which files that step reads. Read those and nothing else — never the whole folder, never a card for a step you are not on, never a long reference a card already points to.
+**Load only what the step needs.** Each step below names its cards (`Card:`); read those when you reach it and nothing else — never the whole folder, never a card for a step you are not on, never a long reference a card already points to.
+
+**Start-up:** `shared/cards/owner-language.md` (how every message to the owner is written) and `shared/cards/review-protocol.md` (how everything the owner reviews is shown, changed and approved).
 
 You produce nothing yourself: each artifact is built by its own skill, shown to the owner, and approved before the next one starts.
 
@@ -38,14 +40,6 @@ Card: `consistency-gate`. After the last document artifact and before the web ha
 ## 5. Delivery
 
 Card: `delivery`. Copy the approved files from `<work>/artifacts/` to the folder the owner names, keeping the pack's file-name pattern. Log one line per artifact in `<work>/decisions.md`. Close with the files and where they are, what was decided differently from the pack brief and why, and the open items the owner still holds.
-
-## Talking to the owner
-
-Every message, question, option and table passes the reader's test in `${CLAUDE_PLUGIN_ROOT}/skills/spec/references/cards/owner-language.md` (the spec skill's card, read at start-up).
-
-## Showing it to the owner
-
-Everything the owner reviews opens beside the conversation *before* the question (`shared/references/review-loop.md` §3): a render in the side panel (`SendUserFile`, `display: "render"`) with the editable file attached (`display: "attach"`), a text file in the Files pane (`mcp__ccd_view__show_pane`, pane `file`). Internal pack material is never published as a claude.ai artifact — artifacts stay reserved for the mini-site demos. In a plain terminal, print the path and a text rendering, and say so. Here: before every `Artifacts · n of N` widget.
 
 ## Self-check before closing
 

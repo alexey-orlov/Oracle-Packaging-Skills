@@ -1,76 +1,76 @@
 #!/usr/bin/env python3
-"""Check a skill's per-step reading budget against its cards manifest.
+"""Check a skill's per-step reading budget against the cards its SKILL.md names.
 
-    python3 shared/tools/context_budget.py <manifest.yaml>
-    python3 shared/tools/context_budget.py <manifest.yaml> --quiet
+    python3 shared/tools/context_budget.py <SKILL.md or skill folder> [...] [--quiet]
+    python3 shared/tools/context_budget.py <SKILL.md> --list     # every file the skill loads
 
-A skill used to read everything it might ever need before its first question.
-The manifest says instead which files enter the conversation at which step, and
-this tool holds that honest: it counts the words of every listed file, converts
-them to tokens, and fails when a step reads more than its share or a card grows
-past its own word cap.
+A skill reads only the files its current step needs. The SKILL.md says which, and
+this tool holds that honest: it counts the words of every file a step loads,
+converts them to tokens, and fails when a step reads more than its share or a
+file grows past its own word cap.
 
-What counts
-    `session` files enter the conversation at that step and are charged to it.
-    `agents` files are read by a subagent in its own fresh context; they are
-    listed and sized in the report but charged to no step — a subagent's prompt
-    costs the session nothing.
+How a SKILL.md names what a step loads (the only grammar this tool reads)
+    `Card: \`x\``, `Cards: \`x\`, \`y\``   one step that loads those files together.
+        The label may carry a few words before its colon ("Card for the summary:");
+        the list ends at the sentence's full stop.
+    `Cards, one per part: \`x\`, \`y\``  one step per file ("one per" or "one at a
+        time" before the colon).
+    `Start-up: \`x\``                    files read with SKILL.md before the first
+        message; they form the start-up step.
+    `Agents read: \`x\``                 files a subagent reads in its own context:
+        listed and sized, charged to no step.
+    A bare name is the skill's own card, `references/cards/<name>.md`. A name with a
+    slash is a path from the skill's folder; one beginning `shared/` is the plugin's
+    shared folder. Labels are case-sensitive, so "(card: `x`)" in running prose is a
+    pointer, not a step. Nothing inside a fenced code block counts.
 
-Budgets (overridable per manifest under `budget:`)
+Budgets
     tokens_per_word   1.35
-    start_up_tokens   6000   the step marked `start_up: true`
-    step_tokens       2000   every other step
+    start-up          6000 tokens   SKILL.md plus its Start-up files
+    every other step  2000 tokens
 
 Word caps per file (docs/CONTEXT-BUDGET.md; not overridable)
-    a card              300 words   every `.md` a manifest lists, `session` or
-                                    `agents`, whose path has a `cards/` or
-                                    `anatomy/` folder in it
+    a card              300 words   every `.md` a step loads whose path has a
+                                    `cards/` or `anatomy/` folder in it
     owner-language.md   400 words   the reader's test, the one wider card
     SKILL.md          1,200 words
-    A file over its cap is reported once, as `card over 300 words: <path> (<n>)`
-    (or `SKILL.md over 1200 words: ...`), even with --quiet, and fails the run
-    like a step over budget: the fix is to tighten the file, never to raise the cap.
-
-Paths
-    Relative to the manifest's own `root:` (itself relative to the manifest's
-    directory). A path beginning `shared/` resolves against the nearest parent
-    directory that contains one: the plugin's own `shared/`, in the repo as in an install.
+    A file over its cap is reported once, even with --quiet, and fails the run like
+    a step over budget: the fix is to tighten the file, never to raise the cap.
 
 Exit codes
-    0   every step is within budget and every capped file within its cap
-        (the per-step table is printed)
-    1   a step is over budget, a card or SKILL.md is over its word cap, or a
-        listed file is missing
-    2   usage or dependency error (bad arguments, unreadable manifest, no PyYAML)
+    0   every step within budget and every capped file within its cap
+    1   a step over budget, a file over its cap, or a named file missing
+    2   usage error
 """
 
 import os
+import re
 import sys
 
-USAGE = "usage: context_budget.py <manifest.yaml> [--quiet]"
+USAGE = "usage: context_budget.py <SKILL.md or skill folder> [...] [--quiet | --list]"
 
-DEFAULTS = {"tokens_per_word": 1.35, "start_up_tokens": 6000, "step_tokens": 2000}
+TOKENS_PER_WORD = 1.35
+START_UP_TOKENS = 6000
+STEP_TOKENS = 2000
 
 CARD_WORDS = 300
 OWNER_LANGUAGE_WORDS = 400
 SKILL_WORDS = 1200
 
+LABEL = re.compile(r"(?<![\w`])(?P<label>Start-up|Cards?|Agents read)\b(?P<qual>[^:`\n]{0,60}):")
+
 
 def word_cap(path):
-    """The per-file word cap docs/CONTEXT-BUDGET.md states for `path`, as
-    (cap, kind), or (None, None) for a file with no cap of its own."""
+    """The per-file word cap for `path`, as (cap, kind), or (None, None)."""
     norm = path.replace(os.sep, "/")
     name = norm.rsplit("/", 1)[-1]
     if name == "SKILL.md":
         return SKILL_WORDS, "SKILL.md"
+    if name == "owner-language.md":
+        return OWNER_LANGUAGE_WORDS, "card"
     if name.endswith(".md") and ("/cards/" in norm or "/anatomy/" in norm):
-        return (OWNER_LANGUAGE_WORDS if name == "owner-language.md" else CARD_WORDS), "card"
+        return CARD_WORDS, "card"
     return None, None
-
-
-def die(msg, code=2):
-    sys.stderr.write("context_budget: %s\n" % msg)
-    sys.exit(code)
 
 
 def words_in(path):
@@ -79,136 +79,189 @@ def words_in(path):
         return len(fh.read().split())
 
 
-def resolve(spec_path, root, manifest_dir):
-    """Resolve one manifest entry to an absolute path."""
-    if spec_path.startswith("shared/"):
-        here = root
-        while True:
-            candidate = os.path.join(here, spec_path)
-            if os.path.exists(candidate):
-                return candidate
-            parent = os.path.dirname(here)
-            if parent == here:
-                return os.path.join(root, spec_path)   # report it as missing where it was looked for
-            here = parent
-    return os.path.normpath(os.path.join(root, spec_path))
+def _names_after(line, start):
+    """The backticked names from `start` to the end of the sentence."""
+    names, i, inside, buf = [], start, False, []
+    while i < len(line):
+        ch = line[i]
+        if ch == "`":
+            if inside:
+                names.append("".join(buf))
+                buf = []
+            inside = not inside
+        elif inside:
+            buf.append(ch)
+        elif ch in ".;" and (i + 1 == len(line) or line[i + 1] in " *_)"):
+            break
+        i += 1
+    return [n.strip() for n in names if n.strip() and " " not in n.strip()]
+
+
+def _shared_root(skill_dir):
+    here = os.path.abspath(skill_dir)
+    while True:
+        if os.path.isdir(os.path.join(here, "shared")):
+            return here
+        parent = os.path.dirname(here)
+        if parent == here:
+            return os.path.abspath(skill_dir)
+        here = parent
+
+
+def resolve(name, skill_dir):
+    """A name from a SKILL.md, as an absolute path."""
+    if name.startswith("shared/"):
+        return os.path.normpath(os.path.join(_shared_root(skill_dir), name))
+    if "/" in name:
+        return os.path.normpath(os.path.join(skill_dir, name))
+    base = name[:-3] if name.endswith(".md") else name
+    return os.path.normpath(os.path.join(skill_dir, "references", "cards", base + ".md"))
+
+
+def skill_steps(skill_md):
+    """Parse a SKILL.md: (start_up_files, steps), where each step is a dict with
+    `id`, `session` and `agents` lists of (name, absolute path)."""
+    skill_dir = os.path.dirname(os.path.abspath(skill_md))
+    with open(skill_md, encoding="utf-8") as fh:
+        text = fh.read()
+    if text.startswith("---"):
+        end = text.find("\n---", 3)
+        text = text[end + 4:] if end != -1 else text
+    start_up, steps = [], []
+    section, fenced, count = "top", False, {}
+    for line in text.splitlines():
+        if line.lstrip().startswith("```"):
+            fenced = not fenced
+            continue
+        if fenced:
+            continue
+        if line.startswith("## "):
+            section = re.sub(r"[^a-z0-9]+", "-", line[3:].lower()).strip("-") or "section"
+            continue
+        for m in LABEL.finditer(line):
+            names = _names_after(line, m.end())
+            if not names:
+                continue
+            files = [(n, resolve(n, skill_dir)) for n in names]
+            label, qual = m.group("label"), m.group("qual").lower()
+            if label == "Start-up":
+                start_up.extend(files)
+            elif label == "Agents read":
+                if steps and steps[-1]["section"] == section:
+                    steps[-1]["agents"].extend(files)
+                else:
+                    steps.append({"id": section, "section": section, "session": [], "agents": files})
+            elif "one per" in qual or "one at a time" in qual:
+                for f in files:
+                    steps.append({"id": "%s/%s" % (section, os.path.basename(f[1])[:-3]),
+                                  "section": section, "session": [f], "agents": []})
+            else:
+                title = re.match(r"\s*(?:\d+\.\s*)?\*\*([^*]+)\*\*", line)
+                if title:
+                    sid = re.sub(r"[^a-z0-9]+", "-", title.group(1).lower()).strip("-")
+                else:
+                    count[section] = count.get(section, 0) + 1
+                    sid = section if count[section] == 1 else "%s-%d" % (section, count[section])
+                steps.append({"id": sid, "section": section, "session": files, "agents": []})
+    return start_up, steps
+
+
+def check(skill_md, quiet, out):
+    """Report one skill; return the number of problems found."""
+    start_up, steps = skill_steps(skill_md)
+    rows, findings, missing, over_cap = [], [], [], {}
+    total = 0
+
+    def capped(name, path, w):
+        cap, kind = word_cap(path)
+        if cap is None or w <= cap:
+            return ""
+        over_cap.setdefault(path, (name, w, cap, kind))
+        return "  OVER the %d-word %s cap" % (cap, kind)
+
+    everything = [{"id": "start-up", "session": [("SKILL.md", os.path.abspath(skill_md))] + start_up,
+                   "agents": [], "start": True}] + steps
+    for step in everything:
+        cap = START_UP_TOKENS if step.get("start") else STEP_TOKENS
+        words, files = 0, []
+        for name, path in step["session"]:
+            if not os.path.isfile(path):
+                missing.append((step["id"], name))
+                continue
+            w = words_in(path)
+            words += w
+            files.append((name, w, capped(name, path, w)))
+        agent_files = []
+        for name, path in step["agents"]:
+            if not os.path.isfile(path):
+                missing.append((step["id"], name))
+                continue
+            w = words_in(path)
+            agent_files.append((name, w, capped(name, path, w)))
+        tokens = int(round(words * TOKENS_PER_WORD))
+        total += words
+        rows.append((step["id"], files, words, tokens, cap, agent_files))
+        if tokens > cap:
+            findings.append((step["id"], tokens, cap))
+
+    if not quiet:
+        out.write("%s\n  tokens ~= words x %.2f; start-up cap %d, per-step cap %d\n\n"
+                  % (skill_md, TOKENS_PER_WORD, START_UP_TOKENS, STEP_TOKENS))
+        out.write("  %-34s %7s %8s %8s\n" % ("step", "words", "tokens", "cap"))
+        for step_id, files, w, t, cap, agent_files in rows:
+            out.write("  %-34s %7d %8d %8d%s\n" % (step_id, w, t, cap, "  OVER" if t > cap else ""))
+            for name, fw, over in files:
+                out.write("      %-44s %5d w%s\n" % (name, fw, over))
+            for name, fw, over in agent_files:
+                out.write("      %-44s %5d w  (subagent, not charged)%s\n" % (name, fw, over))
+        out.write("\n  session words across all steps: %d (~%d tokens)\n"
+                  % (total, int(round(total * TOKENS_PER_WORD))))
+    for step_id, name in missing:
+        out.write("  MISSING %s: %s (%s)\n" % (step_id, name, skill_md))
+    for step_id, tokens, cap in findings:
+        out.write("  OVER BUDGET %s: %d tokens against a cap of %d (%s)\n" % (step_id, tokens, cap, skill_md))
+    for name, w, cap, kind in over_cap.values():
+        out.write("  %s over %d words: %s (%d)\n" % (kind, cap, name, w))
+    if not steps:
+        out.write("  NO STEPS: %s names no card on a Card line\n" % skill_md)
+    problems = len(missing) + len(findings) + len(over_cap) + (0 if steps else 1)
+    if not quiet and not problems:
+        out.write("\ncontext_budget: %d steps, all within budget; every card within its cap\n"
+                  % len(rows))
+    return problems
 
 
 def main(argv):
     args = [a for a in argv[1:] if not a.startswith("-")]
     flags = [a for a in argv[1:] if a.startswith("-")]
     for f in flags:
-        if f not in ("--quiet", "-q"):
-            die("unknown option %s\n%s" % (f, USAGE))
-    if len(args) != 1:
-        die(USAGE)
-    quiet = bool(flags)
-
-    manifest_path = args[0]
-    if not os.path.isfile(manifest_path):
-        die("no such manifest: %s" % manifest_path)
-
-    try:
-        import yaml
-    except ImportError:
-        die("PyYAML is not installed for this interpreter; "
-            "pip install -r plugins/oracle-packs/requirements.txt")
-
-    try:
-        with open(manifest_path, encoding="utf-8") as fh:
-            manifest = yaml.safe_load(fh)
-    except Exception as exc:                                  # noqa: BLE001
-        die("could not read %s: %s" % (manifest_path, exc))
-    if not isinstance(manifest, dict) or not manifest.get("steps"):
-        die("%s has no `steps:` list" % manifest_path)
-
-    budget = dict(DEFAULTS)
-    budget.update(manifest.get("budget") or {})
-    per_word = float(budget["tokens_per_word"])
-    start_cap = int(budget["start_up_tokens"])
-    step_cap = int(budget["step_tokens"])
-
-    manifest_dir = os.path.dirname(os.path.abspath(manifest_path)) or "."
-    root = os.path.normpath(os.path.join(manifest_dir, manifest.get("root", ".")))
-
-    rows, findings, missing = [], [], []
-    over_cap = {}               # absolute path -> (entry, words, cap, kind); each file once
-    total_session_words = 0
-
-    def capped(entry, path, w):
-        """The table flag for a file over its own word cap, recording it once."""
-        file_cap, kind = word_cap(path)
-        if file_cap is None or w <= file_cap:
-            return ""
-        over_cap.setdefault(path, (entry, w, file_cap, kind))
-        return "  OVER the %d-word %s cap" % (file_cap, kind)
-
-    for step in manifest["steps"]:
-        step_id = step.get("id") or "(unnamed step)"
-        is_start = bool(step.get("start_up"))
-        cap = start_cap if is_start else step_cap
-
-        session_words, files = 0, []
-        for entry in step.get("session") or []:
-            path = resolve(entry, root, manifest_dir)
-            if not os.path.isfile(path):
-                missing.append((step_id, entry))
-                continue
-            w = words_in(path)
-            session_words += w
-            files.append((entry, w, capped(entry, path, w)))
-
-        agent_words, agent_files = 0, []
-        for entry in step.get("agents") or []:
-            path = resolve(entry, root, manifest_dir)
-            if not os.path.isfile(path):
-                missing.append((step_id, entry))
-                continue
-            w = words_in(path)
-            agent_words += w
-            agent_files.append((entry, w, capped(entry, path, w)))
-
-        tokens = int(round(session_words * per_word))
-        total_session_words += session_words
-        rows.append((step_id, files, session_words, tokens, cap, is_start,
-                     agent_files, agent_words))
-        if tokens > cap:
-            findings.append((step_id, tokens, cap, files))
-
-    out = sys.stdout
-    if not quiet:
-        out.write("%s\n" % manifest_path)
-        out.write("  tokens ~= words x %.2f; start-up cap %d, per-step cap %d\n\n"
-                  % (per_word, start_cap, step_cap))
-        out.write("  %-26s %7s %8s %8s\n" % ("step", "words", "tokens", "cap"))
-        for (step_id, files, w, t, cap, is_start, agent_files, aw) in rows:
-            flag = "  OVER" if t > cap else ""
-            out.write("  %-26s %7d %8d %8d%s\n" % (step_id, w, t, cap, flag))
-            for name, fw, over in files:
-                out.write("      %-40s %5d w%s\n" % (name, fw, over))
-            for name, fw, over in agent_files:
-                out.write("      %-40s %5d w  (subagent, not charged)%s\n" % (name, fw, over))
-        out.write("\n  session words across all steps: %d (~%d tokens)\n"
-                  % (total_session_words, int(round(total_session_words * per_word))))
-
-    for step_id, entry in missing:
-        out.write("  MISSING %s: %s\n" % (step_id, entry))
-    for step_id, tokens, cap, files in findings:
-        out.write("  OVER BUDGET %s: %d tokens against a cap of %d\n"
-                  % (step_id, tokens, cap))
-        for name, fw, _over in sorted(files, key=lambda p: -p[1]):
-            out.write("      %-40s %5d w (~%d tokens)\n"
-                      % (name, fw, int(round(fw * per_word))))
-    for entry, w, file_cap, kind in over_cap.values():
-        out.write("  %s over %d words: %s (%d)\n" % (kind, file_cap, entry, w))
-
-    if missing or findings or over_cap:
-        out.write("\ncontext_budget: %d over budget, %d missing, %d over the word cap\n"
-                  % (len(findings), len(missing), len(over_cap)))
+        if f not in ("--quiet", "-q", "--list"):
+            sys.stderr.write("context_budget: unknown option %s\n%s\n" % (f, USAGE))
+            return 2
+    if not args:
+        sys.stderr.write("%s\n" % USAGE)
+        return 2
+    paths = []
+    for a in args:
+        p = os.path.join(a, "SKILL.md") if os.path.isdir(a) else a
+        if not os.path.isfile(p):
+            sys.stderr.write("context_budget: no such SKILL.md: %s\n" % a)
+            return 2
+        paths.append(p)
+    if "--list" in flags:
+        for p in paths:
+            start_up, steps = skill_steps(p)
+            seen = []
+            for _name, path in start_up + [f for s in steps for f in s["session"] + s["agents"]]:
+                if path not in seen:
+                    seen.append(path)
+                    print(path)
+        return 0
+    quiet = "--quiet" in flags or "-q" in flags
+    problems = sum(check(p, quiet, sys.stdout) for p in paths)
+    if problems:
+        sys.stdout.write("\ncontext_budget: %d problem(s)\n" % problems)
         return 1
-    if not quiet:
-        out.write("\ncontext_budget: %d steps, all within budget; every card within its cap\n"
-                  % len(rows))
     return 0
 
 

@@ -9,7 +9,9 @@ user-invocable: true
 
 > **Paths.** `shared/...` means `${CLAUDE_PLUGIN_ROOT}/shared/...` (the plugin's one shared folder); `references/...`, `tools/...` and `assets/...` are this skill's own folder.
 
-**Load only what the step needs.** `references/cards/manifest.yaml` lists, per step, exactly which files that step reads. Read those and nothing else — never the whole folder, never a card for a step you are not on, never a long reference a card already points to. Every subagent follows `shared/references/running-agents.md`.
+**Load only what the step needs.** Each step below names its cards (`Card:`); read those when you reach it and nothing else — never the whole folder, never a card for a step you are not on, never a long reference a card already points to. Every subagent follows `shared/references/running-agents.md`.
+
+**Start-up:** `shared/cards/owner-language.md` (how every message to the owner is written) and `shared/cards/review-protocol.md` (how everything the owner reviews is shown, changed and approved).
 
 The feature list is the pack's spine document: the table every other artifact condenses. It is internal / partner material, carries no prices, and states for every feature whether it is available, partial or roadmap and what is standardly customized per engagement.
 
@@ -42,14 +44,6 @@ Card: `review-pack`. The docx, a plain-text rendering of the table, per-area ava
 ## 6. One rebuild round
 
 Card: `fast-path`. One rebuild on feedback; a single-row change goes through the spec skill's fast path, rebuild, re-lint, stop.
-
-## Talking to the owner
-
-Every message, question, option and table passes the reader's test in `${CLAUDE_PLUGIN_ROOT}/skills/spec/references/cards/owner-language.md` (the spec skill's card, read at start-up).
-
-## Showing it to the owner
-
-Everything the owner reviews opens beside the conversation *before* the question (`shared/references/review-loop.md` §3): the page render — the PNG from QuickLook, or a PDF exported by Pages or LibreOffice — in the side panel (`SendUserFile`, `display: "render"`), with the .docx attached (`display: "attach"`). Never publish the feature list as a claude.ai artifact; it is internal material and would leave the machine. In a plain terminal, print the path and the plain-text table, and say so.
 
 ## Done, and the self-check
 

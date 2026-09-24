@@ -4,7 +4,7 @@
 
 **Checks**
 
-1. The rendered slide is open beside the conversation as an image, with the editable file attached, *before* the question is asked (`shared/references/review-loop.md` §3). Never a description of the slide instead of the slide.
+1. The rendered slide is open beside the conversation as an image, with the editable file attached, *before* the question is asked (`shared/cards/review-protocol.md`). Never a description of the slide instead of the slide.
 2. The pack says what was compressed and what was dropped to make it fit — in plain words, by the block's name on the slide.
 3. Anything inferred is named as inferred, with what it was inferred from.
 4. Open items are listed as items, in the owner's words, not buried in a paragraph.

@@ -3,10 +3,12 @@
 The rule set every skill in the plugin reads. `shared/` is its single home, so a rule is
 written here once and is never restated inside a skill.
 
-**A skill does not read this folder.** It reads the file its current step's card names, and
-the cards live with the skill (`references/cards/manifest.yaml` says which file each step
-reads, and `shared/tools/context_budget.py` holds that honest — see `docs/CONTEXT-BUDGET.md`).
-These files are the long form a card points at.
+**A skill does not read this folder.** It reads the cards its current step names on the
+`Card:` lines of its `SKILL.md` (`shared/tools/context_budget.py` holds that honest — see
+`docs/CONTEXT-BUDGET.md`): its own, and the two every skill loads at start-up from
+`shared/cards/` — `owner-language.md` (how every message to the owner is written) and
+`review-protocol.md` (how everything the owner reviews is shown, changed and approved).
+These files are the long forms a card or a subagent's prompt points at.
 
 ## The files
 
@@ -18,9 +20,7 @@ These files are the long form a card points at.
 | `engagement-context.md` | The engagement in two pages: who Oracle is to us, why we package, what Oracle gets, who reads what, the PoV Jumpstart / Integration / Scaling model, naming, clearance, and the volatile rows to re-check before use. Background reading, not a runtime file. |
 | `naming-and-clearance.md` | What an artifact may call things and what it may disclose: the vendor naming table, pack name by channel, clearance per channel (internal · partner print · customer site · demo), the customer-name deny-list, the banned vocabulary for customer-facing copy, and the contract the artifact linter encodes. |
 | `pov-rules.md` | What a PoV Jumpstart is and is not: duration, scope, what it proves, and the pushback rules. |
-| `review-loop.md` | How the owner reviews and approves, so every skill behaves the same way: options with a recommendation, renders not descriptions, the one expected rebuild round, the open-items list, the fast path for a one-block rebuild, and the definition of done. §3 is the one every skill's "Showing it to the owner" section points at. |
 | `architecture-diagram.md` | The one architecture diagram every artifact draws: where it is derived from, the naming rules, the flow rules, and the fresh-context reviewer's nine-point checklist. Read by that reviewer in its own context, not by the session. |
-| `talking-to-the-owner.md` | **Long form.** The runtime card is each skill's `references/cards/owner-language.md`. Read this only when the card leaves a case open. |
 | `slide-design.md` | The fourteen numbered design rules for decks, one-pagers and executive-summary slides. |
 | `visual-assets.md` | Where a pack's icons and photographs may come from: the allowed sources and licences and where their keys are read from, what is never used, how icons are rendered (QuickLook, `rsvg-convert` or `cairosvg`), the shared icon library's format and add-only rule, the customer's logo as the one owner-supplied picture (never searched for), what the picture credits record, and why an unreachable source is deferred rather than empty. |
 | `client-documents.md` | Voice, de-AI typography and vocabulary, the summary-altitude rule, the living-documents rule, and persona-first marketing copy with its heading budgets. |

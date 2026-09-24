@@ -4,7 +4,7 @@
 
 **Checks**
 
-1. The PDF page is open beside the conversation as an image, with the editable file attached, *before* the question is asked (`shared/references/review-loop.md` §3). Never a description of the page instead of the page.
+1. The PDF page is open beside the conversation as an image, with the editable file attached, *before* the question is asked (`shared/cards/review-protocol.md`). Never a description of the page instead of the page.
 2. The pack says which blocks are at or over length and by how much — in plain words, by the block's name on the page.
 3. Anything inferred is named as inferred, with what it was inferred from.
 4. Open items are listed as items, in the owner's words, not buried in a paragraph.

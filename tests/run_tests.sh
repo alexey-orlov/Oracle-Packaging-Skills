@@ -1440,35 +1440,47 @@ sys.exit(0 if written and found == s else 1)' \
   "$STAMP_DIR/one-pager.pdf" "$STAMP_SPEC"
 
 # --------------------------------------------------------------- context_budget
-# EVERY skill's manifest must stay inside its per-step reading budget; a card that
-# grows past its share fails here, not in a live run. The loop finds the manifests
-# rather than listing them, so a new skill is covered the day it gets one.
+# EVERY skill must stay inside its per-step reading budget, read from the Card lines of
+# its SKILL.md; a card that grows past its share or its cap fails here, not in a live run.
+# The loop finds the skills rather than listing them, so a new skill is covered the day
+# it lands, and every card must be loaded by some skill's step.
 say ""
 say "context_budget.py"
-MANIFESTS="$(find "$REPO/plugins" -path '*/skills/*/references/cards/manifest.yaml' \
-             -not -path '*/plugins/*/shared/*' | sort)"
-if [ -z "$MANIFESTS" ]; then
-  bad "no skill manifests found under $REPO/plugins"
+SKILL_FILES="$(find "$PLUGIN/skills" -name SKILL.md | sort)"
+if [ -z "$SKILL_FILES" ]; then
+  bad "no SKILL.md found under $PLUGIN/skills"
 else
-  # Every skill named in the marketplace's plugins must have one — a skill that
-  # silently loses its manifest would otherwise just drop out of this loop.
-  SKILLS="$(find "$REPO/plugins" -path '*/skills/*/SKILL.md' \
-            -not -path '*/plugins/*/shared/*' | wc -l | tr -d ' ')"
-  FOUND="$(printf '%s\n' "$MANIFESTS" | wc -l | tr -d ' ')"
-  if [ "$SKILLS" = "$FOUND" ]; then
-    ok "every skill has a cards manifest ($FOUND of $SKILLS)"
-  else
-    LAST="$MANIFESTS"
-    bad "$FOUND manifests for $SKILLS skills — a skill is missing references/cards/manifest.yaml"
-  fi
-  for m in $MANIFESTS; do
-    label="$(basename "$(dirname "$(dirname "$(dirname "$m")")")")"
-    run_case "$label is within budget" 0 \
-      "$PY" "$TOOLS/context_budget.py" "$m" --quiet
+  for s in $SKILL_FILES; do
+    run_case "$(basename "$(dirname "$s")") is within budget" 0 \
+      "$PY" "$TOOLS/context_budget.py" "$s" --quiet
   done
 fi
-run_case "a missing manifest is a usage error" 2 \
-  "$PY" "$TOOLS/context_budget.py" "$WORK/no-manifest.yaml"
+run_case "a missing SKILL.md is a usage error" 2 \
+  "$PY" "$TOOLS/context_budget.py" "$WORK/no-such-skill"
+mkdir -p "$WORK/budget/skills/fat/references/cards" "$WORK/budget/skills/bare"
+awk 'BEGIN { for (i = 0; i < 320; i++) printf "word "; print "" }' \
+  > "$WORK/budget/skills/fat/references/cards/long.md"
+printf -- '---\nname: fat\n---\n\n## 1. Build\n\nCard: `long`.\n' > "$WORK/budget/skills/fat/SKILL.md"
+run_case "a card over 300 words fails" 1 \
+  "$PY" "$TOOLS/context_budget.py" "$WORK/budget/skills/fat/SKILL.md" --quiet
+expect "the card and its count" "card over 300 words" "long"
+printf -- '---\nname: bare\n---\n\n## 1. Build\n\nRead the card you need (card: `x`).\n' \
+  > "$WORK/budget/skills/bare/SKILL.md"
+run_case "a SKILL.md naming no card on a Card line fails" 1 \
+  "$PY" "$TOOLS/context_budget.py" "$WORK/budget/skills/bare/SKILL.md" --quiet
+expect "the reason" "NO STEPS"
+
+say ""
+say "orphan cards"
+run_case "every card is loaded by some skill's step" 0 \
+  "$PY" "$TESTS/check_orphans.py" "$TOOLS" "$PLUGIN"
+mkdir -p "$WORK/orphans/skills/y/references/cards"
+printf -- '---\nname: y\n---\n\n## 1. Build\n\nCard: `used`.\n' > "$WORK/orphans/skills/y/SKILL.md"
+printf 'used\n' > "$WORK/orphans/skills/y/references/cards/used.md"
+printf 'left behind\n' > "$WORK/orphans/skills/y/references/cards/stub.md"
+run_case "a card no step loads fails" 1 \
+  "$PY" "$TESTS/check_orphans.py" "$TOOLS" "$WORK/orphans"
+expect "the orphan" "orphan card: skills/y/references/cards/stub.md"
 
 # Every spec key a card names is one the spec's writer knows: the workflow card once said
 # `hitl` for `human_in_the_loop`, and the packages card `packages[]` for `packages.tiers[]`,

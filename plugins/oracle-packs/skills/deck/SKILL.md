@@ -9,7 +9,9 @@ user-invocable: true
 
 > **Paths.** `shared/...` means `${CLAUDE_PLUGIN_ROOT}/shared/...`; `tools/...`, `assets/...` and `references/...` without a prefix are relative to this skill's own folder.
 
-> **Load only what the step needs.** `references/cards/manifest.yaml` lists, per step, exactly which files that step reads. Read those and nothing else — never the whole folder, never a card for a step you are not on, never a long reference a card already points to.
+> **Load only what the step needs.** Each step below names its cards (`Card:`); read those when you reach it and nothing else — never the whole folder, never a card for a step you are not on, never a long reference a card already points to.
+
+**Start-up:** `shared/cards/owner-language.md` (how every message to the owner is written) and `shared/cards/review-protocol.md` (how everything the owner reviews is shown, changed and approved).
 
 ## Preconditions and inputs
 
@@ -42,12 +44,6 @@ user-invocable: true
 6. **The review pack, then the question.** *Card: `review-pack.md`.* The contact sheet, the .pptx, the layout decisions, the architecture in plain sentences, everything inferred or unconfirmed, and the open items — opened beside the conversation before the widget asks: approve, or say what to change.
 
 7. **One rebuild round.** *Card: `fast-path.md`.* A single-slide change is a single-line change in the pack brief through the spec skill's fast path, then the same build call; only the changed slide is re-reviewed.
-
-**How we talk to the owner:** `${CLAUDE_PLUGIN_ROOT}/skills/spec/references/cards/owner-language.md`, loaded at start-up, governs every message, question, option and table this run produces.
-
-## Showing it to the owner
-
-Everything the owner reviews is opened beside the conversation *before* the question is asked (`shared/references/review-loop.md` §3). In the Claude desktop app the contact sheet opens in the side panel with the file-send tool (`SendUserFile`, `display: "render"`), the .pptx attached alongside (`display: "attach"`), then the widget. Never publish pack material as a claude.ai artifact — artifacts stay reserved for the mini-site demos. In a plain terminal with no panes, print the path and a text rendering, and say so.
 
 ## Definition of done
 

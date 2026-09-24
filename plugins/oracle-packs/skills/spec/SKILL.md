@@ -9,7 +9,9 @@ user-invocable: true
 
 > **Paths.** `shared/...` means `${CLAUDE_PLUGIN_ROOT}/shared/...` (the plugin's one shared folder); `references/...` and `tools/...` are this skill's own folder.
 
-**Load only what the step needs.** `references/cards/manifest.yaml` lists, per step, exactly which files that step reads. Read those and nothing else — never the whole folder, never a card for a step you are not on, never a long reference a card already points to. A card's checks are the specification, not prose to paraphrase. Background, only if a term is unfamiliar: `shared/references/engagement-context.md` and `pack-anatomy.md`.
+**Load only what the step needs.** Each step below names its cards (`Card:`); read those when you reach it and nothing else — never the whole folder, never a card for a step you are not on, never a long reference a card already points to. A card's checks are the specification, not prose to paraphrase. Background, only if a term is unfamiliar: `shared/references/engagement-context.md` and `pack-anatomy.md`.
+
+**Start-up:** `shared/cards/owner-language.md` (how every message to the owner is written) and `shared/cards/review-protocol.md` (how everything the owner reviews is shown, changed and approved).
 
 You produce one file the other skills trust: `packs/<slug>/pack-spec.md`, valid against `shared/schema/pack-spec.md`. Nothing in it is invented — every value carries a source, and a gap is a question, not a guess. Values go in only through `shared/tools/py shared/tools/packspec.py set <spec> <key.path> <value> --source <src>` (the first call creates the file; a list or record is JSON), never by editing it.
 
@@ -28,7 +30,9 @@ Cards: `intake-a`, `intake-b`, `intake-c`. Inventory the inputs first — every 
 
 ## 2. Research
 
-Card: `research`. No questions here. Fan the five topics out to agents, each reading its own prompt from `references/generalization-method.md` §4 — that file never enters this conversation. Report progress in plain words, then read `references/research-brief-format.md` and synthesize `<work>/research-brief.md` yourself, opening it beside the conversation before the next question.
+Card: `research`. No questions here. Fan the five topics out to agents, each reading its own prompt from `references/generalization-method.md` §4 — that file never enters this conversation. Agents read: `references/generalization-method.md`, `shared/references/research-standards.md`. Report progress in plain words.
+
+Card for the summary: `references/research-brief-format.md`. Synthesize `<work>/research-brief.md` yourself and open it beside the conversation before the next question.
 
 ## 3. Your call on the research
 
@@ -36,23 +40,19 @@ Card: `research-review`. At most four questions, **one widget call**, only what 
 
 ## 4. The pack's story
 
-Card: `story`. Two or three complete candidates — name, one-liner, problem, solution, who buys it — as **one comparison table**, every cell grounded in the research summary or the inputs, then one widget carrying only the pick. Free text that is a value is applied as given; a direction is re-proposed once. Log the choice in `<work>/decisions.md`.
+Card: `story`. Two or three complete candidates — name, one-liner, problem, solution, who buys it — as **one comparison table**, every cell grounded in the research summary or the inputs, then one widget carrying only the pick. Free text that is a value is applied as given; a direction is re-proposed once. Log the choice in `<work>/decisions.md`. Agents read: `shared/references/naming-and-clearance.md` (the candidates' name check).
 
 ## 5. Everything else, drafted in one pass
 
 Cards, one per part as you write that part: `industries`, `capabilities`, `workflow`, `architecture`, `oracle-products`, `metrics`, `packages`, and `proof`, the delivered case behind the deck's proof slide. Draft all eight from the story, the research summary and each part's card, **asking nothing**.
 
-Then the **reviewer pass**. For each part, one fresh-context subagent that receives only the drafted part, the inputs it was drawn from and that part's card, and returns pass or fail per check with a one-line reason. Fix every fail; at most two rounds. What still fails goes to the owner as an open item in plain words, and into `open_questions`.
+Then the **reviewer pass**. For each part, one fresh-context subagent that receives only the drafted part, the inputs it was drawn from and that part's card, and returns pass or fail per check with a one-line reason. Agents read: `shared/references/architecture-diagram.md` (the architecture's reviewer, beside its card). Fix every fail; at most two rounds. What still fails goes to the owner as an open item in plain words, and into `open_questions`.
 
 While drafting: when something essential is missing, ask rather than invent — a package without a price is marked to be confirmed with a footnote, a metric without a cleared figure prints "results to follow". Oracle and NVIDIA products by catalog id only. No customer name in any component text. Every integration claim states its tier. Each settled value is written immediately, with its source.
 
 ## 6. The whole brief
 
-Cards: `brief`, `save`. One table, one widget — exactly confirm · change · stop. Then set the status, run `shared/tools/py shared/tools/lint_spec.py packs/<slug>/pack-spec.md` silently, save it, report it in one plain line, and invoke `/oracle-packs:build packs/<slug>/pack-spec.md` at once, in the same session.
-
-## Showing it to the owner
-
-Everything the owner reviews is opened beside the conversation *before* the question, so they answer while looking at the thing (`shared/references/review-loop.md` §3): a text file in the Files pane (`mcp__ccd_view__show_pane`, pane `file`), a render in the side panel. Internal pack material is never a claude.ai artifact. In a plain terminal, print the path and a text rendering, and say so. Here: the research summary before stage 3; `pack-spec.md` at the brief, before the confirm question.
+Cards: `brief`, `save`. Open `pack-spec.md` beside the conversation, then one table, one widget — exactly confirm · change · stop. Then set the status, run `shared/tools/py shared/tools/lint_spec.py packs/<slug>/pack-spec.md` silently, save it, report it in one plain line, and invoke `/oracle-packs:build packs/<slug>/pack-spec.md` at once, in the same session.
 
 ## Fast path
 
@@ -68,5 +68,5 @@ Done = `pack-spec.md` settled, lint-clean and pushed from the repo's `packs/<slu
 - [ ] One metric set; every figure has its kind and caveat; the proof is within its cap or justified.
 - [ ] Every part passed its card's checks, through the reviewer, and every remaining fail reached the owner.
 - [ ] Twelve questions or fewer, each in its stage, each standing alone.
-- [ ] Every message, question, option and table passed the reader's test in `references/cards/owner-language.md`.
+- [ ] Every message, question, option and table passed the reader's test.
 - [ ] Everything the owner reviewed was open beside the conversation before the question.
