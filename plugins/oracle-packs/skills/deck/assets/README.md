@@ -22,13 +22,13 @@
 | `../tests/test_build_deck_v2.py` | builds both specs and asserts what "clone, don't redraw" means in the file |
 | `../tests/test_lint_deck.sh` | lints the exemplar, both builders' fixture decks, and a copy broken four ways |
 
-**Icons live outside this folder.** The vertical-application icons come from the
-shared icon library at `shared/data/icons/` (`${CLAUDE_PLUGIN_ROOT}/shared/data/icons`,
-falling back to the repo's own `shared/data/icons` in a source checkout) — PNGs
-plus `map.yaml`, which carries each icon's keywords, what it depicts, where it
-came from and its licence. The one-pager and the mini-site listing draw from the
-same library, so an industry looks the same wherever it appears; do not copy
-icons into this skill.
+**Icons live outside this folder.** Each industry card carries the icon the owner
+picked in `/oracle-packs:visuals` (`verticals[].icon`, its white render, as the
+reference cards are white). With no pick, the shared icon library at
+`shared/data/icons/` supplies one by keyword (`map.yaml` carries each icon's
+keywords, what it depicts, where it came from and its licence); with neither, the
+card keeps the reference deck's icon and the build says so. Only the deck draws
+industry icons; do not copy icons into this skill.
 
 **Why the exemplar is in the repo.** A plugin has to work in any session and on
 any machine where it is installed, and a file on OneDrive can be edited by anyone

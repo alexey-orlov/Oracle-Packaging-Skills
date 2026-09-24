@@ -914,6 +914,37 @@ EOF
       "$PY" "$TOOLS/check_diagram.py" "$WORK/stale/pack-spec.md" \
       --deck "$WORK/stale/deck/workforce-optimization-sales-deck.pptx"
   fi
+
+  # the icon the owner picked for an industry is the one on its card (the white render
+  # the reference cards carry); the picker once wrote a key the deck never read (2026-09-24)
+  if [ -n "$DECK" ]; then
+    run_case "a picked industry icon reaches its card on the deck" 0 \
+      "$PY" - "$TOOLS" "$WORK/pack/pack-spec.md" "$WORK/icons" \
+        "$REPO/plugins/oracle-packs/skills/deck/tools/build_deck_v2.py" <<'EOF'
+import hashlib, os, subprocess, sys
+sys.path.insert(0, sys.argv[1])
+import packspec
+from PIL import Image
+from pptx import Presentation
+spec, _ = packspec.load(sys.argv[2])
+work = sys.argv[3]
+os.makedirs(os.path.join(work, "visuals"), exist_ok=True)
+for colour, name in (((38, 40, 43, 255), "picked-ink.png"), ((255, 255, 255, 255), "picked-white.png")):
+    img = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
+    img.paste(colour, (8, 8, 56, 56))
+    img.save(os.path.join(work, "visuals", name))
+spec["verticals"][0]["icon"] = {"file": "visuals/picked-ink.png", "file_white": "visuals/picked-white.png",
+                                "name": "square", "source": "Tabler Icons", "licence": "MIT"}
+open(os.path.join(work, "pack-spec.md"), "w", encoding="utf-8").write(packspec.dump(spec))
+subprocess.run([sys.executable, sys.argv[4], os.path.join(work, "pack-spec.md"),
+                "--out", os.path.join(work, "deck")], check=True, capture_output=True)
+deck = Presentation(os.path.join(work, "deck", "workforce-optimization-sales-deck.pptx"))
+want = hashlib.md5(open(os.path.join(work, "visuals", "picked-white.png"), "rb").read()).hexdigest()
+blobs = [hashlib.md5(sh.image.blob).hexdigest() for sh in deck.slides[2].shapes if sh.shape_type == 13]
+print("picked icon on the industries slide" if want in blobs else f"not found among {len(blobs)} pictures")
+sys.exit(0 if want in blobs else 1)
+EOF
+  fi
 fi
 
 # ------------------------------------------ the figure-less metric caveat, one wording

@@ -51,7 +51,17 @@ import spec_stamp  # noqa: E402  (which spec the deck was built from, written in
 
 EXEMPLAR_DEFAULT = HERE.parent / "assets" / "exemplar" / "wfo-sales-deck.pptx"
 SLOTS_DEFAULT = HERE.parent / "assets" / "exemplar" / "slots.json"
-ICON_MAP_DEFAULT = HERE.parent / "assets" / "icons" / "map.yaml"
+def _library_icon_map() -> Path:
+    """The shared icon library's map, shared/data/icons/map.yaml, beside the plugin's tools."""
+    for up in range(2, 6):
+        if len(HERE.parents) > up:
+            candidate = HERE.parents[up] / "shared" / "data" / "icons" / "map.yaml"
+            if candidate.is_file():
+                return candidate
+    return HERE.parent / "assets" / "icons" / "map.yaml"     # absent: every card keeps its icon
+
+
+ICON_MAP_DEFAULT = _library_icon_map()
 
 HEADER_BRAND = "Oracle AI & Data Solutions"
 # The retired lockup, in every casing it has been written in, anywhere in the header —
@@ -473,18 +483,32 @@ class Build:
             self.log(3, f"verticals[{i}].body", body_shape, body)
             if icon_shape is None:
                 continue
-            icon = pick_icon(self.icons, name)
+            icon = self.vertical_icon(row, name)
             if icon:
                 ex.replace_picture(icon_shape, icon, cover=False)
             elif self.icons:
-                self.note(f"verticals: no icon keyword matched '{name}' — kept the "
-                          f"exemplar's icon in that slot.")
+                self.note(f"verticals: no icon chosen for '{name}' and no library keyword "
+                          f"matched — kept the exemplar's icon in that slot.")
             else:
-                self.note("verticals: assets/icons/map.yaml not present — every card "
-                          "keeps the exemplar's own icon.")
+                self.note("verticals: no icon chosen and the icon library is not present — "
+                          "every card keeps the exemplar's own icon.")
         if len(rows) > len(cards):
             self.note(f"verticals: {len(rows)} in the spec, {len(cards)} cards on the "
                       f"exemplar — kept the first {len(cards)}.")
+
+    def vertical_icon(self, row: dict, name: str) -> Path | None:
+        """The owner's pick from the pictures step (`verticals[].icon`), in the white render
+        the reference deck's cards carry; else the shared library's keyword match."""
+        chosen = row.get("icon")
+        if chosen:
+            if isinstance(chosen, dict):
+                chosen = chosen.get("file_white") or chosen.get("file")
+            path = Path(_image_path(chosen, self.spec_path))
+            if path.is_file():
+                return path
+            self.note(f"verticals: the icon chosen for '{name}' is not at {path} — "
+                      f"used the library's instead.")
+        return pick_icon(self.icons, name)
 
     # -- 4 today -> tomorrow ----------------------------------------------
     def today_tomorrow(self, slide) -> None:
