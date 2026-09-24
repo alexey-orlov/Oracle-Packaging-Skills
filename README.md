@@ -107,7 +107,8 @@ plugins/oracle-packs/               the plugin
 tests/run_tests.sh                  the suite: every tool, every card's spec keys, every skill's context budget
 packs/<slug>/                       one pack's shared files, and only these (.gitignore keeps out the rest): pack-spec.md · visuals/ (the pictures the spec names; each one's source, creator, licence and page are on its spec entry)
 examples/workforce-optimization/    the worked example spec
-docs/DECISIONS.md                   the owner decisions the skills implement
+docs/DECISIONS.md                   the owner's decisions and why
+docs/CONTEXT-BUDGET.md              what a skill may read at each step, and how the suite holds it to that
 docs/settings.example.json          the permission allow-list for the toolchain
 ```
 
