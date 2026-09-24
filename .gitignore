@@ -5,7 +5,17 @@ __pycache__/
 *.pyc
 node_modules/
 .venv/
-packs/
 
-# the architecture model a test build writes beside its fixture spec (packs/ is already ignored)
+# Pack folders: only the spec and what the builders read from beside it are shared here —
+# the spec, the architecture model, and the pictures the spec names. Everything else a pack
+# produces (artifacts, the intake, the input inventory and its extracts of customer
+# documents, sources, research notes, the decisions log) lives in the local work folder,
+# $ORACLE_PACKS_OUT/<slug>/ (default ~/oracle-packs/<slug>/), and never enters this repo:
+# those files quote the customer's own documents and carry internal figures (2026-09-24).
+packs/*/*
+!packs/*/pack-spec.yaml
+!packs/*/architecture.json
+!packs/*/visuals/
+
+# the architecture model a test build writes beside its fixture spec
 plugins/*/skills/*/tests/architecture.json
