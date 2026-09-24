@@ -1,7 +1,7 @@
 {
   "name": "oracle-packs",
-  "version": "0.2.0",
-  "description": "Oracle accelerator-pack packaging: /oracle-packs:spec (intake, research, generalization, sign-off), the document artifacts (feature list, deck, one-pager, executive summary) or /oracle-packs:build for all of them with review pauses, and /oracle-packs:listing and /oracle-packs:demo for the mini-site.",
+  "version": "0.2.1",
+  "description": "Oracle accelerator-pack packaging in five skills: /oracle-packs:spec (intake, research, generalization, sign-off), /oracle-packs:build (the feature list, sales deck, one-pager and executive summary, one at a time or all with review pauses), /oracle-packs:visuals (the pack's pictures), and /oracle-packs:listing and /oracle-packs:demo for the mini-site.",
   "author": {
     "name": "Alex Orlov"
   }
