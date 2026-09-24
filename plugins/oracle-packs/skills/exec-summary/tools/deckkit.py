@@ -636,19 +636,31 @@ class SpecError(RuntimeError):
     pass
 
 
-def packspec_module():
-    """The one spec loader, shared/tools/packspec.py: the plugin's synced copy, or the bundle's."""
+def _shared_tools_on_path(module: str) -> None:
+    """Put the shared/tools folder that holds <module>.py on sys.path: the plugin's own, or the bundle's."""
     here = Path(__file__).resolve().parent
     for up in range(2, 6):
         if len(here.parents) <= up:
             break
         shared = here.parents[up] / "shared" / "tools"
-        if (shared / "packspec.py").is_file():
+        if (shared / f"{module}.py").is_file():
             if str(shared) not in sys.path:
                 sys.path.insert(0, str(shared))
-            break
+            return
+
+
+def packspec_module():
+    """The one spec loader, shared/tools/packspec.py."""
+    _shared_tools_on_path("packspec")
     import packspec
     return packspec
+
+
+def specfmt_module():
+    """How a spec value prints on every artifact, shared/tools/specfmt.py."""
+    _shared_tools_on_path("specfmt")
+    import specfmt
+    return specfmt
 
 
 class Spec:
@@ -813,33 +825,15 @@ class Spec:
 # Value formatting
 # --------------------------------------------------------------------------
 
-_CUR = {"EUR": "€", "USD": "$", "GBP": "£"}
-
-
-def _money(v: float, cur: str) -> str:
-    sym = _CUR.get(cur, (cur + " ") if cur else "")
-    if v >= 1000 and v % 1000 == 0:
-        return f"{sym}{int(v / 1000)}K"
-    if v >= 1_000_000:
-        return f"{sym}{v / 1_000_000:g}M"
-    return f"{sym}{int(v):,}"
-
-
 def fmt_price(price: dict | None, tbd: str = "To be defined") -> tuple[str, bool]:
-    """Returns (rendered, needs_footnote)."""
+    """Returns (rendered, needs_footnote). The amount is shared/tools/specfmt.py's, so a
+    price prints the same on the deck, the executive summary and the one-pager."""
     if not price:
         return tbd, False
     status = (price.get("status") or "").lower()
-    cur = price.get("currency", "EUR")
     footnote = status in ("indicative", "estimate", "modeled")
-    if price.get("range"):
-        lo, hi = price["range"]
-        lo_s = _money(lo, cur)
-        hi_s = _money(hi, cur).lstrip(_CUR.get(cur, ""))
-        return f"{lo_s}–{hi_s}", footnote
-    if price.get("value") is not None:
-        return _money(price["value"], cur), footnote
-    return tbd, False
+    text = specfmt_module().money_text(price)
+    return (text, footnote) if text else (tbd, False)
 
 
 def fmt_duration(d: dict | None, tbd: str = "To be defined") -> str:

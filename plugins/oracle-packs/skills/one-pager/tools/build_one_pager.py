@@ -61,6 +61,7 @@ for _up in range(2, 6):                     # the spec loader: the plugin's sync
         sys.path.insert(0, str(_shared))
         break
 import packspec  # noqa: E402  (the one spec loader: every tool reads the spec through it)
+import specfmt  # noqa: E402  (how a price prints: the same on every artifact)
 
 STAMP_META = re.compile(r"""<meta\b[^>]*\bname\s*=\s*["']pack-spec["']""", re.IGNORECASE)
 
@@ -107,7 +108,6 @@ GLYPH = {
 GLYPH_BY_CHAR = {"—": "none", "-": "none", "–": "none", "○": "none",
                  "◐": "partial", "●●": "advanced", "●": "included"}
 LEGEND = "&#9680; partial &nbsp;&nbsp; &#9679; included &nbsp;&nbsp; &#9679;&#9679; multi-region / advanced"
-CURRENCY = {"EUR": "&euro;", "USD": "$", "GBP": "&pound;"}
 TIER_TH_CLASS = ["t-s", "t-m", "t-l"]
 
 
@@ -236,33 +236,17 @@ TBD = '<span class="tbd">to be defined</span>'
 
 
 def money(block, footnote_mark="*"):
-    """{value|range, currency, status, footnote} -> '~&euro;2K*' / '&euro;300&ndash;500K' / TBD."""
+    """{value|range, currency, status, footnote} -> '~€2K*' / '€300–500K' / TBD.
+    The amount is shared/tools/specfmt.py's, the same text the deck and the executive summary print."""
     if not isinstance(block, dict):
         return html.escape(str(block)) if block else ""
     status = (block.get("status") or "").lower()
-    if status == "tbd" or ("value" not in block and "range" not in block):
+    body = specfmt.money_text(block)
+    if status == "tbd" or body is None:
         return TBD
-    sym = CURRENCY.get((block.get("currency") or "EUR").upper(), (block.get("currency") or "") + "&nbsp;")
     approx = "~" if status in ("indicative", "estimate") else ""
     mark = f'<sup class="fnmark">{footnote_mark}</sup>' if block.get("footnote") or status in ("indicative", "estimate") else ""
-    if "range" in block:
-        low, high = block["range"]
-        lo_n, lo_u = _short(low)
-        hi_n, hi_u = _short(high)
-        body = f"{sym}{lo_n}&ndash;{hi_n}{hi_u}" if lo_u == hi_u else f"{sym}{lo_n}{lo_u}&ndash;{sym}{hi_n}{hi_u}"
-    else:
-        num, unit = _short(block["value"])
-        body = f"{sym}{num}{unit}"
-    return f"{approx}{body}{mark}"
-
-
-def _short(value):
-    value = float(value)
-    for div, unit in ((1_000_000, "M"), (1_000, "K")):
-        if value >= div:
-            scaled = value / div
-            return (f"{scaled:.0f}" if abs(scaled - round(scaled)) < 1e-9 else f"{scaled:g}"), unit
-    return f"{value:.0f}", ""
+    return f"{approx}{html.escape(body)}{mark}"
 
 
 def duration(tier):

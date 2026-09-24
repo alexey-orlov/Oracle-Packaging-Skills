@@ -908,6 +908,34 @@ for f in one-pager/tools/build_one_pager.py exec-summary/tools/build_exec_summar
     grep -q "in the proof of value; results to follow." "$TESTS/../../../plugins/oracle-packs/skills/$f"
 done
 
+# ----------------------------------------------- one price format on every artifact
+# The deck and the executive summary once printed EUR 2,000,000 as "€2000K" while the
+# one-pager printed "€2M", from two formatters. The amount now comes from
+# shared/tools/specfmt.py for every builder; the builders agree on every case below.
+say ""
+say "one price format on every artifact"
+if "$PY" -c "import pptx" >/dev/null 2>&1; then
+  SKILLS_DIR="$(cd "$TESTS/../../.." && pwd)/plugins/oracle-packs/skills"
+  run_case "specfmt, the deck kit and the one-pager print one amount" 0 \
+    env PYTHONPATH="$SKILLS_DIR/deck/tools:$SKILLS_DIR/one-pager/tools" "$PY" -c 'import html, sys
+import deckkit, build_one_pager as op
+cases = [({"value": 2000000, "currency": "EUR"}, "€2M"),
+         ({"range": [300000, 1500000], "currency": "EUR"}, "€300K–€1.5M"),
+         ({"range": [300000, 500000], "currency": "EUR"}, "€300–500K"),
+         ({"value": 90000, "currency": "EUR"}, "€90K"),
+         ({"value": 1500, "currency": "USD"}, "$1.5K")]
+bad = []
+for block, want in cases:
+    deck = deckkit.fmt_price(block)[0]
+    page = html.unescape(op.money(block))
+    if deck != want or page != want:
+        bad.append(f"{block}: deck {deck!r}, one-pager {page!r}, want {want!r}")
+print("\n".join(bad) or "all agree")
+sys.exit(1 if bad else 0)'
+else
+  say "  (skipped: python-pptx is not installed)"
+fi
+
 # ------------------------------------ the listing inserter writes the kit-links entry
 # Site round 12 moved every kit link into links.json at the site's root, and the
 # site's checker fails a product with no entry there, so the inserter writes one in
