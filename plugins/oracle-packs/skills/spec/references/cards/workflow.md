@@ -14,4 +14,4 @@
 
 **Good / bad.** Good: `Load the period's data` → `Set the rules` → `Solve the plan` → `Review, approve, measure`, with the human step spelled out — the dispatcher compares the current and the optimized plan, approves or rejects per zone, re-runs, and nothing is exported until approval. Bad: twelve steps in which "deduplicate", "score" and "map to accounts" each got promoted to a step of its own.
 
-**Fills:** `workflow.inputs[]`, `workflow.steps[]` (`name`, `actor`, `hitl`, `failure_path`), `workflow.outputs[]`.
+**Fills:** `workflow.inputs[]`, `workflow.steps[]` (`name`, `actor`, `human_in_the_loop`, `failure_path`), `workflow.outputs[]`.

@@ -19,4 +19,4 @@
 **Good.** Customization scope: "Tuning the allocation-rule weights per customer."
 **Bad.** A row reading "Dispatcher UI — from £12k at PoV tier".
 
-**Reads:** `capabilities[]` — feature names, `status`, `customization_scope`, and the specificity tags. Writes nothing.
+**Reads:** `capabilities[].categories[].features[]` — `name`, `status`, `customization_scope`, `specificity`. Writes nothing.

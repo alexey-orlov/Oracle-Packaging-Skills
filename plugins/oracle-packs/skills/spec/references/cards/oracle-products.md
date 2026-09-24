@@ -16,4 +16,4 @@
 
 **Good.** One required entry — the platform, its reason naming the AI cluster for the solver, Kubernetes for the app, object storage for the data, the database for plan versions. The field-service system, the typical source and destination, sits in optional with its tier line.
 
-**Fills:** `oracle_products[]` — `id`, `role`, `why`, `tiers`.
+**Fills:** `oracle_products[]` — `id`, `role`, `why`, `integration` (per tier).

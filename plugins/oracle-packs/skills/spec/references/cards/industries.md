@@ -13,4 +13,4 @@
 
 **Good / bad.** Good (telecom): "Install-and-repair technicians have to be routed to tight appointment windows across regions, matched to line skills; missed windows cost customer satisfaction directly." Bad: "Telecom — plan the mobile workforce by hand" (the pack's own line, industry noun swapped).
 
-**Fills:** `verticals[]` — `name`, `problem`, `solution`, `what_matters`, `status`, `priority`.
+**Fills:** `verticals[]` in priority order — `name`, `what_matters_here`, `status`; `verticals[].framing` — `problem`, `solution`.

@@ -17,4 +17,4 @@
 
 **Good / bad.** Good: "Your scope document names the delivered case — a European car-glass network, June 2026 — so I have not asked." Bad: asking a name printed on page 1 of the deck.
 
-**Fills:** `meta.source_engagement`, `provenance.inputs`, the intake and inventory notes.
+**Fills:** `meta.source_engagement`, `provenance.inputs[]`, the intake and inventory notes.

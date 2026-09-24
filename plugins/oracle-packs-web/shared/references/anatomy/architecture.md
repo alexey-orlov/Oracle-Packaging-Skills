@@ -16,4 +16,4 @@ Full naming and flow rules, and the reviewer's checklist: `shared/references/arc
 
 **Bad.** Four rungs in four tints. A stack layer whose product names come from an internal deck rather than the catalog. The ladder drawn as if it were the data flow.
 
-**Fills:** `architecture.stack[]`, `architecture.sources[]`, `architecture.outputs[]`, `architecture.layers[]`.
+**Fills:** `architecture.inputs[]`, `architecture.stack[]`, `architecture.outputs[]`.

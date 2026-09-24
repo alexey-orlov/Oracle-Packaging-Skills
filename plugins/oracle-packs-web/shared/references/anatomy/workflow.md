@@ -15,4 +15,4 @@
 
 **Bad.** Twelve steps, four of them normalization, dedup, entity resolution and routing. A happy path with no failure branch — the failure path is what a buyer's operations lead actually asks about.
 
-**Fills:** `workflow.steps[]` — `n`, `name`, `description`, `hitl`, `failure_path`, `features[]`. Capped by `lint_spec.py` (SPEC019).
+**Fills:** `workflow.steps[]` — `n`, `name`, `covers`, `description`, `human_in_the_loop`, `failure_path`. Capped by `lint_spec.py` (SPEC019).

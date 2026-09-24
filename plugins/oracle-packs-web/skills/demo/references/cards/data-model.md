@@ -17,4 +17,4 @@
 4. At least one change is a **tradeoff the solver got wrong**, its cost visible as a flag.
 5. Changes cover the **spread of capability areas the pack claims**, not one area five times.
 
-**Fills / reads:** `workflow.*`, `kpis[]`, `capabilities[]`, `architecture.stack[]`, `verticals[]`, `packages.capability_handling`.
+**Fills / reads:** `workflow.*`, `kpis[]`, `capabilities[]`, `architecture.stack[]`, `verticals[]`, `packages.capability_handling[]`.

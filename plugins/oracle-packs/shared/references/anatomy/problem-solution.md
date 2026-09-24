@@ -14,4 +14,4 @@
 
 **Bad.** *"Commercial teams work out what a development means for their accounts"* — every noun a category. *"Half the recalibrations surface only once the technician is at the car"* — tangible, but unreadable without the industry.
 
-**Fills:** `problem_solution` — `problem`, `solution`, `sub_problems[]`, `today`, `tomorrow`.
+**Fills:** `problem_solution` — `problem`, `solution`, `problem_points`, `today`, `tomorrow`.

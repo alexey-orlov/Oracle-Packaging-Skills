@@ -15,4 +15,4 @@
 
 **Bad.** A feature list with prices on it. `●` in two shades, one meaning available and the other partial.
 
-**Fills:** `capabilities[]` — areas, categories, features, `status`, `customization_scope`, specificity. Sizes checked by `lint_spec.py` (SPEC023).
+**Fills:** `capabilities[]` (`area`, `customization_scope_area`) and `capabilities[].categories[].features[]` (`name`, `status`, `tier_first_available`, `customization_scope`, `specificity`). Sizes checked by `lint_spec.py` (SPEC023).

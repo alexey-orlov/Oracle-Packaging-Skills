@@ -13,4 +13,4 @@
 
 **Bad.** Four industry nouns. "Enterprises with more than 500 field staff", with nothing behind the number.
 
-**Fills:** `icp.line`, `icp.roles[]`, `icp.signals[]`, `icp.disqualifiers[]`.
+**Fills:** `icp.line`, `icp.buyer_roles`, `icp.qualifying_signals`, `icp.disqualifiers`.

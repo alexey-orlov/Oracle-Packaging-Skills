@@ -15,4 +15,4 @@
 
 **Good.** "PoV Jumpstart · S — manual data import, a limited rule set: prove the gains on the customer's own data."
 
-**Fills:** `packages[]` — `name`, `size`, `duration_weeks`, `price_services`, `price_infra`, `scope_in`, `scope_out`, per-area handling.
+**Fills:** `packages.tiers[]` — `name`, `size_tag`, `duration_weeks`, `services_price`, `infra_price_monthly`, `scope_in`, `scope_out`; `packages.capability_handling[]`.

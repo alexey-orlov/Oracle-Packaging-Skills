@@ -15,4 +15,4 @@
 
 **Bad.** A price on one slide contradicting the artifact thumbnail beside it. Two tier vocabularies in one estate.
 
-**Fills:** `packages.tiers[]` — `name`, `size`, `duration`, `services_price`, `infra_price_monthly`, `scope_in[]`, `scope_out[]`, capability rows.
+**Fills:** `packages.tiers[]` — `name`, `size_tag`, `duration_weeks`, `services_price`, `infra_price_monthly`, `scope_in`, `scope_out`; `packages.capability_handling[]`.

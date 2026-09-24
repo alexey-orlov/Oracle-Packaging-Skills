@@ -14,4 +14,4 @@
 5. Where the platform's own screens are available, audit **every element** against the reference corpus and classify it internally: **A** a deviation where a reference exists · **B** an invention where none does · **C** a match. Measure with `getComputedStyle` and `getBoundingClientRect`, **never by eye**.
 6. **Fix every A item.** Then report what is left **in plain words** — each element that has no counterpart in the real product, and why it was drawn that way. **Never as A/B/C**: those letters are internal and never reach the owner.
 
-**Reads:** the pack spec's `capabilities[]`, `kpis[]` and `packages.capability_handling`; the listing copy; the reference corpus of real screens.
+**Reads:** the pack spec's `capabilities[]`, `kpis[]` and `packages.capability_handling[]`; the listing copy; the reference corpus of real screens.

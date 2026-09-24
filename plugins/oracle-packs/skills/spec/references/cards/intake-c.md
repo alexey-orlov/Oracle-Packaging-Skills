@@ -16,4 +16,4 @@
 3. Every figure carries its kind and its caveat; an uncleared one never reaches a document, rephrased or rounded.
 4. No price or duration appears that the owner did not give.
 
-**Fills:** `clearance.*`, `meta.source_engagement.customer`, `deck.images.customer_logo`, `kpis[].figure_status`, `packages[].price`, `internal_only[]`.
+**Fills:** `clearance.*`, `meta.source_engagement.customer`, `deck.images.customer_logo`, `kpis[].figure_status`, `packages.tiers[].services_price`, `clearance.internal_only_facts`.

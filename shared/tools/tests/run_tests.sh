@@ -1522,6 +1522,20 @@ fi
 run_case "a missing manifest is a usage error" 2 \
   "$PY" "$TOOLS/context_budget.py" "$WORK/no-manifest.yaml"
 
+# Every spec key a card names is one the spec's writer knows: the workflow card once said
+# `hitl` for `human_in_the_loop`, and the packages card `packages[]` for `packages.tiers[]`,
+# which sends the model to write fields no builder reads (2026-09-24).
+say ""
+say "the spec keys the cards name"
+run_case "every key a card names is in packspec's layout" 0 \
+  "$PY" "$TESTS/check_card_keys.py" "$TOOLS" "$REPO"
+mkdir -p "$WORK/bad-cards/plugins/x/skills/y/references/cards"
+printf '**Fills:** `workflow.steps[]` (`hitl`), `packages[]` — `price_services`.\n' \
+  > "$WORK/bad-cards/plugins/x/skills/y/references/cards/bad.md"
+run_case "a card naming unknown keys fails" 1 \
+  "$PY" "$TESTS/check_card_keys.py" "$TOOLS" "$WORK/bad-cards"
+expect "the unknown keys" "hitl" "packages[]" "price_services"
+
 # ----------------------------------------------------- the deck builder + linter
 # Lives with its skill (it needs python-pptx and the deck base), so it runs as a
 # sub-suite: its own assertions are printed, and it counts here as one result.

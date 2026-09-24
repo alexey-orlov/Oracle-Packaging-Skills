@@ -14,4 +14,4 @@
 
 **Bad.** Four rows of one sentence with the industry changed. A vertical marked proven on the strength of a plausible fit.
 
-**Fills:** `verticals[]` — `name`, `label`, `problem`, `solution`, `what_matters`, `status`, `icon`.
+**Fills:** `verticals[]` — `name`, `site_label`, `what_matters_here`, `status`, `icon`; `verticals[].framing` — `problem`, `solution`.
