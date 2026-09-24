@@ -589,6 +589,24 @@ run_case "no sidecar or credits file lands in the pack" 1 \
 run_case "the decision is logged in the work folder" 0 \
   grep -q "picture for \*\*vertical:0\*\*" "$WORK/ac-out/demo-pack/decisions.md"
 
+# The owner's two build answers live in the spec, so the build reads them on any machine
+# instead of a local intake note; the linter holds them to the values the build knows.
+say ""
+say "the build settings in the spec"
+BS="$WORK/build-settings.md"
+cp "$CLI/pack-spec.md" "$BS"
+run_case "the artifacts and the audience are written" 0 \
+  sh -c '"$1" "$2" set "$3" build.artifacts "[\"deck\", \"one-pager\"]" --source user:2026-09-24 && "$1" "$2" set "$3" build.audience internal' \
+  _ "$PY" "$PACKSPEC" "$BS"
+run_case "and read back" 0 "$PY" "$PACKSPEC" get "$BS" build
+expect "the settings" '"deck"' '"one-pager"' '"internal"'
+run_case "the linter accepts them" 0 "$PY" "$TOOLS/lint_spec.py" "$BS"
+expect_absent "no build finding" SPEC030
+"$PY" "$PACKSPEC" set "$BS" build.audience sellers >/dev/null 2>&1
+"$PY" "$PACKSPEC" set "$BS" build.artifacts '["deck", "brochure"]' >/dev/null 2>&1
+run_case "an unknown audience or artifact fails" 1 "$PY" "$TOOLS/lint_spec.py" "$BS"
+expect "both named" "SPEC030 build.audience is \`sellers\`" "SPEC030 build.artifacts has \`brochure\`"
+
 # -------------------------------------------------------------- lint_artifact
 say ""
 say "lint_artifact.py"

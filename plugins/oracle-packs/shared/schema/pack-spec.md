@@ -357,6 +357,12 @@ roadmap_block: <roadmap block>
 - **Approvals:** <who approved what, when>
 - **Source:** <source>
 
+### Build
+
+- **Artifacts:** feature-list; deck; one-pager; exec-summary; listing; demo
+- **Audience:** partner_print
+- **Source:** <source>
+
 ### Contacts
 
 - **Partner print:**
@@ -665,6 +671,7 @@ A metric defined and measured per engagement but with no cleared headline number
 | `clearance.anonymized_descriptor` | `Anonymized descriptor` | what the customer is called where it may not be named |
 | `clearance.descriptor_warning`, `.internal_only_facts`, `.forbidden_strings`, `.disclaimer` | `Descriptor warning`, `Internal-only facts`, `Forbidden strings`, `Disclaimer` | |
 | `clearance.approvals`, `.source` | `Approvals`, `Source` | who approved what, when |
+| `build.artifacts`, `.audience`, `.source` | `### Build`: `Artifacts`, `Audience`, `Source` | set in the spec run's first stage, read by `/oracle-packs:build`: which artifacts the owner wants (`feature-list`, `deck`, `one-pager`, `exec-summary`, `listing`, `demo`) and who sees the printed documents (`partner_print`, Oracle and SoftServe sellers, the default; or `internal`, our own team). Checked by `lint_spec.py` (SPEC030) |
 | `contacts.partner_print`, `.site`, `.internal` — `name`, `title`, `org`, `email`, `mailbox`, `named`, `status`, `note` | `### Contacts`: `Partner print`, `Site`, `Internal` — `Name`, `Title`, `Organization`, `Email`, `Mailbox`, `Named`, `Status`, `Note` | the three addresses: `naming-and-clearance.md` §3, "Contacts by channel" |
 | `contacts.source` | `Source` | |
 | `deck.running_header`, `.seller_lead`, `.cta`, `.anchor_line`, `.layers_sub`, `.architecture_sub`, `.source` | `### Deck`: `Running header`, `Seller lead`, `Cta`, `Anchor line`, `Layers subtitle`, `Architecture subtitle`, `Source` | the deck's own wording, where it differs from the defaults |

@@ -994,12 +994,18 @@ EXEC_SUMMARY = Rec(F("running_header", "Running header"), F("goal", "Goal"),
                    F("closing_line", "Closing line"), F("source", "Source"))
 FEATURE_LIST = Rec(F("title", "Title"), F("intro_label", "Intro label"), F("intro", "Intro"),
                    F("source", "Source"))
+# What the owner wants built and who sees the printed documents, settled once in the spec run
+# so the build reads them from the spec on any machine (2026-09-24). lint_spec.py (SPEC030)
+# holds the values to these two lists.
+BUILD_ARTIFACTS = ("feature-list", "deck", "one-pager", "exec-summary", "listing", "demo")
+BUILD_AUDIENCES = ("partner_print", "internal")
+BUILD = Rec(F("artifacts", "Artifacts", LIST), F("audience", "Audience"), F("source", "Source"))
 INPUT = Rec(F("id", "Id"), F("path", "Path"), F("kind", "Kind"), F("read", "Read", DATE),
             F("note", "Note"), F("supplies", "Supplies", LIST))
 PROVENANCE = Rec(F("inputs", "Inputs", RECORDS, rec=INPUT),
                  F("research_brief", "Research brief"), F("inventory", "Inventory", LIST),
                  F("research", "Research", LIST), F("source", "Source"))
-SETTINGS = (("contacts", "Contacts", CONTACTS), ("deck", "Deck", DECK),
+SETTINGS = (("build", "Build", BUILD), ("contacts", "Contacts", CONTACTS), ("deck", "Deck", DECK),
             ("one_pager", "One-pager", ONE_PAGER),
             ("exec_summary", "Executive summary", EXEC_SUMMARY),
             ("feature_list", "Feature list", FEATURE_LIST),
@@ -1008,7 +1014,7 @@ SETTINGS = (("contacts", "Contacts", CONTACTS), ("deck", "Deck", DECK),
 TOP_KEYS = ("meta", "one_liner", "problem_solution", "icp", "verticals", "verticals_held_out",
             "verticals_rejected", "capabilities", "workflow", "architecture", "oracle_products",
             "kpis_note", "kpis", "packages", "deck", "one_pager", "exec_summary", "feature_list",
-            "clearance", "contacts", "provenance", "open_questions")
+            "clearance", "build", "contacts", "provenance", "open_questions")
 
 SECTIONS = ("One-liner", "Problem and solution", "Who buys it", "Industries", "Capabilities",
             "Workflow", "Architecture", "Oracle products", "Metrics", "Packages", "Proof",
@@ -1105,6 +1111,7 @@ SCHEMA = {
     "exec_summary": _fields(EXEC_SUMMARY, extra=[("next_steps", PAIRS)]),
     "exec_summary.next_steps[]": _fields(extra=[("title", TEXT), ("detail", TEXT)]),
     "feature_list": _fields(FEATURE_LIST),
+    "build": _fields(BUILD),
     "provenance": _fields(PROVENANCE),
     "provenance.inputs[]": _fields(INPUT),
 }
@@ -1567,7 +1574,7 @@ class _Writer:
             ("Proof", (), self.sec_proof),
             ("Next steps", (), self.sec_next_steps),
             ("Open questions", ("open_questions",), self.sec_open_questions),
-            ("Settings", ("clearance", "contacts", "deck", "one_pager", "exec_summary",
+            ("Settings", ("clearance", "build", "contacts", "deck", "one_pager", "exec_summary",
                           "feature_list", "provenance"), self.sec_settings),
         )
         for title, keys, fn in writers:

@@ -345,6 +345,30 @@ class SpecLint:
                           "clearance.customer_name_allowed.%s is not a channel (%s)"
                           % (channel, ", ".join(PL.CHANNELS)))
 
+    def check_build(self):
+        """SPEC030 — the build settings hold only the values the build knows."""
+        build = self.spec.get("build")
+        if build is None:
+            return
+        ps = PL._packspec()
+        if not isinstance(build, dict):
+            self.fail("build", PL.lineno(self.spec, "build"), "SPEC030",
+                      "build is a record: artifacts and audience")
+            return
+        artifacts = build.get("artifacts")
+        if artifacts is not None:
+            items = artifacts if isinstance(artifacts, list) else [artifacts]
+            for item in items:
+                if item not in ps.BUILD_ARTIFACTS:
+                    self.fail("build", PL.lineno(build, "artifacts"), "SPEC030",
+                              "build.artifacts has `%s` — the artifacts are %s"
+                              % (item, ", ".join(ps.BUILD_ARTIFACTS)))
+        audience = build.get("audience")
+        if audience is not None and audience not in ps.BUILD_AUDIENCES:
+            self.fail("build", PL.lineno(build, "audience"), "SPEC030",
+                      "build.audience is `%s` — it is %s"
+                      % (audience, " or ".join(ps.BUILD_AUDIENCES)))
+
     def check_products(self, catalog):
         products = self.spec.get("oracle_products")
         if not isinstance(products, list):
@@ -902,6 +926,7 @@ def main() -> int:
     lint.check_required_keys()
     lint.check_status_and_sources()
     lint.check_clearance()
+    lint.check_build()
     lint.check_products(catalog)
     lint.check_stack_catalog_ids(catalog)
     lint.check_roadmap(roadmap_ids)

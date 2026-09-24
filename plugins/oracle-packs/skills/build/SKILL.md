@@ -23,7 +23,7 @@ Every artifact is built by its tool from the confirmed spec; you never draw or w
 
 ## 1. The map, and the one question
 
-Card: `plan-and-ask`. Read `<work>/intake.md` first: the spec run usually settled which artifacts the owner wants and who will see the printed documents. One short message with the map, and a question only where the intake is silent. Who will see the printed documents is settled once, here, and holds for every artifact.
+Card: `plan-and-ask`. Read the brief's `build` settings first: the spec run usually settled which artifacts the owner wants and who will see the printed documents. One short message with the map, and a question only where the brief is silent. Who will see the printed documents is settled once, here, and holds for every artifact.
 
 ## 2. The feature list
 
@@ -79,7 +79,7 @@ Card: `delivery`. The approved finals go to the pack's OneDrive folder, one line
 
 ## Self-check before closing
 
-- [ ] Spec confirmed and lint-clean before the first build; nothing the intake settled was asked again.
+- [ ] Spec confirmed and lint-clean before the first build; nothing the brief settled was asked again.
 - [ ] Every artifact built by its tool from the spec, into the `artifacts` folder; none hand-edited, nothing from the build in the repo.
 - [ ] The architecture picture reviewed once by a fresh-context reviewer, and `check_diagram.py` clean on every drawing of it.
 - [ ] Each artifact's checks clean on its own channel before the owner saw it, and the editorial pass made on the deck, the one-pager and the executive summary.
