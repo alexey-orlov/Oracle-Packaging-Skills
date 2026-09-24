@@ -311,7 +311,7 @@ workflow:
     The twelve-step domain workflow the industries actually share is in the research summary, section
     "The steps every industry shares". These six are the buyer's checkpoints over it.
   outputs:
-    - { system: the booking, dispatch or claims system, data: "the confirmed decision and its resolved scope" }
+    - { system: "the booking, dispatch or claims system", data: "the confirmed decision and its resolved scope" }
   not_ours:
     - step: Checking whether the customer is covered
       reason: "Universal in the domain, but owning it makes this a claims product. Assumed resolved upstream."
@@ -344,7 +344,7 @@ architecture:
       items: ["GPU compute", "Kubernetes", "API gateway", "identity", "observability"]
       catalog_id: [oci-gpu-instances, oci-kubernetes-engine, oci-api-gateway, oci-iam, oci-observability-management]
   outputs:
-    - { system: the booking, dispatch or claims system, data: "the confirmed decision and its resolved scope" }
+    - { system: "the booking, dispatch or claims system", data: "the confirmed decision and its resolved scope" }
   platform_overlap_note: >
     Oracle already ships video search and summarization as a one-click accelerator pack with a
     front-end, infrastructure-as-code and an evaluation harness. Standing up that platform is not
