@@ -48,8 +48,7 @@ def looks_like_path(tok: str) -> bool:
     return head in TOPS                                  # the site's own keys (tile.*, shared.*) are not the spec's
 
 bad = []
-cards = (sorted(root.glob("plugins/*/skills/*/references/cards/*.md")) + sorted(root.glob("plugins/*/shared/cards/*.md"))
-         + sorted(root.glob("plugins/*/shared/references/anatomy/*.md")))
+cards = sorted(root.glob("plugins/*/skills/*/references/cards/*.md")) + sorted(root.glob("plugins/*/shared/cards/*.md"))
 for card in cards:
     for line in card.read_text(encoding="utf-8").splitlines():
         if not re.search(r"\*\*(Fills|Reads|Writes|Fills / reads|Reads / fills)\b", line):

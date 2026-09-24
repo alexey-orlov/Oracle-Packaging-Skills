@@ -31,7 +31,7 @@ Budgets
 
 Word caps per file (docs/CONTEXT-BUDGET.md; not overridable)
     a card              300 words   every `.md` a step loads whose path has a
-                                    `cards/` or `anatomy/` folder in it
+                                    `cards/` folder in it
     owner-language.md   400 words   the reader's test, the one wider card
     SKILL.md          1,200 words
     A file over its cap is reported once, even with --quiet, and fails the run like
@@ -68,7 +68,7 @@ def word_cap(path):
         return SKILL_WORDS, "SKILL.md"
     if name == "owner-language.md":
         return OWNER_LANGUAGE_WORDS, "card"
-    if name.endswith(".md") and ("/cards/" in norm or "/anatomy/" in norm):
+    if name.endswith(".md") and "/cards/" in norm:
         return CARD_WORDS, "card"
     return None, None
 

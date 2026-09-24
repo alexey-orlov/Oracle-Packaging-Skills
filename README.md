@@ -98,7 +98,7 @@ plugins/oracle-packs/               the plugin
   skills/                           spec · visuals · build (with feature-list/ · deck/ · one-pager/ · exec-summary/: each artifact's tools, assets and tests) · listing · demo
   shared/                           what several skills read, in one place
     cards/                          the two cards every skill loads at start-up: owner-language · review-protocol
-    references/                     engagement context · naming and clearance · pack anatomy · PoV rules · slide-design · client-documents · research-standards · coaching rules · running agents · architecture diagram · visual assets
+    references/                     engagement context · naming and clearance · slide-design · client-documents · research-standards · running agents · architecture diagram · visual assets
     data/                           oracle-products.yaml (the only allowed product names) · roadmap-items.csv (the only allowed roadmap ids) · icons/ (the deck's industry icon library)
     schema/pack-spec.md             the spec schema and template
     tools/                          py (the interpreter resolver) · packspec.py (the spec's loader and writer) · pack_paths.py · spec_stamp.py · lint_spec.py · lint_artifact.py · check_consistency.py · deckkit.py · specfmt.py · denylist.txt

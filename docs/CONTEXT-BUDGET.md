@@ -10,7 +10,7 @@ A skill loads **only the file(s) its current step needs**, and its `SKILL.md` sa
 |---|---|
 | Start-up: the `SKILL.md` plus the files on its `Start-up:` line | **6,000 tokens** |
 | Any other step | **2,000 tokens** |
-| A card (a `.md` under a `cards/` or `anatomy/` folder) | **300 words** (`owner-language.md`: 400) |
+| A card (a `.md` under a `cards/` folder) | **300 words** (`owner-language.md`: 400) |
 | A `SKILL.md` | **1,200 words** |
 
 Tokens are estimated as `words × 1.35`, words counted as whitespace-separated runs (so a standalone `·`, `→` or `●` is a word). A file over its cap is reported as `card over 300 words: <path> (<n>)`, even with `--quiet`, and fails the run like a step over budget: the fix is to tighten the file without dropping a rule, never to raise the cap.

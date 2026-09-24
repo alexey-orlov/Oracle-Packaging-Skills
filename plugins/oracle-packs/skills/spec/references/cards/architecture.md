@@ -11,6 +11,6 @@ The drawing rules the deck, the one-pager and the site all obey are in `shared/r
 3. The engine layer names the vendor products by their catalog names — an unnamed engine tells a seller nothing.
 4. Inputs and outputs are named systems in the buyer's words, and every one of them appears in `workflow.inputs`/`outputs` too; a product named in a footnote but absent from the stack is a defect.
 5. Infrastructure is one layer naming the services actually used — the AI cluster or compute, Kubernetes, storage, database, networking, identity — by catalog id.
-6. The vendor ladder is explicit top to bottom: our configuration · the app · the engine vendor · the infrastructure vendor.
+6. The vendor ladder is explicit, top to bottom: the app (the pack's name), the engine vendor, the infrastructure vendor. It starts at the application layer; the client's own configuration above it is not a rung.
 
 **Fills:** `architecture.inputs[]`, `architecture.stack[]` (`layer`, `vendor`, `catalog_id`), `architecture.outputs[]`.

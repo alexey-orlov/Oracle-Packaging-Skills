@@ -39,7 +39,7 @@ stale the moment he edits; port his edits first, or build inside the edited file
 ## Marketing copy: persona first, scaffolding last (2026-09-16)
 
 - **The problem and the solution lines are tangible and readable with zero context.** One home
-  for that rule, with its checks and its examples: `shared/references/anatomy/problem-solution.md`.
+  for that rule, with its checks and its examples: the spec skill's `story` card.
 - **Structure before copy — a page is an argument, not an inventory** (2026-09-16). Before
   choosing components, settle audience → positioning (what this page offers that its sibling
   pages don't) → three or four messages, each answering a reader problem → one screen per

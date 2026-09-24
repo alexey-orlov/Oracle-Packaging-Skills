@@ -6,7 +6,7 @@ It exists for three jobs:
 
 1. **A reading model for `/oracle-packs:spec`** — what a complete, evidence-bound spec looks like, including how absences and disagreements are recorded rather than smoothed over.
 2. **A round-trip case for the spec loader** — the suite loads and re-renders it on every run.
-3. **A worked example of `shared/references/pack-anatomy.md`** — every component in that reference has its filled counterpart here.
+3. **A worked example of the pack's parts** as the spec skill's cards define them — every part has its filled counterpart here.
 
 ## Status
 

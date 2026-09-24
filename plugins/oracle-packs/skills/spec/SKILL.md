@@ -9,7 +9,7 @@ user-invocable: true
 
 > **Paths.** `shared/...` means `${CLAUDE_PLUGIN_ROOT}/shared/...` (the plugin's one shared folder); `references/...` and `tools/...` are this skill's own folder.
 
-**Load only what the step needs.** Each step below names its cards (`Card:`); read those when you reach it and nothing else — never the whole folder, never a card for a step you are not on, never a long reference a card already points to. A card's checks are the specification, not prose to paraphrase. Background, only if a term is unfamiliar: `shared/references/engagement-context.md` and `pack-anatomy.md`.
+**Load only what the step needs.** Each step below names its cards (`Card:`); read those when you reach it and nothing else — never the whole folder, never a card for a step you are not on, never a long reference a card already points to. A card's checks are the specification, not prose to paraphrase. Background, only if a term is unfamiliar: `shared/references/engagement-context.md`.
 
 **Start-up:** `shared/cards/owner-language.md` (how every message to the owner is written) and `shared/cards/review-protocol.md` (how everything the owner reviews is shown, changed and approved).
 
@@ -40,11 +40,11 @@ Card: `research-review`. At most four questions, **one widget call**, only what 
 
 ## 4. The pack's story
 
-Card: `story`. Two or three complete candidates — name, one-liner, problem, solution, who buys it — as **one comparison table**, every cell grounded in the research summary or the inputs, then one widget carrying only the pick. Free text that is a value is applied as given; a direction is re-proposed once. Log the choice in `<work>/decisions.md`. Agents read: `shared/references/naming-and-clearance.md` (the candidates' name check).
+Cards: `story`, `story-parts`. Two or three complete candidates — name, one-liner, problem, solution, who buys it — as **one comparison table**, every cell grounded in the research summary or the inputs, then one widget carrying only the pick. Free text that is a value is applied as given; a direction is re-proposed once. Log the choice in `<work>/decisions.md`. Agents read: `shared/references/naming-and-clearance.md` (the candidates' name check).
 
 ## 5. Everything else, drafted in one pass
 
-Cards, one per part as you write that part: `industries`, `capabilities`, `workflow`, `architecture`, `oracle-products`, `metrics`, `packages`, and `proof`, the delivered case behind the deck's proof slide. Draft all eight from the story, the research summary and each part's card, **asking nothing**.
+Cards, one per part as you write that part: `industries`, `workflow`, `architecture`, `oracle-products`, `metrics`, and `proof`, the delivered case behind the deck's proof slide. Cards for the capabilities: `capabilities`, `capabilities-rows`. Cards for the packages: `packages`, `packages-pov`. Draft all eight parts from the story, the research summary and each part's cards, **asking nothing**.
 
 Then the **reviewer pass**. For each part, one fresh-context subagent that receives only the drafted part, the inputs it was drawn from and that part's card, and returns pass or fail per check with a one-line reason. Agents read: `shared/references/architecture-diagram.md` (the architecture's reviewer, beside its card). Fix every fail; at most two rounds. What still fails goes to the owner as an open item in plain words, and into `open_questions`.
 

@@ -14,18 +14,13 @@ These files are the long forms a card or a subagent's prompt points at.
 
 | File | What it holds |
 |---|---|
-| `pack-anatomy.md` | A ≤200-word **index**. The per-part detail lives in `anatomy/` — one card per part, at most 300 words each. |
-| `anatomy/<part>.md` | The twelve parts of a pack — `problem-solution` · `one-liner` · `icp` · `name` · `verticals` · `capabilities` · `workflow` · `architecture` · `oracle-products` · `kpis` · `packages` — each with what the part is, the checks a draft must pass, one good and one bad example, and the spec keys it fills. |
-| `anatomy/artifact-<name>.md` | The fixed section order of each of the six artifacts — `artifact-feature-list` · `artifact-deck` · `artifact-one-pager` · `artifact-exec-summary` · `artifact-listing` · `artifact-demo` — and the form each of the twelve parts takes there. Plus `anatomy/standard-extras.md` (the eight blocks on every sales artifact) and `anatomy/wfo-divergences.md` (what the delivered reference artifacts get wrong). |
 | `engagement-context.md` | The engagement in two pages: who Oracle is to us, why we package, what Oracle gets, who reads what, the PoV Jumpstart / Integration / Scaling model, naming, clearance, and the volatile rows to re-check before use. Background reading, not a runtime file. |
 | `naming-and-clearance.md` | What an artifact may call things and what it may disclose: the vendor naming table, pack name by channel, clearance per channel (internal · partner print · customer site · demo), the customer-name deny-list, the banned vocabulary for customer-facing copy, and the contract the artifact linter encodes. |
-| `pov-rules.md` | What a PoV Jumpstart is and is not: duration, scope, what it proves, and the pushback rules. |
 | `architecture-diagram.md` | The one architecture diagram every artifact draws: where it is derived from, the naming rules, the flow rules, and the fresh-context reviewer's nine-point checklist. Read by that reviewer in its own context, not by the session. |
 | `slide-design.md` | The fourteen numbered design rules for decks, one-pagers and executive-summary slides. |
 | `visual-assets.md` | Where a pack's icons and photographs may come from: the allowed sources and licences and where their keys are read from, what is never used, how icons are rendered (QuickLook, `rsvg-convert` or `cairosvg`), the shared icon library's format and add-only rule, the customer's logo as the one owner-supplied picture (never searched for), what the picture credits record, and why an unreachable source is deferred rather than empty. |
 | `client-documents.md` | Voice, de-AI typography and vocabulary, the summary-altitude rule, the living-documents rule, and persona-first marketing copy with its heading budgets. |
 | `research-standards.md` | Labelled claims, source tiers, named specifics, explicit gaps, no force-filled frameworks, answer first. Governs the generalization research and the feature list. |
-| `packaging-coaching-rules.md` | The coaching rules for turning one delivered engagement into a pack. |
 | `running-agents.md` | The four rules every subagent follows: model routing, the tool rules its prompt spells out, a per-unit progress log the session can check, and reporting rather than editing reference docs. Read once, when an agent's prompt is written. |
 
 Related, outside this folder: `shared/schema/pack-spec.md` (the machine-readable spec),
