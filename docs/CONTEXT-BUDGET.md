@@ -33,7 +33,7 @@ A bare name is the skill's own card, `references/cards/<name>.md`; a name with a
 ## Files no step loads, on purpose
 
 - **Read by a tool, not the model**: measured references such as the deck's geometry table, brand tokens and exemplar slot map, the fit ladder's numbers, the icon keywords. They sit beside their tool, say in their header that a tool reads them, and the model reads what the tool prints.
-- **Code to copy from**: the demo's reference walkthrough and tour engine. The build card says to open the one file being adapted, never the folder.
+- **Code to copy from**: the demo's tour engine, and the reference walkthrough in the site checkout. The demo's build card says to open the one file being adapted, never the folder.
 - **Background for a subagent**: long forms a step's `Agents read:` line names, such as `generalization-method.md` (each research agent reads its own prompt) and `architecture-diagram.md` (the diagram reviewer).
 
 ## How to add a card
