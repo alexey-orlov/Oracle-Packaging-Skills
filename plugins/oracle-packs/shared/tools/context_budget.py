@@ -57,7 +57,7 @@ CARD_WORDS = 300
 OWNER_LANGUAGE_WORDS = 400
 SKILL_WORDS = 1200
 
-LABEL = re.compile(r"(?<![\w`])(?P<label>Start-up|Cards?|Agents read)\b(?P<qual>[^:`\n]{0,60}):")
+LABEL = re.compile(r"(?<![\w`])(?P<label>Start-up|Cards?|Agents read)\b(?P<qual>[^:`\n]{0,100}):")
 
 
 def word_cap(path):

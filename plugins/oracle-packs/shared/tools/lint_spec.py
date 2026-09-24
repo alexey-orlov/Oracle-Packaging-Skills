@@ -245,7 +245,7 @@ class SpecLint:
             reported.add(key)
             self.fail(row[2], PL.lineno(spec), "SPEC001",
                       "component `%s` is missing — the spec is the only source an "
-                      "artifact skill may read" % key)
+                      "artifact builder may read" % key)
         if "open_questions" not in spec:
             self.fail("open_questions", PL.lineno(spec), "SPEC014",
                       "`open_questions` is absent — it may be an empty list, never missing; "

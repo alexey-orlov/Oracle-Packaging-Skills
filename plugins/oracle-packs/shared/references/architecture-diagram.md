@@ -36,7 +36,7 @@ Boxes of one role share one geometry (rule 2); app and engine differ in weight a
 
 ## One reviewer pass, not three
 
-Reviewed **once**, in `/oracle-packs:build`, after the feature list, before the deck — never again in the three artifact skills. A **fresh-context subagent** (`opus`) gets only the rendered one-pager strip (or, with no Chrome, the deck's slide), the spec's `architecture` component and this file — never the build conversation — and returns this checklist, pass/fail with a reason each. Fails are fixed in the model and re-rendered; stop on a pass or after three rounds, and put what still fails to the owner in plain words, never as a rule number.
+Reviewed **once**, in `/oracle-packs:build`, after the feature list, before the deck — never again when an artifact is built. A **fresh-context subagent** (`opus`) gets only the rendered one-pager strip (or, with no Chrome, the deck's slide), the spec's `architecture` component and this file — never the build conversation — and returns this checklist, pass/fail with a reason each. Fails are fixed in the model and re-rendered; stop on a pass or after three rounds, and put what still fails to the owner in plain words, never as a rule number.
 
 1. The app box shows the pack's name with "by SoftServe".
 2. The engine box names a catalog product; no box is an unnamed role.

@@ -84,7 +84,7 @@ local work folder, and only the chosen file reaches the repo's `packs/<slug>/vis
 
 ## Test fixture
 
-The deck skill's fixture doubles as this step's: an anonymized Workforce Optimization spec with four
+The deck's fixture (`build/deck/tests/fixture-pack-spec.md`) doubles as this step's: an anonymized Workforce Optimization spec with four
 industries and a problem/solution the photograph terms can be built from.
 
 ```sh

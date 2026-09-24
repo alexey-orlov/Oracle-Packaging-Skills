@@ -151,8 +151,8 @@ expect "the key" "test-key"
 # path — its command line, the file it writes, the pypdf count.
 say ""
 say "build_feature_list.py — the page count, verified or said so"
-FL_TOOLS="$PLUGIN/skills/feature-list/tools"
-FL_FIX="$PLUGIN/skills/one-pager/tests/fixture-pack-spec.md"
+FL_TOOLS="$PLUGIN/skills/build/feature-list/tools"
+FL_FIX="$PLUGIN/skills/build/one-pager/tests/fixture-pack-spec.md"
 run_case "with no renderer the build still writes the file" 0 \
   "$PY" -c 'import sys
 sys.path.insert(0, sys.argv[1])
@@ -380,7 +380,8 @@ say "packspec.py — the spec in Markdown"
 PACKSPEC="$TOOLS/packspec.py"
 for spec in "$REPO"/packs/*/pack-spec.md \
             "$REPO"/examples/*/pack-spec.md "$FIX"/pack-spec.valid.md \
-            "$REPO"/plugins/*/skills/*/tests/fixture-pack-spec*.md; do
+            "$REPO"/plugins/*/skills/*/tests/fixture-pack-spec*.md \
+            "$REPO"/plugins/*/skills/*/*/tests/fixture-pack-spec*.md; do
   [ -f "$spec" ] || continue
   run_case "${spec#"$REPO"/} round-trips exactly" 0 "$PY" -c 'import sys
 sys.path.insert(0, sys.argv[1])
@@ -560,7 +561,7 @@ say "apply_choice.py — a picture recorded through the writer"
 AC="$WORK/ac"
 mkdir -p "$AC/demo-pack"
 cp "$CLI/pack-spec.md" "$AC/demo-pack/pack-spec.md"      # the clean copy the CLI tests wrote
-LOGO_FILE="$PLUGIN/skills/feature-list/assets/softserve-wordmark-ink.png"
+LOGO_FILE="$PLUGIN/skills/build/feature-list/assets/softserve-wordmark-ink.png"
 run_case "a supplied logo is recorded" 0 \
   env ORACLE_PACKS_OUT="$WORK/ac-out" "$PY" "$VISUALS_TOOLS/apply_choice.py" \
   "$AC/demo-pack/pack-spec.md" --slot customer_logo --file "$LOGO_FILE"
@@ -752,7 +753,7 @@ expect "the engagement's length on a tier" CON003 "10 weeks"
 # pack's systems on a deck (2026-09-24).
 say ""
 say "build_diagram.py / diagram_to_site.py / check_diagram.py"
-DECK_FIX="$PLUGIN/skills/deck/tests/fixture-pack-spec.md"
+DECK_FIX="$PLUGIN/skills/build/deck/tests/fixture-pack-spec.md"
 if [ ! -f "$DECK_FIX" ]; then
   bad "the deck fixture is missing: $DECK_FIX"
 else
@@ -802,7 +803,7 @@ EOF
     "$PY" "$TOOLS/check_diagram.py" "$MODEL" --site "$WORK/diagrams.js" --slug workforce-optimization
 
   # the one-pager's strip (HTML only: the PDF step needs Chrome, the picture does not)
-  "$PY" "$PLUGIN/skills/one-pager/tools/build_one_pager.py" \
+  "$PY" "$PLUGIN/skills/build/one-pager/tools/build_one_pager.py" \
         "$WORK/pack/pack-spec.md" --out "$WORK/op" --no-pdf >/dev/null 2>&1
   OP="$WORK/op/workforce-optimization-one-pager-partner_print.html"
   if [ -f "$OP" ]; then
@@ -815,7 +816,7 @@ EOF
   # the deck's architecture slide (needs python-pptx, like the deck sub-suite)
   DECK=""
   if "$PY" -c "import pptx" >/dev/null 2>&1; then
-    "$PY" "$PLUGIN/skills/deck/tools/build_deck_v2.py" \
+    "$PY" "$PLUGIN/skills/build/deck/tools/build_deck_v2.py" \
           "$WORK/pack/pack-spec.md" --out "$WORK/deck" >/dev/null 2>&1
     DECK="$WORK/deck/workforce-optimization-sales-deck.pptx"
     if [ -f "$DECK" ]; then
@@ -885,7 +886,7 @@ EOF
     mkdir -p "$WORK/stale"
     cp "$WORK/pack/pack-spec.md" "$WORK/stale/pack-spec.md"
     cp "$WORK/architecture-renamed.json" "$WORK/stale/architecture.json"
-    "$PY" "$PLUGIN/skills/deck/tools/build_deck_v2.py" \
+    "$PY" "$PLUGIN/skills/build/deck/tools/build_deck_v2.py" \
           "$WORK/stale/pack-spec.md" --out "$WORK/stale/deck" >/dev/null 2>&1
     run_case "a stale model file beside the spec does not reach the deck" 0 \
       "$PY" "$TOOLS/check_diagram.py" "$WORK/stale/pack-spec.md" \
@@ -897,7 +898,7 @@ EOF
   if [ -n "$DECK" ]; then
     run_case "a picked industry icon reaches its card on the deck" 0 \
       "$PY" - "$TOOLS" "$WORK/pack/pack-spec.md" "$WORK/icons" \
-        "$PLUGIN/skills/deck/tools/build_deck_v2.py" <<'EOF'
+        "$PLUGIN/skills/build/deck/tools/build_deck_v2.py" <<'EOF'
 import hashlib, os, subprocess, sys
 sys.path.insert(0, sys.argv[1])
 import packspec
@@ -934,11 +935,11 @@ say "the figure-less metric caveat"
 for f in deck/tools/build_deck_v2.py one-pager/tools/build_one_pager.py \
          exec-summary/tools/build_exec_summary.py; do
   run_case "$(basename "$f") says 'to be measured in the proof of value'" 0 \
-    grep -q -i "to be measured in the proof of value" "$PLUGIN/skills/$f"
+    grep -q -i "to be measured in the proof of value" "$PLUGIN/skills/build/$f"
 done
 for f in one-pager/tools/build_one_pager.py exec-summary/tools/build_exec_summary.py; do
   run_case "$(basename "$f") adds 'results to follow.'" 0 \
-    grep -q "in the proof of value; results to follow." "$PLUGIN/skills/$f"
+    grep -q "in the proof of value; results to follow." "$PLUGIN/skills/build/$f"
 done
 
 # ----------------------------------------------- one price format on every artifact
@@ -948,7 +949,7 @@ done
 say ""
 say "one price format on every artifact"
 if "$PY" -c "import pptx" >/dev/null 2>&1; then
-  SKILLS_DIR="$PLUGIN/skills"
+  SKILLS_DIR="$PLUGIN/skills/build"
   run_case "specfmt, the deck kit and the one-pager print one amount" 0 \
     env PYTHONPATH="$TOOLS:$SKILLS_DIR/one-pager/tools" "$PY" -c 'import html, sys
 import deckkit, build_one_pager as op
@@ -1436,7 +1437,7 @@ written = build_one_pager.stamp_pdf(pdf, s)
 found = spec_stamp.read_stamp(str(pdf))
 print(found)
 sys.exit(0 if written and found == s else 1)' \
-  "$PLUGIN/skills/one-pager/tools" "$TOOLS" "$WORK/one-pager.pdf" \
+  "$PLUGIN/skills/build/one-pager/tools" "$TOOLS" "$WORK/one-pager.pdf" \
   "$STAMP_DIR/one-pager.pdf" "$STAMP_SPEC"
 
 # --------------------------------------------------------------- context_budget
@@ -1499,7 +1500,7 @@ expect "the unknown keys" "hitl" "packages[]" "price_services"
 # ----------------------------------------------------- the deck builder + linter
 # Lives with its skill (it needs python-pptx and the deck base), so it runs as a
 # sub-suite: its own assertions are printed, and it counts here as one result.
-DECK_TESTS="$PLUGIN/skills/deck/tests/test_lint_deck.sh"
+DECK_TESTS="$PLUGIN/skills/build/deck/tests/test_lint_deck.sh"
 if [ -x "$DECK_TESTS" ]; then
   say ""
   say "deck builder and lint_deck.py"
@@ -1514,7 +1515,7 @@ fi
 
 # The exemplar builder's own checks: both fixture specs built into a scratch folder,
 # ten slides in order, the lockup, the cover hero, the architecture drawn from each spec.
-DECK_V2_TESTS="$PLUGIN/skills/deck/tests/test_build_deck_v2.py"
+DECK_V2_TESTS="$PLUGIN/skills/build/deck/tests/test_build_deck_v2.py"
 if [ -f "$DECK_V2_TESTS" ]; then
   say ""
   say "the exemplar deck builder"

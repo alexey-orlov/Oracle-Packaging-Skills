@@ -17,7 +17,7 @@ pypdf>=4.0             # counts pages in the printed one-pager PDF          (ver
 
 # Not Python packages, but required by the builders and the QA loop:
 #
-#   Google Chrome or Chromium — skills/one-pager/tools/build_one_pager.py turns the rendered HTML
+#   Google Chrome or Chromium — skills/build/one-pager/tools/build_one_pager.py turns the rendered HTML
 #   into a PDF and proves it is one A4 page. Found via $CHROME_BIN, the macOS and Windows default
 #   install paths, or google-chrome / chromium on PATH. Without it the tool writes the HTML and
 #   exits 4, because the one-page rule cannot be verified.
@@ -26,6 +26,6 @@ pypdf>=4.0             # counts pages in the printed one-pager PDF          (ver
 #   it a .pdf is skipped with a warning and counted as "not evaluated", never as a pass.
 #
 #   A renderer, optional — Pages (macOS) or LibreOffice (`soffice`) verifies the feature list's real
-#   page count; skills/deck/tools/render_probe.sh reports what this machine has for slide QA
+#   page count; skills/build/deck/tools/render_probe.sh reports what this machine has for slide QA
 #   (qlmanage, soffice, pdftoppm) and prints the contact-sheet recipe for it. Without one, the build
 #   says in a WARNING line that the page count was not verified.

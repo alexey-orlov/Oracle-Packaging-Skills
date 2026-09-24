@@ -1,56 +1,88 @@
 ---
 name: build
-description: Build the full artifact set for a confirmed accelerator-pack spec, sequentially with a review pause after each artifact — feature list, sales deck, sales one-pager, executive summary — then the mini-site listing and the interactive demo. Use on /oracle-packs:build <pack-spec.md>, "build all the artifacts for <pack>", "produce the pack collateral", or after /oracle-packs:spec confirms a brief. Refuses to start on an unconfirmed spec.
+description: Build a confirmed accelerator pack's artifacts from its spec — the feature list (.docx capability matrix), the sales deck (10-slide .pptx), the sales one-pager (one A4 PDF with its HTML), the executive summary (one slide, on a host deck's master when given) — each checked and reviewed before the next, then the mini-site listing and the interactive demo. Use on /oracle-packs:build <pack> for the whole set, /oracle-packs:build <pack> <artifact> for one (feature-list, deck, one-pager, exec-summary), "make the sales deck for <pack>", "rebuild slide 8", "the one-pager overflows", "one slide on <pack> for the section deck", "regenerate the capability matrix", or after /oracle-packs:spec confirms a brief. Refuses to start on an unconfirmed spec.
 disable-model-invocation: false
 user-invocable: true
 ---
 
-# /oracle-packs:build — all artifacts, in order, one review at a time
+# /oracle-packs:build — the pack's artifacts, one review at a time
 
-> **Paths.** `shared/...` means `${CLAUDE_PLUGIN_ROOT}/shared/...` (the plugin's one shared folder); `references/...` and `tools/...` are this skill's own folder.
+> **Paths.** `shared/...` means `${CLAUDE_PLUGIN_ROOT}/shared/...`; `references/...` and the artifact folders `feature-list/`, `deck/`, `one-pager/` and `exec-summary/` (each with its `tools/` and `assets/`) are this skill's own.
 
-**Load only what the step needs.** Each step below names its cards (`Card:`); read those when you reach it and nothing else — never the whole folder, never a card for a step you are not on, never a long reference a card already points to.
+**Load only what the step needs.** Each step below names its cards (`Card:`); read those when you reach it and nothing else — never the whole folder, never a card for a step you are not on, never a long reference a card already points to. Every subagent follows `shared/references/running-agents.md`.
 
 **Start-up:** `shared/cards/owner-language.md` (how every message to the owner is written) and `shared/cards/review-protocol.md` (how everything the owner reviews is shown, changed and approved).
 
-You produce nothing yourself: each artifact is built by its own skill, shown to the owner, and approved before the next one starts.
+Every artifact is built by its tool from the confirmed spec; you never draw or write one by hand. Each goes to the pack's `artifacts` folder, never the repo, and each is checked and approved before the next one starts.
 
 ## Preconditions
 
-1. Argument: the spec, `packs/<slug>/pack-spec.md`, or the pack's slug. `shared/tools/py shared/tools/pack_paths.py <slug> --create` prints the repo, `<work>` and the `artifacts` folder; with no argument, list the repo's `packs/*/` and ask which. `git -C <repo> pull --ff-only` first — a pull that cannot run is deferred and retried, never skipped silently — then build from the repo's spec, never from a copy.
-2. `meta.status` must be `confirmed` and `shared/tools/py shared/tools/lint_spec.py <spec>` must be clean. Otherwise stop and send the user to `/oracle-packs:spec` (resume mode) — never patch the spec here.
-3. Who will see the printed documents is settled once, at the map, and holds for every artifact and for the consistency gate.
+1. The argument is the spec (`packs/<slug>/pack-spec.md`) or the slug, optionally followed by one artifact. `shared/tools/py shared/tools/pack_paths.py <slug> --create` prints the repo, `<work>` and the `artifacts` folder (`<dir>` below); with no argument, list the repo's `packs/*/` and ask which. `git -C <repo> pull --ff-only` first — a pull that cannot run is deferred and retried, never skipped silently — then build from the repo's spec, never a copy.
+2. `meta.status` is `confirmed` and `shared/tools/py shared/tools/lint_spec.py <spec>` is clean; otherwise stop and send the owner to `/oracle-packs:spec`. Never patch the spec here.
+3. `shared/tools/py --check` shows the Python packages; the one-pager also needs Chrome or Chromium. Say what is missing instead of degrading silently.
 
 ## 1. The map, and the one question
 
-Cards: `plan-and-ask`, `artifact-order`. Read `<work>/intake.md` before asking anything: stage 1 already settled which artifacts the owner wants and, often, who will see the printed documents. A machine that did not run the spec has no intake; then the map asks. Send one short message with the map in the owner's words — the artifacts by name, in order, each reviewed before the next; where they will land; and the audience the printed documents are cut for. Only where the intake is silent, ask once, in a single widget call.
+Card: `plan-and-ask`. Read `<work>/intake.md` first: the spec run usually settled which artifacts the owner wants and who will see the printed documents. One short message with the map, and a question only where the intake is silent. Who will see the printed documents is settled once, here, and holds for every artifact.
 
-## 2. Build, and the review after each artifact
+## 2. The feature list
 
-Card: `per-artifact-review` (with `artifact-order` for what comes next). Run each artifact's own skill in the fixed order — feature list, pictures, sales deck, sales one-pager, executive summary, then the mini-site listing and the interactive demo. After each one: show its review pack, open its render beside the conversation, then one widget — approve, rebuild with changes, or stop. Never start the next artifact before the current one is approved. Every artifact is written to the `artifacts` folder `pack_paths.py` printed (the skills' `--out`), never into the repo, and each approval is logged in `<work>/decisions.md` with the artifact's spec stamp (`shared/tools/py shared/tools/spec_stamp.py <file>` prints it).
+Card: `feature-list`. Build it, pass on any warning, and read the rung the build printed.
 
-## 3. The architecture picture
+Card for a page that does not fit, or footnotes the build warns about: `feature-list-fit`.
 
-Card: `architecture-picture`. After the feature list and before the deck, once for the whole pack: build the model (`shared/tools/build_diagram.py`), render the one-pager's strip — the canonical picture — and put it to ONE fresh-context reviewer. Every subagent follows `shared/references/running-agents.md`. The deck, the one-pager and the mini-site listing then render that same model, which each builds from the brief; none of them reviews the picture again, and none draws its own. Nothing is stored: a fix to the picture is a fix to the brief, through the spec skill's fast path, and the review is one line in `<work>/decisions.md`.
+## 3. The pictures
 
-## 4. The consistency gate
+Run `/oracle-packs:visuals` when the brief has no pictures chosen: the icon per industry and the before-and-after pair, chosen by the owner, before the deck that places them. Build anyway if the owner has not picked yet; each unchosen slot stays an explicit empty container and an open item.
 
-Card: `consistency-gate`. After the last document artifact and before the web handoff: `check_consistency.py` across every produced file, then `lint_artifact.py` once per artifact on that artifact's own channel, then the sales deck's own shape check re-run on the approved file. All clean before the handoff. A file it reports as built from an earlier version of the spec — typically the feature list, once the pictures step has written into the spec — is rebuilt from the current spec first. The owner hears one plain line about it.
+## 4. The architecture picture
 
-## 5. Delivery
+Card: `architecture-picture`. Once per spec, before the deck: build the model, render the one-pager's strip and put it to one fresh-context reviewer. Agents read: `shared/references/architecture-diagram.md`. The deck, the one-pager and the listing then draw that same model, which each builds from the brief; none reviews it again. A later run skips this step while `<work>/decisions.md` holds a pass for the same spec stamp.
 
-Card: `delivery`. Copy the approved files from `<work>/artifacts/` to the folder the owner names, keeping the pack's file-name pattern. Log one line per artifact in `<work>/decisions.md`. Close with the files and where they are, what was decided differently from the pack brief and why, and the open items the owner still holds.
+## 5. The sales deck
+
+Cards: `deck`, `deck-slides-1-5`, `deck-slides-6-10`. Build with the fit report, then the deck's own check before any render.
+
+Cards for the render: `deck-render`, `shared/references/slide-design.md`. Make a contact sheet of all ten and read it by eye.
+
+## 6. The sales one-pager
+
+Card: `one-pager`. Only after the deck is approved: it condenses the deck, and the owner's deck feedback applies here.
+
+Card for a page that runs to two: `one-pager-overflow`.
+
+## 7. The executive summary
+
+Cards: `exec-summary`, `exec-summary-blocks`. With `--host-deck` whenever the slide has a destination deck.
+
+## After each artifact: checks, editorial pass, review
+
+Card: `checks`. The artifact's own checks, then the clearance linter and the consistency check on its file, all clean before the owner sees anything.
+
+Card: `editorial`. For the deck, the one-pager and the executive summary: one fresh-context subagent on the strongest model. Agents read: `shared/references/client-documents.md`, `shared/references/slide-design.md`, `shared/references/naming-and-clearance.md`.
+
+Card for the one-pager's copy: `one-pager-review`.
+
+Card: `artifact-review`. The render opens beside the conversation, then one widget: approve, rebuild with changes, or stop. Never start the next artifact before this one is approved; log each approval with the file's spec stamp.
+
+## 8. The consistency gate
+
+Card: `consistency-gate`. After the last document and before the listing and the demo: the consistency check across every produced file, the clearance linter once per artifact on its own channel, the deck's check re-run on the approved file, and the diagram check across all three drawings. A file built from an earlier version of the spec — typically the feature list, once the pictures step has written into the spec — is rebuilt first. The owner hears one plain line.
+
+## 9. The listing and the demo
+
+`/oracle-packs:listing`, then `/oracle-packs:demo`, each its own skill with its own review, for the artifacts the owner chose.
+
+## 10. Delivery
+
+Card: `delivery`. The approved finals go to the pack's OneDrive folder, one line per artifact in `<work>/decisions.md`, and one closing message: the files and where they are, what was decided differently from the brief and why, and the open items the owner still holds.
 
 ## Self-check before closing
 
-- [ ] Spec confirmed and lint-clean before the first build.
-- [ ] Nothing the intake already settled was asked again.
-- [ ] Every artifact approved through a widget; no artifact built ahead of the previous approval.
-- [ ] The architecture picture was built once, reviewed once by a fresh-context reviewer, and rendered by all three artifacts from that one model.
-- [ ] Consistency matrix and per-artifact lint clean on each artifact's own channel, and the sales deck's own shape check clean.
-- [ ] `check_diagram.py` clean: the deck, the one-pager and the site figure all draw the model.
-- [ ] Nothing internal-only in a partner or customer cut (contract values, named accounts, capacity numbers).
-- [ ] Delivery paths and decisions logged; file names follow `<Pack name> - <Artifact> - Oracle.<ext>`.
-- [ ] Every artifact was written to the `artifacts` folder and each approval logged with its spec stamp; nothing from the build went into the repo.
-- [ ] Every message, question, option and table the owner saw passed the reader's test.
-- [ ] Everything the owner reviewed was opened beside the conversation before the question was asked.
+- [ ] Spec confirmed and lint-clean before the first build; nothing the intake settled was asked again.
+- [ ] Every artifact built by its tool from the spec, into the `artifacts` folder; none hand-edited, nothing from the build in the repo.
+- [ ] The architecture picture reviewed once by a fresh-context reviewer, and `check_diagram.py` clean on every drawing of it.
+- [ ] Each artifact's checks clean on its own channel before the owner saw it, and the editorial pass made on the deck, the one-pager and the executive summary.
+- [ ] Every artifact approved through the widget, in order, each approval logged with its spec stamp.
+- [ ] The consistency gate clean; nothing internal-only (contract values, named accounts, capacity numbers) in a partner or customer cut.
+- [ ] Finals delivered as `<Pack name> - <Artifact> - Oracle.<ext>`.

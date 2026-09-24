@@ -6,7 +6,7 @@
 
 ```
 shared/tools/py shared/tools/build_diagram.py <spec>
-shared/tools/py ${CLAUDE_PLUGIN_ROOT}/skills/one-pager/tools/build_one_pager.py <spec> --out <dir>
+shared/tools/py one-pager/tools/build_one_pager.py <spec> --out <dir>
 ```
 
 The one-pager's strip is the canonical picture. With no Chrome for it, render the deck's architecture slide instead and say which the reviewer saw.
