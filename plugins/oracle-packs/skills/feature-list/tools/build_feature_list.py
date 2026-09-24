@@ -79,13 +79,13 @@ except ImportError:  # pragma: no cover
     sys.exit("build_feature_list: python-docx is required -- pip install -r plugins/oracle-packs/requirements.txt")
 
 HERE = Path(__file__).resolve().parent
-for _up in range(2, 6):                     # the spec stamp: the plugin's synced shared/tools, or the bundle's
+for _up in range(2, 6):                     # the spec stamp: the plugin's shared/tools
     _shared = HERE.parents[_up] / "shared" / "tools" if len(HERE.parents) > _up else None
     if _shared is not None and (_shared / "spec_stamp.py").is_file():
         sys.path.insert(0, str(_shared))
         break
 import spec_stamp  # noqa: E402  (which spec the file was built from, written into its properties)
-for _up in range(2, 6):                     # the spec loader: the plugin's synced shared/tools, or the bundle's
+for _up in range(2, 6):                     # the spec loader: the plugin's shared/tools
     _shared = HERE.parents[_up] / "shared" / "tools" if len(HERE.parents) > _up else None
     if _shared is not None and (_shared / "packspec.py").is_file():
         sys.path.insert(0, str(_shared))

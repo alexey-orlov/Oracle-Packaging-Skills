@@ -7,7 +7,7 @@ user-invocable: true
 
 # /oracle-packs:feature-list — the capability matrix
 
-> **Paths.** `shared/...` means `${CLAUDE_PLUGIN_ROOT}/shared/...` (each plugin carries a synced copy of the bundle's `shared/`); `references/...`, `tools/...` and `assets/...` are this skill's own folder.
+> **Paths.** `shared/...` means `${CLAUDE_PLUGIN_ROOT}/shared/...` (the plugin's one shared folder); `references/...`, `tools/...` and `assets/...` are this skill's own folder.
 
 **Load only what the step needs.** `references/cards/manifest.yaml` lists, per step, exactly which files that step reads. Read those and nothing else — never the whole folder, never a card for a step you are not on, never a long reference a card already points to. Every subagent follows `shared/references/running-agents.md`.
 

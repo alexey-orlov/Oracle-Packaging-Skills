@@ -66,12 +66,9 @@ say "test_lint_deck: work dir $WORK"
 SPEC="$TESTS/fixture-pack-spec.md"
 EXEMPLAR="$SKILL/assets/exemplar/wfo-sales-deck.pptx"
 
-# The one spec loader (shared/tools/packspec.py): the plugin's synced copy, or the bundle's.
-SHARED_TOOLS=""
-for d in "$SKILL/../../shared/tools" "$SKILL/../../../../shared/tools"; do
-  if [ -f "$d/packspec.py" ]; then SHARED_TOOLS="$(cd "$d" && pwd)"; break; fi
-done
-[ -n "$SHARED_TOOLS" ] || { say "test_lint_deck: shared/tools/packspec.py not found"; exit 2; }
+# The one spec loader (shared/tools/packspec.py): the plugin's own.
+SHARED_TOOLS="$(cd "$SKILL/../../shared/tools" 2>/dev/null && pwd)"
+[ -f "$SHARED_TOOLS/packspec.py" ] || { say "test_lint_deck: shared/tools/packspec.py not found"; exit 2; }
 DECK="$WORK/v2/workforce-optimization-sales-deck.pptx"
 
 say ""

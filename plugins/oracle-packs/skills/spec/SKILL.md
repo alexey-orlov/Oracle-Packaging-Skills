@@ -7,7 +7,7 @@ user-invocable: true
 
 # /oracle-packs:spec — the pack brief, in six stages
 
-> **Paths.** `shared/...` means `${CLAUDE_PLUGIN_ROOT}/shared/...` (each plugin carries a synced copy of the bundle's `shared/`); `references/...` and `tools/...` are this skill's own folder.
+> **Paths.** `shared/...` means `${CLAUDE_PLUGIN_ROOT}/shared/...` (the plugin's one shared folder); `references/...` and `tools/...` are this skill's own folder.
 
 **Load only what the step needs.** `references/cards/manifest.yaml` lists, per step, exactly which files that step reads. Read those and nothing else — never the whole folder, never a card for a step you are not on, never a long reference a card already points to. A card's checks are the specification, not prose to paraphrase. Background, only if a term is unfamiliar: `shared/references/engagement-context.md` and `pack-anatomy.md`.
 

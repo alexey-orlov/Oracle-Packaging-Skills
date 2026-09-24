@@ -1,13 +1,13 @@
 ---
 name: build
-description: Build the full artifact set for a confirmed accelerator-pack spec, sequentially with a review pause after each artifact — feature list, sales deck, sales one-pager, executive summary — then hand off to the web plugin for the mini-site listing and the interactive demo. Use on /oracle-packs:build <pack-spec.md>, "build all the artifacts for <pack>", "produce the pack collateral", or after /oracle-packs:spec confirms a brief. Refuses to start on an unconfirmed spec.
+description: Build the full artifact set for a confirmed accelerator-pack spec, sequentially with a review pause after each artifact — feature list, sales deck, sales one-pager, executive summary — then the mini-site listing and the interactive demo. Use on /oracle-packs:build <pack-spec.md>, "build all the artifacts for <pack>", "produce the pack collateral", or after /oracle-packs:spec confirms a brief. Refuses to start on an unconfirmed spec.
 disable-model-invocation: false
 user-invocable: true
 ---
 
 # /oracle-packs:build — all artifacts, in order, one review at a time
 
-> **Paths.** `shared/...` means `${CLAUDE_PLUGIN_ROOT}/shared/...` (each plugin carries a synced copy of the bundle's `shared/`); `references/...` and `tools/...` are this skill's own folder.
+> **Paths.** `shared/...` means `${CLAUDE_PLUGIN_ROOT}/shared/...` (the plugin's one shared folder); `references/...` and `tools/...` are this skill's own folder.
 
 **Load only what the step needs.** `references/cards/manifest.yaml` lists, per step, exactly which files that step reads. Read those and nothing else — never the whole folder, never a card for a step you are not on, never a long reference a card already points to.
 
@@ -25,7 +25,7 @@ Cards: `plan-and-ask`, `artifact-order`. Read `<work>/intake.md` before asking a
 
 ## 2. Build, and the review after each artifact
 
-Card: `per-artifact-review` (with `artifact-order` for what comes next). Run each artifact's own skill in the fixed order — feature list, pictures, sales deck, sales one-pager, executive summary, then the web plugin's mini-site listing and interactive demo. After each one: show its review pack, open its render beside the conversation, then one widget — approve, rebuild with changes, or stop. Never start the next artifact before the current one is approved. Every artifact is written to the `artifacts` folder `pack_paths.py` printed (the skills' `--out`), never into the repo, and each approval is logged in `<work>/decisions.md` with the artifact's spec stamp (`shared/tools/py shared/tools/spec_stamp.py <file>` prints it).
+Card: `per-artifact-review` (with `artifact-order` for what comes next). Run each artifact's own skill in the fixed order — feature list, pictures, sales deck, sales one-pager, executive summary, then the mini-site listing and the interactive demo. After each one: show its review pack, open its render beside the conversation, then one widget — approve, rebuild with changes, or stop. Never start the next artifact before the current one is approved. Every artifact is written to the `artifacts` folder `pack_paths.py` printed (the skills' `--out`), never into the repo, and each approval is logged in `<work>/decisions.md` with the artifact's spec stamp (`shared/tools/py shared/tools/spec_stamp.py <file>` prints it).
 
 ## 3. The architecture picture
 

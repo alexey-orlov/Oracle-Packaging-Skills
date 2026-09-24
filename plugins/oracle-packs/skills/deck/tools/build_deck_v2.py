@@ -30,7 +30,7 @@ from typing import Any, Sequence
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
-for _up in range(2, 6):                     # the plugin's synced shared/tools, or the bundle's
+for _up in range(2, 6):                     # the plugin's shared/tools
     _shared = HERE.parents[_up] / "shared" / "tools" if len(HERE.parents) > _up else None
     if _shared is not None and (_shared / "build_diagram.py").is_file():
         sys.path.insert(0, str(_shared))
@@ -42,7 +42,7 @@ from deckkit import (  # noqa: E402  (deliberate: import, never edit)
 import exemplar as ex  # noqa: E402
 import build_diagram as diagram  # noqa: E402  (the one architecture model, shared by all three artifacts)
 
-for _up in range(2, 6):                     # the spec stamp: the plugin's synced shared/tools, or the bundle's
+for _up in range(2, 6):                     # the spec stamp: the plugin's shared/tools
     _shared = HERE.parents[_up] / "shared" / "tools" if len(HERE.parents) > _up else None
     if _shared is not None and (_shared / "spec_stamp.py").is_file():
         sys.path.insert(0, str(_shared))

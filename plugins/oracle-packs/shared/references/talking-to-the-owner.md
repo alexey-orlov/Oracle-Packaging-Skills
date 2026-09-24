@@ -1,6 +1,6 @@
 # Talking to the owner — the reader's test for every message, question and option
 
-_How every skill in this bundle speaks to the person it works for. **Long form; the runtime card is `plugins/oracle-packs/skills/spec/references/cards/owner-language.md`** (the web plugin's skills carry their own copy), which is what a skill loads at start-up. Read this file only when the card leaves a case open. Rewritten to current truth — never appended with dated updates._
+_How every skill in this bundle speaks to the person it works for. **Long form; the runtime card is `plugins/oracle-packs/skills/spec/references/cards/owner-language.md`** (the listing and the demo carry their own copy), which is what a skill loads at start-up. Read this file only when the card leaves a case open. Rewritten to current truth — never appended with dated updates._
 
 ## Who is reading
 

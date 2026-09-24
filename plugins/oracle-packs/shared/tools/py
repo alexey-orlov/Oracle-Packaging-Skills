@@ -9,12 +9,12 @@
 # script takes the first interpreter that imports all five, in this order, and execs it:
 #
 #   1. $ORACLE_PACKS_PY, when set and it imports them. Set but broken: one line on stderr, then on.
-#   2. <root>/.venv/bin/python, <root> being two levels above this file: the repo root in a source
-#      checkout, the plugin root in an installed plugin.
+#   2. a .venv at the plugin root (two levels above this file), then, in a source checkout, at the
+#      repo root that holds the plugin (the folder with .claude-plugin/marketplace.json).
 #   3. the managed venv, $ORACLE_PACKS_VENV or else $HOME/.oracle-packs/venv. When it is missing it
-#      is created with `python3 -m venv` and `pip install -q -r <requirements>` — <root>/requirements.txt
-#      when there is one, else the requirements.txt beside this file — with one line on stderr saying
-#      so and where. A provisioning run that was cut short is resumed on the next call.
+#      is created with `python3 -m venv` and `pip install -q -r <plugin root>/requirements.txt`, with
+#      one line on stderr saying so and where. A provisioning run that was cut short is resumed on
+#      the next call.
 #   4. plain python3, when it already imports them.
 #
 # When nothing works it exits 2 with one line saying what to run, never a traceback.
@@ -43,7 +43,9 @@ case "$src" in */*) here="${src%/*}" ;; *) here="." ;; esac
 here="$(cd "$here" && pwd -P)" || { say "cannot locate $src"; exit 2; }
 root="$(cd "$here/../.." && pwd -P)" || { say "cannot locate the root above $here"; exit 2; }
 
-if [ -f "$root/requirements.txt" ]; then REQ="$root/requirements.txt"; else REQ="$here/requirements.txt"; fi
+REQ="$root/requirements.txt"
+repo=""
+if [ -f "$root/../../.claude-plugin/marketplace.json" ]; then repo="$(cd "$root/../.." && pwd -P)"; fi
 
 if [ -n "${ORACLE_PACKS_VENV:-}" ]; then
   VENV="$ORACLE_PACKS_VENV"; VENV_SHOWN="$VENV"
@@ -106,6 +108,7 @@ resolve() {
   fi
 
   if PY="$(venv_py "$root/.venv")" && imports "$PY"; then return 0; fi
+  if [ -n "$repo" ] && PY="$(venv_py "$repo/.venv")" && imports "$PY"; then return 0; fi
 
   if [ -n "$VENV" ]; then
     PY="$(venv_py "$VENV")"

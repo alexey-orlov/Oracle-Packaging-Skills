@@ -53,7 +53,7 @@ from visuals_common import (  # noqa: E402
 )
 
 _HERE = Path(__file__).resolve().parent
-for _up in range(2, 6):                     # pack_paths: the plugin's synced shared/tools, or the bundle's
+for _up in range(2, 6):                     # pack_paths: the plugin's shared/tools
     _shared = _HERE.parents[_up] / "shared" / "tools" if len(_HERE.parents) > _up else None
     if _shared is not None and (_shared / "pack_paths.py").is_file():
         sys.path.insert(0, str(_shared))

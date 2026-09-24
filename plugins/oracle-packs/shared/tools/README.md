@@ -304,7 +304,7 @@ review hand-off:
    never edit an artifact away from the spec to silence a finding.
 6. Hand the owner the `not evaluated:` lines together with the artifact.
 
-Run the suite after touching any rule: `shared/tools/tests/run_tests.sh` (it
+Run the suite after touching any rule: `tests/run_tests.sh` (it
 runs every tool through `py`; `PY=<interpreter>` points it at another one). It builds
 its broken fixtures from the good one and reads the deny-listed name it needs out
 of `denylist.txt`, so no customer name is committed to this repo.

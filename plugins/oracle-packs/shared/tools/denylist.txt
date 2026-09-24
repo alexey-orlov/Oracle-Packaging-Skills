@@ -23,7 +23,7 @@
 #   never trim: a name stays on the list after the engagement ends, because the
 #   source SoWs, decks, transcripts and spreadsheets it sits in do not go away.
 #   Keep the alphabetical-ish grouping, add a short comment when the name is
-#   ambiguous, and run `shared/tools/tests/run_tests.sh` afterwards.
+#   ambiguous, and run `tests/run_tests.sh` afterwards.
 #   Clearance to name a customer on one channel is set per pack in the spec's
 #   clearance.customer_name_allowed — never by deleting a line here.
 

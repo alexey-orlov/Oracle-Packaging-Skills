@@ -1,9 +1,16 @@
 {
   "name": "oracle-packaging-skills",
-  "owner": { "name": "Alex Orlov" },
-  "metadata": { "description": "Claude Code skills that turn a delivered Oracle + NVIDIA AI engagement into a repeatable accelerator pack: pack spec, feature list, sales deck, sales one-pager, executive summary, mini-site listing, interactive demo." },
+  "owner": {
+    "name": "Alex Orlov"
+  },
+  "metadata": {
+    "description": "Claude Code skills that turn a delivered Oracle + NVIDIA AI engagement into a repeatable accelerator pack: pack spec, feature list, sales deck, sales one-pager, executive summary, mini-site listing, interactive demo."
+  },
   "plugins": [
-    { "name": "oracle-packs", "source": "./plugins/oracle-packs", "description": "Pack spec (interactive intake, research, generalization, component sign-off) and the document artifacts: feature list, sales deck, sales one-pager, executive summary. Needs Python 3 with python-pptx and python-docx." },
-    { "name": "oracle-packs-web", "source": "./plugins/oracle-packs-web", "description": "Web artifacts from a signed-off pack spec: the mini-site product listing and the interactive walkthrough demo. Needs Node 22+, Chrome and the mini-site repo." }
+    {
+      "name": "oracle-packs",
+      "source": "./plugins/oracle-packs",
+      "description": "The pack spec (intake, research, generalization, sign-off) and every artifact built from it: feature list, sales deck, sales one-pager, executive summary, mini-site listing and interactive demo. Needs Python 3; the one-pager and the demo also need Chrome, and the listing and the demo Node and a checkout of the mini-site repo."
+    }
   ]
 }

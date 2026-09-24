@@ -1,8 +1,7 @@
 # Shared references
 
-The rule set every skill in both plugins reads. `shared/` is the single source; the release
-script copies it into each plugin, so a rule is written here once and is never restated
-inside a skill.
+The rule set every skill in the plugin reads. `shared/` is its single home, so a rule is
+written here once and is never restated inside a skill.
 
 **A skill does not read this folder.** It reads the file its current step's card names, and
 the cards live with the skill (`references/cards/manifest.yaml` says which file each step

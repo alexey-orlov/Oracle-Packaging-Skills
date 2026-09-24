@@ -12,7 +12,7 @@ budget:
   start_up_tokens: 6000
   step_tokens: 2000
 
-root: ../..                  # the exec-summary skill folder; `shared/...` resolves to the bundle's shared folder
+root: ../..                  # the exec-summary skill folder; `shared/...` resolves to the plugin's shared folder
 
 steps:
   - id: start-up

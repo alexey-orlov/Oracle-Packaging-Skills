@@ -347,7 +347,7 @@ def die(msg: str, code: int = EXIT_USAGE) -> None:
 
 
 def packspec_module():
-    """The one spec loader, shared/tools/packspec.py: the plugin's synced copy, or the bundle's.
+    """The one spec loader, shared/tools/packspec.py: the plugin's own.
 
     Imported here, on first use, so the tools that do not read a spec need no PyYAML."""
     here = os.path.dirname(os.path.abspath(__file__))

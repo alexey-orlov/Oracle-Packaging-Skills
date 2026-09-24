@@ -8,8 +8,8 @@
 3. **Sales deck** → `/oracle-packs:deck`
 4. **Sales one-pager** → `/oracle-packs:one-pager` — condensed from the deck, built after it
 5. **Executive summary** → `/oracle-packs:exec-summary`
-6. **Mini-site listing** → `/oracle-packs-web:listing` — the web plugin; tell the user to run it if it is not installed
-7. **Interactive demo** → `/oracle-packs-web:demo` — asks for its sources first
+6. **Mini-site listing** → `/oracle-packs:listing` — needs Node and a checkout of the mini-site repo; say so if either is missing
+7. **Interactive demo** → `/oracle-packs:demo` — asks for its sources first
 
 **Checks**
 

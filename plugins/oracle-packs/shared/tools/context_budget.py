@@ -34,9 +34,7 @@ Word caps per file (docs/CONTEXT-BUDGET.md; not overridable)
 Paths
     Relative to the manifest's own `root:` (itself relative to the manifest's
     directory). A path beginning `shared/` resolves against the nearest parent
-    directory that contains one: the plugin's synced copy (`plugins/<plugin>/shared/`),
-    in the repo as in an install, so an edit to the repo's own `shared/` is
-    measured once `tools/sync-shared.sh` has run.
+    directory that contains one: the plugin's own `shared/`, in the repo as in an install.
 
 Exit codes
     0   every step is within budget and every capped file within its cap

@@ -1,6 +1,6 @@
 # Running agents — how a skill's subagents are written and watched
 
-_Read once, when a skill writes a subagent's prompt: the four rules every subagent in both plugins follows. Rewritten to current truth — never appended with dated updates._
+_Read once, when a skill writes a subagent's prompt: the four rules every subagent in the plugin follows. Rewritten to current truth — never appended with dated updates._
 
 1. **Model routing.** Mechanical work runs on Opus: searches, extraction, lookups, builds from a settled design, rendering QA, captures. The strongest available model is spent only on the judgement passes a skill names as such — the editorial pass, the design decisions, the final synthesis. Say which step used which.
 

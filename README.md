@@ -8,45 +8,47 @@ Owner: Alex Orlov (SoftServe R&D). Internal to SoftServe. Started 2026-09-18.
 
 ```
 /oracle-packs:spec          inputs and intake → research → your call on it → the pack's story (one pick) → the rest drafted and reviewed → the whole brief
-/oracle-packs:build         feature-list → deck → one-pager → exec-summary → (web) listing → demo, one review pause after each
+/oracle-packs:build         feature-list → pictures → deck → one-pager → exec-summary → listing → demo, one review pause after each
 ```
 
-Every artifact reads its content from `packs/<slug>/pack-spec.md` — one Markdown file per pack, readable as the pack's brief and written through `shared/tools/packspec.py`. Nothing is invented: a missing fact is a question to the user, a price without a source is "tbd" with a footnote, a figure without clearance is "results to follow". The schema is `shared/schema/pack-spec.md`; the worked example is `examples/workforce-optimization/`.
+Every artifact reads its content from `packs/<slug>/pack-spec.md` — one Markdown file per pack, readable as the pack's brief and written through the plugin's `shared/tools/packspec.py`. Nothing is invented: a missing fact is a question to the user, a price without a source is "tbd" with a footnote, a figure without clearance is "results to follow". The schema is `plugins/oracle-packs/shared/schema/pack-spec.md`; the worked example is `examples/workforce-optimization/`.
 
-| Command | What it produces | Plugin |
-|---|---|---|
-| `/oracle-packs:spec` | `pack-spec.md`, research brief, intake and decisions log | oracle-packs |
-| `/oracle-packs:feature-list` | `.docx` capability matrix (Area > Category > Feature, ● ◐ ○, customization scope) | oracle-packs |
-| `/oracle-packs:deck` | 10-slide `.pptx` on the SoftServe brand base | oracle-packs |
-| `/oracle-packs:one-pager` | HTML → one A4 PDF | oracle-packs |
-| `/oracle-packs:exec-summary` | one slide, on the host deck's master when given | oracle-packs |
-| `/oracle-packs:build` | all of the above in order, with review pauses; hands off to the web plugin | oracle-packs |
-| `/oracle-packs-web:listing` | a `products[]` entry for the practice mini-site, checker-clean | oracle-packs-web |
-| `/oracle-packs-web:demo` | a guided interactive walkthrough (asks for sources first) | oracle-packs-web |
+| Command | What it produces |
+|---|---|
+| `/oracle-packs:spec` | `pack-spec.md`, research brief, intake and decisions log |
+| `/oracle-packs:feature-list` | `.docx` capability matrix (Area > Category > Feature, ● ◐ ○, customization scope) |
+| `/oracle-packs:deck` | 10-slide `.pptx` on the SoftServe brand base |
+| `/oracle-packs:one-pager` | HTML → one A4 PDF |
+| `/oracle-packs:exec-summary` | one slide, on the host deck's master when given |
+| `/oracle-packs:build` | all of the above in order, with review pauses, then the listing and the demo |
+| `/oracle-packs:listing` | a `products[]` entry for the practice mini-site, checker-clean |
+| `/oracle-packs:demo` | a guided interactive walkthrough (asks for sources first) |
+| `/oracle-packs:visuals` | the pack's pictures: an icon per industry, the today / tomorrow pair, an optional cover |
 
 ## Running it anywhere
 
-The plugins run on the owner's Macs and on a colleague's Mac or Windows machine. What a machine lacks is found at run time and reported in plain words; nothing degrades silently.
+The plugin runs on the owner's Macs and on a colleague's Mac or Windows machine. What a machine lacks is found at run time and reported in plain words; nothing degrades silently.
 
-**1. Install from GitHub.** Two private repositories: this one (the marketplace, both plugins) and the practice mini-site's, which only the listing and the demo need. Authenticate once — `gh auth login` (let it set up Git) or an SSH key on your GitHub account — then:
+**1. Install from GitHub.** Two private repositories: this one (the marketplace and its one plugin) and the practice mini-site's, which only the listing and the demo need. Authenticate once — `gh auth login` (let it set up Git) or an SSH key on your GitHub account — then:
 
 ```bash
 claude plugin marketplace add <this repo's git URL>
 claude plugin install oracle-packs@oracle-packaging-skills
-claude plugin install oracle-packs-web@oracle-packaging-skills   # only if you build listings or demos
 ```
 
-Clone this repository as well: the pack specs live in its `packs/`, so run the skills from inside the checkout or point `ORACLE_PACKS_ROOT` at it. For the listing and the demo, clone the mini-site repository and point `ORACLE_SITE_ROOT` at the checkout (or pass `--site`). A release runs `tools/sync-shared.sh` first, so each plugin carries the current `shared/` (`--check` reports drift).
+Clone this repository as well: the pack specs live in its `packs/`, so run the skills from inside the checkout or point `ORACLE_PACKS_ROOT` at it. For the listing and the demo, clone the mini-site repository and point `ORACLE_SITE_ROOT` at the checkout (or pass `--site`).
 
-> **Note — on the owner's Mac (done 2026-09-18):** the repo folder itself is registered as a local marketplace (`source: directory`) and both plugins are installed at user scope, so `/oracle-packs:…` and `/oracle-packs-web:…` work in every session. Sessions do **not** read this repo: they read a snapshot copied into `~/.claude/plugins/cache/oracle-packaging-skills/<plugin>/<version>/`, and `claude plugin update` re-copies only when the `version` in the plugin's `.claude-plugin/plugin.json` is higher than the installed one — at the same version it reports "already at the latest version" and keeps the old snapshot (2026-09-22: four days of edits had reached no session this way). A release is therefore: bump `version` in **both** `plugins/*/.claude-plugin/plugin.json` (both, because `sync-shared.sh` touches both plugins), then
->
-> ```bash
-> tools/sync-shared.sh && claude plugin marketplace update oracle-packaging-skills && claude plugin update oracle-packs@oracle-packaging-skills && claude plugin update oracle-packs-web@oracle-packaging-skills
-> ```
->
-> then start a new session — a running one keeps the version it loaded (the old snapshot directory is kept, so a run in progress does not break). The snapshot is taken from the working tree, committed or not, while the `gitCommitSha` the plugin manager records is HEAD at that moment — commit before releasing if that provenance should mean anything.
+**Releasing.** An install from git runs a copy of the plugin in `~/.claude/plugins/cache/oracle-packaging-skills/oracle-packs/<version>/`, and `claude plugin update` skips the copy when the version equals the installed one — so a release bumps `version` in `plugins/oracle-packs/.claude-plugin/plugin.json`, is committed and pushed, and then on each machine:
 
-**2. Python — nothing to install by hand.** Every tool runs as `shared/tools/py <tool>.py`. That resolver takes the first interpreter that imports PyYAML, python-docx, python-pptx, Pillow and pypdf on Python 3.9+: `$ORACLE_PACKS_PY`, then a `.venv` at the repo (or plugin) root, then the managed venv at `$ORACLE_PACKS_VENV` (default `~/.oracle-packs/venv`) — created from `requirements.txt` on first use, with one line saying so — then plain `python3`. Never system Python. `shared/tools/py --check` shows what it found. On Windows it runs under Git Bash or WSL.
+```bash
+claude plugin marketplace update oracle-packaging-skills && claude plugin update oracle-packs@oracle-packaging-skills
+```
+
+followed by a new session — a running one keeps the version it loaded.
+
+> **Note — on the owner's Mac:** the repo folder itself is registered as a local marketplace (`source: directory`) and `oracle-packs` is installed at user scope. Claude Code's plugin reference says a plugin from a local-directory marketplace loads in place, so terminal sessions see an edit at the next session or `/reload-plugins`; the desktop app is reported to still run the install-time copy (claude-code issue #96223), so the release steps above are what reach every session. Until 0.1.40 the marketplace carried a second plugin, `oracle-packs-web` (the listing and the demo); both skills now live in `oracle-packs`, so remove the old one once: `claude plugin uninstall oracle-packs-web@oracle-packaging-skills`.
+
+**2. Python — nothing to install by hand.** Every tool runs as `shared/tools/py <tool>.py`, from the plugin folder (`plugins/oracle-packs/` in the checkout). That resolver takes the first interpreter that imports PyYAML, python-docx, python-pptx, Pillow and pypdf on Python 3.9+: `$ORACLE_PACKS_PY`, then a `.venv` at the repo root, then the managed venv at `$ORACLE_PACKS_VENV` (default `~/.oracle-packs/venv`) — created from the plugin's `requirements.txt` on first use, with one line saying so — then plain `python3`. Never system Python. `shared/tools/py --check` shows what it found. On Windows it runs under Git Bash or WSL.
 
 **3. Other programs.** Node 22+ (the listing's checker and inserter need 14+, the demo capture 22+) · Google Chrome or Chromium, for the one-pager's PDF and the demo capture · LibreOffice, for the feature list's page count and slide rendering off macOS · poppler's `pdftotext`, optional, for PDFs in the clearance linter · `rsvg-convert` or the `cairosvg` module, for icons off macOS. `plugins/oracle-packs/skills/deck/tools/render_probe.sh` says which renderers a machine has.
 
@@ -83,22 +85,25 @@ A pack's spec lives in this repo at `packs/<slug>/pack-spec.md`, with the pictur
 | PDF text in the clearance linter | works with `pdftotext`; without, skipped, says so | works with `pdftotext`; without, skipped, says so |
 | Demo capture | works with Node 22+ and Chrome | works with Node 22+ and Chrome; without, skipped, says so |
 
-**8. The rules.** `shared/references/` is the plugins' own home for their rules; copies in the owner's personal repository serve his other work and may differ.
+**8. The rules.** `plugins/oracle-packs/shared/references/` is the plugin's own home for its rules; copies in the owner's personal repository serve his other work and may differ.
 
 **Fewer permission prompts.** Merge the `permissions.allow` list of `docs/settings.example.json` into the `.claude/settings.json` of the folder you run the skills from.
-Add the two installed resolvers in absolute form as well — `Bash(<home>/.claude/plugins/cache/oracle-packaging-skills/<plugin>/<version>/shared/tools/py *)` for each plugin, redone when the version changes — since a permission rule does not expand `${CLAUDE_PLUGIN_ROOT}`.
+Add the installed resolver in absolute form as well — `Bash(<home>/.claude/plugins/cache/oracle-packaging-skills/oracle-packs/<version>/shared/tools/py *)`, redone when the version changes — since a permission rule does not expand `${CLAUDE_PLUGIN_ROOT}`.
 
 ## Layout
 
 ```
-.claude-plugin/marketplace.json     the marketplace (two plugins)
-shared/                             single source, synced into each plugin by tools/sync-shared.sh
-  references/                       engagement context · naming and clearance · pack anatomy · PoV rules · review loop · talking to the owner · slide-design · client-documents · research-standards · coaching rules · running agents
-  data/                             oracle-products.yaml (the only allowed product names) · roadmap-items.csv (the only allowed roadmap ids) · icons/ (the deck's industry icon library)
-  schema/pack-spec.md               the spec schema and template
-  tools/                            py (the interpreter resolver) · requirements.txt · packspec.py (the spec's loader and writer) · pack_paths.py · spec_stamp.py · lint_spec.py · lint_artifact.py · check_consistency.py · denylist.txt · tests/
-plugins/oracle-packs/               spec · feature-list · deck · one-pager · exec-summary · visuals · build; fonts/ (the brand faces, private)
-plugins/oracle-packs-web/           listing · demo
+.claude-plugin/marketplace.json     the marketplace (one plugin)
+plugins/oracle-packs/               the plugin
+  skills/                           spec · feature-list · deck · one-pager · exec-summary · build · listing · demo · visuals
+  shared/                           what several skills read, in one place
+    references/                     engagement context · naming and clearance · pack anatomy · PoV rules · review loop · talking to the owner · slide-design · client-documents · research-standards · coaching rules · running agents
+    data/                           oracle-products.yaml (the only allowed product names) · roadmap-items.csv (the only allowed roadmap ids) · icons/ (the deck's industry icon library)
+    schema/pack-spec.md             the spec schema and template
+    tools/                          py (the interpreter resolver) · packspec.py (the spec's loader and writer) · pack_paths.py · spec_stamp.py · lint_spec.py · lint_artifact.py · check_consistency.py · deckkit.py · specfmt.py · denylist.txt
+  fonts/                            the brand faces, private
+  requirements.txt                  the Python dependencies
+tests/run_tests.sh                  the suite: every tool, every card's spec keys, every skill's context budget
 packs/<slug>/                       one pack's shared files, and only these (.gitignore keeps out the rest): pack-spec.md · visuals/ (the pictures the spec names, their provenance .json files, credits.md)
 examples/workforce-optimization/    the worked example spec
 docs/DECISIONS.md                   the owner decisions the skills implement
@@ -107,8 +112,8 @@ docs/settings.example.json          the permission allow-list for the toolchain
 
 ## Rules of the repo
 
-- `shared/references/*.md` are rewritten to current truth; never append a dated "UPDATE" section. A subagent that finds a doc wrong reports it; a person or the main session rewrites it.
-- No customer names, contract values, internal capacity numbers, credentials or machine paths in anything under `shared/` or `plugins/` except the linter deny-list, which exists to catch them.
+- `plugins/oracle-packs/shared/references/*.md` are rewritten to current truth; never append a dated "UPDATE" section. A subagent that finds a doc wrong reports it; a person or the main session rewrites it.
+- No customer names, contract values, internal capacity numbers, credentials or machine paths in anything under `plugins/` except the linter deny-list, which exists to catch them.
 - A new owner rule becomes a linter assertion or a schema rule, so it survives the next rewrite.
 - Prices, durations and figures live in pack specs, never in the references.
-- The repo is SoftServe-internal: the linter deny-list (`shared/tools/denylist.txt`) is the one place customer names appear, so the linter can catch them. Do not redistribute the repo outside SoftServe; an external deny-list can be supplied instead via `ORACLE_PACK_DENYLIST`.
+- The repo is SoftServe-internal: the linter deny-list (`plugins/oracle-packs/shared/tools/denylist.txt`) is the one place customer names appear, so the linter can catch them. Do not redistribute the repo outside SoftServe; an external deny-list can be supplied instead via `ORACLE_PACK_DENYLIST`.
