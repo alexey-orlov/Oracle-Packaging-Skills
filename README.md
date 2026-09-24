@@ -7,7 +7,7 @@ Owner: Alex Orlov (SoftServe R&D). Internal to SoftServe. Started 2026-09-18.
 ## How it works
 
 ```
-/oracle-packs:spec          intake (questions) → generalization research → options → 12 components signed off one by one → brief
+/oracle-packs:spec          inputs and intake → research → your call on it → the pack's story (one pick) → the rest drafted and reviewed → the whole brief
 /oracle-packs:build         feature-list → deck → one-pager → exec-summary → (web) listing → demo, one review pause after each
 ```
 
