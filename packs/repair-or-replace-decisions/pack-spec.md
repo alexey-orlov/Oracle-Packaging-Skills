@@ -27,7 +27,7 @@ roadmap_block: Per-item processing pipelines
 
 ### Problem
 
-Companies that fix damaged vehicles, containers and equipment decide from photos whether to repair or replace. Guessing costs money in both directions.
+Companies that fix damaged vehicles, containers and equipment decide from photos whether to repair or replace. Guessing costs money in both directions: parts are replaced when a repair would have held, repairs fail and bring a second visit, and two sites decide the same damage differently because the limits differ by market and are rarely written down.
 
 ### Solution
 
@@ -323,12 +323,13 @@ Operators who decide repair or replace, and the insurers and lessors who pay.
 - **Formula:** Replacements where a repair would have met the governing limit, over all remediation decisions
 - **Baseline:** 3.0% modelled
 - **Figure:** 2.4%
+- **Show baseline:** yes
 - **Figure status:** modeled
 - **Unit cost:** about £50 per needless replacement
 - **Whose metric:** the payer funds it; the operator is measured on it
 - **Attribution:**
   - **Named when allowed:** -
-  - **Otherwise:** modelled on industry assumptions
+  - **Otherwise:** an industry model
 - **Caveat:** Modelled, not measured. Every driver is an assumption; apply to the prospect's own volumes.
 - **Source:** research: the value model in the response set, re-expressed per unit
 
@@ -339,12 +340,13 @@ Operators who decide repair or replace, and the insurers and lessors who pay.
 - **Formula:** Repairs returning for the same damage within an agreed window, over all repairs
 - **Baseline:** 1.5% modelled
 - **Figure:** 1.2%
+- **Show baseline:** yes
 - **Figure status:** modeled
 - **Unit cost:** about £75 per failed repair
 - **Whose metric:** the operator absorbs the return visit
 - **Attribution:**
   - **Named when allowed:** -
-  - **Otherwise:** modelled on industry assumptions
+  - **Otherwise:** an industry model
 - **Caveat:** Modelled, not measured. Apply to the prospect's own volumes.
 - **Source:** research: the value model in the response set, re-expressed per unit
 
@@ -359,7 +361,7 @@ Operators who decide repair or replace, and the insurers and lessors who pay.
 - **Whose metric:** both — the operator loses the slot, the payer pays the line
 - **Attribution:**
   - **Named when allowed:** -
-  - **Otherwise:** modelled on industry assumptions
+  - **Otherwise:** an industry model
 - **Caveat:** Modelled. The unplanned-recalibration cost and incidence are industry figures, separately sourced.
 - **Source:** research: the value model plus published recalibration incidence
 
@@ -427,10 +429,10 @@ Operators who decide repair or replace, and the insurers and lessors who pay.
 
 ### Why it sells for the partner
 
-- Net-new GPU consumption
-- Builds on a platform Oracle ships
-- Repeatable across five asset classes
-- Two buyers in every account
+- Net-new GPU consumption: every assessment runs on OCI GPU capacity, and volume grows with claims and bookings
+- Builds on a platform Oracle ships: the video blueprint is already a one-click OCI accelerator, so the work starts above it
+- Repeatable across five asset classes: vehicle glass, body and paint, containers, rental returns and aircraft skin
+- Two buyers in every account: the operator who makes the call and the insurer or lessor who pays for it
 
 ### What each buyer gets
 
@@ -440,7 +442,7 @@ Operators who decide repair or replace, and the insurers and lessors who pay.
 ## Proof
 
 - **Customer:** (withheld by owner instruction — the account name is not recorded in this file)
-- **Delivered:** A signed statement of work for video-based glazing damage triage on the NVIDIA video blueprint, with a retrieval-grounded recommendation and a human verification stage; the proof of value is scheduled to begin in September 2026.
+- **Delivered:** A signed proof of value for repair-or-replace decisions from customer photos and video, with every recommendation citing its rule and a person verifying it.
 - **Divergence from the pack:** The pack generalizes the rule layer, the measurement and the decision record across five asset classes. The engagement hard-codes one network's guidance, measures nothing dimensionally, and names a single unspecified verification stage. The engagement is also video-first while its own customer's data is photographs; the pack treats media type as an input option, not a premise.
 - **Divergence line:** The pack measures the damage and versions the rules; the proof of value classifies and cites.
 
