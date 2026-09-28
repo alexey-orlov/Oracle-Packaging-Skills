@@ -440,7 +440,7 @@ Operators who decide repair or replace, and the insurers and lessors who pay.
 ## Proof
 
 - **Customer:** (withheld by owner instruction — the account name is not recorded in this file)
-- **Delivered:** Nothing delivered. A signed statement of work, not yet started at the time of packaging (indicative September 2026 start): video-based glazing damage triage on the NVIDIA video blueprint with a retrieval-grounded recommendation and one human verification stage.
+- **Delivered:** A signed statement of work for video-based glazing damage triage on the NVIDIA video blueprint, with a retrieval-grounded recommendation and a human verification stage; the proof of value is scheduled to begin in September 2026.
 - **Divergence from the pack:** The pack generalizes the rule layer, the measurement and the decision record across five asset classes. The engagement hard-codes one network's guidance, measures nothing dimensionally, and names a single unspecified verification stage. The engagement is also video-first while its own customer's data is photographs; the pack treats media type as an input option, not a premise.
 - **Divergence line:** The pack measures the damage and versions the rules; the proof of value classifies and cites.
 
