@@ -287,7 +287,7 @@ Operators who decide repair or replace, and the insurers and lessors who pay.
 |---|---|---|---|
 | Custom configuration | SoftServe | the rule set per market and contract; the damage taxonomy per asset class; reviewer roles and thresholds |  |
 | Accelerator business app | Oracle + SoftServe | guided capture; reviewer workspace; rule authoring; decision record |  |
-| Vision and reasoning engine | NVIDIA | cited verdicts | nvidia-vss; nvidia-aiq |
+| Vision and reasoning engine | NVIDIA | verdicts | nvidia-vss; nvidia-aiq |
 | Data platform | Oracle | media store; decision and audit store; rule-set versions | oci-object-storage; oracle-autonomous-ai-database |
 | Infrastructure | Oracle | GPU compute; Kubernetes; API gateway; identity; observability | oci-gpu-instances; oci-kubernetes-engine; oci-api-gateway; oci-iam; oci-observability-management |
 
@@ -328,7 +328,7 @@ Operators who decide repair or replace, and the insurers and lessors who pay.
 - **Whose metric:** the payer funds it; the operator is measured on it
 - **Attribution:**
   - **Named when allowed:** -
-  - **Otherwise:** modelled on industry volumes and unit costs, not a customer result
+  - **Otherwise:** modelled on industry assumptions
 - **Caveat:** Modelled, not measured. Every driver is an assumption; apply to the prospect's own volumes.
 - **Source:** research: the value model in the response set, re-expressed per unit
 
@@ -344,7 +344,7 @@ Operators who decide repair or replace, and the insurers and lessors who pay.
 - **Whose metric:** the operator absorbs the return visit
 - **Attribution:**
   - **Named when allowed:** -
-  - **Otherwise:** modelled on industry volumes and unit costs, not a customer result
+  - **Otherwise:** modelled on industry assumptions
 - **Caveat:** Modelled, not measured. Apply to the prospect's own volumes.
 - **Source:** research: the value model in the response set, re-expressed per unit
 
@@ -359,7 +359,7 @@ Operators who decide repair or replace, and the insurers and lessors who pay.
 - **Whose metric:** both — the operator loses the slot, the payer pays the line
 - **Attribution:**
   - **Named when allowed:** -
-  - **Otherwise:** modelled on industry volumes and unit costs, not a customer result
+  - **Otherwise:** modelled on industry assumptions
 - **Caveat:** Modelled. The unplanned-recalibration cost and incidence are industry figures, separately sourced.
 - **Source:** research: the value model plus published recalibration incidence
 
@@ -419,11 +419,11 @@ Operators who decide repair or replace, and the insurers and lessors who pay.
 
 | Area | PoV | Integration | Scaling |
 |---|---|---|---|
-| Capture & intake | One capture channel, one language | The operator's own channels and branding | Every market, every language |
-| Damage assessment | One asset class, one taxonomy | Additional asset classes | Per-market taxonomies and retraining |
-| Decision & estimate | One market's rule set | Multiple markets and contracts | Priced scope and the economic test |
-| Assurance & audit | Review, override and a decision record | Integrity checking and machine QA | Override instrumentation and reporting |
-| Operations & administration | Rules authored by us | Rules authored by the customer | Multi-market administration and simulation |
+| Capture & intake | ◐ One capture channel, one language | ● The operator's own channels and branding | ●● Every market, every language |
+| Damage assessment | ◐ One asset class, one taxonomy | ● Additional asset classes | ●● Per-market taxonomies and retraining |
+| Decision & estimate | ◐ One market's rule set | ● Multiple markets and contracts | ●● Priced scope and the economic test |
+| Assurance & audit | ◐ Review, override and a decision record | ● Integrity checking and machine QA | ●● Override instrumentation and reporting |
+| Operations & administration | ◐ Rules authored by us | ● Rules authored by the customer | ●● Multi-market administration and simulation |
 
 ### Why it sells for the partner
 
