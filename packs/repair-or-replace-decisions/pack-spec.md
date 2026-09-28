@@ -139,79 +139,71 @@ Two buyers, deliberately. The operator that carries the cost of a wrong repair-o
 
 ### Capture & intake
 
-- **Customization in this area:** The capture channel, its branding and its languages
+- **Customization in this area:** The capture channel, its branding and languages, and the prompts per asset class
 
 | Category | Feature | Status | From tier | Customization | Source |
 |---|---|---|---|---|---|
-| Assignment & invitation | Assignment raised from a booking or claim reference | partial | pov | The reference shape per operator | sow: the upload entry point |
-| Assignment & invitation | Capture invitation to the asset holder | roadmap | integration | The operator's own channels | research: the customer's own solution requirements |
-| Guided capture | In-capture guidance on framing, distance, glare and steadiness | roadmap | pov | Prompts per asset class | research: what the vendors already ship |
-| Guided capture | Scale anchoring so a dimension can be recovered | roadmap | pov | Which of the three anchors a customer can supply | research: the technical screen |
-| Guided capture | Two-sided capture where the standard requires both sides | roadmap | pov | Per governing standard | research: the US repairability standard, clause 8.1 |
-| Media quality gate | Usability check with a reasoned retake request | roadmap | pov | Thresholds per asset class | research: what the vendors already ship |
+| Guided capture | Capture request from a booking or claim | partial | pov | The reference shape per operator | sow: the upload entry point |
+| Guided capture | Guidance on framing, distance and glare | roadmap | pov | Prompts per asset class | research: what the vendors already ship |
+| Guided capture | Scale anchor so size can be measured | roadmap | pov | Which anchor a customer can supply | research: the technical screen |
+| Guided capture | Both sides captured where the standard requires | roadmap | pov | Per governing standard | research: the US repairability standard, clause 8.1 |
+| Quality and integrity gate | Usability check with a reasoned retake | roadmap | pov | Thresholds per asset class | research: what the vendors already ship |
+| Quality and integrity gate | Tamper and reuse detection on submitted media | roadmap | pov | Per channel and case history | research: a regulator names fabricated damage images as a fraud route |
 
 ### Damage assessment
 
-- **Customization in this area:** The damage taxonomy and the measured features, per asset class
+- **Customization in this area:** The damage taxonomy and the measured features per asset class and market
 
 | Category | Feature | Status | From tier | Customization | Source |
 |---|---|---|---|---|---|
 | Asset identification | Identifier read from the media itself | available | pov | Identifier formats per asset class | sow: the identifier detection block |
 | Asset identification | Asset record and geometry retrieval | partial | integration | The customer's record system | research: the customer's stated primary source |
-| Damage detection | Damage located and bounded in each frame | available | pov | None | research: shipped by the vendor platform |
-| Damage detection | The same damage tracked across frames | available | pov | None | research: shipped by the vendor platform |
-| Damage detection | Damage classified against a configurable taxonomy | partial | pov | The taxonomy per asset class | sow: two classes scoped, six required by the customer |
-| Measurement | Each instance measured, with the basis stated | roadmap | pov | The measured features per standard | research: no vendor publishes a measurement claim |
-| Measurement | Two features measured independently where a standard requires it | roadmap | pov | Per market | research: the German rule measures crater and cracks separately |
-| Measurement | Position assigned against the governing zone | roadmap | pov | Zone geometry per market | research: four different zone constructions |
-| Measurement | Post-repair residual predicted where the rule judges the repaired state | roadmap | integration | Per market | research: German and Austrian trade bodies judge the residual |
-| Prior damage | New damage separated from pre-existing and previously repaired | roadmap | integration | The prior record source | research: sold next door as incremental damage tracking |
-| Prior damage | Proximity to an earlier repair checked where a standard forbids it | roadmap | integration | Per standard | research: the 100 mm rule in the US standard |
+| Detection and classification | Damage located and tracked across frames | available | pov | None | research: shipped by the vendor platform |
+| Detection and classification | Damage classified against a configurable taxonomy | partial | pov | The taxonomy per asset class | sow: two classes scoped, six required |
+| Measurement | Each damage measured, with the basis stated | roadmap | pov | One or two measured features, per market | research: no vendor publishes a measurement claim |
+| Measurement | Position mapped to the governing zone | roadmap | pov | Zone geometry per market | research: four different zone constructions |
+| Measurement | Post-repair residual predicted where rules require | roadmap | integration | Per market | research: German and Austrian trade bodies judge the residual |
+| Measurement | New damage separated from earlier repairs | roadmap | integration | The prior record source | research: sold next door as incremental damage tracking |
 
 ### Decision & estimate
 
-- **Customization in this area:** The rule set per market and contract — this is the priced scope
+- **Customization in this area:** The rule set per market and contract, and the error trade-off per operator
 
 | Category | Feature | Status | From tier | Customization | Source |
 |---|---|---|---|---|---|
-| The decision | Repair, replace or refer with a confidence attached | available | pov | The outcome set per asset class | sow: the recommendation output |
-| The decision | The rule, the frame and the measured value cited on every decision | partial | pov | None | sow: cited guidance scoped; the measured value is absent |
-| The decision | A tunable threshold between the two kinds of error | partial | pov | Per operator's cost asymmetry | response: a probability-weighted score rather than a binary call |
-| The decision | The kind of deciding rule is configurable, not assumed | roadmap | integration | Per industry | research: the rule changes kind across industries |
-| Dependent work | Dependent work a replacement triggers is flagged at the decision | roadmap | pov | Per asset class | research: no competitor flags it |
-| Dependent work | Safety-critical or unusable flagged as a second output | roadmap | integration | Per asset class | research: one competitor ships this shape |
-| Priced scope | Scope priced from a parts and labour source | roadmap | scaling | The source per market — Europe has no single catalogue | research: the catalogue owners |
-| Priced scope | Write-off test against a configurable ceiling | roadmap | scaling | The ceiling per jurisdiction | research: absent in glazing, core in three industries |
+| The decision | Repair, replace or refer, with confidence | available | pov | The outcome set per asset class | sow: the recommendation output |
+| The decision | Rule, frame and measurement cited on each call | partial | pov | None | sow: cited guidance scoped; the measured value is absent |
+| The decision | Tunable threshold between the two kinds of error | partial | pov | Per operator's cost asymmetry | response: a probability-weighted score |
+| The decision | Deciding rule type configurable per industry | roadmap | integration | Per industry | research: the rule changes kind across industries |
+| Consequence and cost | Follow-on work and safety flags at decision | roadmap | pov | Per asset class | research: no competitor flags it |
+| Consequence and cost | Scope priced from a parts and labour source | roadmap | scaling | The source per market | research: the catalogue owners |
+| Consequence and cost | Write-off test against a configurable ceiling | roadmap | scaling | The ceiling per jurisdiction | research: absent in glazing, core in three industries |
 
 ### Assurance & audit
 
-- **Customization in this area:** Reviewer roles, thresholds and response times
+- **Customization in this area:** Reviewer roles, routing thresholds, response times and retention periods
 
 | Category | Feature | Status | From tier | Customization | Source |
 |---|---|---|---|---|---|
-| Submission integrity | Media authenticity and tamper detection | roadmap | pov | Per channel | research: a regulator names fabricated damage images as a fraud route |
-| Submission integrity | The same media detected across cases | roadmap | integration | The case corpus | research: sold as its own product by three vendors |
 | Review | Cases routed on confidence, policy and integrity | partial | pov | Routing policy per operator | sow: routing asserted, thresholds unspecified |
-| Review | A reviewer workspace showing media, reading and cited rule together | partial | pov | Roles and layout | sow: one verification stage named, no design |
+| Review | Reviewer workspace with media, reading and rule | partial | pov | Roles and layout | sow: one verification stage named, no design |
 | Review | Override with a captured reason | partial | pov | Reason codes per operator | research: no competitor persists the override |
-| Review | Override rate instrumented as an aggregate product metric | roadmap | pov | None — never per individual reviewer | research: the oversight test four regulators converge on |
-| The record | A decision record holding rule, frame, measurement and reviewer | partial | pov | Export format | sow: evidence export |
-| The record | Retention and deletion per market rules | partial | integration | Per market | rfi: retention stated without periods |
-| Machine checks | The output checked automatically before a person sees it | roadmap | integration | Check set per asset class | research: one vendor ships this as its own module |
+| Review | Override rate tracked in aggregate only | roadmap | pov | None; never per individual reviewer | research: the oversight test four regulators converge on |
+| Record and checks | Decision record kept per market retention rules | partial | pov | Export format and retention periods | sow: evidence export |
+| Record and checks | Output checked automatically before review | roadmap | integration | Check set per asset class | research: one vendor ships this as its own module |
 
 ### Operations & administration
 
-- **Customization in this area:** Who owns the rules, and across how many markets
+- **Customization in this area:** Who authors the rules, across how many markets, and the downstream systems
 
 | Category | Feature | Status | From tier | Customization | Source |
 |---|---|---|---|---|---|
-| Rule authoring | Rules authored, versioned and deployed per market | roadmap | integration | Authored by us at proof of value, by the customer later | research: one vendor sells this as its own product; no competitor in this job has it |
-| Rule authoring | A rule change replayed against historical cases before it goes live | roadmap | scaling | The case history | research: the vendor gap list |
-| Handoff | Decision handed to booking or dispatch with its scope resolved | partial | pov | The downstream system | research: the highest-value step the first draft dropped |
-| Handoff | Write-back into the system of record | partial | integration | Per system | sow: an API exposed for later integration |
-| Running it | Accuracy evaluated against an agreed holdout set, with the basis published | partial | pov | The holdout set per customer | response: holdout and shadow comparison committed |
-| Running it | Corrections fed back as training signal | roadmap | integration | Retraining cadence | research: the customer's own requirement |
-| Running it | Multi-market and multi-language administration | roadmap | scaling | Per market | research: the customer operates across about forty |
+| Rules | Rules authored, versioned and deployed per market | roadmap | integration | By us at proof of value, by the customer later | research: no competitor in this job has it |
+| Rules | Rule changes replayed on past cases first | roadmap | scaling | The case history | research: the vendor gap list |
+| Handoff and running | Decision handed on with scope resolved | partial | pov | The downstream system | research: the highest-value step the first draft dropped |
+| Handoff and running | Write-back to the system of record | partial | integration | Per system | sow: an API exposed for later integration |
+| Handoff and running | Accuracy evaluated on an agreed holdout set | partial | pov | The holdout set per customer | response: holdout and shadow comparison committed |
+| Handoff and running | Corrections fed back into training | roadmap | integration | Retraining cadence | research: the customer's own requirement |
 
 ## Workflow
 
@@ -326,6 +318,8 @@ Two buyers, deliberately. The operator that carries the cost of a wrong repair-o
 
 ### Needless replacement rate
 
+- **Kind:** business
+- **Signed off by:** Head of Claims
 - **Formula:** Replacements where a repair would have met the governing limit, over all remediation decisions
 - **Baseline:** 3.0% modelled
 - **Figure:** 2.4% — a 20% relative reduction
@@ -338,8 +332,10 @@ Two buyers, deliberately. The operator that carries the cost of a wrong repair-o
 - **Caveat:** Modelled, not measured. Every driver is an assumption; apply to the prospect's own volumes.
 - **Source:** research: the value model in the response set, re-expressed per unit
 
-### Failed-repair and repeat-visit rate
+### Repeat visits for the same damage
 
+- **Kind:** business
+- **Signed off by:** Director of Operations
 - **Formula:** Repairs returning for the same damage within an agreed window, over all repairs
 - **Baseline:** 1.5% modelled
 - **Figure:** 1.2% — a 20% relative reduction
@@ -352,8 +348,10 @@ Two buyers, deliberately. The operator that carries the cost of a wrong repair-o
 - **Caveat:** Modelled, not measured. Apply to the prospect's own volumes.
 - **Source:** research: the value model in the response set, re-expressed per unit
 
-### Avoidable dependent work
+### Unnecessary follow-on work
 
+- **Kind:** business
+- **Signed off by:** Network Operations Director
 - **Formula:** Dependent work triggered only because a replacement was chosen unnecessarily
 - **Baseline:** arises on the needless-replacement share; about 42% of vehicles in the modelled population
 - **Figure:** falls with the needless-replacement rate
@@ -368,6 +366,8 @@ Two buyers, deliberately. The operator that carries the cost of a wrong repair-o
 
 ### Decision consistency across sites
 
+- **Kind:** technical
+- **Signed off by:** Head of Technical Standards
 - **Formula:** Share of matched damage cases receiving the same decision across sites in one market
 - **Baseline:** not measured anywhere today
 - **Figure:** -
@@ -376,6 +376,8 @@ Two buyers, deliberately. The operator that carries the cost of a wrong repair-o
 
 ### Reviewer override rate
 
+- **Kind:** technical
+- **Signed off by:** Head of Claims
 - **Formula:** Decisions changed by the reviewer, over all decisions presented
 - **Baseline:** measured per engagement
 - **Figure:** -
@@ -385,7 +387,8 @@ Two buyers, deliberately. The operator that carries the cost of a wrong repair-o
 
 ## Packages
 
-- **Status:** (awaiting your confirmation — see open question 8)
+- **Status:** confirmed
+- **Source:** user:2026-09-22
 
 ### PoV Jumpstart · S
 
