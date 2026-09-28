@@ -43,7 +43,7 @@ The inspector sees the measured size, the rule that applies, and the recommended
 
 ## Who buys it
 
-Operations and claims leaders at multi-site companies that repair or replace damaged assets — the operator who makes the call and the payer who funds it.
+Operators who decide repair or replace, and the insurers and lessors who pay.
 
 - **Dual-buyer rule:** CONFIRMED DECISION (user:2026-09-22): the pack addresses BOTH buyers, and every artifact must carry both. Concretely — the deck and one-pager name both in the audience line and give each its own value row; the listing's problem-and-solution strip reads for both; each industry names which buyer leads there; the metrics say whose number each one is; and the packages say what each buyer gets. No artifact may silently address only one.
 - **Buyer roles:** Director of Operations; Network Operations Director; Head of Technical Standards; Head of Claims; Claims Operations Director; Fleet or Lease Portfolio Manager
@@ -287,7 +287,7 @@ Operations and claims leaders at multi-site companies that repair or replace dam
 |---|---|---|---|
 | Custom configuration | SoftServe | the rule set per market and contract; the damage taxonomy per asset class; reviewer roles and thresholds |  |
 | Accelerator business app | Oracle + SoftServe | guided capture; reviewer workspace; rule authoring; decision record |  |
-| Vision and reasoning engine | NVIDIA | video and image understanding; retrieval over the rule set; structured verdict output | nvidia-vss; nvidia-aiq |
+| Vision and reasoning engine | NVIDIA | cited verdicts | nvidia-vss; nvidia-aiq |
 | Data platform | Oracle | media store; decision and audit store; rule-set versions | oci-object-storage; oracle-autonomous-ai-database |
 | Infrastructure | Oracle | GPU compute; Kubernetes; API gateway; identity; observability | oci-gpu-instances; oci-kubernetes-engine; oci-api-gateway; oci-iam; oci-observability-management |
 
@@ -322,7 +322,7 @@ Operations and claims leaders at multi-site companies that repair or replace dam
 - **Signed off by:** Head of Claims
 - **Formula:** Replacements where a repair would have met the governing limit, over all remediation decisions
 - **Baseline:** 3.0% modelled
-- **Figure:** 2.4% — a 20% relative reduction
+- **Figure:** 2.4%
 - **Figure status:** modeled
 - **Unit cost:** about £50 per needless replacement
 - **Whose metric:** the payer funds it; the operator is measured on it
@@ -338,7 +338,7 @@ Operations and claims leaders at multi-site companies that repair or replace dam
 - **Signed off by:** Director of Operations
 - **Formula:** Repairs returning for the same damage within an agreed window, over all repairs
 - **Baseline:** 1.5% modelled
-- **Figure:** 1.2% — a 20% relative reduction
+- **Figure:** 1.2%
 - **Figure status:** modeled
 - **Unit cost:** about £75 per failed repair
 - **Whose metric:** the operator absorbs the return visit
