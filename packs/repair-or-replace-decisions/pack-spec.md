@@ -18,8 +18,8 @@ roadmap_block: Per-item processing pipelines
 
 ## One-liner
 
-- **Full:** Photos of a damaged item become a measured repair-or-replace decision, checked against the rules that apply and recorded with its reason — so you replace only what has to be replaced.
-- **Short:** Replace only what has to be replaced — measured from photos, not estimated by eye.
+- **Full:** Photos of a damaged item become a measured repair-or-replace decision, checked against the rules that apply and recorded with its reason, so you replace only what has to be replaced.
+- **Short:** Replace only what has to be replaced: measured from photos, not estimated by eye.
 - **Banned words checked:** yes
 - **Source:** user:2026-09-22
 
@@ -27,11 +27,11 @@ roadmap_block: Per-item processing pipelines
 
 ### Problem
 
-Companies that fix damaged vehicles, containers and equipment decide from photos whether to repair or replace. Guessing costs money in both directions: parts are replaced when a repair would have held, repairs fail and bring a second visit, and two sites decide the same damage differently because the limits differ by market and are rarely written down.
+Repair networks decide from photos whether to repair or replace damaged vehicles, containers and equipment. Wrong calls cost them and the insurers and lessors who pay: needless replacements, repeat visits.
 
 ### Solution
 
-The inspector sees the measured size, the rule that applies, and the recommended call — then confirms it or overrules it. Every decision keeps its reason, so a disputed one is answered from the record instead of from memory.
+The inspector sees the measured size, the rule that applies, and the recommended call, then confirms it or overrules it. Every decision keeps its reason, so a disputed one is answered from the record instead of from memory.
 
 - **Sub-problems:**
   - **Needless replacements:** a part gets swapped when a repair would have held.
@@ -77,7 +77,7 @@ Operators who decide repair or replace, and the insurers and lessors who pay.
   - **Problem:** Call agents book a repair or a replacement before anyone sees the vehicle.
   - **Solution:** The agent confirms a measured call and books the right job, kit and slot.
 - **How the entities differ:** one safety-critical panel whose function is the driver's sight-line
-- **What matters here:** Two measured features, not one, in Germany; a replace triggers sensor recalibration
+- **What matters here:** Operator-led. Size limits differ by country, and a replacement can mean recalibrating the car's cameras.
 - **Worked example:** A chip in the driver's viewing area: repairable in the US under 25 mm, prohibited outright in Germany.
 - **Status:** plausible
 
@@ -87,7 +87,7 @@ Operators who decide repair or replace, and the insurers and lessors who pay.
   - **Problem:** Depot surveyors propose repairs the owner approves line by line.
   - **Solution:** The surveyor submits coded damage with only the permissible remedies attached.
 - **How the entities differ:** a steel unit with published standard geometry and its identifier beside the defect
-- **What matters here:** Damage-to-remedy pairs are codified; illegal pairs cannot be expressed
+- **What matters here:** Operator-led. The allowed repair for each kind of damage is already codified, so each call can be checked line by line.
 - **Worked example:** A hole in a panel cannot be straightened — only patched or replaced.
 - **Status:** plausible
 
@@ -97,7 +97,7 @@ Operators who decide repair or replace, and the insurers and lessors who pay.
   - **Problem:** Branch staff decide what a returning customer is charged for damage.
   - **Solution:** New damage is separated from pre-existing, with the evidence attached to the charge.
 - **How the entities differ:** a whole unit compared against a prior condition record
-- **What matters here:** The output is a bill, so the record faces a hostile lay audience
+- **What matters here:** Payer-led. The result is a charge to the customer, so the evidence has to stand up to a dispute.
 - **Worked example:** A scratch within the fair-wear allowance on return versus one added during the hire.
 - **Status:** plausible
 
@@ -107,7 +107,7 @@ Operators who decide repair or replace, and the insurers and lessors who pay.
   - **Problem:** Claims handlers decide repair, replace or write-off from photos of the damage.
   - **Solution:** The handler reviews a costed scope with the write-off threshold already applied.
 - **How the entities differ:** a set of panels priced against a parts list and published labour times
-- **What matters here:** The ceiling is economic and set per jurisdiction, not by a safety rule
+- **What matters here:** Payer-led. The limit is economic: repair until it costs more than replacing.
 - **Worked example:** Repair cost against a share of the vehicle's value, where the share is set locally.
 - **Status:** plausible
 
@@ -117,7 +117,7 @@ Operators who decide repair or replace, and the insurers and lessors who pay.
   - **Problem:** Engineers disposition surface damage against published structural limits.
   - **Solution:** The engineer gets the limit, the measurement and the record in one place.
 - **How the entities differ:** a structural panel with a permanent, mandatory damage history
-- **What matters here:** A fourth outcome exists: accept the damage and record it
+- **What matters here:** Operator-led. Some damage is accepted and recorded, within published limits, rather than repaired.
 - **Worked example:** A dent inside allowable limits, logged to the aircraft's damage chart rather than repaired.
 - **Status:** plausible
 
@@ -198,7 +198,7 @@ Operators who decide repair or replace, and the insurers and lessors who pay.
 
 | Category | Feature | Status | From tier | Customization | Source |
 |---|---|---|---|---|---|
-| Rules | Rules authored, versioned and deployed per market | roadmap | integration | By us at proof of value, by the customer later | research: no competitor in this job has it |
+| Rules | Rules authored, versioned and deployed per market | roadmap | integration | By SoftServe at proof of value, by the customer later | research: no competitor in this job has it |
 | Rules | Rule changes replayed on past cases first | roadmap | scaling | The case history | research: the vendor gap list |
 | Handoff and running | Decision handed on with scope resolved | partial | pov | The downstream system | research: the highest-value step the first draft dropped |
 | Handoff and running | Write-back to the system of record | partial | integration | Per system | sow: an API exposed for later integration |
@@ -389,6 +389,8 @@ Operators who decide repair or replace, and the insurers and lessors who pay.
 ## Packages
 
 - **Status:** confirmed
+- **Value for the client:** Operator: fewer return visits, the right kit on the first trip, one answer at every site. Payer: fewer replacements funded, an auditable decision, a charge that survives a dispute.
+- **Value for Oracle and NVIDIA:** Net-new GPU consumption on OCI, built on VSS, which Oracle already deploys in one click.
 - **Source:** user:2026-09-22
 
 ### PoV Jumpstart · S
@@ -398,7 +400,7 @@ Operators who decide repair or replace, and the insurers and lessors who pay.
 - **Duration note:** CONFIRMED (user:2026-09-22): a narrower 8-week proof, deliberately not the 12-week engagement. One asset class, one market's rule set, one measured feature set, file-based in and out. Everything else moves to the later packages.
 - **Services price:** to be defined · Derive from the signed engagement, minus the scope removed for the narrower proof.
 - **What you get:**
-  - one market's rule set authored and versioned
+  - one market's rule set, versioned
   - measured decisions on one asset class against that rule set
   - a reviewer workspace with override and a decision record
   - an accuracy evaluation against an agreed holdout set, with the measurement basis stated
@@ -425,14 +427,14 @@ Operators who decide repair or replace, and the insurers and lessors who pay.
 | Damage assessment | ◐ One asset class, one taxonomy | ● Additional asset classes | ●● Per-market taxonomies and retraining |
 | Decision & estimate | ◐ One market's rule set | ● Multiple markets and contracts | ●● Priced scope and the economic test |
 | Assurance & audit | ◐ Review, override and a decision record | ● Integrity checking and machine QA | ●● Override instrumentation and reporting |
-| Operations & administration | ◐ Rules authored by us | ● Rules authored by the customer | ●● Multi-market administration and simulation |
+| Operations & administration | ◐ Rules authored by SoftServe | ● Rules authored by the customer | ●● Multi-market administration and simulation |
 
 ### Why it sells for the partner
 
-- Net-new GPU consumption: every assessment runs on OCI GPU capacity, and volume grows with claims and bookings
-- Builds on a platform Oracle ships: the video blueprint is already a one-click OCI accelerator, so the work starts above it
-- Repeatable across five asset classes: vehicle glass, body and paint, containers, rental returns and aircraft skin
-- Two buyers in every account: the operator who makes the call and the insurer or lessor who pays for it
+- Net-new GPU consumption: every assessment runs on OCI GPU capacity
+- Builds on what Oracle already ships: VSS deploys in one click on OCI
+- Repeatable across asset classes: vehicles, containers and aircraft
+- Two buyers per account: the operator who decides and the payer who funds it
 
 ### What each buyer gets
 
@@ -442,9 +444,9 @@ Operators who decide repair or replace, and the insurers and lessors who pay.
 ## Proof
 
 - **Customer:** (withheld by owner instruction — the account name is not recorded in this file)
-- **Delivered:** A signed proof of value for repair-or-replace decisions from customer photos and video, with every recommendation citing its rule and a person verifying it.
+- **Delivered:** A proof of value for deciding repair or replace from customer photos and video, with every recommendation citing its rule and a person verifying it.
 - **Divergence from the pack:** The pack generalizes the rule layer, the measurement and the decision record across five asset classes. The engagement hard-codes one network's guidance, measures nothing dimensionally, and names a single unspecified verification stage. The engagement is also video-first while its own customer's data is photographs; the pack treats media type as an input option, not a premise.
-- **Divergence line:** The pack measures the damage and versions the rules; the proof of value classifies and cites.
+- **Divergence line:** The app measures the damage and versions the rules; the engagement it grows from classifies and cites.
 
 ## Open questions
 
