@@ -43,7 +43,7 @@ The inspector sees the measured size, the rule that applies, and the recommended
 
 ## Who buys it
 
-Two buyers, deliberately. The operator that carries the cost of a wrong repair-or-replace call — a service network, depot, branch or maintenance organisation — and the payer that funds the remediation and wants fewer replacements: an insurer, a lessor or a fleet owner. Both decide from media before anyone sees the asset in person, and both are accountable for the same decision.
+Operations and claims leaders at multi-site companies that repair or replace damaged assets — the operator who makes the call and the payer who funds it.
 
 - **Dual-buyer rule:** CONFIRMED DECISION (user:2026-09-22): the pack addresses BOTH buyers, and every artifact must carry both. Concretely — the deck and one-pager name both in the audience line and give each its own value row; the listing's problem-and-solution strip reads for both; each industry names which buyer leads there; the metrics say whose number each one is; and the packages say what each buyer gets. No artifact may silently address only one.
 - **Buyer roles:** Director of Operations; Network Operations Director; Head of Technical Standards; Head of Claims; Claims Operations Director; Fleet or Lease Portfolio Manager
