@@ -287,7 +287,7 @@ Operations and claims leaders at multi-site companies that repair or replace dam
 |---|---|---|---|
 | Custom configuration | SoftServe | the rule set per market and contract; the damage taxonomy per asset class; reviewer roles and thresholds |  |
 | Accelerator business app | Oracle + SoftServe | guided capture; reviewer workspace; rule authoring; decision record |  |
-| Vision and reasoning engine | NVIDIA | video and image understanding; retrieval over the rule set; structured verdict output | nvidia-vss; nvidia-aiq; nvidia-ai-enterprise; nvidia-nim |
+| Vision and reasoning engine | NVIDIA | video and image understanding; retrieval over the rule set; structured verdict output | nvidia-vss; nvidia-aiq |
 | Data platform | Oracle | media store; decision and audit store; rule-set versions | oci-object-storage; oracle-autonomous-ai-database |
 | Infrastructure | Oracle | GPU compute; Kubernetes; API gateway; identity; observability | oci-gpu-instances; oci-kubernetes-engine; oci-api-gateway; oci-iam; oci-observability-management |
 
@@ -354,8 +354,7 @@ Operations and claims leaders at multi-site companies that repair or replace dam
 - **Signed off by:** Network Operations Director
 - **Formula:** Dependent work triggered only because a replacement was chosen unnecessarily
 - **Baseline:** arises on the needless-replacement share; about 42% of vehicles in the modelled population
-- **Figure:** falls with the needless-replacement rate
-- **Figure status:** modeled
+- **Figure:** -
 - **Unit cost:** about £50 per avoided recalibration slot; industry data puts an unplanned one at $300–400 and about four days
 - **Whose metric:** both — the operator loses the slot, the payer pays the line
 - **Attribution:**
@@ -428,10 +427,10 @@ Operations and claims leaders at multi-site companies that repair or replace dam
 
 ### Why it sells for the partner
 
-- Net-new GPU consumption on top of an existing cloud footprint
-- Sits above a platform Oracle already ships, so the build starts from a working core
-- Repeatable across five named asset classes, not one industry
-- Two buyers per account — the operator that makes the decision and the payer that funds it
+- Net-new GPU consumption
+- Builds on a platform Oracle ships
+- Repeatable across five asset classes
+- Two buyers in every account
 
 ### What each buyer gets
 
