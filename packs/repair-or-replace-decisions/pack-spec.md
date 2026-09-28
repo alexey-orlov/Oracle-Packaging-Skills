@@ -320,6 +320,7 @@ Operators who decide repair or replace, and the insurers and lessors who pay.
 
 - **Kind:** business
 - **Signed off by:** Head of Claims
+- **Direction:** down
 - **Formula:** Replacements where a repair would have met the governing limit, over all remediation decisions
 - **Baseline:** 3.0% modelled
 - **Figure:** 2.4%
@@ -337,6 +338,7 @@ Operators who decide repair or replace, and the insurers and lessors who pay.
 
 - **Kind:** business
 - **Signed off by:** Director of Operations
+- **Direction:** down
 - **Formula:** Repairs returning for the same damage within an agreed window, over all repairs
 - **Baseline:** 1.5% modelled
 - **Figure:** 1.2%
@@ -354,6 +356,7 @@ Operators who decide repair or replace, and the insurers and lessors who pay.
 
 - **Kind:** business
 - **Signed off by:** Network Operations Director
+- **Direction:** down
 - **Formula:** Dependent work triggered only because a replacement was chosen unnecessarily
 - **Baseline:** arises on the needless-replacement share; about 42% of vehicles in the modelled population
 - **Figure:** -
@@ -398,7 +401,7 @@ Operators who decide repair or replace, and the insurers and lessors who pay.
 - **Id:** pov
 - **Duration:** 6–8 weeks (target 8, hard cap 10)
 - **Duration note:** CONFIRMED (user:2026-09-22): a narrower 8-week proof, deliberately not the 12-week engagement. One asset class, one market's rule set, one measured feature set, file-based in and out. Everything else moves to the later packages.
-- **Services price:** to be defined · Derive from the signed engagement, minus the scope removed for the narrower proof.
+- **Services price:** to be defined
 - **What you get:**
   - one market's rule set, versioned
   - measured decisions on one asset class against that rule set
@@ -444,7 +447,7 @@ Operators who decide repair or replace, and the insurers and lessors who pay.
 ## Proof
 
 - **Customer:** (withheld by owner instruction — the account name is not recorded in this file)
-- **Delivered:** A proof of value for deciding repair or replace from customer photos and video, with every recommendation citing its rule and a person verifying it.
+- **Delivered:** -
 - **Divergence from the pack:** The pack generalizes the rule layer, the measurement and the decision record across five asset classes. The engagement hard-codes one network's guidance, measures nothing dimensionally, and names a single unspecified verification stage. The engagement is also video-first while its own customer's data is photographs; the pack treats media type as an input option, not a premise.
 - **Divergence line:** The app measures the damage and versions the rules; the engagement it grows from classifies and cites.
 
