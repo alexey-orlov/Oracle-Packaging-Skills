@@ -236,7 +236,8 @@ Run this as **its own task, up front**, before the differentiation pass. Alex's 
 ### Step 10 — Candidate options: name · one-liner · problem ↔ solution
 
 - **Agent:** propose **one to three triads**. Each: a plain **name** (passes T3), a **one-liner**
-  that states the job and the outcome in the buyer's words, and a **problem ↔ solution** pair
+  that leads with the specific business value (time, money, risk or capacity) for a named role
+  and object of work, in the buyer's words (card `one-liner`), and a **problem ↔ solution** pair
   written as the change in what the person does — the reframe form, "review the plan, not build
   it"; "review the data, not type it". Give each triad its grounding (which workflow steps and
   which verticals it covers), what it deliberately excludes (T4), and its risk.
@@ -246,10 +247,14 @@ Run this as **its own task, up front**, before the differentiation pass. Alex's 
 - **Stop and ask when:** every candidate name is either the delivered customer's vocabulary or a
   category label ("AI document platform") — that means step 7 has not produced a boundary yet.
 
-**Two hard constraints on this step.** The packaging promise is not a one-liner — Alex rejected
+**Three hard constraints on this step.** The packaging promise is not a one-liner — Alex rejected
 their own: "'packaged from proof of value to enterprise scale' and alike things don't fit as a good
-product one-liner." And no counts, taxonomy or packaging vocabulary in the name or the one-liner;
-they state the job and the outcome in the reader's words.
+product one-liner." No counts, taxonomy or packaging vocabulary in the name or the one-liner.
+And the implementation is not a one-liner either — Alex, 2026-09-29: "focus not on the aspects of
+the tech implementation, but on the very specific business value": no platform, vendor, engine,
+model or data-architecture word (Oracle, OCI, NVIDIA, cuOpt, Lakehouse, GPU, LLM, "gold layer");
+any how is what changes in the buyer's work, in plain words. `lint_spec.py` fails those words
+(SPEC031).
 
 ### Step 11 — Red-team the result
 
@@ -403,6 +408,7 @@ Each was actually rejected. Fix the class, not the instance.
 | A12 | **Changing the structure for the sake of change** | Use-case map red-team brief, 2026-09-06: "don't get biased towards changing for the sake of change" | Prefer hosting a finding in an existing step over inventing a new one; renaming needs a reason stated in one line |
 | A13 | **Formatting before the contents are complete** | R6, 2026-07-24: "finish this table … so that we have the table with the contents" | The table is the spine; layout is a later, separate pass — and the other artifacts derive from it |
 | A14 | **A capability matrix with nothing marked not-done** | 2026-07-24, raised twice on the same table: "there must be some row that is definitely not done" | Treat it as an incompleteness signal, not a completeness one — T9; go back to the vendor gap check and the differentiation grid for the missing rows |
+| A15 | **The implementation in the one-liner** — "re-planned on NVIDIA cuOpt", "from one governed gold layer" | Alex, 2026-09-29: "focus not on the aspects of the tech implementation, but on the very specific business value". The one-liner's old third question, "how, in one clause, generalized", had let the engine stand in for the how | The one-liner leads with the business value (time, money, risk or capacity) for a named role and object of work; any how is what changes in that person's work. The platform, engine, model and data architecture live in the architecture, and on the site's chips and Technology tab |
 
 ---
 
@@ -418,6 +424,8 @@ Each was actually rejected. Fix the class, not the instance.
 - Is every vertical framing in the "Persona — action; outcome" register, business language, no
   product names, 15–30 words?
 - Is every feature labelled on four axes, with no model or engine name inside a feature name?
+- Does every one-liner lead with the business value (time, money, risk or capacity) for a named
+  role and object of work, with no platform, vendor, engine, model or data-architecture word?
 - Does the capability list contain at least one ○ row — something the generalization found that we
   have not built (T9)?
 - Is every generated difference adjudicated, and is every unsupported cell "—" rather than filled?

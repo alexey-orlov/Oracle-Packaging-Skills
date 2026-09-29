@@ -132,7 +132,8 @@ and in `architecture.stack[].catalog_id`, which is where the NVIDIA components o
 the stack are named), a roadmap id that resolves to the extract, the PoV
 duration inside 4–8 weeks (above 8 needs a `justification`, above 10 is rejected),
 one metric set, the three tier names exactly, no deny-listed customer name in
-customer-facing copy, a `figure_status` and a `caveat` on every figure, all four
+customer-facing copy, a one-liner that names no platform, vendor, engine, model
+or data architecture, a `figure_status` and a `caveat` on every figure, all four
 clearance channels recorded, and `open_questions` present (it may be empty). It
 closes with a per-component completeness table — the thing to paste into a
 sign-off message.
@@ -177,6 +178,8 @@ engagement, no cleared headline number**. The linter reads it as absent: no
 | SPEC027 | a `business` metric carries no `owner_role` (warning) — the buyer-side role who would sign the number off |
 | SPEC028 | a retired family name ("OCI AI Accelerators", "OCI accelerator") in `meta.eyebrow`, `deck.running_header`, `exec_summary.running_header` or `one_pager.eyebrow` — the family name is **Oracle AI & Data Solutions** |
 | SPEC029 | the spec does not parse — one finding on the line of the slip (packspec.py's message), and nothing else is checked |
+| SPEC030 | `build.artifacts` or `build.audience` holds a value the build does not know |
+| SPEC031 | `one_liner.full` or `.short` names the implementation — a platform, vendor, engine, model or data-architecture word (Oracle, OCI, NVIDIA, cuOpt, NeMo, AI-Q, Lakehouse, GPU, LLM, "gold layer", "semantic layer", "confidence score", "structured data" and the rest of `IMPLEMENTATION_TERMS`, the mini-site checker's own list; word-bounded, any case, plural allowed). A one-liner leads with the business value for a named role and object of work |
 | SPEC900–902 | catalog absent / roadmap absent / a recommended key unfilled (warnings) |
 
 ## lint_artifact.py
