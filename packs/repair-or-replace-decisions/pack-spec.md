@@ -31,7 +31,7 @@ Call agents, surveyors and claims handlers decide repair or replace from photos 
 
 ### Solution
 
-The agent, surveyor or handler confirms or overrules a measured call before the job is booked, with its rule and any recalibration it triggers listed. Replacements are funded only when the rules require them, and the job is done once, with the right part.
+The agent, surveyor or handler confirms or overrules a measured call before the job is booked, with its rule and any recalibration listed. Replacements are funded only when the rules require them, and the job is done once.
 
 - **Sub-problems:**
   - **Needless replacements:** a full replacement is paid for when a repair would have met the rules.
@@ -339,7 +339,7 @@ Operators who decide repair or replace, and the insurers and lessors who pay.
 - **Attribution:**
   - **Named when allowed:** -
   - **Otherwise:** industry averages for vehicle glazing
-- **Caveat:** Industry averages for vehicle glazing (UK, published 2013; about $250 in the US), not the prospect's own prices; counts only calls where a repair meets the governing limit.
+- **Caveat:** UK industry averages for vehicle glazing, published 2013 (about $250 in the US); not the prospect's own prices.
 - **Note:** UK: a typical replacement screen about £500 against an average repair of £40 (Glass Assist UK, Fleet News, 2013; tier 3, dated). US: an average replacement about $350 against an average crack repair of $99 (NWRD, undated; tier 2). The camera recalibration a replacement can trigger is counted separately under Avoidable recalibrations, never added here. The source engagement's own context-only assumption (repair £100, replacement £300) would give £200; it was not used by that model and is not used here.
 - **Source:** research: P3 §2.1 corroboration lines and §4.5 synthesis point 1
 
@@ -453,10 +453,10 @@ Operators who decide repair or replace, and the insurers and lessors who pay.
 
 ### Why it sells for the partner
 
-- The saving dwarfs the price of deciding: one needless replacement avoided is worth many times what the market charges to decide a case by software
-- Two budgets in one account: the insurer or lessor who pays saves the replacement; the network that fixes saves the repeat visit
-- Net-new GPU consumption on OCI: every assessment runs on OCI GPU capacity, on the video platform Oracle already deploys in one click
-- Repeatable across asset classes: the same rule layer, measurement and record sell again for vehicles, containers and aircraft
+- The saving dwarfs the price of deciding: one avoided replacement pays for many software decisions
+- Two budgets in one account: the payer saves the replacement, the network saves the repeat visit
+- Net-new GPU consumption on OCI: every assessment runs on OCI GPU capacity
+- Repeatable across asset classes: vehicles, containers and aircraft on one rule layer
 
 ### What each buyer gets
 
