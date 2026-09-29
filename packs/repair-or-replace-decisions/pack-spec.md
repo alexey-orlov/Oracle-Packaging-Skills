@@ -18,28 +18,28 @@ roadmap_block: Per-item processing pipelines
 
 ## One-liner
 
-- **Full:** Photos of a damaged item become a measured repair-or-replace decision, checked against the rules that apply and recorded with its reason, so you replace only what has to be replaced.
-- **Short:** Replace only what has to be replaced: measured from photos, not estimated by eye.
+- **Full:** A replacement paid for only when the rules require one, and the right job booked first time: repair-or-replace calls on damaged vehicles, containers and equipment, measured from photos.
+- **Short:** A replacement paid for only when the rules require one, and the right job booked first time.
 - **Banned words checked:** yes
-- **Source:** user:2026-09-22
+- **Source:** user:2026-09-29
 
 ## Problem and solution
 
 ### Problem
 
-Repair networks decide from photos whether to repair or replace damaged vehicles, containers and equipment. Wrong calls cost them and the insurers and lessors who pay: needless replacements, repeat visits.
+Call agents, surveyors and claims handlers decide repair or replace from photos of damaged vehicles, containers and equipment, and each wrong call costs a needless replacement or a repeat visit.
 
 ### Solution
 
-The inspector sees the measured size, the rule that applies, and the recommended call, then confirms it or overrules it. Every decision keeps its reason, so a disputed one is answered from the record instead of from memory.
+The agent, surveyor or handler confirms or overrules a measured call before the job is booked, with its rule and any recalibration it triggers listed. Replacements are funded only when the rules require them, and the job is done once, with the right part.
 
 - **Sub-problems:**
-  - **Needless replacements:** a part gets swapped when a repair would have held.
+  - **Needless replacements:** a full replacement is paid for when a repair would have met the rules.
   - **Repeat visits:** a repair that should have been a replacement fails and comes back.
-  - **No consistent answer:** the limits that settle it differ between markets and contracts and are rarely written down, so two sites decide the same damage differently.
+  - **Follow-on work found late:** work a replacement triggers, such as camera recalibration, surfaces after booking and adds days.
 - **Reframe:** Check the call, don't make it
-- **Outcomes:** Needless replacements ↓; Repeat visits ↓; Same answer at every site
-- **Source:** user:2026-09-22
+- **Outcomes:** Needless replacements ↓; Repeat visits ↓; Avoidable recalibrations ↓
+- **Source:** user:2026-09-29
 
 ## Who buys it
 
@@ -319,59 +319,73 @@ Operators who decide repair or replace, and the insurers and lessors who pay.
 
 ## Metrics
 
-- **Kpis note:** CONFIRMED DECISION (user:2026-09-22): carry the modelled business case, clearly labelled modelled. Implemented as RATES AND UNIT COSTS, not as an absolute annual total — the total is computed from the source account's own volumes and would identify it even with the name removed, which the clearance instruction forbids. Expressing the model per unit also removes both defects in the original: the base-volume footnote error cannot arise without an absolute base, and the improvement assumption is stated once, as a 20% relative reduction, rather than contradicting a separate percentage-point claim elsewhere in the same document. Every figure below is MODELLED on industry assumptions, not measured: no result exists, because the engagement had not started. A seller applies these to the prospect's own volumes. When the proof of value produces measured figures, they replace these and the status changes.
+- **Kpis note:** CONFIRMED DECISION (user:2026-09-22), carried: the business case stays modelled and per unit, never an absolute annual total; a total computed from the source account's volumes would identify it even with the name removed. Revised 2026-09-29 on the owner's direction to lead with business value: the set states the value of one correct decision first, from published industry figures (the price gap between a replacement and a repair; the cost and delay of a camera recalibration), and keeps one modelled rate per 1,000 cases that counts both error directions, so the improvement reads as a gain and can never be read as "repair more". No figure is measured: no result exists because the engagement had not started; the per-decision figures are industry averages and the rate is modelled from industry assumptions, each labelled with one status word. A seller applies the per-decision values to the prospect's own volumes; when the proof of value produces measured figures they replace these and the status changes. The two technical criteria stay technical and never print on sales material.
 
-### Needless replacement rate
+### Saving per needless replacement avoided
 
 - **Kind:** business
 - **Signed off by:** Head of Claims
-- **Direction:** down
-- **Formula:** Replacements where a repair would have met the governing limit, over all remediation decisions
-- **Baseline:** 3.0% modelled
-- **Figure:** 2.4%
-- **Show baseline:** yes
+- **Chip:** Needless replacements ↓
+- **Chip label:** Saved per correct call
+- **Label:** saved when a correct call turns a needless replacement into a repair
+- **Direction:** up
+- **Formula:** The replacement not made, less the repair made instead, for each call corrected from replace to repair where the repair meets the governing limit; it is what moves replacement spend per claim
+- **Baseline:** a windscreen replacement about £500 against a £40 repair, UK industry averages
+- **Figure:** about £460
 - **Figure status:** modeled
-- **Unit cost:** about £50 per needless replacement
-- **Whose metric:** the payer funds it; the operator is measured on it
+- **Show baseline:** no
+- **Unit cost:** -
+- **Whose metric:** the payer banks it; the operator is measured on the repair rate behind it
 - **Attribution:**
   - **Named when allowed:** -
-  - **Otherwise:** an industry model
-- **Caveat:** Modelled, not measured. Every driver is an assumption; apply to the prospect's own volumes.
-- **Source:** research: the value model in the response set, re-expressed per unit
+  - **Otherwise:** industry averages for vehicle glazing
+- **Caveat:** Industry averages for vehicle glazing (UK, published 2013; about $250 in the US), not the prospect's own prices; counts only calls where a repair meets the governing limit.
+- **Note:** UK: a typical replacement screen about £500 against an average repair of £40 (Glass Assist UK, Fleet News, 2013; tier 3, dated). US: an average replacement about $350 against an average crack repair of $99 (NWRD, undated; tier 2). The camera recalibration a replacement can trigger is counted separately under Avoidable recalibrations, never added here. The source engagement's own context-only assumption (repair £100, replacement £300) would give £200; it was not used by that model and is not used here.
+- **Source:** research: P3 §2.1 corroboration lines and §4.5 synthesis point 1
 
-### Repeat visits for the same damage
-
-- **Kind:** business
-- **Signed off by:** Director of Operations
-- **Direction:** down
-- **Formula:** Repairs returning for the same damage within an agreed window, over all repairs
-- **Baseline:** 1.5% modelled
-- **Figure:** 1.2%
-- **Show baseline:** yes
-- **Figure status:** modeled
-- **Unit cost:** about £75 per failed repair
-- **Whose metric:** the operator absorbs the return visit
-- **Attribution:**
-  - **Named when allowed:** -
-  - **Otherwise:** an industry model
-- **Caveat:** Modelled, not measured. Apply to the prospect's own volumes.
-- **Source:** research: the value model in the response set, re-expressed per unit
-
-### Unnecessary follow-on work
+### Avoidable recalibrations
 
 - **Kind:** business
 - **Signed off by:** Network Operations Director
+- **Chip:** Avoidable recalibrations ↓
+- **Chip label:** Avoidable recalibrations
+- **Label:** for each camera recalibration a needless replacement would have triggered
 - **Direction:** down
-- **Formula:** Dependent work triggered only because a replacement was chosen unnecessarily
-- **Baseline:** arises on the needless-replacement share; about 42% of vehicles in the modelled population
-- **Figure:** -
-- **Unit cost:** about £50 per avoided recalibration slot; industry data puts an unplanned one at $300–400 and about four days
-- **Whose metric:** both — the operator loses the slot, the payer pays the line
+- **Formula:** Camera recalibrations booked only because a replacement was chosen where a repair would have met the limit, over all recalibrations booked; each counted with its cost and the days it adds
+- **Baseline:** about 42 in 100 windscreen replacements also need a camera recalibration, modelled
+- **Figure:** $300–400 and 4 days
+- **Figure status:** modeled
+- **Show baseline:** no
+- **Unit cost:** $300–400 and about four days per recalibration, industry figures; the source model valued the operator's slot at about £50, modelled
+- **Whose metric:** both: the operator loses the slot and the customer waits; the payer pays the line
+- **Attribution:**
+  - **Named when allowed:** -
+  - **Otherwise:** industry figures from collision repair estimates
+- **Caveat:** Industry figures from collision repair estimates, not glass-specific: $300–400 per calibration, and about four more days where a calibration is found after the first estimate; incidence depends on the vehicle mix.
+- **Note:** Over half of calibrations surface only after the first estimate (48.5% on initial estimates, 51.5% on supplements); repairs with calibrations run about 17 days keys-to-keys against 13 without (CCC Crash Course Q4 2025, trade press, tier 3). $300–400 per calibration (Opus IVS via AutoBolt report, trade press 2023, tier 3). The 42% incidence is the source model's assumption. Listing the recalibration at decision time is a roadmap feature; at the proof of value the lever is the needless replacements avoided.
+- **Source:** research: P3 §2.3 ADAS lines and §4.5 point 4; the value model's recalibration assumption
+
+### Wrong calls per 1,000 cases
+
+- **Kind:** business
+- **Signed off by:** Director of Operations
+- **Chip:** Repeat visits ↓
+- **Chip label:** Repeat visits
+- **Label:** cases booked as the wrong job: needless replacements and failed repairs together
+- **Direction:** down
+- **Formula:** Cases booked as a repair that needed a replacement, or as a replacement a repair would have met, per 1,000 cases decided, over the same window before and after
+- **Baseline:** 45 per 1,000
+- **Figure:** 36 per 1,000
+- **Figure status:** modeled
+- **Show baseline:** yes
+- **Unit cost:** a needless replacement: about £460 of glass plus any recalibration; a failed repair: the return visit, about £75 of rebooking friction, modelled
+- **Whose metric:** the operator owns the booking; the payer counts the rebooks and the days
 - **Attribution:**
   - **Named when allowed:** -
   - **Otherwise:** an industry model
-- **Caveat:** Modelled. The unplanned-recalibration cost and incidence are industry figures, separately sourced.
-- **Source:** research: the value model plus published recalibration incidence
+- **Caveat:** Modelled, not measured: 30 needless replacements and 15 failed repairs per 1,000 cases today, each reduced by a fifth; apply to the prospect's own volumes.
+- **Note:** The same model as before (3.0% → 2.4% needless replacements, 1.5% → 1.2% failed repairs), re-expressed per 1,000 so it reads as a gain and counts both error directions. In money at the sourced per-decision values the modelled gain is about £3,700 per 1,000 cases (six needless replacements about £2,760 of glass, plus recalibrations and repeat visits), about £3.70 per case, close to the market's per-inspection software price; that is why the set leads with the value per correct decision.
+- **Source:** research: the value model in the response set, re-expressed per 1,000 cases
 
 ### Decision consistency across sites
 
@@ -397,7 +411,7 @@ Operators who decide repair or replace, and the insurers and lessors who pay.
 ## Packages
 
 - **Status:** confirmed
-- **Value for the client:** Operator: fewer return visits, the right kit on the first trip, one answer at every site. Payer: fewer replacements funded, an auditable decision, a charge that survives a dispute.
+- **Value for the client:** Payer: about £460 of glass saved per needless replacement avoided, and a decision that survives audit and dispute. Operator: the job done once, with the right part and any recalibration already booked.
 - **Value for Oracle and NVIDIA:** Net-new GPU consumption on OCI, built on VSS, which Oracle already deploys in one click.
 - **Source:** user:2026-09-22
 
@@ -439,15 +453,15 @@ Operators who decide repair or replace, and the insurers and lessors who pay.
 
 ### Why it sells for the partner
 
-- Net-new GPU consumption: every assessment runs on OCI GPU capacity
-- Builds on what Oracle already ships: VSS deploys in one click on OCI
-- Repeatable across asset classes: vehicles, containers and aircraft
-- Two buyers per account: the operator who decides and the payer who funds it
+- The saving dwarfs the price of deciding: one needless replacement avoided is worth many times what the market charges to decide a case by software
+- Two budgets in one account: the insurer or lessor who pays saves the replacement; the network that fixes saves the repeat visit
+- Net-new GPU consumption on OCI: every assessment runs on OCI GPU capacity, on the video platform Oracle already deploys in one click
+- Repeatable across asset classes: the same rule layer, measurement and record sell again for vehicles, containers and aircraft
 
 ### What each buyer gets
 
-- **Operator:** Fewer return visits, the right kit on the first trip, and one answer across every site
-- **Payer:** Fewer replacements funded, a decision that can be audited, and a charge that survives a dispute
+- **Operator:** The job done once, with the right part, skill and slot, any recalibration booked with it, and one answer at every site
+- **Payer:** Replacements funded only when the rules require them, the gap between replacing and repairing banked each time, and a decision that survives audit and dispute
 
 ## Proof
 
