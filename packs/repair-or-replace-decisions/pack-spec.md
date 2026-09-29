@@ -139,6 +139,7 @@ Operators who decide repair or replace, and the insurers and lessors who pay.
 
 ### Capture & intake
 
+- **Stage:** Capture
 - **Customization in this area:** The capture channel, its branding and languages, and the prompts per asset class
 
 | Category | Feature | Status | From tier | Customization | Source |
@@ -152,6 +153,7 @@ Operators who decide repair or replace, and the insurers and lessors who pay.
 
 ### Damage assessment
 
+- **Stage:** Read the damage
 - **Customization in this area:** The damage taxonomy and the measured features per asset class and market
 
 | Category | Feature | Status | From tier | Customization | Source |
@@ -167,6 +169,7 @@ Operators who decide repair or replace, and the insurers and lessors who pay.
 
 ### Decision & estimate
 
+- **Stage:** The call
 - **Customization in this area:** The rule set per market and contract, and the error trade-off per operator
 
 | Category | Feature | Status | From tier | Customization | Source |
@@ -181,6 +184,7 @@ Operators who decide repair or replace, and the insurers and lessors who pay.
 
 ### Assurance & audit
 
+- **Stage:** Review and hand off
 - **Customization in this area:** Reviewer roles, routing thresholds, response times and retention periods
 
 | Category | Feature | Status | From tier | Customization | Source |
@@ -194,6 +198,7 @@ Operators who decide repair or replace, and the insurers and lessors who pay.
 
 ### Operations & administration
 
+- **Stage:** Review and hand off
 - **Customization in this area:** Who authors the rules, across how many markets, and the downstream systems
 
 | Category | Feature | Status | From tier | Customization | Source |
@@ -286,9 +291,9 @@ Operators who decide repair or replace, and the insurers and lessors who pay.
 | Layer | Vendor | Items | Catalog id |
 |---|---|---|---|
 | Custom configuration | SoftServe | the rule set per market and contract; the damage taxonomy per asset class; reviewer roles and thresholds |  |
-| Accelerator business app | Oracle + SoftServe | guided capture; reviewer workspace; rule authoring; decision record |  |
+| Accelerator business app | Oracle + SoftServe | guided capture; review; rules; decision record |  |
 | Vision and reasoning engine | NVIDIA | verdicts | nvidia-vss; nvidia-aiq |
-| Data platform | Oracle | media store; decision and audit store; rule-set versions | oci-object-storage; oracle-autonomous-ai-database |
+| Data platform | Oracle | media; audit; rules | oci-object-storage; oracle-autonomous-ai-database |
 | Infrastructure | Oracle | GPU compute; Kubernetes; API gateway; identity; observability | oci-gpu-instances; oci-kubernetes-engine; oci-api-gateway; oci-iam; oci-observability-management |
 
 ### Outputs
