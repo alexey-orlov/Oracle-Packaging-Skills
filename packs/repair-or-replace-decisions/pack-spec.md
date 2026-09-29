@@ -216,8 +216,8 @@ Operators who decide repair or replace, and the insurers and lessors who pay.
 
 | System | Data |
 |---|---|
-| the operator's existing capture channel | customer or technician media |
-| the asset master record | identifier, geometry, attributes, prior condition |
+| Capture channel | customer or technician media |
+| Asset master record | identifier, geometry, attributes, prior condition |
 
 ### 1. Capture
 
@@ -247,12 +247,12 @@ Operators who decide repair or replace, and the insurers and lessors who pay.
 - **Description:** Where the industry decides on money rather than on a safety limit, the scope is priced and tested against the local write-off ceiling. Absent in vehicle glazing, which has no economic test at all.
 - **If it fails:** Not covered today: no parts and labour source is wired in, so the step is skipped and stated as out of scope
 
-### 5. Review and override
+### 5. Confirm or overrule
 
 - **Actor:** human
 - **Human in the loop:** yes
 - **Description:** The inspector sees the media, the measurement and the cited rule beside the recommended call, and confirms it or overrules it with a reason. The override is kept.
-- **If it fails:** No reviewer available: queued against an agreed response time, and the queue is visible
+- **If it fails:** Nothing reaches the booking system until a person confirms it; unreviewed cases wait in a visible queue
 
 ### 6. Authorised handoff
 
@@ -283,8 +283,8 @@ Operators who decide repair or replace, and the insurers and lessors who pay.
 
 | System | Data |
 |---|---|
-| the operator's capture channel | customer or technician media |
-| the asset master record | identifier, geometry, prior condition |
+| Capture channel | customer or technician media |
+| Asset master record | identifier, geometry, prior condition |
 
 ### Stack, top to bottom
 
