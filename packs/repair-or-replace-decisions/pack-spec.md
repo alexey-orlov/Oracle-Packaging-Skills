@@ -217,7 +217,7 @@ Operators who decide repair or replace, and the insurers and lessors who pay.
 | System | Data |
 |---|---|
 | Capture channel | customer or technician media |
-| Asset master record | identifier, geometry, attributes, prior condition |
+| Asset record | identifier, geometry, attributes, prior condition |
 
 ### 1. Capture
 
@@ -284,7 +284,7 @@ Operators who decide repair or replace, and the insurers and lessors who pay.
 | System | Data |
 |---|---|
 | Capture channel | customer or technician media |
-| Asset master record | identifier, geometry, prior condition |
+| Asset record | identifier, geometry, prior condition |
 
 ### Stack, top to bottom
 
@@ -292,7 +292,7 @@ Operators who decide repair or replace, and the insurers and lessors who pay.
 |---|---|---|---|
 | Custom configuration | SoftServe | the rule set per market and contract; the damage taxonomy per asset class; reviewer roles and thresholds |  |
 | Accelerator business app | Oracle + SoftServe | guided capture; review; rules; decision record |  |
-| Vision and reasoning engine | NVIDIA | verdicts | nvidia-vss; nvidia-aiq |
+| Vision and reasoning engine | NVIDIA | VSS and AI-Q | nvidia-ai-enterprise |
 | Data platform | Oracle | media; audit; rules | oci-object-storage; oracle-autonomous-ai-database |
 | Infrastructure | Oracle | GPU compute; Kubernetes; API gateway; identity; observability | oci-gpu-instances; oci-kubernetes-engine; oci-api-gateway; oci-iam; oci-observability-management |
 
