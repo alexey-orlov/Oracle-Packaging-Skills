@@ -231,7 +231,8 @@ def as_points(raw):
 
 
 # An absent price or duration is one grey label-sized line, never the value's own type:
-# "to be defined" set in bold price type read as a price (the DHL one-pager, 2026-09-23).
+# "to be defined" set in bold price type read as a price (a logistics customer's
+# one-pager, 2026-09-23).
 TBD = '<span class="tbd">to be defined</span>'
 
 

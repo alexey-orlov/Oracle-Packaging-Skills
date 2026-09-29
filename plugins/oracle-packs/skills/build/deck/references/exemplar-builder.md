@@ -84,11 +84,11 @@ looking at it, then reading the shape's XML.
   (`verticals[].icon`, its white render), else by the shared icon library's keyword
   match; with neither, the exemplar's own icon stays and the build says so. A
   numeral is never printed.
-- **Slides 4 and 5 carry the source customer's logo** (a Bosch PNG). It is removed
-  unless `clearance.customer_name_allowed[channel]` is true **and**
-  `deck.images.customer_logo` is given. With the logo gone, the headline moves to
-  the left margin and widens to the content band — the only geometry the builder
-  computes on those two slides.
+- **Slides 4 and 5 carry the source customer's logo** (a home-appliance maker's
+  PNG). It is removed unless `clearance.customer_name_allowed[channel]` is true
+  **and** `deck.images.customer_logo` is given. With the logo gone, the headline
+  moves to the left margin and widens to the content band — the only geometry the
+  builder computes on those two slides.
 - **The proof slide's four quadrant blocks** are two blue-bar blocks (CONTEXT,
   SOLUTION) and two ink-bar blocks (VALUE FOR ORACLE + NVIDIA, VALUE FOR CLIENT).
   The deck keeps all four rather than deleting two and leaving a hole: CONTEXT ·

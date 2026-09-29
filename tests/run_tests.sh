@@ -74,6 +74,19 @@ expect_absent() {
   done
 }
 
+# expect_unnamed <label> <name>... — expect_absent for a deny-listed name, which the
+# suite's own output must never print either: the ok line does not repeat it, and a
+# failure shows the last run's output with it masked
+expect_unnamed() {
+  label="$1"; shift
+  found=""
+  for hidden in "$@"; do
+    case "$LAST" in *"$hidden"*) found=1; LAST="${LAST//"$hidden"/<name>}" ;; esac
+  done
+  if [ -n "$found" ]; then bad "$label — prints a deny-listed name"
+  else ok "$label never prints the deny-listed name"; fi
+}
+
 # ---------------------------------------------------------------- dependencies
 if ! "$PY" -c "import yaml" >/dev/null 2>&1; then
   say "run_tests: PyYAML is not importable through $PY, so the suite cannot run."
@@ -258,8 +271,8 @@ PYGEN
 
 # Variant D — the metric set is proof criteria only: technical names, no `kind`, no
 # `owner_role`. SPEC025/026/027 must all fire, or a pack ships acceptance criteria as
-# its sales tiles (the DHL one-pager, 2026-09-23). The retired family name rides along
-# in the eyebrow, where SPEC028 has to refuse it.
+# its sales tiles (a logistics customer's one-pager, 2026-09-23). The retired family
+# name rides along in the eyebrow, where SPEC028 has to refuse it.
 "$PY" - "$FIX/pack-spec.valid.md" "$WORK" "$TOOLS" <<'PYMETRICS'
 import sys
 src, work = sys.argv[1], sys.argv[2]
@@ -822,10 +835,10 @@ run_case "a missing spec is a usage error" 2 \
   "$PY" "$TOOLS/check_consistency.py" "$WORK/not-here.md" "$WORK/artifact-clean.md"
 
 # CON003 reads a week figure as a tier duration. A planned next step and the source
-# engagement's own length are not tier claims: the DHL executive summary's next step
-# "Run the contracted 12 weeks … engagement" failed it although no tier said 12
-# (2026-09-23). They pass; a wrong tier duration still fails, and so does the
-# engagement's length printed against a tier — the drift the check exists for.
+# engagement's own length are not tier claims: the next step "Run the contracted 12
+# weeks … engagement" on a logistics customer's executive summary failed it although
+# no tier said 12 (2026-09-23). They pass; a wrong tier duration still fails, and so
+# does the engagement's length printed against a tier — the drift the check exists for.
 "$PY" - "$VALID" "$WORK" "$TOOLS" <<'PYWEEKS'
 import sys
 src, work = sys.argv[1], sys.argv[2]
@@ -1396,7 +1409,7 @@ EOF
   run_case "a deny-listed name in the site's entry is refused" 1 \
     node "$REFRESH" --site "$MS" --out "$EX"
   expect "the refusal" "deny-list entry on line" "block 1" "oneLiner" "Nothing written"
-  expect_absent "the refusal" "$DENY_NAME"
+  expect_unnamed "the refusal" "$DENY_NAME"
   run_case "the refused run left the exemplar as it was" 0 cmp -s "$WORK/exemplar.before.js" "$EX"
 
   run_case "no site root is a usage error" 2 \
@@ -1653,6 +1666,32 @@ printf '**Fills:** `workflow.steps[]` (`hitl`), `packages[]` — `price_services
 run_case "a card naming unknown keys fails" 1 \
   "$PY" "$TESTS/check_card_keys.py" "$TOOLS" "$WORK/bad-cards"
 expect "the unknown keys" "hitl" "packages[]" "price_services"
+
+# No customer name under plugins/ except in the linter's deny-list, which exists to catch
+# them: the repo's rule, and one the linters cannot hold, since they read specs and
+# artifacts, never the plugin's own comments and cards. Names reached both as the source
+# of a lesson (a logistics customer's one-pager, 2026-09-23) and were found by hand
+# (2026-09-29). A hit prints its path, its line and the deny-list line it matches, never
+# the name — the planted leak below is the proof. "AIDP" has a rule of its own (ART102),
+# so the references that teach that rule spell it.
+say ""
+say "no deny-list entry under plugins/"
+run_case "no deny-list entry appears under plugins/ outside denylist.txt" 0 \
+  "$PY" "$TESTS/check_deny_names.py" "$TOOLS" "$REPO/plugins"
+DENY_LINE="$(sed -e 's/#.*//' -e 's/^~//' -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' \
+             "$TOOLS/denylist.txt" | grep -n . | grep -v '/' | head -1 | cut -d: -f1)"
+DENY_LOWER="$(printf '%s' "$DENY_NAME" | tr '[:upper:]' '[:lower:]')"
+LEAK="$WORK/leak/plugins/x"
+mkdir -p "$LEAK/tools" "$LEAK/cards"
+printf '# "AIDP" outside internal is ART102.\n# read as a price (the %s one-pager, 2026-09-23).\n' \
+  "$DENY_NAME" > "$LEAK/tools/build.py"
+printf 'The delivered case.\n' > "$LEAK/cards/$DENY_LOWER-case.md"
+run_case "a deny-listed name in a comment or a file name fails" 1 \
+  "$PY" "$TESTS/check_deny_names.py" "$TOOLS" "$WORK/leak/plugins"
+expect "the leak" "plugins/x/tools/build.py:2: the deny-list entry on line $DENY_LINE of" \
+  "plugins/x/cards/<name>-case.md: its path holds the deny-list entry on line $DENY_LINE of"
+expect_unnamed "the leak" "$DENY_NAME" "$DENY_LOWER"
+expect_absent "the leak" "build.py:1:"
 
 # ----------------------------------------------------- the deck builder + linter
 # Lives with its skill (it needs python-pptx and the deck base), so it runs as a

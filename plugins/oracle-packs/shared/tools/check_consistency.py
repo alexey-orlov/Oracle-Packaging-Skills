@@ -144,8 +144,9 @@ class Consistency:
         self.kpis = self._kpis()
         # CON003 reads a week figure as a tier duration. Two kinds are not one: the
         # spec's own planned next steps, and the source engagement's own length in a
-        # sentence about the engagement. The DHL executive summary's next step "12 weeks"
-        # failed the check although no tier claimed it (2026-09-23).
+        # sentence about the engagement. The next step "12 weeks" on a logistics
+        # customer's executive summary failed the check although no tier claimed it
+        # (2026-09-23).
         self.engagement_weeks = self._engagement_weeks()
         self.next_steps = self._next_steps()
         self.engagement_marker = self._engagement_marker()

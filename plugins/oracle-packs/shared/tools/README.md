@@ -322,7 +322,8 @@ of `denylist.txt`, so no customer name is committed to this repo.
   significant words with a catalog name without matching it. It finds
   "Oracle AI Lakehouse" and "Oracle Fusion Field Services"; it cannot find a
   wholly invented product.
-- **Asset matching is deliberately eager.** A file named `hero-sky-line.jpg`
-  trips the deny-list entry `Sky`. Rename the asset rather than trimming the list.
+- **Asset matching is deliberately eager.** A file named after an everyday word
+  that is also a deny-list entry (`hero-<word>-line.jpg`) trips that entry. Rename
+  the asset rather than trimming the list.
 - **`--spec` is not optional in practice.** Without it, four checks cannot run and
   say so; a skill should always pass it.

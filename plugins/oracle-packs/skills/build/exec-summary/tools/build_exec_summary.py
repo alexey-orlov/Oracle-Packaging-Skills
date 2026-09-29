@@ -196,8 +196,9 @@ def block_proof(s, spec: Spec, fit: FitLog):
         fit.note("proof block left empty — the metric set is not cleared here")
         return
     # The header already names a cleared customer; a line under it saying "proof of
-    # value at <Customer>" is the same attribution twice (the DHL slide, 2026-09-23).
-    # Only a header that cannot name the customer keeps the attribution line.
+    # value at <Customer>" is the same attribution twice (a logistics customer's
+    # slide, 2026-09-23). Only a header that cannot name the customer keeps the
+    # attribution line.
     top = PANEL_Y_TOP + 0.12
     if not named:
         attribution = spec.kpi_attribution()

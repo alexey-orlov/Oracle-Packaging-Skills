@@ -104,7 +104,7 @@ plugins/oracle-packs/               the plugin
     tools/                          py (the interpreter resolver) · packspec.py (the spec's loader and writer) · pack_paths.py · spec_stamp.py · lint_spec.py · lint_artifact.py · check_consistency.py · deckkit.py · specfmt.py · denylist.txt
   fonts/                            the brand faces, private
   requirements.txt                  the Python dependencies
-tests/run_tests.sh                  the suite: every tool, every card's spec keys, every skill's context budget
+tests/run_tests.sh                  the suite: every tool, every card's spec keys, every skill's context budget, no deny-list entry under plugins/
 packs/<slug>/                       one pack's shared files, and only these (.gitignore keeps out the rest): pack-spec.md · visuals/ (the pictures the spec names; each one's source, creator, licence and page are on its spec entry)
 examples/workforce-optimization/    the worked example spec
 docs/DECISIONS.md                   the owner's decisions and why
@@ -115,7 +115,7 @@ docs/settings.example.json          the permission allow-list for the toolchain
 ## Rules of the repo
 
 - `plugins/oracle-packs/shared/references/*.md` are rewritten to current truth; never append a dated "UPDATE" section. A subagent that finds a doc wrong reports it; a person or the main session rewrites it.
-- No customer names, contract values, internal capacity numbers, credentials or machine paths in anything under `plugins/` except the linter deny-list, which exists to catch them.
+- No customer names, contract values, internal capacity numbers, credentials or machine paths in anything under `plugins/` except the linter deny-list, which exists to catch them. The suite fails on any deny-list entry it finds there (`tests/check_deny_names.py`).
 - A new owner rule becomes a linter assertion or a schema rule, so it survives the next rewrite.
 - Prices, durations and figures live in pack specs, never in the references.
 - The repo is SoftServe-internal: the linter deny-list (`plugins/oracle-packs/shared/tools/denylist.txt`) is the one place customer names appear, so the linter can catch them. Do not redistribute the repo outside SoftServe; an external deny-list can be supplied instead via `ORACLE_PACK_DENYLIST`.

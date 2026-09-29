@@ -760,7 +760,8 @@ class SpecLint:
                               % (i, name or "(unnamed)"))
         # "No business metric" covers both shapes: every metric marked `technical`, and
         # every metric unmarked but reading as a proof criterion. The second is the one
-        # that shipped (the DHL one-pager, 2026-09-23) — nothing was marked at all.
+        # that shipped (a logistics customer's one-pager, 2026-09-23) — nothing was
+        # marked at all.
         if kinds and not business_like:
             self.rep.warn(self.path, PL.lineno(self.spec, "kpis"), "SPEC025",
                           "no business metric in the set (%d metric(s), kinds: %s) — every one "

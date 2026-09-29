@@ -279,8 +279,9 @@ function pathOf(value, needle, at) {
   return "";
 }
 
-/* A whole-word match, case-insensitive and Unicode-aware, so "Sky" never trips on
-   "risky": the boundary rule the practice's lint_artifact.py applies. */
+/* A whole-word match, case-insensitive and Unicode-aware, so an entry never trips
+   inside a longer word that contains it: the boundary rule the practice's
+   lint_artifact.py applies. */
 const wordRe = (text) => new RegExp("(?<![\\p{L}\\p{N}])" + text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "(?![\\p{L}\\p{N}])", "iu");
 const hit = readDenylist().find((e) => wordRe(e.text).test(TEXT));
 if (hit) {

@@ -5,7 +5,7 @@
 **Checks the draft must pass**
 
 1. The four blocks speak about the customer's business — CONTEXT: their situation and the pain in it; SOLUTION: what they now do instead; the two value blocks: what each side gains. Their own sources, scale and team, never the pack's generalized copy. A sentence that would survive unchanged in another pack has failed.
-2. **No engagement mechanics in the four blocks**: weeks, phases, number of sources, contract status, team size, or "proof of value" used as a noun phrase. *Fails:* "a contracted proof of value on NVIDIA AI-Q over OCI". *Passes:* "DHL's account managers cover forty carriers each and learn of a customer's expansion from the trade press, weeks late." Status goes in the footnote, timeline on the packages slide.
+2. **No engagement mechanics in the four blocks**: weeks, phases, number of sources, contract status, team size, or "proof of value" used as a noun phrase. *Fails:* "a contracted proof of value on NVIDIA AI-Q over OCI". *Passes:* "{Customer}'s account managers cover forty carriers each and learn of a customer's expansion from the trade press, weeks late." Status goes in the footnote, timeline on the packages slide.
 3. Two to three sentences per block — the reference's altitude, a specific, not a paragraph.
 4. The customer's name appears only as `{Customer}`, filled per audience by the builder.
 5. The headline states the delivered outcome where a figure is cleared; otherwise the scope, ending "results to follow". Never a claim the figures do not carry.
