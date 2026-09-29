@@ -1,6 +1,6 @@
 # Client-facing document conventions
 
-_Carried over from the practice owner's standing rules for any client-facing offer, proposal or delivered document, plus the living-documents rule for updating anything already delivered. Built up from their reviews between 2026-07-07 and 2026-09-16; each rule keeps the date it was set. Read BEFORE drafting a client document, a one-pager, deck copy or marketing copy, and BEFORE touching an existing deliverable._
+_Carried over from the practice owner's standing rules for any client-facing offer, proposal or delivered document, plus the living-documents rule for updating anything already delivered. Built up from their reviews between 2026-07-07 and 2026-09-29; each rule keeps the date it was set. Read BEFORE drafting a client document, a one-pager, deck copy or marketing copy, and BEFORE touching an existing deliverable._
 
 ## Offers / proposals (2026-07-07)
 
@@ -40,6 +40,10 @@ stale the moment they edit; port their edits first, or build inside the edited f
 
 - **The problem and the solution lines are tangible and readable with zero context.** One home
   for that rule, with its checks and its examples: the spec skill's `story` card.
+- **A one-liner sells the business value, never the implementation** (2026-09-29). One home for
+  that rule, with its checks and its examples: the spec skill's `one-liner` card; the spec linter
+  fails a platform, vendor, engine, model or data-architecture word in it before any artifact is
+  built.
 - **Structure before copy — a page is an argument, not an inventory** (2026-09-16). Before
   choosing components, settle audience → positioning (what this page offers that its sibling
   pages don't) → three or four messages, each answering a reader problem → one screen per

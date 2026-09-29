@@ -442,6 +442,21 @@ else
   say "  (the site checker's word list skipped: no site root)"
 fi
 
+# No spec the plugin ships as an example or a builder fixture teaches a one-liner that names
+# the implementation: a model adapting one copies its one-liner's register with it. Only
+# SPEC031 is asserted — a builder fixture may be partial on purpose.
+for spec in "$REPO"/examples/*/pack-spec.md \
+            "$REPO"/plugins/*/skills/*/tests/fixture-pack-spec*.md \
+            "$REPO"/plugins/*/skills/*/*/tests/fixture-pack-spec*.md; do
+  [ -f "$spec" ] || continue
+  LAST="$("$PY" "$TOOLS/lint_spec.py" "$spec" 2>&1)"; got=$?
+  if [ "$got" -le 1 ]; then
+    expect_absent "${spec#"$REPO"/}" SPEC031
+  else
+    bad "${spec#"$REPO"/} — lint_spec exited $got"
+  fi
+done
+
 run_case "a missing spec is a usage error" 2 \
   "$PY" "$TOOLS/lint_spec.py" "$WORK/not-here.md"
 

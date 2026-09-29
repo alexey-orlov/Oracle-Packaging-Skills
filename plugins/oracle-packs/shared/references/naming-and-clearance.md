@@ -102,7 +102,7 @@ Customer-facing means the mini-site listing, the demo, and any external one-page
 - **Operating-model vocabulary.** "pods", "practice unit", "delivery pod", "COE build-out", "hardening", "productization", and any name that describes our org rather than their job.
 - **Status words used loosely.** A case study states its status once, in one plain word (proven / measured / forecast / estimated / modeled / in preparation), with a footnote that spends its line on evidence rather than on hedging.
 
-**The one-liner is the exception to "customer-facing only".** Packaging vocabulary is banned inside the pack's one-liner on **every** channel, internal included. The one-liner is set once in the spec and inherited verbatim by the feature list, the deck, the one-pager, the executive summary and the listing, so "packaged from proof of value to enterprise scale" on an internal cut is the same defect three artifacts later. The linter asserts it as ART206 and names the spec, not the artifact, as the place to fix it.
+**The one-liner is the exception to "customer-facing only".** Packaging vocabulary is banned inside the pack's one-liner on **every** channel, internal included. The one-liner is set once in the spec and inherited verbatim by the feature list, the deck, the one-pager, the executive summary and the listing, so "packaged from proof of value to enterprise scale" on an internal cut is the same defect three artifacts later. The linter asserts it as ART206 and names the spec, not the artifact, as the place to fix it. For the same reason the one-liner never names the implementation (a platform, vendor, engine, model or data-architecture word) on any channel: it sells the business value, and `lint_spec.py` fails those words in the spec before any artifact is built (SPEC031). The rule and its checks: the spec skill's `one-liner` card.
 
 **What replaces them:** the job and the outcome in the reader's words. A one-liner states what the reader gets done, never how we package it. Headings are display lines — an H1 is two to four words (about 24 characters a line, two lines at most), an H2 five words or fewer — and the argument moves into the lead. No content word three times on one screen; one word for one thing across the whole piece; no claim repeated in more than two places.
 
@@ -127,6 +127,7 @@ What it checks, and where each check gets its input:
 | Partner-standing claims | §3, phrase list |
 | Banned vocabulary, counts, negations, ceilings | §4, word and pattern list |
 | Packaging vocabulary inside the one-liner, on every channel | §4 plus the spec's `one_liner` |
+| Implementation words inside the one-liner, on every channel: checked on the spec by `lint_spec.py` (SPEC031), before any artifact exists | §4 plus the spec's `one_liner` |
 | Heading budgets and repetition limits, where the artifact has headings | §4 |
 
 Two rules keep it honest. **Every new owner rule becomes a linter assertion in the same pass** that the rule is written here, or it will be lost at the next rewrite. And **a check the linter cannot perform is not a check that passed** — it reports what it could not evaluate, and that list goes to the owner with the artifact.
