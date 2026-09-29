@@ -19,11 +19,11 @@ roadmap_block: Data analysis & optimization
 
 ## One-liner
 
-- **Full:** Optimizes field-service work zones and schedules with NVIDIA cuOpt: a region's four-week plan, built in minutes and approved by dispatchers.
+- **Full:** The same technicians complete more jobs a day, with less driving and waiting, on a four-week plan balanced across every zone.
 - **Short:** A region's four-week field plan, optimized in minutes and approved by dispatchers.
 - **Banned words checked:** yes
-- **Note:** `full` is the mini-site's `oneLiner` and is the canonical product one-liner; `short` is its rep-sayable `shortLine`. The one-pager hero line it replaces ("…packaged from proof of value to enterprise scale") was rejected by the owner: a one-liner states the job and the outcome, never how we package it (naming-and-clearance §4, asserted as ART206 on every channel). The vendor name is the catalog's — the site still writes "Oracle Field Service" and is relabelled at the next rebuild. The delivered sales deck cover carries a third, deck-scoped line ("AI accelerator service packages on Oracle OCI + NVIDIA cuOpt…") that describes the deck rather than the product; it is retired at the deck's next rebuild.
-- **Source:** site-2026-09-17, decisions-2026-09-18
+- **Note:** `full` is the mini-site's `oneLiner` as rewritten in site round 19 (2026-09-29): it sells the business value and names no platform, engine or data architecture. The line it replaced, "Optimizes field-service work zones and schedules with NVIDIA cuOpt: …", named the engine, which a one-liner never does (SPEC031). `short` is the site's retired `shortLine`, and the deck cover's line. The one-pager hero line both replace ("…packaged from proof of value to enterprise scale") was rejected by the owner: a one-liner never says how we package it (naming-and-clearance §4, asserted as ART206 on every channel). The delivered sales deck cover carries a third, deck-scoped line ("AI accelerator service packages on Oracle OCI + NVIDIA cuOpt…") that describes the deck rather than the product; it is retired at the deck's next rebuild.
+- **Source:** site-2026-09-29, site-2026-09-17, decisions-2026-09-18
 
 ## Problem and solution
 
@@ -631,6 +631,12 @@ Any mobile field force planned against skills, availability and geography.
     - **Read:** 2026-09-18
     - **Note:** products[] slug workforce-optimization, lines 1751–2088.
     - **Supplies:** icp; verticals; workflow; architecture; oracle_products; packages; clearance
+  - **Id:** site-2026-09-29
+    - **Path:** \<site-repo>/site/data/content.js
+    - **Kind:** listing
+    - **Read:** 2026-09-29
+    - **Note:** products[] slug workforce-optimization: the `oneLiner` as rewritten in site round 19, the business value with no engine or platform name.
+    - **Supplies:** one_liner
   - **Id:** demo-2026-09-16
     - **Path:** \<site-repo>/site/demo/workforce-optimization/data.js
     - **Kind:** demo

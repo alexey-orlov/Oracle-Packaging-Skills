@@ -57,7 +57,7 @@ roadmap_block: <roadmap block>
 
 ## One-liner
 
-- **Full:** <the job and the outcome, in the buyer's words>
+- **Full:** <the business value (time, money, risk or capacity) for a named role and object of work, in the buyer's words>
 - **Short:** <the same, rep-sayable in one breath>
 - **Banned words checked:** yes
 - **KPI chips:**
@@ -500,8 +500,8 @@ Each key is written as the label in the second column. A key not listed is not p
 
 | Key | In the file | Contract |
 |---|---|---|
-| `one_liner.full` | `Full` | states the job and the outcome; never packaging vocabulary |
-| `one_liner.short` | `Short` | rep-sayable in one breath |
+| `one_liner.full` | `Full` | leads with the business value (time, money, risk or capacity) for a named role and object of work; any how is what changes in that person's work; never packaging vocabulary, never a platform, vendor, engine, model or data-architecture word |
+| `one_liner.short` | `Short` | rep-sayable in one breath, derived from `full`; the same rules |
 | `one_liner.banned_words_checked` | `Banned words checked` | yes / no |
 | `one_liner.kpi_chips[]` — `label`, `direction` | `KPI chips`, a `**<label>:** <direction>` line each | optional chips beside the one-liner |
 | `one_liner.note`, `.source` | `Note`, `Source` | `source` is `user:<date>` before confirmation |
@@ -698,4 +698,5 @@ A metric defined and measured per engagement but with no cleared headline number
 - No retired family name — "OCI AI Accelerator(s)", "OCI accelerator(s)" — in `meta.eyebrow`, `deck.running_header`, `exec_summary.running_header` or `one_pager.eyebrow`. The family name on every print artifact is **Oracle AI & Data Solutions** (SPEC028).
 - `clearance.customer_name_allowed` decides attribution per channel; the builders never read the customer name unless the channel allows it.
 - No customer name inside `one_liner`, `problem_solution`, `verticals`, or `name`.
+- No platform, vendor, engine, model or data-architecture word in `one_liner.full` or `one_liner.short`: Oracle, OCI, NVIDIA, cuOpt, Lakehouse, GPU, LLM, "gold layer", "structured data" and the rest of the mini-site checker's list, word-bounded, plural allowed (SPEC031). The one-liner sells the business value; the stack belongs in `architecture`.
 - A key the layout does not know, in any record list, is a warning naming it (SPEC024); a spec that does not parse is a finding on its line (SPEC029).

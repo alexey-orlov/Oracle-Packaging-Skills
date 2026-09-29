@@ -302,6 +302,26 @@ print("generated the 8-step workflow variant")
 PYSTEPS
 [ $? -eq 0 ] || { say "run_tests: could not generate the workflow variant"; exit 2; }
 
+# Variant E — a one-liner that names the implementation instead of the business value: the
+# engine, the platform and the data architecture in the full line, a model in the short one
+# (SPEC031; the owner's rule of 2026-09-29, the site checker's round 19).
+"$PY" - "$FIX/pack-spec.valid.md" "$WORK" "$TOOLS" <<'PYONELINER'
+import sys
+src, work = sys.argv[1], sys.argv[2]
+sys.path.insert(0, sys.argv[3])
+import packspec
+spec = packspec.load(src)[0]
+spec["one_liner"]["full"] = ("Technician zones re-planned on NVIDIA cuOpt, from one governed gold "
+                             "layer on Oracle OCI.")
+spec["one_liner"]["short"] = "Dispatchers approve what the LLMs drafted."
+problems = packspec.roundtrip_problems(spec)
+if problems:
+    sys.exit(problems[0])
+open(work + "/pack-spec.tech-one-liner.md", "w", encoding="utf-8").write(packspec.dump(spec))
+print("generated the tech one-liner variant")
+PYONELINER
+[ $? -eq 0 ] || { say "run_tests: could not generate the one-liner variant"; exit 2; }
+
 # ------------------------------------------- generated .docx / .pptx artifacts
 "$PY" - "$WORK" <<'PYOFFICE'
 import sys, zipfile
@@ -341,6 +361,8 @@ expect "valid fixture" "17 of 17 components complete"
 expect_absent "valid fixture" SPEC019 SPEC020
 # the business-metric rule is silent on a set that already passes it
 expect_absent "valid fixture" SPEC025 SPEC026 SPEC027 SPEC028
+# and the one-liner rule on a one-liner that sells the value
+expect_absent "valid fixture" SPEC031
 
 run_case "valid fixture is clean under --strict" 0 \
   "$PY" "$TOOLS/lint_spec.py" "$VALID" --catalog "$CAT" --roadmap "$ROAD" --strict
@@ -366,6 +388,74 @@ run_case "broken variant D (proof criteria as the metric set)" 1 \
   --catalog "$CAT" --roadmap "$ROAD"
 expect "variant D" SPEC025 SPEC026 SPEC027 SPEC028
 expect "variant D" "no business metric in the set" "Oracle AI & Data Solutions"
+
+run_case "broken variant E (a one-liner that names the implementation)" 1 \
+  "$PY" "$TOOLS/lint_spec.py" "$WORK/pack-spec.tech-one-liner.md" \
+  --catalog "$CAT" --roadmap "$ROAD"
+expect "variant E" "SPEC031 one_liner.full names the implementation" \
+  "SPEC031 one_liner.short names the implementation"
+expect "variant E" '(`NVIDIA`, `cuOpt`, `gold layer`, `Oracle`, `OCI`)' '(`LLMs`)'
+
+# The words are matched as the site's checker matches them: any case, on word boundaries,
+# plural allowed — never inside another word ("storage" is not "rag", "capital" not "api").
+run_case "the implementation words: word-bounded, any case, plural allowed" 0 \
+  "$PY" -c 'import sys
+sys.path.insert(0, sys.argv[1])
+import lint_spec as L
+cases = [
+    ("Capital tied up in storage, vectoring the budget", []),
+    ("Runs on GPUs behind two APIs", ["GPUs", "APIs"]),
+    ("An Oracle-native plan, and Oracle again", ["Oracle"]),
+    ("AI-Q answers from the semantic layer", ["AI-Q", "semantic layer"]),
+    ("A replacement paid for only when the rules require one", []),
+]
+bad = ["%r gives %r, not %r" % (t, L.implementation_terms(t), w)
+       for t, w in cases if L.implementation_terms(t) != w]
+print("\n".join(bad) or "as the site matches them")
+sys.exit(1 if bad else 0)' "$TOOLS"
+
+# The list is the mini-site checker's own (IMPLEMENTATION_TERMS in its tools/check-grammar.js),
+# since one_liner.full becomes the site's oneLiner verbatim. With a site checkout at hand the two
+# are compared; a difference is a WARNING, like the live exemplar below: the site moves on its
+# own schedule and must not block an unrelated release, but the spec would then pass a line the
+# site fails.
+GRAMMAR="${ORACLE_SITE_ROOT:-$HOME/Documents/GitHub/Oracle-Solutions-Site}/tools/check-grammar.js"
+if [ -f "$GRAMMAR" ]; then
+  LAST="$("$PY" -c 'import re, sys
+sys.path.insert(0, sys.argv[1])
+import lint_spec as L
+m = re.search(r"IMPLEMENTATION_TERMS\s*=\s*\[(.*?)\]", open(sys.argv[2], encoding="utf-8").read(), re.S)
+if not m:
+    sys.exit("no IMPLEMENTATION_TERMS list in the site checker")
+site, ours = re.findall(r"\"([^\"]*)\"", m.group(1)), list(L.IMPLEMENTATION_TERMS)
+extra, missing = [t for t in site if t not in ours], [t for t in ours if t not in site]
+if extra or missing:
+    sys.exit("the site only: %s; lint_spec only: %s" % (", ".join(extra) or "-", ", ".join(missing) or "-"))
+print("%d terms" % len(ours))' "$TOOLS" "$GRAMMAR" 2>&1)"; got=$?
+  if [ "$got" = 0 ]; then
+    ok "the one-liner's words are the site checker's ($LAST)"
+  else
+    printf '%s\n' "$LAST" | sed 's/^/       | /'
+    warn "WARNING: lint_spec's IMPLEMENTATION_TERMS differs from the site checker's — bring lint_spec.py to the site's list"
+  fi
+else
+  say "  (the site checker's word list skipped: no site root)"
+fi
+
+# No spec the plugin ships as an example or a builder fixture teaches a one-liner that names
+# the implementation: a model adapting one copies its one-liner's register with it. Only
+# SPEC031 is asserted — a builder fixture may be partial on purpose.
+for spec in "$REPO"/examples/*/pack-spec.md \
+            "$REPO"/plugins/*/skills/*/tests/fixture-pack-spec*.md \
+            "$REPO"/plugins/*/skills/*/*/tests/fixture-pack-spec*.md; do
+  [ -f "$spec" ] || continue
+  LAST="$("$PY" "$TOOLS/lint_spec.py" "$spec" 2>&1)"; got=$?
+  if [ "$got" -le 1 ]; then
+    expect_absent "${spec#"$REPO"/}" SPEC031
+  else
+    bad "${spec#"$REPO"/} — lint_spec exited $got"
+  fi
+done
 
 run_case "a missing spec is a usage error" 2 \
   "$PY" "$TOOLS/lint_spec.py" "$WORK/not-here.md"

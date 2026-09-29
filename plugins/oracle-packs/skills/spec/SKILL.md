@@ -40,7 +40,7 @@ Card: `research-review`. At most four questions, **one widget call**, only what 
 
 ## 4. The pack's story
 
-Cards: `story`, `story-parts`. Two or three complete candidates — name, one-liner, problem, solution, who buys it — as **one comparison table**, every cell grounded in the research summary or the inputs, then one widget carrying only the pick. Free text that is a value is applied as given; a direction is re-proposed once. Log the choice in `<work>/decisions.md`. Agents read: `shared/references/naming-and-clearance.md` (the candidates' name check).
+Cards: `story`, `one-liner`, `story-parts`. Two or three complete candidates — name, one-liner, problem, solution, who buys it — as **one comparison table**, every cell grounded in the research summary or the inputs, then one widget carrying only the pick. Free text that is a value is applied as given; a direction is re-proposed once. Log the choice in `<work>/decisions.md`. Agents read: `shared/references/naming-and-clearance.md` (the candidates' name check).
 
 ## 5. Everything else, drafted in one pass
 

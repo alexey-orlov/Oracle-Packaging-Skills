@@ -6,7 +6,7 @@
 
 **The checks**
 
-1. `oneLiner` reads as a product statement — what it does, for whom, with what outcome — and would still be true if the pack were sold a different way. If not, it is packaging copy.
+1. `oneLiner` reads as a product statement — the business value, for whom, never the implementation — and would still be true if the pack were sold a different way. If not, it is packaging copy.
 2. `metrics[].qualifier` is ≤ 14 words and carries the baseline. A figure without its baseline is not a result.
 3. `industryCases[].problem`/`.solution` are 2–3 sentences that could not move under another tab unchanged. Generic vertical paragraphs are the standard failure.
 4. `steps[].features` are the exact strings from `overview.features`, partitioned: union equal, no bullet twice, none missing.

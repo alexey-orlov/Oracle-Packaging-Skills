@@ -16,7 +16,7 @@ roadmap_block: Data analysis & optimization
 
 ## One-liner
 
-- **Full:** Optimizes field-service work zones and schedules with NVIDIA cuOpt: a region's four-week plan built in minutes, approved by dispatchers, exported to Oracle Fusion Field Service.
+- **Full:** The same technicians complete more jobs a day, with less driving and waiting, on a four-week plan balanced across every zone.
 - **Short:** A region's four-week field plan, optimized in minutes and approved by dispatchers.
 - **Banned words checked:** yes
 - **Source:** user:2026-09-18

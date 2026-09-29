@@ -87,6 +87,15 @@ Rule codes
              on every print artifact is "Oracle AI & Data Solutions"
     SPEC029  the spec does not parse — a structural slip, named on its own line;
              nothing else is checked until it does
+    SPEC030  build.artifacts or build.audience holds a value the build does not
+             know
+    SPEC031  one_liner.full or one_liner.short names the implementation — a
+             platform, vendor, engine, model or data-architecture word (Oracle,
+             OCI, NVIDIA, cuOpt, Lakehouse, GPU, LLM, "gold layer", "confidence
+             score", "structured data" … IMPLEMENTATION_TERMS below, the
+             mini-site checker's own list). A one-liner leads with the business
+             value for a named role and object of work; the stack is the
+             architecture's
 
 --strict    promotes SPEC900/901/902 and SPEC017 to findings: the completeness
             check, usable on a spec at any status. A `draft` stays clean under
@@ -211,6 +220,37 @@ FIRST_ORDER = {
 
 # Spec copy a customer name may never appear in (naming-and-clearance.md §3).
 DENY_SCAN = ["one_liner", "problem_solution", "icp", "verticals"]
+
+# Words that say how a pack is built rather than what the buyer's business gets (Alex,
+# 2026-09-29: "focus not on the aspects of the tech implementation, but on the very
+# specific business value"). The mini-site's checker fails the same list in a product's
+# oneLiner, hero line and group line (IMPLEMENTATION_TERMS in its tools/check-grammar.js,
+# round 19), and one_liner.full becomes that oneLiner verbatim, so the two are one list:
+# the suite compares them whenever a site checkout is at hand. Matched in any case, on
+# word boundaries, plural allowed.
+IMPLEMENTATION_TERMS = (
+    "oracle", "oci", "nvidia", "cuopt", "nemo", "ai-q", "lakehouse", "autonomous",
+    "gpu", "llm", "language model", "machine learning", "neural", "rag", "vector", "embedding",
+    "gold layer", "governed layer", "semantic layer", "data layer", "answer layer", "data platform",
+    "api", "sql", "database", "schema", "confidence score", "structured data", "ocr",
+)
+IMPLEMENTATION_RES = [
+    re.compile(r"(?<![a-z0-9])%ss?(?![a-z0-9])" % r"\s+".join(map(re.escape, term.split())),
+               re.IGNORECASE)
+    for term in IMPLEMENTATION_TERMS]
+ONE_LINER_KEYS = ("full", "short")
+
+
+def implementation_terms(text):
+    """The implementation words in `text`, as written there, in the order they appear."""
+    found = sorted((m.start(), m.group(0)) for rx in IMPLEMENTATION_RES for m in rx.finditer(text))
+    seen, words = set(), []
+    for _, word in found:
+        key = " ".join(word.lower().split())
+        if key not in seen:
+            seen.add(key)
+            words.append(word)
+    return words
 
 
 class SpecLint:
@@ -778,6 +818,31 @@ class SpecLint:
                                   % (label, entry.term))
                         break
 
+    def check_one_liner_implementation(self):
+        """SPEC031 — the one-liner sells the business value, never the implementation.
+
+        Both lengths: the full one is the site's oneLiner and the print hero, the short one
+        the deck cover, and every artifact inherits them verbatim, so a platform or engine
+        word here is the same defect in every artifact. Only full and short: the note may
+        say which engine words were taken out.
+        """
+        node = self.spec.get("one_liner")
+        if not isinstance(node, dict):
+            return
+        for key in ONE_LINER_KEYS:
+            value = node.get(key)
+            if not isinstance(value, str):
+                continue
+            words = implementation_terms(value)
+            if words:
+                self.fail("one_liner", PL.lineno(node, key), "SPEC031",
+                          "one_liner.%s names the implementation (%s) — a one-liner leads with "
+                          "the business value (time, money, risk or capacity) for a named role "
+                          "and object of work, and any how is what changes in that person's "
+                          "work, in plain words; the platform, engine, model and data "
+                          "architecture belong in the architecture"
+                          % (key, ", ".join("`%s`" % w for w in words)))
+
     def check_name_variants(self):
         meta = self.spec.get("meta")
         if not isinstance(meta, dict):
@@ -939,6 +1004,7 @@ def main() -> int:
     lint.check_product_counts()
     lint.check_capability_size()
     lint.check_customer_names(deny)
+    lint.check_one_liner_implementation()
     lint.check_name_variants()
 
     table, done, total = lint.table()

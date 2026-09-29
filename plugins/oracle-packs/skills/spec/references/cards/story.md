@@ -1,6 +1,6 @@
 # The pack's story — one decision
 
-**What this is.** Name, one-liner, problem, solution and who buys it, settled **together** as 2–3 complete candidates: one table, one widget, one pick. The rules for the one-liner, the buyer and the name: card `story-parts`.
+**What this is.** Name, one-liner, problem, solution and who buys it, settled **together** as 2–3 complete candidates: one table, one widget, one pick. The rules for the one-liner: card `one-liner`; for the buyer and the name: card `story-parts`.
 
 **The table.** A column per candidate, headed `<letter> · <Name>`. Rows: **Name, One-liner, Problem, Solution, Who buys it, Sells best in, Bets on, Leaves out, Risk**. Rows, not paragraphs; every option the widget offers is a column, a blend included. Under it: the recommendation and its reason, and the likeliest alternative. The widget carries only the pick: the column labels, one line each, recommended first, plus free text and "research further".
 
