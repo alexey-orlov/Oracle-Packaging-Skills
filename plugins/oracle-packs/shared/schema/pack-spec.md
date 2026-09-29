@@ -243,7 +243,16 @@ roadmap_block: <roadmap block>
 - **Figure:** <the cleared figure, or ->
 - **Figure prefix:** <prefix>
 - **Figure suffix:** <suffix>
-- **Figure status:** pov_result | delivered_result | target | modeled
+- **Figure status:** pov_result | delivered_result | target | modeled | benchmark
+- **Evidence:** proven | forecast | estimated
+- **Chart:**
+  - **Form:** compression | dumbbell | range | baseline
+  - **Unit:** <what the scale counts>
+  - **Direction:** <up or down, only where the chart counts another quantity than the metric>
+  - **Scale:** <min>–<max>
+  - **Before:** <value> · <label>
+  - **After:** <value> · <label>
+  - **Range:** <lo>–<hi> · <label>
 - **Show baseline:** yes
 - **Unit cost:** <unit cost>
 - **Whose metric:** <whose>
@@ -607,7 +616,9 @@ Each key is written as the label in the second column. A key not listed is not p
 - **leading** — the proxy that moves first and predicts the business metric. May print as a second line under its business metric where the layout has one; never as a tile of its own.
 - **technical** — a proof-of-value acceptance criterion (precision, recall, reviewer agreement, coverage, latency). NEVER on a sales artifact. The builders route it to the PoV package's success line — "Proof accepted when: …" on the deck's packages slide, the one-pager's packages table and the executive summary's tier strip.
 
-A metric defined and measured per engagement but with no cleared headline number has the figure `-`; it then carries no `figure_status`, `caveat` or `attribution` — there is nothing to qualify — and artifacts print "results to follow" for it.
+A metric defined and measured per engagement but with no cleared headline number has the figure `-`; it then carries no `figure_status`, `evidence`, `caveat` or `attribution` — there is nothing to qualify. The site's KPI band leaves it off; the print artifacts print "results to follow" for it.
+
+**How a metric is shown** (the spec skill's `metrics-shown` card, 2026-09-29): as a visual, never explained. Its one-word kind (`evidence`) is the disclaimer; its figure is a measured before → after, a range or a *from X* baseline; its `chart` draws only the numbers its labels print; where the figure comes from stays in `source` and `note`. `shared/tools/kpichart.py` reads the frame for the linter and the listing, so both parse it one way.
 
 | Key | In the file | Contract |
 |---|---|---|
@@ -616,7 +627,9 @@ A metric defined and measured per engagement but with no cleared headline number
 | `kind` | `Kind` | `business` · `leading` · `technical` |
 | `owner_role` | `Signed off by` | the buyer-side role who signs the number off; required on a business metric — the test that the metric is the business's, not ours |
 | `formula`, `baseline`, `figure` | `Formula`, `Baseline`, `Figure` | |
-| `figure_status` | `Figure status` | `pov_result` · `delivered_result` · `target` · `modeled` |
+| `figure_status` | `Figure status` | `pov_result` · `delivered_result` · `target` · `modeled` · `benchmark` (today's value, from a published rate or the way the work is done today: the *from X* an estimate starts at) |
+| `evidence` | `Evidence` | the kind word a shown figure prints: `proven` (measured end to end on the customer's own data in a completed proof of value or delivery: `pov_result`, `delivered_result`) · `forecast` (modeled on the customer's own history: `modeled`) · `estimated` (a published rate or today's way of working, or industry assumptions: `benchmark`, `modeled`); never on a target |
+| `chart` — `form`, `unit`, `direction`, `scale`, `before`, `after`, `range` | `Chart`: `Form`, `Unit`, `Direction`, `Scale`, `Before`, `After`, `Range` | the visual: `form` `compression` (after a fraction of before) · `dumbbell` (a rate, before → after) · `range` (a band, a tick at today) · `baseline` (a *from X*); `scale` `<min>–<max>`; `before`, `after` (compression, dumbbell) and `range` (range) as `<value> · <label>` and `<lo>–<hi> · <label>`, plain magnitudes on the scale, the label carrying the sign and the words; `direction` only where the chart counts another quantity than the metric's name (a saving drawn as the cost it cuts) |
 | `attribution` — `named_when_allowed`, `otherwise` | `Attribution` | how the figure is attributed where the customer may be named, and elsewhere |
 | `caveat` | `Caveat` | |
 | `one_pager_label`, `chip`, `chip_label`, `label`, `direction`, `figure_prefix`, `figure_suffix`, `show_baseline`, `unit_cost`, `whose_metric`, `channels` | `One-pager label`, `Chip`, `Chip label`, `Label`, `Direction`, `Figure prefix`, `Figure suffix`, `Show baseline` (yes / no), `Unit cost`, `Whose metric`, `Channels` | how each artifact prints it |
@@ -694,6 +707,7 @@ A metric defined and measured per engagement but with no cleared headline number
 - `oracle_products[]` is Oracle-vendor only. A catalog entry whose `vendor` is NVIDIA belongs in `architecture.stack[].catalog_id`.
 - `packages.tiers[pov].duration_weeks.max` ≤ 8 by default; anything above 8 needs a `justification`; above 10 is rejected.
 - `kpis` is one set; the same metric may not appear twice with different figures. A figure of `-` means "measured per engagement, no cleared number" and is read as absent.
+- A business metric with a figure carries a frame, `evidence` and `chart`, or no artifact can show it as a visual, and at least two metrics carry one: warnings (SPEC032). `evidence` agrees with `figure_status` (SPEC033); the chart reads and draws its own numbers (SPEC034); a shown metric keeps the tile's shape — a figure that is not a bare word, a title and an owner within 40 characters, a line within 14 words, a figure within 20 (SPEC035, a warning).
 - `kpis[].kind` is `business`, `leading` or `technical` (`business` when absent). A set with no business metric, and a metric whose name reads as a proof criterion or a vanity count without `kind: technical`, are warnings (SPEC025, SPEC026); a business metric with no `owner_role` is a warning too (SPEC027). Sales artifacts print `kind != technical`; technical criteria are routed to the PoV package's success line.
 - No retired family name — "OCI AI Accelerator(s)", "OCI accelerator(s)" — in `meta.eyebrow`, `deck.running_header`, `exec_summary.running_header` or `one_pager.eyebrow`. The family name on every print artifact is **Oracle AI & Data Solutions** (SPEC028).
 - `clearance.customer_name_allowed` decides attribution per channel; the builders never read the customer name unless the channel allows it.

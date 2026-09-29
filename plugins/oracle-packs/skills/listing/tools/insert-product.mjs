@@ -4,6 +4,7 @@
  *
  *   node insert-product.mjs --entry entry.js --content <site>/site/data/content.js \
  *        --figure-alt "<one sentence describing the architecture figure>" \
+ *        [--case-card card.js] \
  *        [--config <site>/site/data/config.js --config-entry entry.js] \
  *        [--links <site>/links.json [--demo-path demo/<slug>/index.html]] \
  *        [--before <slug>] [--dry-run]
@@ -29,6 +30,10 @@
  *   - insert a product with no `--figure-alt` where content.js has a `media` map: the
  *     product page draws its architecture figure only through `media["<slug>"]`, so a
  *     product without that entry renders with no figure and nothing reports it;
+ *   - insert a product whose `overview.caseStudy` is not null, where content.js shows
+ *     home case cards (`overview.caseStudies`), without `--case-card`: the site shows
+ *     one home card per case study and its checker fails a missing one; and take a
+ *     `--case-card` for a product with no case study, which would link to nothing;
  *   - add a kit-links entry that links.json already carries, or write to a
  *     links.json that is not valid JSON or has no `products` object. Every
  *     refusal comes before the first write: a refused run writes nothing anywhere.
@@ -44,6 +49,13 @@
  *   --figure-alt <text>    the architecture figure's one-sentence description. Adds
  *                          `media["<slug>"] = { diagram: "<slug>", alt: <text> }`, which
  *                          is how the product page finds the figure in diagrams.js.
+ *   --case-card <file>     the home case card's copy, for a product with a case study:
+ *                          one object literal `{ line, metric: { label }, id? }`. The
+ *                          card is appended to content.js `overview.caseStudies` with
+ *                          everything else taken from the entry itself — descriptor,
+ *                          area, industry, status, `metric.value` (its case study's
+ *                          first figure) and `product { slug, name }` — so the two
+ *                          surfaces cannot disagree. `id` defaults to "<slug>-case".
  *   --config <file>        the target site/data/config.js (optional).
  *   --config-entry <file>  a file holding ONE `"<slug>": { … }` switch block, or
  *                          the exemplar file, from which the block whose key is
@@ -102,7 +114,9 @@ const DEMO_PATH = opt("demo-path");
 const BEFORE = opt("before");
 const DRY = has("dry-run");
 const FIGURE_ALT = opt("figure-alt");
+const CASE_CARD = opt("case-card") ? need(opt("case-card"), "case-card") : "";
 if (has("figure-alt") && !FIGURE_ALT) die(2, "--figure-alt needs the figure's one-sentence description");
+if (has("case-card") && !CASE_CARD) die(2, "--case-card needs a file: the home card's { line, metric: { label } }");
 if (CONFIG && !CONFIG_ENTRY) die(2, "--config needs --config-entry");
 if (CONFIG_ENTRY && !CONFIG) die(2, "--config-entry needs --config");
 if (has("links") && !LINKS) die(2, "--links needs a file: the site's links.json");
@@ -214,13 +228,26 @@ const normalized = found.text.replace(/^\s+/, "");
 let out;
 let where;
 if (BEFORE) {
-  const target = new RegExp("\\n(\\s*)\\{[^]*?" + SLUG_KEY + "[\"']" + BEFORE.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "[\"']");
-  const m = contentSrc.match(target);
-  if (!m || m.index === undefined || m.index > closeIdx || m.index < openIdx) {
-    die(1, '--before "' + BEFORE + '" names no entry inside the products array');
+  /* Walk the array's own items: a pattern over the whole file met the first `{` line of
+     content.js, long before `products: [`, and refused every real --before (2026-09-29). */
+  const keyRe = new RegExp(SLUG_KEY + "[\"']" + BEFORE.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "[\"']");
+  let itemAt = -1;
+  for (let i = openIdx + 1; i < closeIdx;) {
+    const c = contentSrc[i];
+    if (c === "/" && contentSrc[i + 1] === "/") { const nl = contentSrc.indexOf("\n", i); i = nl === -1 ? closeIdx : nl; continue; }
+    if (c === "/" && contentSrc[i + 1] === "*") { const e = contentSrc.indexOf("*/", i + 2); i = e === -1 ? closeIdx : e + 2; continue; }
+    if (c !== "{") { i++; continue; }
+    const end = matchBracket(contentSrc, i);
+    if (end === -1 || end > closeIdx) break;
+    if (keyRe.test(contentSrc.slice(i, end + 1))) { itemAt = i; break; }
+    i = end + 1;
   }
-  const at = m.index + 1;
-  out = contentSrc.slice(0, at) + m[1] + normalized + ",\n" + contentSrc.slice(at);
+  if (itemAt === -1) die(1, '--before "' + BEFORE + '" names no entry inside the products array');
+  const at = contentSrc.lastIndexOf("\n", itemAt) + 1;
+  const lead = contentSrc.slice(at, itemAt);
+  out = /^\s*$/.test(lead)
+    ? contentSrc.slice(0, at) + lead + normalized + ",\n" + contentSrc.slice(at)   // its own line, its indentation
+    : contentSrc.slice(0, itemAt) + normalized + ", " + contentSrc.slice(itemAt); // mid-line: just before it
   where = "before " + BEFORE;
 } else {
   /* Append: the previous last entry needs the comma it does not have. */
@@ -295,6 +322,79 @@ if (after.media && typeof after.media === "object" && !Array.isArray(after.media
     die(1, 'the media entry for "' + slug + '" did not land as expected — nothing written');
   }
   mediaNote = " · media entry added (the product page's figure)";
+}
+
+/* ------------------------------------------------------------ case card */
+/* The home page shows one card per product that carries a case study, and the site's
+   checker fails a product whose case study has no card, and a card whose descriptor,
+   area, industry, status or figure disagrees with its product (site round 11). Only the
+   card's two lines are copy; everything else is read from the entry, so the two surfaces
+   cannot drift. A content.js (or a fixture) with no overview.caseStudies is left alone. */
+let cardNote = "";
+{
+  const site = evalSite(out, "content.js (before the case card)").SITE_CONTENT;
+  const product = site.products.find((p) => p && p.slug === slug) || {};
+  const cs = product.overview && product.overview.caseStudy;
+  const cards = site.overview && site.overview.caseStudies;
+  if (!Array.isArray(cards)) {
+    if (CASE_CARD) die(1, "content.js has no overview.caseStudies — there is no home card grid for --case-card — nothing written");
+  } else if (!cs) {
+    if (CASE_CARD) {
+      die(1, 'the entry\'s overview.caseStudy is null — a home card would link to a page with no case study; drop --case-card — nothing written');
+    }
+  } else {
+    if (!CASE_CARD) {
+      die(1, 'the entry carries overview.caseStudy, and the home page shows one card per case study (overview.caseStudies) — pass --case-card <file> with its { line, metric: { label } } — nothing written');
+    }
+    const cardSrc = readFileSync(CASE_CARD, "utf8");
+    const open = cardSrc.indexOf("{");
+    const close = open === -1 ? -1 : matchBracket(cardSrc, open);
+    if (close === -1) die(1, "no object literal found in " + basename(CASE_CARD));
+    let given;
+    try {
+      given = vm.runInNewContext("(" + cardSrc.slice(open, close + 1) + ")", {});
+    } catch (e) {
+      die(1, basename(CASE_CARD) + " does not evaluate — nothing written: " + e.message);
+    }
+    const text = (v) => typeof v === "string" && v.trim() !== "";
+    if (!text(given.line)) die(1, basename(CASE_CARD) + " has no line — the card's one sentence: the customer's old way and what changes — nothing written");
+    if (!given.metric || !text(given.metric.label)) {
+      die(1, basename(CASE_CARD) + " has no metric.label — the small line under the figure: what it measures, against what — nothing written");
+    }
+    const lead = (Array.isArray(cs.metrics) && cs.metrics[0]) || {};
+    if (!text(lead.value)) die(1, "the entry's overview.caseStudy.metrics[0].value is empty — the card states that figure — nothing written");
+    const id = text(given.id) ? given.id : slug + "-case";
+    if (cards.some((c) => c && (c.id === id || (c.product && c.product.slug === slug)))) {
+      die(1, 'overview.caseStudies already carries "' + id + '" or a card for "' + slug + '" — nothing written');
+    }
+    const card = {
+      id, descriptor: cs.descriptor, area: cs.area, industry: cs.industry, status: cs.status,
+      metric: { value: lead.value, label: given.metric.label }, line: given.line,
+      product: { slug, name: product.name }
+    };
+    const cIdx = out.search(/\n\s*caseStudies\s*:\s*\[/);
+    if (cIdx === -1) die(1, "no `caseStudies: [` array found in content.js");
+    const cOpen = out.indexOf("[", cIdx);
+    const cClose = matchBracket(out, cOpen);
+    if (cClose === -1) die(1, "the `caseStudies: [` array is not balanced");
+    const cIndent = (out.slice(0, cOpen).match(/\n(\s*)caseStudies\s*:\s*\[?\s*$/) || ["", "    "])[1] + "  ";
+    const cHead = out.slice(0, cClose).replace(/\s*$/, "");
+    const cSep = cHead.endsWith(",") || cHead.endsWith("[") ? "" : ",";
+    const body = JSON.stringify(card, null, 2).split("\n").join("\n" + cIndent);
+    out = cHead + cSep + "\n" + cIndent + body + "\n" + cIndent.slice(0, -2) + out.slice(cClose);
+    let withCard;
+    try {
+      withCard = evalSite(out, "content.js (case card spliced)").SITE_CONTENT;
+    } catch (e) {
+      die(1, "content.js does not evaluate after the case card — nothing written: " + e.message);
+    }
+    const now = withCard.overview && withCard.overview.caseStudies;
+    if (!Array.isArray(now) || now.length !== cards.length + 1 || !now.some((c) => c && c.id === id) ||
+        withCard.products.length !== after.products.length) {
+      die(1, 'the home case card for "' + slug + '" did not land as expected — nothing written');
+    }
+    cardNote = ' · home case card "' + id + '" added (overview.caseStudies)';
+  }
 }
 
 /* --------------------------------------------------------------- config */
@@ -373,7 +473,7 @@ if (LINKS) {
 /* ---------------------------------------------------------------- write */
 const summary =
   'insert-product: "' + slug + '" ' + where + " — content.js " +
-  before.products.length + " → " + after.products.length + " products" + mediaNote +
+  before.products.length + " → " + after.products.length + " products" + mediaNote + cardNote +
   (CONFIG ? " · config.js switch block added" + cfgNote : "") + linksNote;
 
 if (DRY) { console.log("[dry-run] " + summary); console.log("[dry-run] nothing written"); process.exit(0); }

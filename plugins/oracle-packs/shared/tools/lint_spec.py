@@ -96,6 +96,25 @@ Rule codes
              mini-site checker's own list). A one-liner leads with the business
              value for a named role and object of work; the stack is the
              architecture's
+    SPEC032  a business metric with a figure has no frame (warning): no
+             `evidence` kind word or no `chart`, so no artifact can show it as a
+             visual; or fewer than two metrics in the set carry one, and the
+             mini-site's KPI band takes two or three (the spec skill's
+             `metrics-shown` card)
+    SPEC033  `evidence` is not proven | forecast | estimated, sits on a metric
+             with no figure, or claims more than figure_status carries: proven
+             needs pov_result or delivered_result, forecast needs modeled,
+             estimated needs modeled or benchmark (kpichart.EVIDENCE_STATUS)
+    SPEC034  the chart does not read or does not draw its own numbers: an
+             unknown form, no unit or direction, a scale that is not
+             <min>–<max>, a mark that is not <value> · <label> or sits off the
+             scale, an after or a band on a form that draws none, a compression
+             whose after is not below its before, a baseline with no room past
+             it (shared/tools/kpichart.py)
+    SPEC035  a shown metric breaks the tile's shape (warning): a figure that is
+             a bare word rather than a before → after, a range or a from-X
+             baseline; a title over 40 characters, an owner over 40, a line over
+             14 words, a prefix over 6 characters or a figure over 20
 
 --strict    promotes SPEC900/901/902 and SPEC017 to findings: the completeness
             check, usable on a spec at any status. A `draft` stays clean under
@@ -120,12 +139,15 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import packlint as PL  # noqa: E402
+import kpichart  # noqa: E402
 
 PROG = "lint_spec"
 
 STATUS_VALUES = ("draft", "research", "options", "signing-off", "confirmed", "built")
 CONFIRMED_STATUSES = ("confirmed", "built")
-FIGURE_STATUSES = ("pov_result", "delivered_result", "target", "modeled")
+# `benchmark`: today's value from a published rate or the way the work is done today, the
+# from-X an estimate starts at (2026-09-29).
+FIGURE_STATUSES = ("pov_result", "delivered_result", "target", "modeled", "benchmark")
 
 # `kind` decides where a metric may be printed (shared/schema/pack-spec.md).
 # Absent means `business`: the default has to be the one sales artifacts print,
@@ -684,8 +706,9 @@ class SpecLint:
                               % (i, status, " | ".join(FIGURE_STATUSES)))
                 if not has_value(kpi.get("caveat")):
                     self.fail("kpis", PL.lineno(kpi, "figure", line), "SPEC012",
-                              "kpis[%d].figure `%s` carries no caveat — a figure never travels "
-                              "without one (illustrative, not contractual)" % (i, figure))
+                              "kpis[%d].figure `%s` carries no caveat — the one fact the print "
+                              "artifacts set under the figure, said as a fact (\"simulated on the "
+                              "customer's own history\"), never a hedge" % (i, figure))
                 if not PL.is_filled(kpi.get("attribution")):
                     self.fail("kpis", PL.lineno(kpi, "figure", line), "SPEC002",
                               "kpis[%d].attribution is missing — a figure states who it belongs "
@@ -770,6 +793,63 @@ class SpecLint:
                           "Derive the business outcomes these criteria serve — money, time, "
                           "volume, risk or quality in the buyer's words — and put that set to "
                           "the owner" % (len(kinds), ", ".join(sorted(set(kinds)))))
+
+    def check_kpi_frames(self):
+        """SPEC032-SPEC035 — how a metric is shown (the spec skill's `metrics-shown` card).
+
+        A metric is a visual with its one-word kind and a figure framed honestly in itself —
+        a measured before → after, a sourced range or a from-X baseline — never a footnote or
+        a method note. The frame is parsed by kpichart.py, which the listing's
+        tools/overview-data.py also reads, so the chart the linter passes is the one the
+        site's KPI band draws. A missing frame is a warning: the print artifacts still
+        build without one; the site's band cannot show the metric.
+        """
+        kpis = self.spec.get("kpis")
+        if not isinstance(kpis, list) or not kpis:
+            return
+        framed = 0
+        for i, kpi in enumerate(kpis):
+            if not isinstance(kpi, dict):
+                continue
+            line = PL.lineno(kpis, i)
+            name = str(kpi.get("name") or "").strip() or "(unnamed)"
+            chart = kpi.get("chart")
+            chart_line = PL.lineno(kpi, "chart", line)
+            for key, msg in kpichart.evidence_problems(kpi):
+                self.fail("kpis", PL.lineno(kpi, key, line), "SPEC033",
+                          "kpis[%d] `%s` — evidence %s" % (i, name, msg))
+            if chart is not None and not isinstance(chart, dict):
+                self.fail("kpis", chart_line, "SPEC034",
+                          "kpis[%d] `%s` — chart is not a record of form, unit, scale, before, "
+                          "after, range" % (i, name))
+            elif isinstance(chart, dict):
+                for key, msg in kpichart.read(kpi)[1]:
+                    sub = key.split(".", 1)
+                    at = PL.lineno(chart, sub[1], chart_line) if len(sub) == 2 else \
+                        PL.lineno(kpi, key, line)
+                    self.fail("kpis", at, "SPEC034", "kpis[%d] `%s` — %s %s" % (i, name, key, msg))
+            if kpichart.kind(kpi) != "business" or not kpichart.has_figure(kpi):
+                continue
+            if not kpichart.is_framed(kpi):
+                missing = ([] if kpichart.evidence(kpi) else ["evidence"]) + \
+                    ([] if isinstance(chart, dict) else ["chart"])
+                self.rep.warn(self.path, line, "SPEC032",
+                              "kpis[%d] `%s` has a figure and no %s — no artifact can show it as "
+                              "a visual: the kind word (proven, forecast or estimated) and a chart "
+                              "whose marks print their own numbers (`metrics-shown` card)"
+                              % (i, name, " or ".join(missing)))
+                continue
+            framed += 1
+            for key, msg in kpichart.shape_problems(kpi):
+                self.rep.warn(self.path, PL.lineno(kpi, key, line), "SPEC035",
+                              "kpis[%d] `%s` — %s %s" % (i, name, key, msg))
+        if framed < kpichart.BAND_MIN:
+            self.rep.warn(self.path, PL.lineno(self.spec, "kpis"), "SPEC032",
+                          "%d metric(s) in the set carry a frame — the mini-site's KPI band shows "
+                          "two or three. Frame the business metrics a buyer-side owner tracks: a "
+                          "measured before → after, a range or a from-X baseline set against a "
+                          "published rate or today's way of working; a metric with no defensible "
+                          "number stays off the tiles" % framed)
 
     def check_retired_header(self):
         """SPEC028 — the retired family name in a header the artifacts print."""
@@ -998,6 +1078,7 @@ def main() -> int:
     lint.check_packages()
     lint.check_kpis()
     lint.check_kpi_kinds()
+    lint.check_kpi_frames()
     lint.check_retired_header()
     lint.check_workflow_steps()
     lint.check_record_keys()

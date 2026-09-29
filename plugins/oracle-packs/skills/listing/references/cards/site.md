@@ -8,7 +8,7 @@
 
 1. `git -C <site> status --short`, then `git -C <site> pull --ff-only`. A dirty tree means another session is mid-round: say so and ask before writing. A pull the environment cannot make is deferred and retried, never skipped silently.
 2. Read `site.manifest.json` whole. `paths` says where the entry, the switch block, the figure, the kit links and a walkthrough go; `checker` is the gate; `preview` and `publish` hold every value those steps use.
-3. These cards were written against **site round 18**. When `contract.round` is newer, say so in one line, then have a fresh-context agent read the site's `startHere` against these cards and return only the differences; follow the site on each.
+3. These cards were written against **site round 20**. When `contract.round` is newer, say so in one line, then have a fresh-context agent read the site's `startHere` against these cards and return only the differences; follow the site on each.
 4. The keys of the switch block and of the kit links are the site's `docs.config` and `docs.schema`: read the part you are filling.
 5. Extract the exemplar from the live site: `node tools/exemplar.mjs --site <site> --out <work>/.scratch/exemplar.js`.
 

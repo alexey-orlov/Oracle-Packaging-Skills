@@ -6,8 +6,8 @@
 
 1. **The screenshots** of the changed screens, and **the entry as text** in the conversation.
 2. **What was derived and what was written fresh**: which parts came out of the capability table.
-3. **Anything the pack brief left open.** A missing figure makes the tile **qualitative, not faked**: a pack with no cleared outcome figure takes the no-figure path, qualitative tiles plus a metrics note leading with the measure.
-4. **The decisions only they can settle**: where the product sits in the site's filters, the availability badge, the category chip, and that who-buys-it has no home on the page today.
+3. **Anything the pack brief left open.** A metric with no frame stays off the KPI band, and the tool says why; with fewer than two framed, the spec frames more (its `metrics-shown` card). Never a qualitative tile, a placeholder or a note.
+4. **The decisions only they can settle**: where the product sits in the site's filters, the availability badge, the category chip, who buys it (it rides in `industriesNote`), and a home case card that makes the grid five.
 5. **The open items, named and not resolved**: a trademark question on a name built on a vendor mark, image rights on corpus-sourced art, a figure with no clearance.
 
 **Two standing rules**

@@ -23,6 +23,7 @@ packspec.py           the spec: the one loader and writer of pack-spec.md; get /
 pack_paths.py         where a pack's files go: the spec in the repo, the work on this machine
 spec_stamp.py         the spec stamp every builder writes into its file, and reads back
 lint_spec.py          validates a pack spec against the schema
+kpichart.py           shared library — how a shown metric is drawn: its kind word and chart, read once for lint_spec and the listing
 lint_artifact.py      clearance, naming, vocabulary, prices and figures per channel
 check_consistency.py  every artifact of a pack against its spec, and the spec it was built from
 build_diagram.py      the pack's ONE architecture model, for all three pictures

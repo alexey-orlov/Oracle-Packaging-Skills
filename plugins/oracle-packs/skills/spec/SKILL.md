@@ -44,11 +44,11 @@ Cards: `story`, `one-liner`, `story-parts`. Two or three complete candidates —
 
 ## 5. Everything else, drafted in one pass
 
-Cards, one per part as you write that part: `industries`, `workflow`, `architecture`, `oracle-products`, `metrics`, and `proof`, the delivered case behind the deck's proof slide. Cards for the capabilities: `capabilities`, `capabilities-rows`. Cards for the packages: `packages`, `packages-pov`. Draft all eight parts from the story, the research summary and each part's cards, **asking nothing**.
+Cards, one per part as you write it: `industries`, `workflow`, `architecture`, `oracle-products`, and `proof`, the delivered case behind the proof slide. Cards for the metrics: `metrics`, `metrics-shown`. Cards for the capabilities: `capabilities`, `capabilities-rows`. Cards for the packages: `packages`, `packages-pov`. Draft all eight parts from the story, the research summary and each part's cards, **asking nothing**.
 
 Then the **reviewer pass**. For each part, one fresh-context subagent that receives only the drafted part, the inputs it was drawn from and that part's card, and returns pass or fail per check with a one-line reason. Agents read: `shared/references/architecture-diagram.md` (the architecture's reviewer, beside its card). Fix every fail; at most two rounds. What still fails goes to the owner as an open item in plain words, and into `open_questions`.
 
-While drafting: when something essential is missing, ask rather than invent — a package without a price is marked to be confirmed with a footnote, a metric without a cleared figure prints "results to follow". Oracle and NVIDIA products by catalog id only. No customer name in any component text. Every integration claim states its tier. Each settled value is written immediately, with its source.
+While drafting: when something essential is missing, ask rather than invent — a package without a price is marked to be confirmed with a footnote, a metric with no defensible figure keeps `-`. Oracle and NVIDIA products by catalog id only. No customer name in any component text. Every integration claim states its tier. Each settled value is written immediately, with its source.
 
 ## 6. The whole brief
 
@@ -65,7 +65,7 @@ Done = `pack-spec.md` settled, lint-clean and pushed from the repo's `packs/<slu
 - [ ] Every part has a source; the story's parts carry `user:` sources.
 - [ ] No customer name in any component text; clearance set per audience.
 - [ ] Products are catalog ids; the roadmap id exists; the extract version is recorded.
-- [ ] One metric set; every figure has its kind and caveat; the proof is within its cap or justified.
+- [ ] One metric set; each shown figure has its kind word and chart, no note; the proof is within its cap or justified.
 - [ ] Every part passed its card's checks, through the reviewer, and every remaining fail reached the owner.
 - [ ] Twelve questions or fewer, each in its stage, each standing alone.
 - [ ] Every message, question, option and table passed the reader's test.

@@ -460,6 +460,195 @@ done
 run_case "a missing spec is a usage error" 2 \
   "$PY" "$TOOLS/lint_spec.py" "$WORK/not-here.md"
 
+# ------------------------------------- how a metric is shown: the frame (2026-09-29)
+# A metric is shown, not explained: its one-word kind (`evidence`) and a figure framed in
+# itself — a measured before → after, a range or a from-X baseline — drawn by a chart whose
+# marks print their own numbers, never a footnote or a method note (the owner, on the
+# mini-site's ROI rail; the spec skill's `metrics-shown` card). The spec carries the frame;
+# kpichart.py reads it for the linter (SPEC032-SPEC035) and for the listing's
+# overview-data.py, which prints the site's KPI band from it, so the two cannot parse it
+# apart. ART401 follows the site's Proven: measured end to end, in a completed proof of value
+# or in delivery.
+say ""
+say "the metric frame — SPEC032-SPEC035, kpichart.py, overview-data.py, ART401"
+"$PY" - "$FIX/pack-spec.valid.md" "$WORK" "$TOOLS" <<'PYFRAME'
+import copy, sys
+src, work = sys.argv[1], sys.argv[2]
+sys.path.insert(0, sys.argv[3])
+import packspec
+spec = packspec.load(src)[0]
+
+def write(data, name):
+    problems = packspec.roundtrip_problems(data, name)
+    if problems:
+        sys.exit("%s: %s" % (name, problems[0]))
+    open("%s/%s" % (work, name), "w", encoding="utf-8").write(packspec.dump(data))
+
+def metric(name, **kw):
+    out = {"name": name, "kind": "business", "owner_role": "VP Field Service", "formula": "test",
+           "attribution": {"otherwise": "published industry rates"},
+           "caveat": "Set against published industry rates", "source": "test"}
+    out.update(kw)
+    return out
+
+framed = copy.deepcopy(spec)
+k0 = framed["kpis"][0]                       # Planning cycle time · ~30 min · pov_result
+k0.update({"direction": "down", "label": "Optimized and approved by the dispatcher, end to end.",
+           "evidence": "proven",
+           "chart": {"form": "compression", "unit": "minutes to an approved plan",
+                     "scale": "0–2880", "before": "2880 · ~2 days before",
+                     "after": "30 · ~30 min after"}})
+framed["kpis"] += [
+    metric("Unplanned travel", figure="22%", figure_prefix="from", figure_status="benchmark",
+           evidence="estimated", direction="down",
+           label="A technician's day spent driving between jobs.",
+           chart={"form": "baseline", "unit": "percent of the working day", "scale": "0–35",
+                  "before": "22 · 22% of the day today"}),
+    metric("Jobs per technician per day", figure="+4 to +10%", figure_status="modeled",
+           evidence="estimated", direction="up",
+           label="Visits completed per working day, on today's headcount.",
+           chart={"form": "range", "unit": "percent", "scale": "0–15", "before": "0 · today",
+                  "range": "4–10 · +4% to +10%"}),
+    metric("Customer wait time", figure="from 9 days", figure_status="benchmark",
+           evidence="estimated", direction="down", label="Booking to appointment, in days.",
+           channels=["internal"],
+           chart={"form": "baseline", "unit": "days", "scale": "0–14", "before": "9 · 9 days today"}),
+    {"name": "Reviewer override rate", "kind": "technical", "formula": "test", "figure": "-",
+     "source": "test"},
+    {"name": "Missed appointments", "kind": "business", "owner_role": "VP Field Service",
+     "formula": "test", "figure": "-", "source": "test"},
+]
+write(framed, "pack-spec.framed.md")
+
+four = copy.deepcopy(framed)
+next(k for k in four["kpis"] if k["name"] == "Customer wait time")["channels"] = ["internal", "customer_site"]
+write(four, "pack-spec.framed-four.md")
+
+one = copy.deepcopy(framed)
+for k in one["kpis"][1:]:
+    k.pop("evidence", None); k.pop("chart", None)
+write(one, "pack-spec.framed-one.md")
+
+broken = copy.deepcopy(framed)
+by = {k["name"]: k for k in broken["kpis"]}
+by["Planning cycle time"]["figure_status"] = "modeled"          # proven on a model: SPEC033
+by["Unplanned travel"]["chart"]["scale"] = "35–0"                # a scale that runs backwards: SPEC034
+by["Jobs per technician per day"].update({                        # a bare word, no from: SPEC035
+    "figure": "Hours", "chart": {"form": "compression", "unit": "hours", "scale": "0–48",
+                                 "before": "48 · two days before"}})   # and no after: SPEC034
+by["Missed appointments"]["evidence"] = "estimated"               # a kind word on no figure: SPEC033
+write(broken, "pack-spec.frame-broken.md")
+print("generated the metric-frame variants")
+PYFRAME
+[ $? -eq 0 ] || { say "run_tests: could not generate the metric-frame variants"; exit 2; }
+
+FRAMED="$WORK/pack-spec.framed.md"
+run_case "a framed metric set lints clean" 0 "$PY" "$TOOLS/lint_spec.py" "$FRAMED" --catalog "$CAT" --roadmap "$ROAD"
+expect_absent "the framed set" SPEC032 SPEC033 SPEC034 SPEC035
+run_case "an unframed set lints clean, with its warning" 0 "$PY" "$TOOLS/lint_spec.py" "$VALID" --catalog "$CAT" --roadmap "$ROAD"
+expect "the unframed set" SPEC032 "has a figure and no evidence or chart" "the mini-site's KPI band shows two or three"
+run_case "a broken frame is a finding" 1 "$PY" "$TOOLS/lint_spec.py" "$WORK/pack-spec.frame-broken.md"
+expect "the broken frame" SPEC033 SPEC034 SPEC035 "needs figure_status pov_result or delivered_result" \
+  "its max must be above its min" "a compression chart draws its after mark" "is a bare word" "on a metric with no figure"
+
+run_case "the frame round-trips through the writer" 0 \
+  "$PY" "$TOOLS/packspec.py" get "$FRAMED" 'kpis[0].chart.form'
+expect "the chart's form" '"compression"'
+run_case "the Markdown carries the chart as a nested record" 0 grep -q '^  - \*\*Form:\*\* compression$' "$FRAMED"
+run_case "a benchmark figure status is one the schema knows" 0 grep -q '^- \*\*Figure status:\*\* benchmark$' "$FRAMED"
+# --source beside a key inside a list: the sibling of kpis[0].evidence is kpis[0].source. The
+# writer read the list position as a map key and refused every such call (2026-09-29).
+cp "$FRAMED" "$WORK/pack-spec.source.md"
+run_case "set --source works on a key inside a list" 0 \
+  "$PY" "$TOOLS/packspec.py" set "$WORK/pack-spec.source.md" 'kpis["Unplanned travel"].evidence' estimated --source "user:2026-09-29"
+run_case "the sibling source landed beside it" 0 "$PY" "$TOOLS/packspec.py" get "$WORK/pack-spec.source.md" 'kpis[1].source'
+expect "the sibling source" '"user:2026-09-29"'
+
+OVD="$PLUGIN/skills/listing/tools/overview-data.py"
+run_case "overview-data prints the band from the framed metrics" 0 "$PY" "$OVD" "$FRAMED"
+expect "the tiles left off" "Customer wait time — its channels do not include customer_site" \
+  "Reviewer override rate — a technical metric" "Missed appointments — no figure"
+printf '%s\n' "$LAST" | sed -n '/^{/,$p' > "$WORK/band.json"
+run_case "the band is three tiles in the site's round-20 shape" 0 "$PY" -c '
+import json, sys
+t = json.load(open(sys.argv[1], encoding="utf-8"))["metrics"]
+ok = [x["key"] for x in t] == ["planning-cycle-time", "unplanned-travel", "jobs-per-technician-per-day"]
+ok &= all(list(x) == ["key", "title", "kind", "owner", "figure", "visual", "line"] for x in t)
+ok &= t[0]["kind"] == "proven" and t[0]["visual"]["scale"] == {"min": 0, "max": 2880}
+ok &= t[0]["visual"]["after"] == {"value": 30, "label": "~30 min after"}
+ok &= t[1]["figure"] == {"prefix": "from", "text": "22%"} and "after" not in t[1]["visual"]
+ok &= t[2]["visual"]["range"] == {"lo": 4, "hi": 10, "label": "+4% to +10%"}
+ok &= not any("sources" in x or "qualifier" in x or "value" in x for x in t)
+sys.exit(0 if ok else 1)' "$WORK/band.json"
+run_case "--only picks the tiles, in its order" 0 "$PY" "$OVD" "$FRAMED" --only jobs-per-technician-per-day,planning-cycle-time
+expect "the pick" '"key": "jobs-per-technician-per-day"'
+run_case "four framed metrics and no --only are refused" 1 "$PY" "$OVD" "$WORK/pack-spec.framed-four.md"
+expect "the refusal" "pass --only" "nothing printed"
+expect_absent "the refusal" '"metrics"'
+run_case "one framed metric is refused, never padded" 1 "$PY" "$OVD" "$WORK/pack-spec.framed-one.md"
+expect "the refusal" "1 framed metric(s) on offer" "never fill the band with a figure-less tile"
+run_case "a broken frame is refused, naming the spec key" 1 "$PY" "$OVD" "$WORK/pack-spec.frame-broken.md"
+expect "the refusal" 'kpis["Planning cycle time"].evidence' 'kpis["Unplanned travel"].chart.scale'
+
+cat > "$WORK/shots.json" <<'EOF'
+[
+  { "n": 1, "region": [52.3, 18.4, 30.5, 32.4], "anchor": "bl", "alt": "The planning file chosen, Optimize ready." },
+  { "n": 2, "region": [10, 20, 30, 25], "anchor": "br", "alt": "The solver, three stages done." },
+  { "n": 3, "region": [5, 50, 32, 19.3], "anchor": "tr", "alt": "What the solver changed." },
+  { "n": 4, "region": [60, 10, 33, 29], "anchor": "br", "alt": "The band's first two tiles." }
+]
+EOF
+run_case "--shots turns the capture into each step's shot" 0 "$PY" "$OVD" "$FRAMED" --shots "$WORK/shots.json"
+expect "the shots" '"full": "assets/img/steps/workforce-optimization-4.jpg"' \
+  '"zoom": "assets/img/steps/workforce-optimization-1-zoom.jpg"' '"anchor": "tr"'
+printf '[{"n": 1, "region": [1, 2, 3], "anchor": "xx", "alt": ""}, {"n": 3, "region": [80, 2, 30, 4], "anchor": "br", "alt": "b"}]\n' \
+  > "$WORK/shots-broken.json"
+run_case "a shots file that does not read is refused" 1 "$PY" "$OVD" "$FRAMED" --shots "$WORK/shots-broken.json"
+expect "the refusal" "region is not four numbers" "is not inside the frame" "is not tl / tr / bl / br" "no alt" \
+  "none skipped" "How it works shows 3 to 5"
+
+# A compression draws its after as a share of its before, and a title-case owner is set in
+# sentence case on the tile while a sentence-case one keeps its proper nouns.
+"$PY" - "$FRAMED" "$WORK" "$TOOLS" <<'PYCOMP'
+import sys
+src, work = sys.argv[1], sys.argv[2]
+sys.path.insert(0, sys.argv[3])
+import packspec, kpichart
+spec = packspec.load(src)[0]
+spec["kpis"][0]["chart"]["after"] = "2880 · as long after"
+problems = packspec.roundtrip_problems(spec)
+if problems:
+    sys.exit(problems[0])
+open(work + "/pack-spec.compression-up.md", "w", encoding="utf-8").write(packspec.dump(spec))
+# an estimate that prints its modeled after alone: the proven ~30 min, re-marked as a model
+spec = packspec.load(src)[0]
+spec["kpis"][0].update({"figure_status": "modeled", "evidence": "estimated"})
+open(work + "/pack-spec.modeled-after.md", "w", encoding="utf-8").write(packspec.dump(spec))
+cases = {"Head of Claims": "Head of claims", "VP Field Service": "VP field service",
+         "Head of Oracle operations": "Head of Oracle operations", "Head of FP&A": "Head of FP&A",
+         "Cost per 1,000 Claims": "Cost per 1,000 claims"}
+bad = [k for k, v in cases.items() if kpichart.sentence_case(k) != v]
+sys.exit("sentence_case: %s" % bad if bad else 0)
+PYCOMP
+run_case "sentence case keeps acronyms and a sentence-case owner's proper nouns" 0 test $? -eq 0
+run_case "a compression whose after is not below its before is a finding" 1 \
+  "$PY" "$TOOLS/lint_spec.py" "$WORK/pack-spec.compression-up.md"
+expect "the finding" SPEC034 "is not below the before"
+run_case "an estimate printing its modeled after alone lints with a warning" 0 \
+  "$PY" "$TOOLS/lint_spec.py" "$WORK/pack-spec.modeled-after.md"
+expect "the warning" SPEC035 "prints the modeled after alone"
+run_case "and the band refuses it" 1 "$PY" "$OVD" "$WORK/pack-spec.modeled-after.md"
+expect "the refusal" 'kpis["Planning cycle time"].figure' "prints the modeled after alone"
+
+# ART401 reads "proven" as the site's chip means it: beside a figure measured end to end, a
+# proof-of-value result included; beside a modeled one it is still a finding.
+printf 'window.X = { kind: "proven", owner: "VP Field Service", figure: { text: "~30 min" } };\n' > "$WORK/tile-proven.js"
+printf 'window.X = { kind: "proven", owner: "VP Field Service", figure: { text: "+4 to +10%%" } };\n' > "$WORK/tile-modeled.js"
+LAST="$("$PY" "$TOOLS/lint_artifact.py" "$WORK/tile-proven.js" --channel customer_site --spec "$FRAMED" 2>&1)"
+expect_absent "a Proven tile on a proof-of-value result" ART401
+LAST="$("$PY" "$TOOLS/lint_artifact.py" "$WORK/tile-modeled.js" --channel customer_site --spec "$FRAMED" 2>&1)"
+expect "a Proven tile on a modeled figure" ART401
+
 # ----------------------------------------------------- packspec.py, the spec in Markdown
 # The one spec loader and writer. Every spec in the repo — the packs,
 # the worked example, the fixtures — round-trips exactly: load(dump(d)) == d, and a file
@@ -1306,6 +1495,28 @@ else
       printf '%s\n' "$LAST" | sed 's/^/       | /'
       warn "WARNING: the live site's exemplar did not extract (exit $got) — the listing's site step will fail the same way"
     fi
+    # The inserter evaluates the live content.js as the site's own tools do, assets/brand.js
+    # first: a copy that did not crashed on it with "window.brandAsset is not a function"
+    # (2026-09-29). A dry run writes nothing; a failure is a WARNING, as above.
+    LIVE_CONTENT="$SITE_ROOT/$(node -e 'const m = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+process.stdout.write(String((m.paths || {}).content || "site/data/content.js"));' "$SITE_ROOT/site.manifest.json" 2>/dev/null)"
+    LEAD="$(node -e 'const vm = require("vm"), fs = require("fs"), path = require("path");
+const box = { window: {} }; vm.createContext(box);
+const brand = path.join(path.dirname(process.argv[1]), "..", "assets", "brand.js");
+if (fs.existsSync(brand)) vm.runInContext(fs.readFileSync(brand, "utf8"), box);
+vm.runInContext(fs.readFileSync(process.argv[1], "utf8"), box);
+process.stdout.write(Object.keys(((box.window.SITE_CONTENT || {}).shared || {}).people || {})[0] || "");' \
+      "$LIVE_CONTENT" 2>/dev/null)"
+    printf '{\n  slug: "suite-dry-run-pack",\n  name: "Suite dry run",\n  contactPerson: "%s"\n}\n' "$LEAD" \
+      > "$WORK/live-entry.js"
+    LAST="$(node "$LISTING_TOOLS/insert-product.mjs" --content "$LIVE_CONTENT" --entry "$WORK/live-entry.js" \
+      --figure-alt "A figure" --dry-run 2>&1)"; got=$?
+    if [ "$got" = 0 ]; then
+      ok "the inserter evaluates the live site's content.js (a dry run)"
+    else
+      printf '%s\n' "$LAST" | sed 's/^/       | /'
+      warn "WARNING: the inserter cannot evaluate the live site's content.js (exit $got) — the listing's insert step will fail the same way"
+    fi
     SITE_ROUND="$(node -e 'const m = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
 process.stdout.write(String((m.contract || {}).round || ""));' "$SITE_ROOT/site.manifest.json" 2>/dev/null)"
     case "$SITE_ROUND:$CARD_ROUND" in
@@ -1470,6 +1681,80 @@ EOF
   run_case "the refused runs wrote nothing" 0 cmp -s "$LP/content.js" "$LP/content.pristine.js"
   run_case "a known contactPerson is inserted" 0 \
     node "$INSERTER" --content "$LP/content.js" --entry "$LP/entry-good-lead.js"
+fi
+
+# ------------------------------------ the inserter: the home case card, and --before (2026-09-29)
+# The home page shows one card per product that carries a case study, and the site's checker
+# fails a product whose case study has no card and a card that disagrees with its product. The
+# inserter writes the card in the same run, from the entry itself; only its two lines are copy.
+# --before walked the whole file and met the site's first `{` line long before the products
+# array, so it refused every real call: it now walks the array's own items.
+say ""
+say "insert-product.mjs — the home case card and --before"
+if ! command -v node >/dev/null 2>&1; then
+  say "  (skipped: no node)"
+else
+  CC="$WORK/case-site"
+  mkdir -p "$CC"
+  cat > "$CC/content.js" <<'EOF'
+window.SITE_CONTENT = {
+  site: {
+    name: "A site"
+  },
+  overview: {
+    caseStudies: [
+      {
+        id: "old-case", descriptor: "A regional utility", area: "Meter reading", industry: "utilities",
+        status: "measured", metric: { value: "Same day", label: "a reading, down from a week" },
+        line: "Readings waited a week; now they land the same day.",
+        product: { slug: "existing-pack", name: "Existing pack" }
+      }
+    ]
+  },
+  products: [
+    { slug: "existing-pack", name: "Existing pack", overview: { caseStudy: { descriptor: "A regional utility" } } },
+    { slug: "last-pack", name: "Last pack", overview: { caseStudy: null } }
+  ]
+};
+EOF
+  cp "$CC/content.js" "$CC/content.pristine.js"
+  cat > "$CC/entry-case.js" <<'EOF'
+{
+  slug: "case-pack",
+  name: "Case pack",
+  overview: {
+    caseStudy: {
+      descriptor: "An international airline", area: "Contract management", industry: "travel-transport",
+      status: "measured", metrics: [{ value: "5–15 min a contract", label: "end to end" }]
+    }
+  }
+}
+EOF
+  printf '{\n  slug: "plain-pack",\n  name: "Plain pack",\n  overview: { caseStudy: null }\n}\n' > "$CC/entry-plain.js"
+  printf '{ line: "Rates were keyed by hand; now reviewers catch a wrong one first.", metric: { label: "60 to 100 pages, down from 3 to 5 days" } }\n' > "$CC/card.js"
+  run_case "a case study with no --case-card is refused" 1 \
+    node "$INSERTER" --content "$CC/content.js" --entry "$CC/entry-case.js"
+  expect "the refusal" "one card per case study" "--case-card" "nothing written"
+  run_case "a --case-card on a product with no case study is refused" 1 \
+    node "$INSERTER" --content "$CC/content.js" --entry "$CC/entry-plain.js" --case-card "$CC/card.js"
+  expect "the refusal" "would link to a page with no case study"
+  run_case "the refused runs wrote nothing" 0 cmp -s "$CC/content.js" "$CC/content.pristine.js"
+  run_case "the case pack goes in with its card, before the last pack" 0 \
+    node "$INSERTER" --content "$CC/content.js" --entry "$CC/entry-case.js" --case-card "$CC/card.js" --before last-pack
+  expect "the run" 'home case card "case-pack-case" added' "before last-pack"
+  run_case "the card is the entry's own, with the two lines given" 0 node -e '
+const vm = require("vm"), fs = require("fs"); const box = { window: {} }; vm.createContext(box);
+vm.runInContext(fs.readFileSync(process.argv[1], "utf8"), box);
+const C = box.window.SITE_CONTENT, card = C.overview.caseStudies[1] || {};
+const ok = C.products.map((p) => p.slug).join() === "existing-pack,case-pack,last-pack" &&
+  card.id === "case-pack-case" && card.descriptor === "An international airline" && card.area === "Contract management" &&
+  card.industry === "travel-transport" && card.status === "measured" && card.metric.value === "5–15 min a contract" &&
+  card.metric.label === "60 to 100 pages, down from 3 to 5 days" && card.product.slug === "case-pack" &&
+  card.product.name === "Case pack" && /keyed by hand/.test(card.line);
+process.exit(ok ? 0 : 1);' "$CC/content.js"
+  run_case "--before a slug the array does not hold is refused" 1 \
+    node "$INSERTER" --content "$CC/content.pristine.js" --entry "$CC/entry-plain.js" --before nobody --dry-run
+  expect "the refusal" 'names no entry inside the products array'
 fi
 
 # ------------------------------------------------- where a pack's files go (2026-09-24)
