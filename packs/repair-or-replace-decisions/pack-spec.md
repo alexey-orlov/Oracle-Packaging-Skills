@@ -330,8 +330,8 @@ Operators who decide repair or replace, and the insurers and lessors who pay.
 - **Label:** saved when a correct call turns a needless replacement into a repair
 - **Direction:** up
 - **Formula:** The replacement not made, less the repair made instead, for each call corrected from replace to repair where the repair meets the governing limit; it is what moves replacement spend per claim
-- **Baseline:** a windscreen replacement about £500 against a £40 repair, UK industry averages
-- **Figure:** about £460
+- **Baseline:** a windscreen replacement about $350 against a $99 crack repair, US industry averages
+- **Figure:** about $250
 - **Figure status:** modeled
 - **Show baseline:** no
 - **Unit cost:** -
@@ -339,8 +339,8 @@ Operators who decide repair or replace, and the insurers and lessors who pay.
 - **Attribution:**
   - **Named when allowed:** -
   - **Otherwise:** industry averages for vehicle glazing
-- **Caveat:** UK industry averages for vehicle glazing, published 2013 (about $250 in the US); not the prospect's own prices.
-- **Note:** UK: a typical replacement screen about £500 against an average repair of £40 (Glass Assist UK, Fleet News, 2013; tier 3, dated). US: an average replacement about $350 against an average crack repair of $99 (NWRD, undated; tier 2). The camera recalibration a replacement can trigger is counted separately under Avoidable recalibrations, never added here. The source engagement's own context-only assumption (repair £100, replacement £300) would give £200; it was not used by that model and is not used here.
+- **Caveat:** US industry averages for vehicle glazing; not the prospect's own prices.
+- **Note:** US: an average replacement about $350 against an average crack repair of $99 (NWRD, undated; tier 2), so about $250 per correct call. OWNER DECISION (user:2026-09-29): no UK or pound figure is used anywhere in this pack; with vehicle glass and several markets, a UK figure points toward the source engagement's customer. The camera recalibration a replacement can trigger is counted separately under Avoidable recalibrations, never added here. The source engagement's own context-only assumption was not used by that model and is not used here.
 - **Source:** research: P3 §2.1 corroboration lines and §4.5 synthesis point 1
 
 ### Avoidable recalibrations
@@ -356,7 +356,7 @@ Operators who decide repair or replace, and the insurers and lessors who pay.
 - **Figure:** $300–400 and 4 days
 - **Figure status:** modeled
 - **Show baseline:** no
-- **Unit cost:** $300–400 and about four days per recalibration, industry figures; the source model valued the operator's slot at about £50, modelled
+- **Unit cost:** $300–400 and about four days per recalibration, industry figures; the operator's lost slot comes on top, modelled
 - **Whose metric:** both: the operator loses the slot and the customer waits; the payer pays the line
 - **Attribution:**
   - **Named when allowed:** -
@@ -378,13 +378,13 @@ Operators who decide repair or replace, and the insurers and lessors who pay.
 - **Figure:** 36 per 1,000
 - **Figure status:** modeled
 - **Show baseline:** yes
-- **Unit cost:** a needless replacement: about £460 of glass plus any recalibration; a failed repair: the return visit, about £75 of rebooking friction, modelled
+- **Unit cost:** a needless replacement: about $250 of glass plus any recalibration; a failed repair: the return visit and its rebooking, modelled
 - **Whose metric:** the operator owns the booking; the payer counts the rebooks and the days
 - **Attribution:**
   - **Named when allowed:** -
   - **Otherwise:** an industry model
 - **Caveat:** Modelled, not measured: 30 needless replacements and 15 failed repairs per 1,000 cases today, each reduced by a fifth; apply to the prospect's own volumes.
-- **Note:** The same model as before (3.0% → 2.4% needless replacements, 1.5% → 1.2% failed repairs), re-expressed per 1,000 so it reads as a gain and counts both error directions. In money at the sourced per-decision values the modelled gain is about £3,700 per 1,000 cases (six needless replacements about £2,760 of glass, plus recalibrations and repeat visits), about £3.70 per case, close to the market's per-inspection software price; that is why the set leads with the value per correct decision.
+- **Note:** The same model as before (3.0% → 2.4% needless replacements, 1.5% → 1.2% failed repairs), re-expressed per 1,000 so it reads as a gain and counts both error directions. In money at the sourced per-decision values the modelled gain is about $2,250–2,500 per 1,000 cases before repeat visits (six needless replacements about $1,500 of glass, plus 2.5 avoidable recalibrations at $300–400 each), a few dollars per case; that is why the set leads with the value per correct decision.
 - **Source:** research: the value model in the response set, re-expressed per 1,000 cases
 
 ### Decision consistency across sites
@@ -411,7 +411,7 @@ Operators who decide repair or replace, and the insurers and lessors who pay.
 ## Packages
 
 - **Status:** confirmed
-- **Value for the client:** Payer: about £460 of glass saved per needless replacement avoided, and a decision that survives audit and dispute. Operator: the job done once, with the right part and any recalibration already booked.
+- **Value for the client:** Payer: about $250 of glass saved per needless replacement avoided, and a decision that survives audit and dispute. Operator: the job done once, with the right part and any recalibration already booked.
 - **Value for Oracle and NVIDIA:** Net-new GPU consumption on OCI, built on VSS, which Oracle already deploys in one click.
 - **Source:** user:2026-09-22
 
