@@ -20,8 +20,9 @@
  * WHAT IT REFUSES TO DO
  *   - overwrite a slug that already exists (there is no --force: replacing an
  *     entry is an edit of the site's own copy, made in the site's own repo);
- *   - write anything when the spliced file does not evaluate, or when the
- *     product count did not go up by exactly one;
+ *   - write anything when content.js, before or after the splice, does not
+ *     evaluate — the site's assets/brand.js runs first, as in the site's own
+ *     tools — or when the product count did not go up by exactly one;
  *   - touch config.js unless both --config and --config-entry are given;
  *   - write an entry with no `contactPerson`, or one that is not an id in the site's
  *     `shared.people` (site round 13), where the site defines `shared.people`;
@@ -154,8 +155,10 @@ function slugOf(text) {
 }
 
 /* The site's content.js resolves logo paths through window.brandAsset(), which the
-   site's assets/brand.js defines; the site's own checker runs brand.js first, and so
-   does this sandbox — without it the live content.js does not evaluate (2026-09-24). */
+   site's assets/brand.js defines; the site's own tools (check-grammar.js, and
+   sync-links.js loadSite()) run brand.js first, and so does this sandbox — without it
+   the live content.js does not evaluate (2026-09-24). It is read where the site keeps
+   it, assets/ beside data/, so a content.js copied out of its checkout has none. */
 const BRAND_JS = join(dirname(CONTENT), "..", "assets", "brand.js");
 const PRELUDE = existsSync(BRAND_JS) ? readFileSync(BRAND_JS, "utf8") : "";
 function evalSite(src, filename) {
@@ -164,6 +167,20 @@ function evalSite(src, filename) {
   if (PRELUDE) vm.runInContext(PRELUDE, box, { filename: "brand.js" });
   vm.runInContext(src, box, { filename });
   return box.window;
+}
+/* A site file that does not evaluate is a refusal that says why, never a stack trace;
+   a missing brand.js is named, with where it was looked for (2026-09-29). */
+function evalOrRefuse(src, filename) {
+  try {
+    return evalSite(src, filename);
+  } catch (e) {
+    const msg = e && e.message ? e.message : String(e);
+    const noBrand = !existsSync(BRAND_JS) && /brandAsset/.test(msg);
+    die(1, filename + " does not evaluate — nothing written: " + msg + (noBrand
+      ? " (it needs the site's assets/brand.js, not found at " + BRAND_JS +
+        ": pass the content.js inside a site checkout, or a full copy of one)"
+      : ""));
+  }
 }
 
 /* ------------------------------------------------------------------ entry */
@@ -175,7 +192,7 @@ if (!slug) die(1, "the entry has no readable slug");
 
 /* ---------------------------------------------------------------- content */
 const contentSrc = readFileSync(CONTENT, "utf8");
-const before = evalSite(contentSrc, "content.js").SITE_CONTENT;
+const before = evalOrRefuse(contentSrc, "content.js").SITE_CONTENT;
 if (!before || !Array.isArray(before.products)) die(1, "content.js does not define window.SITE_CONTENT.products");
 if (before.products.some((p) => p && p.slug === slug)) {
   die(1, 'slug "' + slug + '" is already in the catalog — edit that entry in the site repo instead; this tool never overwrites one');
@@ -293,7 +310,7 @@ if (CONFIG) {
   const block = '"' + slug + '": ' + cfgEntrySrc.slice(blockOpen, blockEnd + 1);
 
   const cfgSrc = readFileSync(CONFIG, "utf8");
-  const cfgBefore = evalSite(cfgSrc, "config.js").SITE_CONFIG;
+  const cfgBefore = evalOrRefuse(cfgSrc, "config.js").SITE_CONFIG;
   if (cfgBefore && cfgBefore.products && cfgBefore.products[slug]) {
     die(1, 'config.js already carries "' + slug + '" — nothing written');
   }

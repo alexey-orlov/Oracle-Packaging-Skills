@@ -1261,6 +1261,17 @@ vm.runInContext(fs.readFileSync(process.argv[1], "utf8"), box);
 const m = box.window.SITE_CONTENT.media["new-pack"] || {};
 process.exit(m.diagram === "new-pack" && m.alt === "Flow diagram: the \"new\" pack, end to end" ? 0 : 1);' \
     "$MD/content.js" "$WORK/media-site/site/assets/brand.js"
+
+  # brand.js is read where the site keeps it, assets/ beside data/, so a content.js
+  # copied out of its checkout has none: a refusal that names the file, never a
+  # stack trace (2026-09-29).
+  LOOSE="$WORK/loose-copy/data"
+  mkdir -p "$LOOSE"
+  cp "$MD/content.pristine.js" "$LOOSE/content.js"
+  run_case "a content.js with no brand.js beside it is refused" 1 \
+    node "$INSERTER" --content "$LOOSE/content.js" --entry "$LK/entry.js" --figure-alt "A figure" --dry-run
+  expect "the refusal" "does not evaluate" "assets/brand.js" "nothing written"
+  expect_absent "the refusal" "    at "
 fi
 
 # ------------------------------------------------ the exemplar and the site
@@ -1278,6 +1289,12 @@ else
   LISTING_TOOLS="$PLUGIN/skills/listing/tools"
   REFRESH="$LISTING_TOOLS/exemplar.mjs"
   run_case "--out is required" 2 node "$REFRESH" --site "$WORK"
+  # The listing's cards name the site round they were written against (the site card).
+  # The live site at a newer round is a WARNING: the trigger to read the site's round
+  # records and bring the cards up to it (2026-09-29).
+  CARD_ROUND="$(sed -n 's/.*written against \*\*site round \([0-9][0-9]*\)\*\*.*/\1/p' \
+    "$PLUGIN/skills/listing/references/cards/site.md")"
+  run_case "the site card names the site round it was written against" 0 test -n "$CARD_ROUND"
   # Against the live site, a failed extraction is a WARNING: the site moves on its own
   # schedule and must not block an unrelated release, but the listing cannot run without it.
   SITE_ROOT="${ORACLE_SITE_ROOT:-$HOME/Documents/GitHub/Oracle-Solutions-Site}"
@@ -1289,6 +1306,20 @@ else
       printf '%s\n' "$LAST" | sed 's/^/       | /'
       warn "WARNING: the live site's exemplar did not extract (exit $got) — the listing's site step will fail the same way"
     fi
+    SITE_ROUND="$(node -e 'const m = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+process.stdout.write(String((m.contract || {}).round || ""));' "$SITE_ROOT/site.manifest.json" 2>/dev/null)"
+    case "$SITE_ROUND:$CARD_ROUND" in
+      *[!0-9:]*|:*|*:)
+        warn "WARNING: the site's contract round (\"$SITE_ROUND\") and the listing cards' (\"$CARD_ROUND\") do not compare" ;;
+      *)
+        if [ "$SITE_ROUND" -gt "$CARD_ROUND" ]; then
+          warn "WARNING: the site is at contract round $SITE_ROUND and the listing's cards were written against $CARD_ROUND — read the site's round records and bring the cards up"
+        elif [ "$SITE_ROUND" -lt "$CARD_ROUND" ]; then
+          warn "WARNING: the site checkout is at contract round $SITE_ROUND, older than the $CARD_ROUND the listing's cards were written against — pull it"
+        else
+          ok "the listing's cards are at the site's contract round ($SITE_ROUND)"
+        fi ;;
+    esac
   else
     say "  (live site skipped: no site root)"
   fi
@@ -1326,8 +1357,8 @@ EOF
 window.SITE_CONFIG = {
   productOrder: ["other-pack", "demo-pack"],
   products: {
-    "other-pack": { marketplace: false, marketplaceUrl: "", video: false, videoPoster: "", successStoryUrl: "" },
-    "demo-pack": { marketplace: true, marketplaceUrl: "", video: true, videoPoster: "", successStoryUrl: "" }
+    "other-pack": { marketplace: false, marketplaceUrl: "", videoPoster: "", successStoryUrl: "" },
+    "demo-pack": { marketplace: false, marketplaceUrl: "", videoPoster: "", successStoryUrl: "" }
   }
 };
 EOF
