@@ -41,6 +41,11 @@ KPN
 Sky
 Channel 4
 Belron
+Carglass                # Belron's brands: the repair-or-replace pack's source engagement trades under them
+Autoglass
+Safelite
+O'Brien Glass           # the brand, not the surname
+Smith&Smith
 Nesma
 Toyota
 FreeTech
