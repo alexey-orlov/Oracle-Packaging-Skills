@@ -33,7 +33,7 @@ Field-service planners route hundreds of vans a day by hand; the operator pays i
 
 ### Solution
 
-The planner reviews each engineer's day instead of building it — the right jobs, in the right order, with the charging stop where it costs least — after testing it on the company's own past days.
+The planner reviews each engineer's day instead of building it, after testing the plan on the company's own past days, and the operator pays for fewer miles, charger waits and second visits.
 
 - **Problem points:**
   - **Paid time on the road:** fuel, wear and an engineer not on a job
@@ -42,10 +42,10 @@ The planner reviews each engineer's day instead of building it — the right job
 - **Outcome chips:** Cost per visit ↓; Visits per engineer ↑; Missed appointments ↓
 - **Reframe:** See the saving on your own days
 - **Reframe question:** What if you saw the saving on your own past days first?
-- **Today:** Planners build the day from the scheduling system's rules and patch the rest by hand; charging an electric van is left to the engineer, and nobody can say how much better the day could have been.
+- **Today:** Planners build the day from the scheduling system's rules and patch the rest by hand; charging an electric van is left to the engineer, and nobody can say how much of each visit's cost was avoidable.
 - **Tomorrow:** Each day is planned on GPU with slots, skills, priorities and charging stops in one solve, and every electric route is checked against the battery. Operations see what it is worth — cost per visit, visits per engineer, second visits avoided — before any live schedule changes.
 - **Note:** Recast around business value (owner feedback 2026-09-29): the problem names what the operator pays for, the points are cost lines, the chips are the three business metrics. Written for a seller outside the industry — a named role, the nouns on the desk.
-- **Source:** user:2026-09-28
+- **Source:** user:2026-10-01
 
 ## Who buys it
 
@@ -72,7 +72,7 @@ Operators of engineer and delivery van fleets — especially fleets going electr
 
 - **Site label:** Telecom & TV
 - **Framing:**
-  - **Problem:** Engineers installing and repairing broadband and TV at customers' homes lose hours between booked slots, and a late arrival means a customer who took the day off.
+  - **Problem:** Engineers installing and repairing home broadband and TV lose hours between booked slots, and a late arrival to a customer who took the day off means a second visit.
   - **Solution:** Installs and repairs are sequenced so each engineer reaches every booked slot, and each job goes to an engineer whose skills let them finish it on the first visit.
   - **Entities:** home visits, booked slots, engineer skills, vans
 - **Status:** plausible
@@ -89,8 +89,8 @@ Operators of engineer and delivery van fleets — especially fleets going electr
 
 - **Site label:** Utilities
 - **Framing:**
-  - **Problem:** Meter fitters and repair crews work to booked or regulated windows, and a gas or electrical job can only go to an engineer holding the right certificate.
-  - **Solution:** Jobs are matched to certified engineers and sequenced inside their windows, with the depot and home-charging rules for electric vans applied.
+  - **Problem:** Meter fitters and repair crews work to booked or regulated windows, and a gas or electrical job sent to an engineer without the right certificate is a wasted trip.
+  - **Solution:** Jobs go to certified engineers inside their windows, with charging planned in, so crews spend the day on jobs rather than driving.
   - **Entities:** meter installs, repairs, certificates, booked windows
 - **Status:** plausible
 - **Source:** research-brief-2026-09-28
@@ -105,8 +105,8 @@ Operators of engineer and delivery van fleets — especially fleets going electr
 
 - **Site label:** Facilities
 - **Framing:**
-  - **Problem:** Technicians covering lifts, heating and fire systems across many sites juggle contract response times with planned maintenance.
-  - **Solution:** Call-outs and planned visits are routed together, weighted by each contract's response time, so urgent work lands first without wrecking the plan.
+  - **Problem:** Technicians covering lifts, heating and fire systems across many sites juggle planned maintenance with penalty-backed response times.
+  - **Solution:** Call-outs and planned visits are routed together, weighted by each contract's response time, so urgent work lands in time and no penalty is paid.
   - **Entities:** sites, service contracts, response times, planned visits
 - **Status:** plausible
 - **Source:** research-brief-2026-09-28
@@ -121,8 +121,8 @@ Operators of engineer and delivery van fleets — especially fleets going electr
 
 - **Site label:** Last-mile delivery
 - **Framing:**
-  - **Problem:** Drivers run electric vans against promised delivery windows, and a route that misjudges range ends at a charger instead of a doorstep.
-  - **Solution:** Routes are planned with the delivery windows and a battery check on every leg, so each van finishes its drops with the reserve intact.
+  - **Problem:** Drivers run electric vans against promised delivery windows; a route that misjudges range ends at a charger, and its missed drops are driven twice.
+  - **Solution:** Routes are planned with the delivery windows and a battery check on every leg, so vans finish their drops and fewer roll over to tomorrow.
   - **Entities:** drops, delivery windows, vans, depots
 - **Status:** plausible
 - **Note:** Skills matching matters less here; windows, stop order and range carry the value.

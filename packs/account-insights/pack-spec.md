@@ -29,23 +29,23 @@ roadmap_block: Deep research & investigation
 
 ### Problem
 
-An account manager, a partnerships lead or a portfolio manager each covers dozens of companies and cannot keep up with the news, filings and updates landing on all of them.
+An account manager, a partnerships lead or a portfolio manager covers dozens of companies and cannot keep up with the news on them, so rivals reach the openings first.
 
 ### Solution
 
-Each morning they see the handful of changes that matter across the companies they cover, what each one means and what to do about it, and review that list instead of assembling it.
+Each morning they review a ready list of the changes that matter across the companies they cover, what each means and the next move, and win the opening before a rival does.
 
 - **Problem points:**
   - **Too much to keep up with:** dozens of companies, hundreds of sources, one person
   - **Found out too late:** the update surfaces after the company has already decided
   - **Only the company in the headline:** what it means for its suppliers, customers, competitors or sister holdings is never worked out
 - **Outcome chips:** Coverage ↑; Time to first move ↓; Second-order opportunities surfaced
-- **Reframe:** Review the opportunity, don't research it
+- **Reframe:** Win the work the news opens
 - **Reframe question:** What if the team reviewed the list, not built it?
-- **Today:** They read what they can, usually the night before a meeting, and only about the company in the headline — what it means for the other companies they cover is never worked out.
-- **Tomorrow:** Each morning they open a short list: the changes that matter across the companies they cover, what each one means, and the named next move — with the evidence beside it. They approve, reject or comment, and the approved moves go to the system they already work in.
+- **Today:** They read what they can, usually the night before a meeting, and only about the company in the headline. What it means for the other companies they cover is never worked out, so rivals get there first.
+- **Tomorrow:** Each morning they open a short list: the changes that matter across their companies, what each means and the named next move, with the evidence beside it. They approve, reject or comment, and approved moves go to the system they work in. They reach each opening before a rival does.
 - **Note:** Rewritten after Alex called the first version "waterish" (2026-09-22). The original named an abstract activity — "commercial teams work out what a development means for their accounts by hand" — instead of the role and the concrete things piling up on that person. Test to apply: could an account manager say this sentence about their own week? Widened 2026-09-22 from the account-manager seat alone to the three seats the same job has.
-- **Source:** user:2026-09-22
+- **Source:** user:2026-10-01
 
 ## Who buys it
 
@@ -72,8 +72,8 @@ Teams keeping up with the companies they cover — customers, partners, holdings
 
 - **Site label:** Logistics
 - **Framing:**
-  - **Problem:** Account teams learn about a customer's plant expansion, market entry or disruption after the logistics decision is already made.
-  - **Solution:** A shipper's news — a new plant, a new market, a supplier strike — becomes a forwarding, warehousing or contract-logistics opportunity for the team that serves it.
+  - **Problem:** Account teams hear of a customer's expansion, market entry or disruption after a rival has won the logistics volume.
+  - **Solution:** A shipper's new plant, new market or supplier strike becomes a forwarding, warehousing or contract-logistics opportunity the team that serves it quotes before any rival, so the volume stays yours.
   - **Entities:** customer accounts, service lines, trade lanes, sites
 - **Catalog type:** offering
 - **Status:** plausible
@@ -83,7 +83,7 @@ Teams keeping up with the companies they cover — customers, partners, holdings
 
 - **Site label:** Financial services
 - **Framing:**
-  - **Problem:** A relationship manager finds out about a counterparty event from the client, not from the bank.
+  - **Problem:** A relationship manager hears of a counterparty event from the client, after another bank has the deal.
   - **Solution:** News about a borrower is traced across its group and returns two answers: the deal it opens for the relationship team, and the exposure it puts at risk for credit.
   - **Entities:** obligor groups, exposures, product holdings
 - **Catalog type:** offering
@@ -95,8 +95,8 @@ Teams keeping up with the companies they cover — customers, partners, holdings
 
 - **Site label:** Manufacturing
 - **Framing:**
-  - **Problem:** A supplier or OEM customer event reshapes demand across several accounts at once, and it is worked out one account at a time or not at all.
-  - **Solution:** An event at a supplier or an OEM customer is traced to every affected company on the list, with the supply, reallocation or partnership move it opens for each.
+  - **Problem:** A supplier or OEM customer event reshapes demand across several accounts at once, and by the time each is worked out the volume has gone to a competitor.
+  - **Solution:** A supplier or OEM customer event is traced to every affected company, with the supply, reallocation or partnership move for each, so the team bids before a competitor and keeps the volume.
   - **Entities:** accounts, production sites, trade lanes
 - **Catalog type:** offering
 - **Status:** plausible
@@ -106,8 +106,8 @@ Teams keeping up with the companies they cover — customers, partners, holdings
 
 - **Site label:** Private equity
 - **Framing:**
-  - **Problem:** A market or regulatory event moves the thesis on a portfolio company, and the fund finds out at the next board meeting.
-  - **Solution:** News about a market, a regulator or a competitor is matched to the portfolio companies it touches and to the levers the fund actually pulls to grow them.
+  - **Problem:** A market or regulatory event moves a portfolio company's thesis, and the fund learns at the next board meeting, after the valuation has moved.
+  - **Solution:** News about a market, a regulator or a competitor is matched to the portfolio companies it touches and to the levers the fund pulls to grow them, before the valuation moves.
   - **Entities:** portfolio companies, investment theses, value-creation levers
 - **Catalog type:** lever
 - **Status:** plausible
