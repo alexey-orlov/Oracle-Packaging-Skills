@@ -626,8 +626,11 @@ class Build:
         foot = ex.by_id(slide, s["proof.footnote"])
         if self.spec.figured_kpis():
             foot_text = f"Figures from {self.spec.kpi_attribution()}. {self.spec.kpi_caveat()}"
-        else:   # nothing to attribute yet: say where the first engagement stands instead
-            foot_text = f"First engagement: {self.spec.kpi_attribution()} — contracted, results to follow."
+        else:   # nothing to attribute yet: say where the first engagement stands, in the brief's own words
+            # (the divergence line is the brief's one print-ready sentence for this footnote); never
+            # assert a contract status the brief does not state
+            foot_text = (clean(self.spec.get("meta.source_engagement.divergence_line"))
+                         or f"First engagement: {self.spec.kpi_attribution()} — results to follow.")
         ex.fill_text(foot, clean(foot_text))
         self.log(5, "proof.footnote", foot, foot_text)
 
@@ -716,8 +719,14 @@ class Build:
             self.log(6, f"why.tier[{i}].name", v, value)
             self.log(6, f"why.tier[{i}].caption", l, caption)
 
-        claims = [clean(c) for c in (self.spec.get("packages.why_it_sells_for_the_partner") or [])
-                  if clean(c)]
+        def claim_text(c) -> str:
+            # the brief allows a plain line or a {label, text} pair; a pair reads "Label: text"
+            if isinstance(c, dict):
+                label, text = clean(c.get("label")), clean(c.get("text"))
+                return f"{label}: {text}" if label and text else (label or text)
+            return clean(c)
+        claims = [t for t in (claim_text(c) for c in
+                              (self.spec.get("packages.why_it_sells_for_the_partner") or [])) if t]
         raw_consumption = self.spec.get("packages.target_oci_consumption")
         consumption = clean(raw_consumption) if self.spec.has_text(raw_consumption) else (
             "To be defined" if raw_consumption is not None else "")   # `-` = deliberately empty: keep the panel, say so; an absent key drops it

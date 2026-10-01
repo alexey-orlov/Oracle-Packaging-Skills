@@ -217,8 +217,10 @@ def run_figureless(tmp: Path) -> None:
     t2 = texts(slides[1])
     check("{'label'" not in t2 and "Slow answers" in t2, "problem points print as raw dicts")
     t5 = texts(slides[4])
-    check("First engagement" in t5 and "Figures from" not in t5,
-          "the figure-less proof slide still attributes figures")
+    check("The pack generalizes the rules the proof of value hard-coded." in t5 and "Figures from" not in t5,
+          "the figure-less proof slide does not print the brief's divergence line as its footnote")
+    check("contracted" not in t5,
+          "the figure-less footnote asserts a contract status the brief does not state")
     check("illustrative" not in t5, "a figure caveat printed with no figures")
     check("INTERNAL PARAGRAPH" not in t5, "the proof slide prints the internal divergence paragraph")
     check("SOLUTION" in t5 and "VALUE FOR CLIENT" in t5,
