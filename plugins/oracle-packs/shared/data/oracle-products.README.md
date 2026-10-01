@@ -1,6 +1,6 @@
 # `oracle-products.yaml` — the shared Oracle + NVIDIA product catalog
 
-**Version `2026-09-18` · 55 entries · names fetched from the vendors' own pages on 2026-09-18.**
+**Version `2026-10-01` · 61 entries · names fetched from the vendors' own pages on 2026-09-18; the five Construction and Engineering entries (`industry-apps`) verified on docs.oracle.com on 2026-10-01, where oracle.com product pages refused automated fetches.**
 
 One distilled catalog with canonical names, from which every accelerator pack picks its products —
 so the same product is named and aggregated identically across packs, artifacts and channels.
@@ -43,7 +43,7 @@ required/optional roll-up across packs is only meaningful if the names aggregate
 | `verified` | `true` = the `name` matches that page's own H1 or `<title>`. `false` = could not be confirmed; see below. |
 | `notes` | Optional. Pack-specific facts, disambiguation traps, product-state caveats. |
 
-`industry-apps` is declared but currently unused — no pack touches an Oracle industry application yet.
+`industry-apps` holds Oracle's Construction and Engineering applications (Primavera P6 EPPM, Primavera Unifier, Aconex, Primavera Cloud, and Construction and Engineering Intelligence, catalogued as an overlap only), added 2026-10-01 for the plan-vs-actual pack.
 `layer: data-source-destination` is likewise unused: every product catalogued so far has a real
 position in the stack, and its source/destination role is carried by `typical_role_in_a_pack`
 (`source-system` / `destination-system`) instead.

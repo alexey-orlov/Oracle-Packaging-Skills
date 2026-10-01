@@ -16,8 +16,8 @@
 # `fetched` date below. Re-verify before shipping: Oracle is mid-rebrand
 # (AI World 2025 wave) and page names move.
 
-version: 2026-09-18
-fetched: 2026-09-18
+version: 2026-10-01
+fetched: 2026-10-01
 vendors: [Oracle, NVIDIA]
 
 naming_rules:
@@ -33,6 +33,9 @@ naming_rules:
   - "OCI is the only accepted abbreviation. Spell out every other product on first use; no ODA, no OIC, no OAC, no OFS in external copy."
   - "Oracle asks partners not to put Oracle marks inside a product or service name — the pack's own name never contains 'Oracle'."
   - "OCI service pages drop the 'OCI' prefix in the H1 (H1 'Object Storage'); the service name still carries it. Write 'OCI Object Storage'."
+  - "Oracle Construction and Engineering Intelligence — not 'Oracle Construction Intelligence Cloud Service', the retired name."
+  - "Oracle Primavera Cloud is not P6 EPPM in the cloud — P6 EPPM bought as a cloud service is still P6 EPPM; never write 'Primavera P6 Cloud'."
+  - "Oracle's Construction and Engineering product-page titles are taglines ('Aconex Construction Project Management Software'); take the name from docs.oracle.com."
 
 products:
 
@@ -704,6 +707,77 @@ products:
     url: https://www.oracle.com/applications/fusion-ai/
     verified: true
     notes: "Oracle's current Fusion AI page shortens this to 'Oracle AI Agent Studio' (it is an anchor section, not its own page). Keep the long form to disambiguate from the AI Data Platform's separate Agent Studio / Agent Flows."
+
+  # ------------------------------------------------- industry-apps (construction-engineering)
+  - id: oracle-primavera-p6-eppm
+    name: Oracle Primavera P6 Enterprise Project Portfolio Management
+    short: P6 EPPM
+    vendor: Oracle
+    family: industry-apps
+    layer: application
+    what_it_is: Integrated web solution for prioritizing, planning, managing and implementing projects, programs and portfolios; projects export as XER or P6 XML.
+    typical_role_in_a_pack: source-system
+    aliases: ["Primavera P6", "P6", "P6 EPPM", "Primavera P6 EPPM", "Oracle Primavera P6", "Primavera P6 Enterprise", "Primavera P6 Enterprise Project Portfolio Management"]
+    not_this: ["Oracle P6", "Primavera P6 Cloud", "Primavera Portfolio Management", "Primavera P6 Professional Project Management"]
+    url: https://docs.oracle.com/cd/G18294_01/English/User_Guides/p6_eppm_user/6603.htm
+    verified: true
+    notes: "Name confirmed on docs.oracle.com (title and H1 'About Oracle Primavera P6 Enterprise Project Portfolio Management', Version 25 library). The oracle.com product page (/construction-engineering/primavera-p6/) returns 403 to WebFetch; its search-indexed title is the same name without 'Oracle'. The source of a contractor's XER or P6 XML schedule exports, but Primavera P6 Professional Project Management (the separate desktop product) writes the same formats, so confirm which one the customer runs. Oracle recommends XML over XER when risk data must travel. Primavera Portfolio Management is a different product. Also sold as a cloud service (Oracle datasheet, search-indexed); that is still P6 EPPM, not Oracle Primavera Cloud."
+
+  - id: oracle-primavera-unifier
+    name: Oracle Primavera Unifier
+    short: Primavera Unifier
+    vendor: Oracle
+    family: industry-apps
+    layer: application
+    what_it_is: Configurable business-process platform for project controls — cost, contract and change management through prebuilt and custom business processes; on-premises or cloud.
+    typical_role_in_a_pack: source-system
+    aliases: ["Unifier", "Primavera Unifier", "Oracle Unifier", "Unifier Essentials", "Primavera Unifier Project Controls", "Primavera Unifier Project and Asset Management"]
+    not_this: ["Unifier Cloud"]
+    url: https://docs.oracle.com/en/industries/construction-engineering/primavera-unifier/index.html
+    verified: true
+    notes: "Docs landing H1 'Primavera Unifier' (latest library: 26); the guide covers carry the full name ('Oracle Primavera Unifier General User Guide, Version 25, December 2025'). The oracle.com product page 403s to WebFetch and has moved to /construction-engineering/primavera-unifier-project-controls-asset-management/; its search-indexed titles are taglines ('Primavera Unifier Project and Asset Management' in the US, 'Primavera Unifier Project Controls' in ANZ and Europe), so write the product name, not the tagline. Cost Manager applies cost rules across budgets, revised budgets, commitments, invoices and payment applications (docs); change orders run as business processes that update contract, cost and cash-flow records on approval (Oracle datasheet, search-indexed)."
+
+  - id: oracle-aconex
+    name: Oracle Aconex
+    short: Aconex
+    vendor: Oracle
+    family: industry-apps
+    layer: application
+    what_it_is: Construction project management platform — documents and drawings in one register, project mail for formal correspondence, and review-and-approval workflows across all project participants.
+    typical_role_in_a_pack: source-system
+    aliases: ["Aconex", "Oracle's Aconex", "Aconex Construction Project Management Software"]
+    not_this: ["Aconnex", "Oracle Aconnex", "Oracle WebCenter Content"]
+    url: https://docs.oracle.com/en/industries/construction-engineering/aconex/
+    verified: true
+    notes: "Docs title 'Oracle Aconex - Get Started with Oracle Aconex', H1 'Oracle Aconex' (guides: Documents, Mail, Workflows, Oracle Aconex Mobile); vendor help also lives at help.aconex.com ('Support Central - Oracle Aconex'). The oracle.com product page 403s to WebFetch; its search-indexed title is the tagline 'Aconex Construction Project Management Software'. Oracle positions it as the contractual system of record: RFIs, approvals and change-related correspondence run through Mail (oracle.com, search-indexed). Not Oracle's generic content-management product."
+
+  - id: oracle-primavera-cloud
+    name: Oracle Primavera Cloud
+    short: Primavera Cloud
+    vendor: Oracle
+    family: industry-apps
+    layer: application
+    what_it_is: Cloud planning, scheduling, resource and risk management for engineering and construction projects, programs and enterprises; imports P6 projects exported as XER or P6 XML.
+    typical_role_in_a_pack: source-system
+    aliases: ["Primavera Cloud", "OPC", "Oracle Primavera Cloud Service", "Primavera Cloud Service for Owners"]
+    not_this: ["Primavera P6 Cloud", "P6 Cloud", "Oracle Primavera P6 Cloud"]
+    url: https://docs.oracle.com/cd/E80480_01/index.htm
+    verified: true
+    notes: "Current product: the docs library is dated 21 September 2026 and the guide cover reads 'Oracle Primavera Cloud Schedule Management User Guide, September 2026'. The library landing's H1 is 'Welcome' with the product name in its header, so the name was confirmed on that guide's cover (PDF in the same library). The oracle.com product page 403s to WebFetch; its search-indexed title is the tagline 'Primavera Cloud—Construction Platform'. A different product from P6 EPPM, even when P6 EPPM is bought as a cloud service. Oracle positions it as 'engineered to work with Primavera P6' (oracle.com, search-indexed), and its library carries a P6 to Oracle Primavera Cloud Import Guide (XML or XER)."
+
+  - id: oracle-construction-engineering-intelligence
+    name: Oracle Construction and Engineering Intelligence
+    short: C&E Intelligence
+    vendor: Oracle
+    family: industry-apps
+    layer: application
+    what_it_is: AI and analytics over Oracle's construction applications — Analytics plus Advisor for Safety; analyzes construction data, predicts and recommends across the project lifecycle.
+    typical_role_in_a_pack: analytics  # OVERLAP ONLY: named as an overlap, never a component a pack builds on
+    aliases: ["Oracle Construction Intelligence Cloud Service", "Oracle Construction Intelligence Cloud", "Construction Intelligence Cloud", "Construction Intelligence Cloud Advisor", "Construction and Engineering Intelligence", "Construction and Engineering Analytics", "Advisor for Safety"]
+    not_this: ["Oracle Construction Intelligence", "Primavera Analytics"]
+    url: https://docs.oracle.com/en/industries/construction-engineering/intelligence/
+    verified: true
+    notes: "OVERLAP ONLY. Catalogued so a pack can name Oracle's own AI and analytics over P6, Unifier, Aconex and Primavera Cloud data (oracle.com, search-indexed) as the overlap a buyer will raise. Renamed from Oracle Construction Intelligence Cloud Service: docs title and H1 read 'Construction and Engineering Intelligence' at both the new /intelligence/ path and the old /construction-intelligence-cloud/ path. The 'Oracle' prefix comes from Oracle's service-description title ('Oracle Construction and Engineering Intelligence Cloud Service Descriptions') and its Middle East page title (both search-indexed; oracle.com 403s to WebFetch). Components: Analytics and Advisor for Safety. Primavera Analytics is a separate P6 add-on (Oracle P6 datasheet, search-indexed); do not merge the names."
 
   # ---------------------------------------------------------------- nvidia-stack
   - id: nvidia-cuopt
