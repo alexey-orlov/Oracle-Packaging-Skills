@@ -99,10 +99,12 @@ node capture-demo-frames.mjs \
   --out ./frames --dpr 2 --scenario frames.json
 ```
 
-Then crop each frame to the listing's step-image spec (a fixed 16:10 frame, one
-per workflow step) and drop them in as `overview.steps[].image`. The poster is
-the same run's final state. When cropping with a tool whose offsets are
-`Y` then `X`, remember `0 0` means centred.
+The listing's step frames follow the site's own recipe (its `docs.assets` §1): per
+How it works step, the whole screen and the step's region, each shot directly at
+DPR 2 rather than cropped. The site checkout carries the tools: `tools/step-mocks/cap.mjs`
+runs the scenario and `tools/step-frames.mjs` writes `<slug>-<n>.jpg`,
+`<slug>-<n>-zoom.jpg` and `shots.json`, which the listing's `tools/overview-data.py
+--shots` turns into each step's `shot`. The poster is the same run's final state.
 
 **Scenario files are per-demo and live with the demo**, not here: they name that
 product's selectors. Keep them beside the walkthrough they drive.

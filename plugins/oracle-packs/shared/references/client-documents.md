@@ -44,6 +44,10 @@ stale the moment they edit; port their edits first, or build inside the edited f
   that rule, with its checks and its examples: the spec skill's `one-liner` card; the spec linter
   fails a platform, vendor, engine, model or data-architecture word in it before any artifact is
   built.
+- **A metric is shown, not explained** (2026-09-29): a visual under its one-word kind (Proven,
+  Forecast, Estimated) with a measured before → after, a range or a "from X" baseline, never a
+  footnote, a method note or a hedge. One home for that rule, with its checks and its examples:
+  the spec skill's `metrics-shown` card; the spec linter holds the frame (SPEC032-SPEC035).
 - **Structure before copy — a page is an argument, not an inventory** (2026-09-16). Before
   choosing components, settle audience → positioning (what this page offers that its sibling
   pages don't) → three or four messages, each answering a reader problem → one screen per

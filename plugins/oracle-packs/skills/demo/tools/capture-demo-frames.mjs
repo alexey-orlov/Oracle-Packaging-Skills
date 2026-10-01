@@ -47,7 +47,9 @@
 //   step frames + poster — tour off, chrome hidden, DPR 2:
 //     node capture-demo-frames.mjs --demo './index.html?tour=off&ui=clean&state=final' \
 //       --out ./frames --dpr 2 --scenario frames.json
-//   Then crop the frames to the listing's step-image spec before shipping them.
+//   The listing's step frames are shot, not cropped, by the site's recipe (its docs.assets §1:
+//   the whole screen and the step's region at DPR 2); the site's tools/step-frames.mjs
+//   writes the files and shots.json.
 
 import { spawn } from "node:child_process";
 import { writeFileSync, mkdirSync, readFileSync, existsSync } from "node:fs";

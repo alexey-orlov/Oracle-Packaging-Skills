@@ -915,12 +915,21 @@ PRODUCT = Rec(F("id", "Id"), F("name", "Name"), F("role", "Role"), F("why", "Why
               F("inferred", "Inferred", BOOL), F("source", "Source"))
 
 ATTRIBUTION = Rec(F("named_when_allowed", "Named when allowed"), F("otherwise", "Otherwise"))
+# How a shown metric is drawn (the spec skill's `metrics-shown` card): the chart's form, what
+# its scale counts, the scale, and its marks, each `<value> · <label>`; `direction` only where
+# the chart counts another quantity than the metric's name (a saving drawn as the cost it
+# cuts). Text here; kpichart.py reads it for the linter and the listing, so the two cannot
+# parse it apart.
+KPI_CHART = Rec(F("form", "Form"), F("unit", "Unit"), F("direction", "Direction"),
+                F("scale", "Scale"), F("before", "Before"), F("after", "After"),
+                F("range", "Range"))
 KPI = Rec(F("kind", "Kind"), F("owner_role", "Signed off by"),
           F("one_pager_label", "One-pager label"), F("chip", "Chip"),
           F("chip_label", "Chip label"), F("label", "Label"), F("direction", "Direction"),
           F("formula", "Formula"), F("baseline", "Baseline"), F("figure", "Figure"),
           F("figure_prefix", "Figure prefix"), F("figure_suffix", "Figure suffix"),
-          F("figure_status", "Figure status"), F("show_baseline", "Show baseline", BOOL),
+          F("figure_status", "Figure status"), F("evidence", "Evidence"),
+          F("chart", "Chart", RECORD, rec=KPI_CHART), F("show_baseline", "Show baseline", BOOL),
           F("unit_cost", "Unit cost"), F("whose_metric", "Whose metric"),
           F("attribution", "Attribution", RECORD, rec=ATTRIBUTION), F("caveat", "Caveat"),
           F("channels", "Channels", LIST), F("note", "Note"), F("source", "Source"))
@@ -1077,6 +1086,7 @@ SCHEMA = {
     "oracle_products[].integration": _fields(BY_TIER),
     "kpis[]": _fields(KPI, extra=[("name", TEXT)]),
     "kpis[].attribution": _fields(ATTRIBUTION),
+    "kpis[].chart": _fields(KPI_CHART),
     "packages": _fields(PACKAGES_TOP, extra=[("tiers", RECORDS), ("capability_handling", RECORDS),
                                              ("why_it_sells_for_the_partner", PAIRS),
                                              ("what_each_buyer_gets", RECORD)]),
@@ -3422,7 +3432,11 @@ def cmd_set(args):
             spath = _source_path(plain)
             if spath is None:
                 return _usage("no `source` key beside %s" % format_path(plain))
-            scontainer, skey, _ = resolve_path(data, [("key", s) for s in spath], create=True)
+            # a list position in the resolved path is an index, not a key: `kpis[0].figure`'s
+            # sibling is `kpis[0].source` (2026-09-29: every --source inside a list refused)
+            scontainer, skey, _ = resolve_path(
+                data, [("index", s) if isinstance(s, int) and not isinstance(s, bool)
+                       else ("key", s) for s in spath], create=True)
             scontainer[skey] = args.source
     except ValueError as exc:
         return _usage(str(exc))

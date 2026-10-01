@@ -57,7 +57,9 @@ Rule codes
     ART302  a non-PoV price on the customer site (needs --spec)
     ART303  a price inside a demo — a walkthrough carries none
   figures and tiers (§3)
-    ART401  "proven" with no delivered_result figure beside it (needs --spec)
+    ART401  "proven" with no figure measured end to end beside it: a
+            pov_result or delivered_result, as the site's Proven chip means it
+            (needs --spec)
     ART402  a tier named anything but PoV Jumpstart / Integration / Scaling
     ART403  an S / M / L size tag on a customer-facing channel
   warnings
@@ -232,7 +234,7 @@ class ArtifactLint:
         self.customer_facing = channel in CUSTOMER_FACING
         self.deny_enforced = channel != "internal" and not self._cleared()
         self.pov_prices, self.other_prices = self._prices()
-        self.delivered_figures = self._delivered_figures()
+        self.proven_figures = self._proven_figures()
         self.one_liners = self._one_liners()
 
     # -- spec-derived state -------------------------------------------------
@@ -275,12 +277,15 @@ class ArtifactLint:
                     out.append(flat)
         return out
 
-    def _delivered_figures(self):
+    def _proven_figures(self):
+        """Figures measured end to end on the customer's own data — in a completed proof of value
+        or in delivery — the only ones `proven` may stand beside (naming-and-clearance.md §3; the
+        mini-site's Proven chip, 2026-09-29)."""
         out = []
         kpis = (self.spec or {}).get("kpis")
         if isinstance(kpis, list):
             for kpi in kpis:
-                if isinstance(kpi, dict) and kpi.get("figure_status") == "delivered_result":
+                if isinstance(kpi, dict) and kpi.get("figure_status") in ("pov_result", "delivered_result"):
                     if PL.is_filled(kpi.get("figure")):
                         out.append(PL.norm_loose(str(kpi["figure"])))
         return out
@@ -526,11 +531,12 @@ class ArtifactLint:
             return
         for m in re.finditer(r"\bproven\b", doc.text, re.IGNORECASE):
             ctx = PL.norm_loose(PL.context(doc.text, m.start(), m.end(), 200))
-            if not any(fig and fig in ctx for fig in self.delivered_figures):
+            if not any(fig and fig in ctx for fig in self.proven_figures):
                 self.hit(doc, "ART401", m.start(), m.end(),
-                         "\"proven\" with no delivered_result figure beside it — say `proven` "
-                         "only for a delivered, accepted result; a PoV result is a proof of "
-                         "value and carries its caveat", key="proven")
+                         "\"proven\" with no figure measured end to end beside it — say `proven` "
+                         "only beside a pov_result or delivered_result figure, measured on the "
+                         "customer's own data; a modeled one is forecast or estimated",
+                         key="proven")
 
     def check_tiers(self, doc):
         for code, pattern, message in TIER_RULES:
