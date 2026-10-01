@@ -162,13 +162,13 @@ Heads of project controls at contractors and capital-programme owners whose sche
   - Loaders for the customer's export formats and report layouts
   - OCR languages and handwriting
 
-| Category | Feature | Status | From tier | Customization | Specificity | Note | Source |
-|---|---|---|---|---|---|---|---|
-| Loading | Schedule, cost, contract and change exports loaded as-is | partial | pov | Export formats per source system | customer |  | sow §2.4; brief §5 |
-| Loading | Scanned contracts and amendments read by OCR | available | pov | Languages and handwriting | engine | Handwriting and non-Latin scripts are tested on your documents first. | sow §2.4; research-brief: Sources (unverified OCR quality) |
-| Loading | Every record's source file and version kept | partial | pov |  | use_case |  | sow §2.4, §7 |
-| Loading | Live feeds from scheduling, cost and document systems | roadmap | integration |  | customer |  | research-brief: The workflow, generalized |
-| Checks | Completeness and plan-quality checks per source | partial | pov |  | use_case |  | sow §2.2; research-brief: What the other vendors ship |
+| Category | Feature | Status | From tier | Specificity | Note | Source |
+|---|---|---|---|---|---|---|
+| Loading | Schedule, cost, contract and change exports loaded as-is | partial | pov | customer |  | sow §2.4; brief §5 |
+| Loading | Scanned contracts and amendments read by OCR | available | pov | engine | Handwriting and non-Latin scripts are tested on your documents first. | sow §2.4; research-brief: Sources (unverified OCR quality) |
+| Loading | Every record's source file and version kept | partial | pov | use_case |  | sow §2.4, §7 |
+| Loading | Live feeds from scheduling, cost and document systems | roadmap | integration | customer |  | research-brief: The workflow, generalized |
+| Checks | Completeness and plan-quality checks per source | partial | pov | use_case |  | sow §2.2; research-brief: What the other vendors ship |
 
 ### Line up plan and actual
 
@@ -177,14 +177,14 @@ Heads of project controls at contractors and capital-programme owners whose sche
   - Mapping rules and package codes
   - Reconciliation conventions for baselines, change orders, currencies, calendars and provisional sums
 
-| Category | Feature | Status | From tier | Customization | Specificity | Source |
-|---|---|---|---|---|---|---|
-| Mapping | Records mapped to project, area and package | partial | pov | Mapping rules and package codes | customer | sow §2.4 |
-| Mapping | Unresolved records listed with their reason | partial | pov |  | use_case | sow §2.4, §7 |
-| Mapping | Unit hierarchy configurable per industry | roadmap | integration |  | industry | research-brief: The industries; Work type and work order for utilities; order, assembly and operation for engineer-to-order. |
-| Reconciliation | Plan of record chosen per package | partial | pov |  | use_case | research-brief: The workflow, generalized; From standard practice; not in the source scope. |
-| Reconciliation | Baselines, changes, currencies, calendars and provisional sums reconciled | partial | pov | The customer's conventions | customer; industry | sow §6 (2026-09-10 version); data-0929 |
-| Reconciliation | Activities matched across re-baselined schedules | roadmap | integration |  | use_case | research-brief: What happens when things go wrong |
+| Category | Feature | Status | From tier | Specificity | Source |
+|---|---|---|---|---|---|
+| Mapping | Records mapped to project, area and package | partial | pov | customer | sow §2.4 |
+| Mapping | Unresolved records listed with their reason | partial | pov | use_case | sow §2.4, §7 |
+| Mapping | Unit hierarchy configurable per industry | roadmap | integration | industry | research-brief: The industries; Work type and work order for utilities; order, assembly and operation for engineer-to-order. |
+| Reconciliation | Plan of record chosen per package | partial | pov | use_case | research-brief: The workflow, generalized; From standard practice; not in the source scope. |
+| Reconciliation | Baselines, changes, currencies, calendars and provisional sums reconciled | partial | pov | customer; industry | sow §6 (2026-09-10 version); data-0929 |
+| Reconciliation | Activities matched across re-baselined schedules | roadmap | integration | use_case | research-brief: What happens when things go wrong |
 
 ### Measure the variances
 
@@ -193,14 +193,14 @@ Heads of project controls at contractors and capital-programme owners whose sche
   - Materiality thresholds
   - The categories of the variance split
 
-| Category | Feature | Status | From tier | Customization | Specificity | Note | Source |
-|---|---|---|---|---|---|---|---|
-| Comparison | Cost and schedule against plan, per package | partial | pov |  | use_case | Running work is compared to date; finished work in full. | sow §2.2; brief §3 |
-| Comparison | Forecast drift tracked month by month | partial | pov |  | use_case |  | data-0929; pov-deck |
-| Comparison | Variance split: scope, rate, quantity, timing | partial | pov | Categories of the split | use_case |  | research-brief: The workflow, generalized; From standard practice; not in the source scope. |
-| Comparison | Re-planning separated from real slippage | roadmap | integration |  | use_case |  | research-brief: What the other vendors ship; From standard practice; not in the source scope. |
-| Materiality | Material variances flagged, with critical-path impact | partial | pov | Thresholds | use_case |  | research-brief: What the other vendors ship |
-| Materiality | First month each gap showed in the record | partial | pov |  | use_case | A change entered late makes the first-visible month lag. | pov-deck (early-warning lead time) |
+| Category | Feature | Status | From tier | Specificity | Note | Source |
+|---|---|---|---|---|---|---|
+| Comparison | Cost and schedule against plan, per package | partial | pov | use_case | Running work is compared to date; finished work in full. | sow §2.2; brief §3 |
+| Comparison | Forecast drift tracked month by month | partial | pov | use_case |  | data-0929; pov-deck |
+| Comparison | Variance split: scope, rate, quantity, timing | partial | pov | use_case |  | research-brief: The workflow, generalized; From standard practice; not in the source scope. |
+| Comparison | Re-planning separated from real slippage | roadmap | integration | use_case |  | research-brief: What the other vendors ship; From standard practice; not in the source scope. |
+| Materiality | Material variances flagged, with critical-path impact | partial | pov | use_case |  | research-brief: What the other vendors ship |
+| Materiality | First month each gap showed in the record | partial | pov | use_case | A change entered late makes the first-visible month lag. | pov-deck (early-warning lead time) |
 
 ### Trace the causes
 
@@ -209,13 +209,13 @@ Heads of project controls at contractors and capital-programme owners whose sche
   - The cause list, which document types count as evidence, and the languages they are written in
   - Delivery models named in the customer's own words
 
-| Category | Feature | Status | From tier | Customization | Specificity | Source |
-|---|---|---|---|---|---|---|
-| Evidence | Evidence search across contracts, changes and reports | partial | pov | Document types that count as evidence | engine | sow §2.4; research-brief: Where the pack differs from what we built; Built on the engine's cited search; the evidence index is set up in the proof of value. |
-| Evidence | Candidate causes, each cited to its record | partial | pov | The cause list | customer | sow §2.4; brief §6 |
-| Evidence | Confidence per cause; unexplained gaps marked | partial | pov |  | use_case | brief §6; research-brief: What happens when things go wrong |
-| Attribution | Who carried the risk behind each cause | partial | pov |  | use_case | research-brief: What the other vendors ship; From standard practice; not in the source scope. |
-| Attribution | Own crews compared with subcontractors, same trade | partial | pov | Delivery models per industry | industry | brief §3; user:2026-10-01 |
+| Category | Feature | Status | From tier | Specificity | Source |
+|---|---|---|---|---|---|
+| Evidence | Evidence search across contracts, changes and reports | partial | pov | engine | sow §2.4; research-brief: Where the pack differs from what we built; Built on the engine's cited search; the evidence index is set up in the proof of value. |
+| Evidence | Candidate causes, each cited to its record | partial | pov | customer | sow §2.4; brief §6 |
+| Evidence | Confidence per cause; unexplained gaps marked | partial | pov | use_case | brief §6; research-brief: What happens when things go wrong |
+| Attribution | Who carried the risk behind each cause | partial | pov | use_case | research-brief: What the other vendors ship; From standard practice; not in the source scope. |
+| Attribution | Own crews compared with subcontractors, same trade | partial | pov | industry | brief §3; user:2026-10-01 |
 
 ### Review with experts
 
@@ -223,11 +223,11 @@ Heads of project controls at contractors and capital-programme owners whose sche
 - **Customization in this area:**
   - Reviewers, validation cases and who rules on a disagreement
 
-| Category | Feature | Status | From tier | Customization | Specificity | Source |
-|---|---|---|---|---|---|---|
-| Review | Confirm or reject each cause, with a reason | partial | pov | Reviewers and validation cases | customer | sow §2.2, §7 |
-| Review | Disagreements kept for the decision owner | partial | pov | Who rules on a disagreement | use_case | research-brief: What happens when things go wrong |
-| Access | Record-level access for restricted or export-controlled data | roadmap | integration |  | industry | research-brief: The industries |
+| Category | Feature | Status | From tier | Specificity | Source |
+|---|---|---|---|---|---|
+| Review | Confirm or reject each cause, with a reason | partial | pov | customer | sow §2.2, §7 |
+| Review | Disagreements kept for the decision owner | partial | pov | use_case | research-brief: What happens when things go wrong |
+| Access | Record-level access for restricted or export-controlled data | roadmap | integration | industry | research-brief: The industries |
 
 ### Carry the lessons forward
 
@@ -235,14 +235,14 @@ Heads of project controls at contractors and capital-programme owners whose sche
 - **Customization in this area:**
   - The report's layout and the decisions it feeds
 
-| Category | Feature | Status | From tier | Customization | Specificity | Source |
-|---|---|---|---|---|---|---|
-| Lessons | Recurring patterns, with the sample size stated | partial | pov |  | use_case | brief §6; research-brief: What happens when things go wrong |
-| Lessons | Insight report and evidence pack exported | partial | pov | Report layout and the decisions it feeds | use_case | brief §6; sow §7 |
-| Lessons | Lessons written back to planning and estimating | roadmap | integration |  | customer | research-brief: What the other vendors ship |
-| Comparison at scale | Several projects and portfolios compared | roadmap | scaling |  | use_case | brief §9 |
-| Comparison at scale | Plans checked against completed history | roadmap | scaling |  | use_case | research-brief: What the other vendors ship |
-| Comparison at scale | Many small jobs compared as one group | roadmap | scaling |  | industry | research-brief: The industries; Utilities: thousands of similar jobs, with the sample size shown. |
+| Category | Feature | Status | From tier | Specificity | Source |
+|---|---|---|---|---|---|
+| Lessons | Recurring patterns, with the sample size stated | partial | pov | use_case | brief §6; research-brief: What happens when things go wrong |
+| Lessons | Insight report and evidence pack exported | partial | pov | use_case | brief §6; sow §7 |
+| Lessons | Lessons written back to planning and estimating | roadmap | integration | customer | research-brief: What the other vendors ship |
+| Comparison at scale | Several projects and portfolios compared | roadmap | scaling | use_case | brief §9 |
+| Comparison at scale | Plans checked against completed history | roadmap | scaling | use_case | research-brief: What the other vendors ship |
+| Comparison at scale | Many small jobs compared as one group | roadmap | scaling | industry | research-brief: The industries; Utilities: thousands of similar jobs, with the sample size shown. |
 
 ## Workflow
 
