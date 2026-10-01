@@ -41,7 +41,7 @@ Each variance arrives with its likely causes and the record behind each. Experts
   - **Rebuilt by hand:** explaining one package's overrun means joining schedule, cost and contract files line by line.
   - **The cause sits elsewhere:** the change order, design delay or contractor swap is in a contract or a log, not in the schedule.
   - **Few packages get reviewed:** expert time runs out after the biggest overruns, so the rest are never explained.
-- **Reframe:** Confirm the cause, don't hunt for it
+- **Reframe:** Bid on evidence, keep the margin
 - **Today:** Project controllers rebuild an overrun by hand from schedules, cost reports and contracts, for a few packages, and the next bid repeats what nobody traced.
 - **Tomorrow:** Every package's overrun arrives with its causes and the record behind each; experts confirm them in hours, and the next bid prices those risks and keeps its margin.
 
