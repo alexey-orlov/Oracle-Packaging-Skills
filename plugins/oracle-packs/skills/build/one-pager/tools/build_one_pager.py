@@ -600,7 +600,7 @@ def _flow_from_architecture(spec, channel="partner_print"):
     # -- the sources. The strip has one pipe in, so the sources after the first ride
     # the box's own line with what they send: an unnamed source is a dropped box.
     sources = model["sources"]
-    others = [f"{s['name']} — {s['data']}" if (s["data"] and notes_on) else s["name"]   # names only when the page's notes are off
+    others = [f"{s['name']}: {s['data']}" if (s["data"] and notes_on) else s["name"]   # names only when the page's notes are off; a colon, never an em-dash, in printed copy
               for s in sources[1:]]
     source = {"name": sources[0]["name"],
               "note": ("with " + "; ".join(others)) if others else None}
