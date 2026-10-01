@@ -30,20 +30,20 @@ roadmap_block: Deep research & investigation
 
 ### Problem
 
-When a big project overruns, project controllers can't say which work packages caused it or why: schedules, costs and contracts don't link.
+Project controllers can't trace what drove a package over budget: schedules, costs and contracts don't link. So the next estimate repeats the same mistakes and loses the money again.
 
 ### Solution
 
-Project controllers review each package's plan against actual with its likely causes and the document behind each; their experts confirm or reject, and confirmed causes become the next bid's lessons.
+Each variance arrives with its likely causes and the record behind each. Experts confirm them instead of rebuilding them, and every new bid prices those risks up front.
 
 - **Source:** user:2026-10-01
 - **Sub-problems:**
   - **Rebuilt by hand:** explaining one package's overrun means joining schedule, cost and contract files line by line.
   - **The cause sits elsewhere:** the change order, design delay or contractor swap is in a contract or a log, not in the schedule.
-  - **The next bid repeats it:** lessons stay in people's heads and never reach the next plan.
+  - **Few packages get reviewed:** expert time runs out after the biggest overruns, so the rest are never explained.
 - **Reframe:** Confirm the cause, don't hunt for it
-- **Today:** Project controllers rebuild an overrun by hand from the schedule, the cost reports and the contracts, for the few packages someone has time for.
-- **Tomorrow:** Every package's plan against actual arrives with its candidate causes and the record behind each; experts confirm, and the lessons go into the next bid.
+- **Today:** Project controllers rebuild an overrun by hand from schedules, cost reports and contracts, for a few packages, and the next bid repeats what nobody traced.
+- **Tomorrow:** Every package's overrun arrives with its causes and the record behind each; experts confirm them in hours, and the next bid prices those risks and keeps its margin.
 
 ## Who buys it
 
@@ -75,8 +75,8 @@ Heads of project controls whose schedules, costs and contracts don't link.
 
 - **Site label:** Construction
 - **Framing:**
-  - **Problem:** A contractor picks its own crews or a subcontractor for every work package, but after an overrun nobody can say which packages, under which choice, caused it: schedule updates, monthly cost reports and the variations log link only by package name.
-  - **Solution:** Each package's overrun is shown with its likely causes (a variation, a design delay, a contractor change), each cited to the record, and packages built by own crews are compared with subcontracted ones before the next bid is priced.
+  - **Problem:** A contractor picks its own crews or a subcontractor for every work package, but after an overrun nobody can say which choice caused it: the records link only by package name, so the next bid repeats the losing choice.
+  - **Solution:** Each package's overrun comes back with its likely causes (a variation, a design delay, a contractor change), each cited to the record, and own crews are compared with subcontracts, so the next bid prices each package on evidence and keeps its margin.
   - **Entities:** scheduled activities with baselines and monthly updates, bills of quantities, subcontracts, variations and claims, provisional sums
 - **Status:** plausible
 - **What matters here:** Records link by name only; provisional sums distort budgets; own crews or subcontract is decided per package.
@@ -96,8 +96,8 @@ Heads of project controls whose schedules, costs and contracts don't link.
 
 - **Site label:** Utility capital programmes
 - **Framing:**
-  - **Problem:** A utility's capital programme runs thousands of similar jobs a year (poles, mains, substations), and unit costs drift above estimate without anyone knowing which work types or crews drove it.
-  - **Solution:** Jobs are compared with their estimates by work type and region, own crews against contractor crews, and each overrun comes back with its cited cause, ready for the regulator's review.
+  - **Problem:** A utility's capital programme runs thousands of similar jobs a year (poles, mains, substations), and unit costs drift above estimate with nobody knowing which work types or crews drove it, so the regulator may not allow the overspend.
+  - **Solution:** Jobs are compared with their estimates by work type, own crews against contractors, and each overrun comes back with its cited cause, so justified costs are recovered and the next plan prices the rest.
   - **Entities:** work orders, standard design units, contractor unit-rate invoices, crew types
 - **Status:** plausible
 - **What matters here:** Many small jobs, so samples are large; regulators want each overrun explained; own versus contractor crews.
@@ -117,8 +117,8 @@ Heads of project controls whose schedules, costs and contracts don't link.
 
 - **Site label:** Engineer-to-order manufacturing
 - **Framing:**
-  - **Problem:** An equipment maker quotes every custom order, and when orders finish over their quote, the estimate, the job cost and the engineering changes sit in different systems, so nobody can say why.
-  - **Solution:** Each closed order is compared with its quote, operation by operation, and every overrun comes back with its cause (an engineering change, rework, a late part) and whether outside processing paid off.
+  - **Problem:** An equipment maker quotes every custom order, and when orders finish over their quote, the estimate, the job cost and the engineering changes sit in different systems, so nobody can say why and the next quote loses the same margin.
+  - **Solution:** Each closed order is compared with its quote operation by operation, every overrun comes back with its cited cause and whether outside processing paid off, and the next quote prices both in.
   - **Entities:** quotes, planned bills of materials and routings, job cost, engineering change orders, non-conformance reports
 - **Status:** plausible
 - **What matters here:** Quote mapped to what was built; engineering changes carried as scope; make or buy per component.
@@ -139,8 +139,8 @@ Heads of project controls whose schedules, costs and contracts don't link.
 
 - **Site label:** Shipbuilding and defence
 - **Framing:**
-  - **Problem:** A programme team writes monthly variance explanations for every control account over threshold, from memory and email, and the customer's auditors challenge the ones the records don't support.
-  - **Solution:** Each variance explanation is checked against the schedule, cost and change records, the unsupported ones are flagged, and the confirmed causes feed the next make-or-buy plan.
+  - **Problem:** A programme team writes monthly variance explanations for every control account over threshold, from memory and email, and the customer's auditors challenge the ones the records don't support, putting fee and future awards at risk.
+  - **Solution:** Each variance explanation is checked against the schedule, cost and change records and the unsupported ones are flagged, so explanations survive audit and the next make-or-buy plan prices the risk.
   - **Entities:** control accounts, integrated master schedules, variance analysis reports, make-or-buy plans
 - **Status:** plausible
 - **What matters here:** Variance reports already exist and get audited; formal make-or-buy plans; export controls limit who sees data.
@@ -160,8 +160,8 @@ Heads of project controls whose schedules, costs and contracts don't link.
 
 - **Site label:** Professional services
 - **Framing:**
-  - **Problem:** A services firm's engagement ends below its planned margin; the project ledger shows the gap, but why (scope creep, the staffing mix, client delays) sits in change requests and email.
-  - **Solution:** Each closed engagement's overrun is traced to the change requests, staffing and correspondence behind it, so the next bid prices the scope and the staffing mix on evidence.
+  - **Problem:** A services firm's engagement ends below its planned margin; the project ledger shows the gap, but the why (scope creep, the staffing mix, client delays) sits in change requests and email, so the next bid repeats it.
+  - **Solution:** Each closed engagement's overrun is traced to the change requests, staffing and correspondence behind it, so the next bid prices the scope and staffing mix on evidence and holds its margin.
   - **Entities:** engagements, role-and-rate estimates, timesheets, change requests, client correspondence
 - **Status:** plausible
 - **What matters here:** The ledger already shows the variance; the cause sits in change requests and email; the lesson is the staffing mix.
