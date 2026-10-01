@@ -662,7 +662,7 @@ class Build:
             else:   # the metric's name where the figure will stand, and what it measures
                 figure = re.sub(r"\s*[↑↓→]+\s*$", "", clean(kpi.get("chip"))) or clean(kpi.get("name"))
                 label = (clean(kpi.get("label") or kpi.get("name"))
-                         + " — " + specfmt_module().FIGURELESS_PHRASE)   # the one-pager's and the executive summary's words
+                         + ": " + specfmt_module().FIGURELESS_PHRASE)   # the one-pager's and the executive summary's words; no em-dash in prose
             v = ex.by_id(slide, stat["value"])
             l = ex.by_id(slide, stat["label"])
             ex.fill_text(v, figure)
@@ -1379,6 +1379,7 @@ class Build:
                      original=was[rows["header"]][ci])
 
         needs_footnote = False
+        price_note = ""
         scope_row = rows["scope"]
         # Technical acceptance criteria never reach a sales tile; this is where they
         # belong — the PoV's own scope, as the line that says when the proof is done.
@@ -1410,6 +1411,8 @@ class Build:
                     if foot:
                         text += "*"
                         needs_footnote = True
+                        # the price's own footnote from the brief, not a generic consumption note
+                        price_note = price_note or clean((tier.get(getter) or {}).get("footnote"))
                     ex.fill_cell(table.cell(rows[row_key], ci), text)
             for ci, tier in enumerate(tiers[:len(col_w) - 1], start=1):
                 ex.fill_cell(table.cell(rows["timing"], ci),
@@ -1460,7 +1463,8 @@ class Build:
             if needs_footnote:
                 # A grown table leaves room for one footnote line, not two.
                 legend += ("   ·   " if grown else "\n")
-                legend += ("* Indicative price; real consumption depends on run frequency, "
+                legend += ("* " + price_note.lstrip("* ") if price_note else
+                           "* Indicative price; real consumption depends on run frequency, "
                            "rule-set complexity and the integration landscape.")
             ex.set_paragraphs(foot, [(i, [line]) for i, line in enumerate(legend.split("\n"))])
 
