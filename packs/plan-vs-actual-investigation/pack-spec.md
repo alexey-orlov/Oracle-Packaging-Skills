@@ -47,7 +47,7 @@ Project controllers review each package's plan against actual with its likely ca
 
 ## Who buys it
 
-Heads of project controls at contractors and capital-programme owners whose schedules, cost reports and contracts don't link.
+Heads of project controls whose schedules, costs and contracts don't link.
 
 - **Source:** user:2026-10-01
 - **Buyer roles:** Head of project controls; Commercial director; PMO director; Head of planning
@@ -290,9 +290,9 @@ Heads of project controls at contractors and capital-programme owners whose sche
 
 | System | Detail | Data | Tier |
 |---|---|---|---|
-| Oracle Primavera P6 | or another scheduling tool | schedule baselines and monthly updates | file export (XER or XML) in the proof of value; API feed in Integration |
-| Oracle Fusion Cloud ERP | or Oracle E-Business Suite, another ERP, or spreadsheets | budget, forecast and actual cost per package, month by month | file export in the proof of value; API feed in Integration |
-| Oracle Aconex | or another document store | contracts, bills of quantities, amendments, letters, progress reports | file export in the proof of value; API feed in Integration |
+| Oracle Primavera P6 | or another scheduling tool | schedule baselines and updates | file export (XER or XML) in the proof of value; API feed in Integration |
+| Oracle Fusion Cloud ERP | or Oracle E-Business Suite, another ERP, or spreadsheets | package budgets and actuals | file export in the proof of value; API feed in Integration |
+| Oracle Aconex | or another document store | contracts and correspondence | file export in the proof of value; API feed in Integration |
 | Oracle Primavera Unifier | or a spreadsheet register | variations, claims, approvals | file export in the proof of value; API feed in Integration |
 
 ### 1. Gather and check the records
@@ -383,8 +383,7 @@ Heads of project controls at contractors and capital-programme owners whose sche
 
 | System | Detail | Data | Tier | Note |
 |---|---|---|---|---|
-| Review app |  | findings, citations, review status and the coverage-gap list | in the proof of value |  |
-| Insight report and evidence pack | file export | confirmed causes and recurring patterns per package, each with its record | file in the proof of value |  |
+| Insight report and evidence pack | file export | confirmed causes, citations and coverage gaps | file in the proof of value |  |
 | Oracle Primavera P6 | or another scheduling or estimating tool | lessons attached to the next plan or estimate | write-back in Integration; not in the proof of value | The receiving system is confirmed with the first Integration customer (inferred). |
 
 ### Notes
@@ -411,9 +410,9 @@ Heads of project controls at contractors and capital-programme owners whose sche
 
 | System | Detail | Data | Tier |
 |---|---|---|---|
-| Oracle Primavera P6 | or another scheduling tool | schedule baselines and monthly updates | file export (XER or XML) in the proof of value; API feed in Integration |
-| Oracle Fusion Cloud ERP | or Oracle E-Business Suite, another ERP, or spreadsheets | budget, forecast and actual cost per package, month by month | file export in the proof of value; API feed in Integration |
-| Oracle Aconex | or another document store | contracts, bills of quantities, amendments, letters, progress reports | file export in the proof of value; API feed in Integration |
+| Oracle Primavera P6 | or another scheduling tool | schedule baselines and updates | file export (XER or XML) in the proof of value; API feed in Integration |
+| Oracle Fusion Cloud ERP | or Oracle E-Business Suite, another ERP, or spreadsheets | package budgets and actuals | file export in the proof of value; API feed in Integration |
+| Oracle Aconex | or another document store | contracts and correspondence | file export in the proof of value; API feed in Integration |
 | Oracle Primavera Unifier | or a spreadsheet register | variations, claims, approvals | file export in the proof of value; API feed in Integration |
 
 ### Stack, top to bottom
@@ -430,30 +429,15 @@ Heads of project controls at contractors and capital-programme owners whose sche
 - **Name:** NVIDIA AI-Q Blueprint
 - **Vendor:** NVIDIA
 - **Summary:** cited search and reasoning over the records
-- **Items:**
-  - NVIDIA AI-Q Blueprint: the research and reasoning workflow
-  - NVIDIA NeMo: NeMo Retriever microservices for document processing, embedding and reranking
-  - NVIDIA NIM: model serving
-  - NVIDIA Nemotron: the reasoning models
-- **Catalog id:** nvidia-aiq; nvidia-nemo; nvidia-nim; nvidia-nemotron
-- **Note:** NeMo Retriever sits under the NVIDIA NeMo entry of the product list. Models are picked in the first two weeks of each engagement; open-source alternatives where licensed.
+- **Catalog id:** nvidia-aiq; nvidia-nemo; nvidia-nim
+- **Note:** NeMo Retriever microservices for document processing, embedding and reranking; Nemotron reasoning models served on NIM by default, picked in the first two weeks of each engagement, open-source alternatives where licensed.
 
 #### Infrastructure
 
 - **Name:** Oracle Cloud Infrastructure
 - **Vendor:** Oracle
 - **Summary:** GPU compute, Kubernetes, storage, the database with vector search, identifier search, OCR, networking and identity
-- **Items:**
-  - OCI GPU Instances
-  - OCI Kubernetes Engine (OKE)
-  - OCI Object Storage
-  - Oracle AI Database
-  - Oracle AI Vector Search
-  - OCI Search with OpenSearch
-  - OCI Document Understanding
-  - OCI API Gateway
-  - OCI Virtual Cloud Network (VCN)
-  - OCI Identity and Access Management
+- **Items:** GPU compute; Kubernetes; AI Database with vector search; OpenSearch
 - **Catalog id:**
   - oci-gpu-instances
   - oci-kubernetes-engine
@@ -468,11 +452,9 @@ Heads of project controls at contractors and capital-programme owners whose sche
 
 ### Outputs
 
-| System | Detail | Data | Tier | Note |
-|---|---|---|---|---|
-| Review app |  | findings, citations, review status and the coverage-gap list | in the proof of value |  |
-| Insight report and evidence pack | file export | confirmed causes and recurring patterns per package, each with its record | file in the proof of value |  |
-| Oracle Primavera P6 | or another scheduling or estimating tool | lessons attached to the next plan or estimate | write-back in Integration; not in the proof of value | The receiving system is confirmed with the first Integration customer (inferred). |
+| System | Detail | Data | Tier |
+|---|---|---|---|
+| Insight report and evidence pack | file export | confirmed causes, citations and coverage gaps | file in the proof of value |
 
 ### Notes
 
@@ -531,7 +513,7 @@ Heads of project controls at contractors and capital-programme owners whose sche
 - **Note:** The schedule counterpart of Overrun explained; the job covers cost and schedule.
 - **Source:** sow §2.3, §2.4 (derived)
 
-### Causes the experts confirm
+### Causes confirmed
 
 - **Kind:** technical
 - **Formula:** Variances, patterns and candidate causes the experts confirm ÷ those reviewed, on the agreed validation cases
@@ -539,7 +521,7 @@ Heads of project controls at contractors and capital-programme owners whose sche
 - **Note:** The source case's output validation rate; the threshold is agreed in the first weeks.
 - **Source:** sow §2.3
 
-### Findings traced to their record
+### Findings traceable
 
 - **Kind:** technical
 - **Formula:** Material findings carrying the package, source file and version, passage, basis, confidence, review status and the data gaps that limit them ÷ material findings
@@ -551,17 +533,17 @@ Heads of project controls at contractors and capital-programme owners whose sche
 
 - **Status:** confirmed
 - **Anchor line:** Runs on OCI beside the customer's Oracle Primavera P6 schedules and Oracle Aconex contract records.
-- **Value for Oracle and NVIDIA:** {Customer}'s schedules already run on Oracle Primavera P6, and each project analysed brings its full schedule history, cost reports, contracts and variations onto OCI. NVIDIA AI-Q and NeMo Retriever read them on GPU, Oracle AI Database holds the reconciled package data, and {Customer}'s unified ERP programme can reuse it.
-- **Value for the client:** {Customer}'s planners will see why packages overran before the next project is packaged, and how its own crews and subcontractors delivered each trade against plan. The lessons will reach the next project director instead of staying with the last one.
+- **Value for Oracle and NVIDIA:** {Customer}'s schedules already run on Oracle Primavera P6. Each project analysed puts its schedule history, costs, contracts and variations on OCI, read by NVIDIA AI-Q and held in Oracle AI Database.
+- **Value for the client:** {Customer}'s planners will see why packages overran before the next project is planned, and how its own crews and subcontractors delivered each trade against plan. The lessons will reach the next project director instead of staying with the last one.
 - **Source:** user:2026-10-01 (proof length and price); sow (updated 2026-10-01); research-brief
 
 ### PoV Jumpstart · S
 
 - **Id:** pov
-- **Scope:** One project's file exports: each linkable package's plan against actual, with candidate causes cited to the record for your experts to confirm or reject.
+- **Scope:** One project's exports: each package against plan, causes cited.
 - **Duration:** 8–8 weeks (target 8, hard cap 10, status confirmed)
 - **Duration note:** CONFIRMED (user:2026-10-01): an 8-week proof, narrower than the source case's 12 weeks plus 2 of acceptance: one project's file exports, the packages the first weeks confirm as linkable, file in and out. The exports, the validation cases and named reviewers are an entry gate, not proof weeks.
-- **Services price:** €171K · confirmed · Services, including the Oracle cloud environment setup; cloud consumption is billed separately.
+- **Services price:** €171K · indicative · Indicative; services including the Oracle cloud setup, confirmed at scoping; cloud usage billed separately.
 - **Infrastructure price per month:** to be defined · Client-paid cloud consumption, sized at scoping.
 - **What you get:**
   - Every package in the sample compared with its plan on cost and schedule, month by month
@@ -667,7 +649,7 @@ Heads of project controls at contractors and capital-programme owners whose sche
 
 ### Why it sells for the partner
 
-- **Consumption on the customer's own data:** GPU compute, Oracle AI Database and OCI Search with OpenSearch, for every project analysed
+- **Consumption on the customer's own data:** GPU compute and Oracle AI Database on OCI, for every project analysed
 - **An Oracle anchor already in the account:** schedules in Oracle Primavera P6, contracts in Oracle Aconex
 - **A door to Integration:** live schedule, cost and document feeds, and lessons written back into planning and estimating
 - **A contained start:** file exports only, nothing integrated during the proof
@@ -680,7 +662,7 @@ Heads of project controls at contractors and capital-programme owners whose sche
 ## Proof
 
 - **Customer:** Saudi Binladin Group
-- **Context:** {Customer} builds mega-projects split into dozens of work packages and decides for each whether its own crews or a subcontractor does the work. Execution rarely comes close to the original assumptions, and the reasons sit in schedules, monthly cost reports, contracts and a variations log nobody has joined, so each new project director meets the same traps.
+- **Context:** {Customer} builds mega-projects in dozens of work packages and decides for each whether its own crews or a subcontractor does the work. Execution rarely matches the plan, and the reasons sit in schedules, cost reports, contracts and a variations log nobody has joined.
 - **Delivered:** {Customer}'s planners will see each package's cost and schedule against plan, month by month, with every overrun's candidate causes cited to the schedule update, cost report or variation behind it, and own crews compared with subcontractors on the same trade. Their own experts will confirm each cause before it becomes a lesson for the next project.
 - **Divergence from the pack:** The source case is one unfinished construction project, two sites and the work packages its data assessment shortlisted, with three fixed delivery models and file exports from Primavera P6, monthly cost reports, contracts and a claims log, over 12 weeks plus 2 of acceptance with the cloud setup included. The pack generalizes to any project-based unit of work in five industries, an 8-week proof, configurable units and delivery models, and adds live feeds and write-back (Integration) and portfolio comparison (Scaling). The proof has not run: no results yet.
 - **Divergence line:** The source case is one construction project's work packages, in preparation; the pack applies the same method to any project-based work, results to follow.
