@@ -738,10 +738,10 @@ Heads of project controls whose schedules, costs and contracts don't link.
 
 ## Next steps
 
-1. **Run the source case:** Kick off once the customer agrees the package sample, the validation cases and the reviewers.
-2. **Confirm what already exists:** Check what the sibling packs already ship before any capability is marked available.
-3. **Agree the Integration destination:** Settle with the first Integration customer where lessons are written back.
-4. **Brief Oracle's construction team:** Agree how the pack sits beside Oracle's own construction analytics.
+1. **Run the source case:** Kick off once the customer agrees the sample and reviewers.
+2. **Confirm what already exists:** Check what sibling packs ship before marking anything available.
+3. **Agree the Integration destination:** Agree where lessons are written back at Integration.
+4. **Brief Oracle's construction team:** Position it beside Oracle's own construction analytics.
 
 ## Open questions
 
