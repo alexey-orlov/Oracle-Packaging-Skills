@@ -730,7 +730,7 @@ Heads of project controls whose schedules, costs and contracts don't link.
 - **Context:** {Customer} builds mega-projects in dozens of work packages and decides for each whether its own crews or a subcontractor does the work. Execution rarely matches the plan, and the reasons sit in schedules, cost reports, contracts and a variations log nobody has joined.
 - **Delivered:** Its planners will see each package's cost and schedule against plan, month by month, with every overrun's candidate causes cited to the schedule update, cost report or variation behind it, and own crews compared with subcontractors on the same trade. Its own experts will confirm each cause before it becomes a lesson for the next project.
 - **Divergence from the pack:** The source case is one unfinished construction project, two sites and the work packages its data assessment shortlisted, with three fixed delivery models and file exports from Primavera P6, monthly cost reports, contracts and a claims log, over 12 weeks plus 2 of acceptance with the cloud setup included. The pack generalizes to any project-based unit of work in five industries, an 8-week proof, configurable units and delivery models, and adds live feeds and write-back (Integration) and portfolio comparison (Scaling). The proof has not run: no results yet.
-- **Divergence line:** The source case is one construction project's work packages, in preparation; its proof of value will put the first figures on these measures.
+- **Divergence line:** The source case is one construction project's work packages, in preparation.
 - **Source:** data-0929; brief; sow; user:2026-10-01
 - **Proof headline:** Work packages on a live mega-project, investigated against their schedules, cost reports and variations: results to follow
 - **Proof story:** {Customer} decides for every work package whether its own crews or a subcontractor does the work. Its planners will see each overrun traced to its causes and records, confirmed by their own experts.
@@ -739,8 +739,8 @@ Heads of project controls whose schedules, costs and contracts don't link.
 ## Next steps
 
 1. **Run the source case:** Kick off once the customer agrees the sample and reviewers.
-2. **Confirm what already exists:** Check what sibling packs ship before marking anything available.
-3. **Agree the Integration destination:** Agree where lessons are written back at Integration.
+2. **Confirm what already exists:** Check what sibling apps ship before this one claims it.
+3. **Agree the Integration destination:** Planning tool or estimating system: not yet chosen.
 4. **Brief Oracle's construction team:** Position it beside Oracle's own construction analytics.
 
 ## Open questions
@@ -856,6 +856,10 @@ Heads of project controls whose schedules, costs and contracts don't link.
   - **PoV:** One project's exports, each work package against plan.
   - **Integration:** Live feeds, with lessons written back to planning.
   - **Scaling:** The whole portfolio, compared against completed history.
+
+### Executive summary
+
+- **Running header:** Oracle AI & Data Solutions · Plan vs actual investigation App
 
 ### Provenance
 
