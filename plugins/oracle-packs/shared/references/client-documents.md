@@ -38,8 +38,10 @@ stale the moment they edit; port their edits first, or build inside the edited f
 
 ## Marketing copy: persona first, scaffolding last (2026-09-16)
 
-- **The problem and the solution lines are tangible and readable with zero context.** One home
-  for that rule, with its checks and its examples: the spec skill's `story` card.
+- **The problem and the solution lines are tangible, readable with zero context, and carried one
+  "so what" to the money** (the last since 2026-10-01): the problem ends on what the pain costs
+  the business, the solution on how that measure changes and what it returns. One home for that
+  rule, with its checks and its examples: the spec skill's `story` card.
 - **A one-liner sells the business value, never the implementation** (2026-09-29). One home for
   that rule, with its checks and its examples: the spec skill's `one-liner` card; the spec linter
   fails a platform, vendor, engine, model or data-architecture word in it before any artifact is
