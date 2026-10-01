@@ -464,14 +464,14 @@ Heads of project controls whose schedules, costs and contracts don't link.
 
 ## Oracle products
 
-| Id | Name | Role | Why | At PoV | At Integration | At Scaling | Note | Inferred | Source |
-|---|---|---|---|---|---|---|---|---|---|
-| oci | Oracle Cloud Infrastructure | required | Runs the pack: GPU instances for the reasoning and retrieval models, Kubernetes for the app, API Gateway for its interfaces, Object Storage for the exports and the evidence, Document Understanding for scanned contracts, OpenSearch for package codes and contract references, and the network and identity setup around them. | A test tenancy, set up within the proof of value | The customer's production tenancy | The same tenancy across business units and regions |  |  | sow §2.4 (updated 2026-10-01) |
-| oracle-ai-database | Oracle AI Database | required | Holds the reconciled project model and its relationships, and runs AI Vector Search over the evidence, so every cause traces back to its record. | Inside the proof's tenancy | A production instance fed monthly | One model across business units |  |  | sow §2.4 (updated 2026-10-01) |
-| oracle-primavera-p6-eppm | Oracle Primavera P6 Enterprise Project Portfolio Management | optional | The schedules: every package's baseline and monthly updates, the record each schedule variance is measured against. | XER or P6 XML file export | API feed of each monthly update; lessons written back if it is the chosen destination | API feed for every project in the portfolio, with feed-health monitoring |  |  | sow §2.4; data-0929; AO wiki sbg-poc (central P6 EPPM on Oracle cloud, Aug-17 workshop) |
-| oracle-fusion-cloud-erp | Oracle Fusion Cloud ERP | optional | Project costs: budgets, forecasts and actuals per package from project financials, the record each cost variance is measured against. | Cost report export | API feed from project costing | API feed across business units, with feed-health monitoring | The source case's costs sit in Oracle applications and monthly cost reports; buyers on Fusion Cloud ERP connect it directly. | yes | brief §5; research-brief: The workflow, generalized |
-| oracle-aconex | Oracle Aconex | optional | The contracts, amendments and formal correspondence where the cause of a variance is usually written down. | File export of the document register and project mail | API feed from the document register and project mail | API feed from every project's register and mail, with feed-health monitoring |  |  | sow §2.4 (raw Aconex exports; contracts, amendments and correspondence as the evidence layer) |
-| oracle-primavera-unifier | Oracle Primavera Unifier | optional | Change and claims registers as evidence of why cost and schedule moved, and a candidate destination for lessons at Integration. | Register export | API read of change and claims records; lessons written back if it is the chosen destination | API read and write-back across the portfolio, with feed-health monitoring |  | yes | research-brief: What the other vendors ship |
+| Id | Name | Role | Why | At PoV | At Integration | At Scaling | Note | Name note | Inferred | Source |
+|---|---|---|---|---|---|---|---|---|---|---|
+| oci | Oracle Cloud Infrastructure | required | Runs the pack: GPU instances for the reasoning and retrieval models, Kubernetes for the app, API Gateway for its interfaces, Object Storage for the exports and the evidence, Document Understanding for scanned contracts, OpenSearch for package codes and contract references, and the network and identity setup around them. | A test tenancy, set up within the proof of value | The customer's production tenancy | The same tenancy across business units and regions |  |  |  | sow §2.4 (updated 2026-10-01) |
+| oracle-ai-database | Oracle AI Database | required | Holds the reconciled project model and its relationships, and runs AI Vector Search over the evidence, so every cause traces back to its record. | Inside the proof's tenancy | A production instance fed monthly | One model across business units |  |  |  | sow §2.4 (updated 2026-10-01) |
+| oracle-primavera-p6-eppm | Oracle Primavera P6 Enterprise Project Portfolio Management | optional | The schedules: every package's baseline and monthly updates, the record each schedule variance is measured against. | XER or P6 XML file export | API feed of each monthly update; lessons written back if it is the chosen destination | API feed for every project in the portfolio, with feed-health monitoring |  | Printed as 'Oracle Primavera P6', an alias the catalog accepts; the full name does not fit the one-pager or the diagram boxes (session ruling, 2026-10-01). |  | sow §2.4; data-0929; AO wiki sbg-poc (central P6 EPPM on Oracle cloud, Aug-17 workshop) |
+| oracle-fusion-cloud-erp | Oracle Fusion Cloud ERP | optional | Project costs: budgets, forecasts and actuals per package from project financials, the record each cost variance is measured against. | Cost report export | API feed from project costing | API feed across business units, with feed-health monitoring | The source case's costs sit in Oracle applications and monthly cost reports; buyers on Fusion Cloud ERP connect it directly. |  | yes | brief §5; research-brief: The workflow, generalized |
+| oracle-aconex | Oracle Aconex | optional | The contracts, amendments and formal correspondence where the cause of a variance is usually written down. | File export of the document register and project mail | API feed from the document register and project mail | API feed from every project's register and mail, with feed-health monitoring |  |  |  | sow §2.4 (raw Aconex exports; contracts, amendments and correspondence as the evidence layer) |
+| oracle-primavera-unifier | Oracle Primavera Unifier | optional | Change and claims registers as evidence of why cost and schedule moved, and a candidate destination for lessons at Integration. | Register export | API read of change and claims records; lessons written back if it is the chosen destination | API read and write-back across the portfolio, with feed-health monitoring |  |  | yes | research-brief: What the other vendors ship |
 
 ## Metrics
 
@@ -485,10 +485,10 @@ Heads of project controls whose schedules, costs and contracts don't link.
 - **Baseline:** The planner hours the same analysis takes by hand today, timed on the proof's packages
 - **Figure:** -
 - **Direction:** down
-- **One-pager label:** Expert time to explain an overrun
+- **One-pager label:** Expert hours per package
 - **Note:** The source case's operational-efficiency measure: person-hours to prepare an equivalent package-level analysis.
 - **Source:** sow §2.3
-- **Label:** Expert time to explain an overrun
+- **Label:** Expert hours per package
 
 ### Overrun explained
 
@@ -516,7 +516,7 @@ Heads of project controls whose schedules, costs and contracts don't link.
 - **Source:** sow §2.3, §2.4 (derived)
 - **Label:** Share of the delay explained, in days
 
-### Causes confirmed
+### causes confirmed
 
 - **Kind:** technical
 - **Formula:** Variances, patterns and candidate causes the experts confirm ÷ those reviewed, on the agreed validation cases
@@ -524,7 +524,7 @@ Heads of project controls whose schedules, costs and contracts don't link.
 - **Note:** The source case's output validation rate; the threshold is agreed in the first weeks.
 - **Source:** sow §2.3
 
-### Findings traceable
+### findings traceable
 
 - **Kind:** technical
 - **Formula:** Material findings carrying the package, source file and version, passage, basis, confidence, review status and the data gaps that limit them ÷ material findings
