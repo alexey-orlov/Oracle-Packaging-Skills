@@ -37,9 +37,9 @@ The agent, surveyor or handler confirms or overrules a measured call before the 
   - **Needless replacements:** a full replacement is paid for when a repair would have met the rules.
   - **Repeat visits:** a repair that should have been a replacement fails and comes back.
   - **Follow-on work found late:** work a replacement triggers, such as camera recalibration, surfaces after booking and adds days.
-- **Reframe:** Check the call, don't make it
+- **Reframe:** Check the call, pay only what the rule requires
 - **Outcomes:** Needless replacements ↓; Repeat visits ↓; Avoidable recalibrations ↓
-- **Source:** user:2026-09-29
+- **Source:** user:2026-10-01
 
 ## Who buys it
 
@@ -74,8 +74,8 @@ Operators who decide repair or replace, and the insurers and lessors who pay.
 ### Vehicle glazing
 
 - **Framing:**
-  - **Problem:** Call agents book a repair or a replacement before anyone sees the vehicle.
-  - **Solution:** The agent confirms a measured call and books the right job, kit and slot.
+  - **Problem:** Call agents book repair or replacement unseen; the payer funds needless glass.
+  - **Solution:** The agent confirms a measured call, so fewer needless windscreens are funded.
 - **How the entities differ:** one safety-critical panel whose function is the driver's sight-line
 - **What matters here:** Operator-led. Size limits differ by country, and a replacement can mean recalibrating the car's cameras.
 - **Worked example:** A chip in the driver's viewing area: repairable in the US under 25 mm, prohibited outright in Germany.
@@ -84,8 +84,8 @@ Operators who decide repair or replace, and the insurers and lessors who pay.
 ### Shipping containers
 
 - **Framing:**
-  - **Problem:** Depot surveyors propose repairs the owner approves line by line.
-  - **Solution:** The surveyor submits coded damage with only the permissible remedies attached.
+  - **Problem:** Depot surveyors propose repairs; the owner funds needless panels.
+  - **Solution:** The surveyor submits only permissible remedies, so the owner funds fewer panels.
 - **How the entities differ:** a steel unit with published standard geometry and its identifier beside the defect
 - **What matters here:** Operator-led. The allowed repair for each kind of damage is already codified, so each call can be checked line by line.
 - **Worked example:** A hole in a panel cannot be straightened — only patched or replaced.
@@ -94,8 +94,8 @@ Operators who decide repair or replace, and the insurers and lessors who pay.
 ### Rental and lease handover
 
 - **Framing:**
-  - **Problem:** Branch staff decide what a returning customer is charged for damage.
-  - **Solution:** New damage is separated from pre-existing, with the evidence attached to the charge.
+  - **Problem:** Branch staff decide damage charges, and a lost dispute is a write-off.
+  - **Solution:** New damage is separated from pre-existing, with evidence attached, so the charge gets paid.
 - **How the entities differ:** a whole unit compared against a prior condition record
 - **What matters here:** Payer-led. The result is a charge to the customer, so the evidence has to stand up to a dispute.
 - **Worked example:** A scratch within the fair-wear allowance on return versus one added during the hire.
@@ -104,8 +104,8 @@ Operators who decide repair or replace, and the insurers and lessors who pay.
 ### Vehicle body and paint at first notice of loss
 
 - **Framing:**
-  - **Problem:** Claims handlers decide repair, replace or write-off from photos of the damage.
-  - **Solution:** The handler reviews a costed scope with the write-off threshold already applied.
+  - **Problem:** Claims handlers decide repair or write-off from photos; wrong calls overpay claims.
+  - **Solution:** The handler reviews a costed scope, threshold applied; fewer claims are overpaid.
 - **How the entities differ:** a set of panels priced against a parts list and published labour times
 - **What matters here:** Payer-led. The limit is economic: repair until it costs more than replacing.
 - **Worked example:** Repair cost against a share of the vehicle's value, where the share is set locally.
@@ -114,8 +114,8 @@ Operators who decide repair or replace, and the insurers and lessors who pay.
 ### Aircraft skin
 
 - **Framing:**
-  - **Problem:** Engineers disposition surface damage against published structural limits.
-  - **Solution:** The engineer gets the limit, the measurement and the record in one place.
+  - **Problem:** Engineers disposition dents against limits; needless repairs ground aircraft.
+  - **Solution:** The engineer sees the limit, the measurement and the record together; aircraft keep flying.
 - **How the entities differ:** a structural panel with a permanent, mandatory damage history
 - **What matters here:** Operator-led. Some damage is accepted and recorded, within published limits, rather than repaired.
 - **Worked example:** A dent inside allowable limits, logged to the aircraft's damage chart rather than repaired.
