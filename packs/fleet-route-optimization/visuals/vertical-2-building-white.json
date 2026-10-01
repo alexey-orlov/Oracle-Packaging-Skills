@@ -1,0 +1,20 @@
+{
+  "slot": "vertical:2",
+  "kind": "icon",
+  "file": "/Users/olekorlov/oracle-packs/fleet-route-optimization/candidates/vertical-2/vertical-2-building-white.png",
+  "title": "building",
+  "creator": "Tabler Icons",
+  "creator_url": "https://tabler.io/icons/icon/building",
+  "source": "Tabler Icons",
+  "source_url": "https://tabler.io/icons/icon/building",
+  "download_url": "https://cdn.jsdelivr.net/npm/@tabler/icons-png/icons/outline/building.png",
+  "licence": "mit",
+  "licence_name": "MIT",
+  "licence_url": "https://opensource.org/licenses/MIT",
+  "attribution_required": false,
+  "terms": "building",
+  "width": 512,
+  "height": 512,
+  "fetched": "2026-09-28",
+  "note": "rendered via SVG + QuickLook; white on transparent"
+}

@@ -1,0 +1,20 @@
+{
+  "slot": "vertical:3",
+  "kind": "icon",
+  "file": "/Users/olekorlov/oracle-packs/fleet-route-optimization/candidates/vertical-3/vertical-3-truck-delivery-ink.png",
+  "title": "truck-delivery",
+  "creator": "Tabler Icons",
+  "creator_url": "https://tabler.io/icons/icon/truck-delivery",
+  "source": "Tabler Icons",
+  "source_url": "https://tabler.io/icons/icon/truck-delivery",
+  "download_url": "https://cdn.jsdelivr.net/npm/@tabler/icons-png/icons/outline/truck-delivery.png",
+  "licence": "mit",
+  "licence_name": "MIT",
+  "licence_url": "https://opensource.org/licenses/MIT",
+  "attribution_required": false,
+  "terms": "truck-delivery",
+  "width": 512,
+  "height": 512,
+  "fetched": "2026-09-28",
+  "note": "rendered via SVG + QuickLook; ink on transparent"
+}

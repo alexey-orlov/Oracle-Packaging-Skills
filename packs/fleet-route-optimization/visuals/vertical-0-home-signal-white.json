@@ -1,0 +1,20 @@
+{
+  "slot": "vertical:0",
+  "kind": "icon",
+  "file": "/Users/olekorlov/oracle-packs/fleet-route-optimization/candidates/vertical-0/vertical-0-home-signal-white.png",
+  "title": "home-signal",
+  "creator": "Tabler Icons",
+  "creator_url": "https://tabler.io/icons/icon/home-signal",
+  "source": "Tabler Icons",
+  "source_url": "https://tabler.io/icons/icon/home-signal",
+  "download_url": "https://cdn.jsdelivr.net/npm/@tabler/icons-png/icons/outline/home-signal.png",
+  "licence": "mit",
+  "licence_name": "MIT",
+  "licence_url": "https://opensource.org/licenses/MIT",
+  "attribution_required": false,
+  "terms": "home-signal",
+  "width": 512,
+  "height": 512,
+  "fetched": "2026-09-28",
+  "note": "rendered via SVG + QuickLook; white on transparent"
+}
