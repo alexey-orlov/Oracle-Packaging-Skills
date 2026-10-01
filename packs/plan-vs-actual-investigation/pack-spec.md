@@ -582,7 +582,7 @@ Heads of project controls whose schedules, costs and contracts don't link.
 ### Integration · M
 
 - **Id:** integration
-- **Scope:** Live feeds from the scheduling, cost and document systems, and lessons written back into planning, for one business unit.
+- **Scope:** Live feeds, with lessons written back to planning.
 - **Duration:** 13–22 weeks (status indicative)
 - **Services price:** to be defined · Set after the proof; not published.
 - **What you get:**
@@ -612,7 +612,7 @@ Heads of project controls whose schedules, costs and contracts don't link.
 ### Scaling · L
 
 - **Id:** scaling
-- **Scope:** Every project in the portfolio, per-region thresholds and comparison against completed history.
+- **Scope:** The whole portfolio, compared against completed history.
 - **Duration:** 13–52 weeks (status indicative)
 - **Services price:** to be defined · Set after the proof; not published.
 - **What you get:**
