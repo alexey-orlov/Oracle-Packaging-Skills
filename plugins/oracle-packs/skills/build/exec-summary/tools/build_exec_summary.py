@@ -478,7 +478,15 @@ def build_slide(prs, layout, spec: Spec, fit: FitLog, title: str | None):
     # a hedge on claims the slide never made (2026-09-23).
     bits = [spec.kpi_caveat()] if spec.figured_kpis() else []
     if star:
-        bits.append("* Indicative; depends on usage and rule-set complexity.")
+        # the starred price's own footnote from the brief; the generic line only when it has none
+        note = ""
+        for tier in (spec.get("packages.tiers") or []):
+            for key in ("services_price", "infra_price_monthly"):
+                price = tier.get(key) if isinstance(tier, dict) else None
+                if (isinstance(price, dict) and str(price.get("footnote") or "").strip()
+                        and str(price.get("status") or "").lower() in ("indicative", "estimate", "modeled")):
+                    note = note or re.sub(r"\s+", " ", str(price["footnote"])).strip()
+        bits.append("* " + note.lstrip("* ") if note else "* Indicative; depends on usage and rule-set complexity.")
     # the print-ready sentence first; the long internal statement only as a fallback
     div = spec.get("meta.source_engagement.divergence_line")   # the one print-ready sentence; the internal note never prints
     if not div and spec.get("meta.source_engagement.divergence_from_pack"):
