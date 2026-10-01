@@ -586,14 +586,14 @@ Operators of engineer and delivery van fleets — especially fleets going electr
 ### One-pager
 
 - **Eyebrow:** Oracle AI & Data Solutions
-- **Reframe:** Prove the plan on your own days
+- **Reframe:** See the saving on your own days
 - **Sub:** short
 - **Data-flow notes:** yes
 - **Tier scope:**
   - **Scaling:** Every region, re-planned during the day, savings in money.
 - **Cta:**
   - **Question:** Ready to replay one region's real days?
-- **Source:** agent-pick:2026-09-28 (owner delegated every pick)
+- **Source:** user:2026-10-01
 
 ### Executive summary
 
