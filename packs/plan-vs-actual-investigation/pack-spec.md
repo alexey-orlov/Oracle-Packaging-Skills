@@ -83,6 +83,14 @@ Heads of project controls at contractors and capital-programme owners whose sche
 - **How the entities differ:** Activity-level schedules with baselines and monthly updates, bills of quantities, subcontracts and a variations log.
 - **Note:** The source case's industry; its proof of value is in preparation, so the standing is plausible, not proven.
 - **Source:** research-brief: The industries; user:2026-10-01
+- **Icon:**
+  - **File:** visuals/vertical-0-crane-ink.png
+  - **Name:** crane
+  - **Source:** Tabler Icons
+  - **Creator:** Tabler Icons
+  - **Licence:** MIT
+  - **Source URL:** https://tabler.io/icons/icon/crane
+  - **File, white:** visuals/vertical-0-crane-white.png
 
 ### Utility capital programmes
 
@@ -96,6 +104,14 @@ Heads of project controls at contractors and capital-programme owners whose sche
 - **How the entities differ:** Work orders and standard units by work type instead of one project's packages; crews instead of subcontracts.
 - **Source:** research-brief: The industries; user:2026-10-01
 - **Tier note:** Runs on the proof's mapping with the work order as the unit; a native work-type hierarchy and comparison over many small jobs come in later packages.
+- **Icon:**
+  - **File:** visuals/vertical-1-bolt-ink.png
+  - **Name:** bolt
+  - **Source:** Tabler Icons
+  - **Creator:** Tabler Icons
+  - **Licence:** MIT
+  - **Source URL:** https://tabler.io/icons/icon/bolt
+  - **File, white:** visuals/vertical-1-bolt-white.png
 
 ### Engineer-to-order manufacturing
 
@@ -110,6 +126,14 @@ Heads of project controls at contractors and capital-programme owners whose sche
 - **Scope note:** Engineer-to-order only: repetitive manufacturing already gets standard-cost variance from its ERP.
 - **Source:** research-brief: The industries; user:2026-10-01
 - **Tier note:** Runs on the proof's mapping with the order as the unit; a native order, assembly and operation hierarchy comes in a later package.
+- **Icon:**
+  - **File:** visuals/vertical-2-building-factory-ink.png
+  - **Name:** building-factory
+  - **Source:** Tabler Icons
+  - **Creator:** Tabler Icons
+  - **Licence:** MIT
+  - **Source URL:** https://tabler.io/icons/icon/building-factory
+  - **File, white:** visuals/vertical-2-building-factory-white.png
 
 ### Shipbuilding and defence programmes
 
@@ -123,6 +147,14 @@ Heads of project controls at contractors and capital-programme owners whose sche
 - **How the entities differ:** Control accounts and mandated variance reports instead of packages joined by name; the make-or-buy plan is a formal document.
 - **Note:** Export controls (ITAR) can limit an offshore-staffed delivery team on defence programmes; commercial shipbuilding avoids it (inferred).
 - **Source:** research-brief: The industries; user:2026-10-01
+- **Icon:**
+  - **File:** visuals/vertical-3-ship-ink.png
+  - **Name:** ship
+  - **Source:** Tabler Icons
+  - **Creator:** Tabler Icons
+  - **Licence:** MIT
+  - **Source URL:** https://tabler.io/icons/icon/ship
+  - **File, white:** visuals/vertical-3-ship-white.png
 
 ### Professional services
 
@@ -136,6 +168,14 @@ Heads of project controls at contractors and capital-programme owners whose sche
 - **How the entities differ:** Timesheets by role and rate and change requests instead of schedules and bills of quantities; the decision is the staffing mix.
 - **Note:** Kept on the owner's call against the research (2026-10-01): the pack claims the explanation and the staffing-mix lesson, never the margin variance the project ledger already shows.
 - **Source:** user:2026-10-01; research-brief: The industries
+- **Icon:**
+  - **File:** visuals/vertical-4-briefcase-ink.png
+  - **Name:** briefcase
+  - **Source:** Tabler Icons
+  - **Creator:** Tabler Icons
+  - **Licence:** MIT
+  - **Source URL:** https://tabler.io/icons/icon/briefcase
+  - **File, white:** visuals/vertical-4-briefcase-white.png
 
 ### Held out
 
@@ -741,6 +781,22 @@ Heads of project controls at contractors and capital-programme owners whose sche
   - **Name:** Oleksii Orlov
   - **Email:** RnDrequest@softserveinc.com
   - **Note:** Pack owner and the site's product lead: Dmytro Dudchenko, AI Product Manager (Alex, 2026-09-23).
+
+### Deck
+
+- **Images:**
+  - **Today:**
+    - **File:** visuals/today-B-construction-blueprint.jpg
+    - **Source:** Openverse / stocksnap
+    - **Creator:** Burst
+    - **Licence:** CC0 1.0
+    - **Source URL:** https://stocksnap.io/photo/construction-blueprint-BZ4FJO6KZE
+  - **Tomorrow:**
+    - **File:** visuals/tomorrow-A-team-meeting.jpg
+    - **Source:** Openverse / stocksnap
+    - **Creator:** Startup Stock Photos
+    - **Licence:** CC0 1.0
+    - **Source URL:** https://stocksnap.io/photo/team-meeting-JBW2PXDOL6
 
 ### Provenance
 
