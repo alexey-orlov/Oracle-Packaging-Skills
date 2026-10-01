@@ -34,7 +34,7 @@ When a big project finishes late or over budget, project controllers can't say w
 
 ### Solution
 
-Project controllers review each package's plan against actual with its likely causes and the document behind each; planners confirm or reject, and confirmed causes become the next bid's lessons.
+Project controllers review each package's plan against actual with its likely causes and the document behind each; their experts confirm or reject, and confirmed causes become the next bid's lessons.
 
 - **Source:** user:2026-10-01
 - **Sub-problems:**
@@ -367,7 +367,7 @@ Heads of project controls whose schedules, costs and contracts don't link.
 ### 6. Carry the lessons forward
 
 - **Actor:** system
-- **Human in the loop:** yes
+- **Human in the loop:** no
 - **Covers:** patterns across packages by trade, delivery model and contractor, with the sample stated; the insight report and evidence pack; at Integration, lessons written back to planning
 - **Description:** The system groups confirmed causes into what recurs across packages, by trade, delivery model and contractor, with the sample size stated. The commercial and planning leads take the insight report and its evidence pack into the next bid, packaging or make-or-buy decision; at Integration the lessons are written back to the planning tool.
 - **If it fails:** Too few packages: reported as cases, not patterns, sample stated.
@@ -436,8 +436,8 @@ Heads of project controls whose schedules, costs and contracts don't link.
 
 - **Name:** Oracle Cloud Infrastructure
 - **Vendor:** Oracle
-- **Summary:** GPU compute, Kubernetes, storage, the database with vector search, identifier search, OCR, networking and identity
-- **Items:** GPU compute; Kubernetes; AI Database with vector search; OpenSearch
+- **Summary:** GPU compute, Kubernetes, object storage, Oracle AI Database with AI Vector Search, OCI Search with OpenSearch, document OCR, networking and identity
+- **Items:** GPU compute; Kubernetes; Oracle AI Database with AI Vector Search; OCI Search with OpenSearch
 - **Catalog id:**
   - oci-gpu-instances
   - oci-kubernetes-engine
@@ -488,6 +488,7 @@ Heads of project controls whose schedules, costs and contracts don't link.
 - **One-pager label:** Expert time to explain an overrun
 - **Note:** The source case's operational-efficiency measure: person-hours to prepare an equivalent package-level analysis.
 - **Source:** sow §2.3
+- **Label:** Expert time to explain an overrun
 
 ### Overrun explained
 
@@ -500,6 +501,7 @@ Heads of project controls whose schedules, costs and contracts don't link.
 - **One-pager label:** Share of the overrun explained, by value
 - **Note:** Derived from the source case's quality criteria: the money question they serve. A reported reason or a claim amount is not an approved impact until the experts confirm it.
 - **Source:** sow §2.3 (derived); research-brief
+- **Label:** Share of the overrun explained, by value
 
 ### Delay explained
 
@@ -512,6 +514,7 @@ Heads of project controls whose schedules, costs and contracts don't link.
 - **One-pager label:** Share of the delay explained, in days
 - **Note:** The schedule counterpart of Overrun explained; the job covers cost and schedule.
 - **Source:** sow §2.3, §2.4 (derived)
+- **Label:** Share of the delay explained, in days
 
 ### Causes confirmed
 
@@ -533,14 +536,15 @@ Heads of project controls whose schedules, costs and contracts don't link.
 
 - **Status:** confirmed
 - **Anchor line:** Runs on OCI beside the customer's Oracle Primavera P6 schedules and Oracle Aconex contract records.
-- **Value for Oracle and NVIDIA:** {Customer}'s schedules already run on Oracle Primavera P6. Each project analysed puts its schedule history, costs, contracts and variations on OCI, read by NVIDIA AI-Q and held in Oracle AI Database.
-- **Value for the client:** {Customer}'s planners will see why packages overran before the next project is planned, and how its own crews and subcontractors delivered each trade against plan. The lessons will reach the next project director instead of staying with the last one.
+- **Value for Oracle and NVIDIA:** The contractor's schedules already run on Oracle Primavera P6. Each project analysed puts its schedule history, costs, contracts and variations on OCI, read by NVIDIA AI-Q Blueprint and held in Oracle AI Database.
+- **Value for the client:** The contractor's planners will see why packages overran before the next project is planned, and how its own crews and subcontractors delivered each trade against plan. The lessons will reach the next project director instead of staying with the last one.
 - **Source:** user:2026-10-01 (proof length and price); sow (updated 2026-10-01); research-brief
+- **Legend:** ◐ partial · ● included · ●● portfolio-wide / advanced
 
 ### PoV Jumpstart · S
 
 - **Id:** pov
-- **Scope:** One project's exports: each package against plan, causes cited.
+- **Scope:** One project's exports: each work package against plan, causes cited.
 - **Duration:** 8–8 weeks (target 8, hard cap 10, status confirmed)
 - **Duration note:** CONFIRMED (user:2026-10-01): an 8-week proof, narrower than the source case's 12 weeks plus 2 of acceptance: one project's file exports, the packages the first weeks confirm as linkable, file in and out. The exports, the validation cases and named reviewers are an entry gate, not proof weeks.
 - **Services price:** €171K · indicative · Indicative; services including the Oracle cloud setup, confirmed at scoping; cloud usage billed separately.
@@ -638,14 +642,75 @@ Heads of project controls whose schedules, costs and contracts don't link.
 
 ### How each capability area is handled per tier
 
-| Area | Feature areas | PoV | Integration | Scaling | Level at PoV | Level at Integration | Level at Scaling |
-|---|---|---|---|---|---|---|---|
-| Records in | `Gather the records` | File exports from one project: schedules, cost, contracts, changes | Live feeds from the scheduling, cost and document systems | Every project in the portfolio, refreshed monthly | partial | included | advanced |
-| Plan and actual lined up | `Line up plan and actual` | Mapping and conventions for one project's packages | Activities matched across re-baselines; unit hierarchy configured | One mapping across business units and regions | partial | included | advanced |
-| Variances measured | `Measure the variances` | Cost and schedule against plan, drift, split and materiality | The same, refreshed with every monthly update | Thresholds per region and business unit | included | included | advanced |
-| Causes traced | `Trace the causes` | Cited candidate causes; own crews against subcontractors | The same, refreshed monthly, with the customer's own cause list | Causes compared across projects and contractors | included | included | advanced |
-| Expert review | `Review with experts` | Confirm or reject in the review app | Record-level access; review inside the monthly controls routine | Review across business units, with the decision trail | partial | included | advanced |
-| Lessons forward | `Carry the lessons forward` | Insight report and evidence pack | Lessons written back to planning and estimating | Comparison against completed history; groups of small jobs | partial | included | advanced |
+#### Records in
+
+- **Feature areas:** `Gather the records`
+- **PoV:** File exports from one project: schedules, cost, contracts, changes
+- **Integration:** Live feeds from the scheduling, cost and document systems
+- **Scaling:** Every project in the portfolio, refreshed monthly
+- **Levels:**
+  - **PoV:** partial
+  - **Integration:** included
+  - **Scaling:** advanced
+
+#### Plan and actual lined up
+
+- **Feature areas:** `Line up plan and actual`
+- **PoV:** Mapping and conventions for one project's packages
+- **Integration:** Activities matched across re-baselines; unit hierarchy configured
+- **Scaling:** One mapping across business units and regions
+- **Levels:**
+  - **PoV:** partial
+  - **Integration:** included
+  - **Scaling:** advanced
+
+#### Variances measured
+
+- **Feature areas:** `Measure the variances`
+- **PoV:** Cost and schedule against plan, drift, split and materiality
+- **Integration:** The same, refreshed with every monthly update
+- **Scaling:** Thresholds per region and business unit
+- **Levels:**
+  - **PoV:** included
+  - **Integration:** included
+  - **Scaling:** advanced
+- **Glyphs:**
+  - **PoV:** ●
+
+#### Causes traced
+
+- **Feature areas:** `Trace the causes`
+- **PoV:** Cited candidate causes; own crews against subcontractors
+- **Integration:** The same, refreshed monthly, with the customer's own cause list
+- **Scaling:** Causes compared across projects and contractors
+- **Levels:**
+  - **PoV:** included
+  - **Integration:** included
+  - **Scaling:** advanced
+- **Glyphs:**
+  - **PoV:** ●
+
+#### Expert review
+
+- **Feature areas:** `Review with experts`
+- **PoV:** Confirm or reject in the review app
+- **Integration:** Record-level access; review inside the monthly controls routine
+- **Scaling:** Review across business units, with the decision trail
+- **Levels:**
+  - **PoV:** partial
+  - **Integration:** included
+  - **Scaling:** advanced
+
+#### Lessons forward
+
+- **Feature areas:** `Carry the lessons forward`
+- **PoV:** Insight report and evidence pack
+- **Integration:** Lessons written back to planning and estimating
+- **Scaling:** Comparison against completed history; groups of small jobs
+- **Levels:**
+  - **PoV:** partial
+  - **Integration:** included
+  - **Scaling:** advanced
 
 ### Why it sells for the partner
 
@@ -663,9 +728,9 @@ Heads of project controls whose schedules, costs and contracts don't link.
 
 - **Customer:** Saudi Binladin Group
 - **Context:** {Customer} builds mega-projects in dozens of work packages and decides for each whether its own crews or a subcontractor does the work. Execution rarely matches the plan, and the reasons sit in schedules, cost reports, contracts and a variations log nobody has joined.
-- **Delivered:** {Customer}'s planners will see each package's cost and schedule against plan, month by month, with every overrun's candidate causes cited to the schedule update, cost report or variation behind it, and own crews compared with subcontractors on the same trade. Their own experts will confirm each cause before it becomes a lesson for the next project.
+- **Delivered:** Its planners will see each package's cost and schedule against plan, month by month, with every overrun's candidate causes cited to the schedule update, cost report or variation behind it, and own crews compared with subcontractors on the same trade. Its own experts will confirm each cause before it becomes a lesson for the next project.
 - **Divergence from the pack:** The source case is one unfinished construction project, two sites and the work packages its data assessment shortlisted, with three fixed delivery models and file exports from Primavera P6, monthly cost reports, contracts and a claims log, over 12 weeks plus 2 of acceptance with the cloud setup included. The pack generalizes to any project-based unit of work in five industries, an 8-week proof, configurable units and delivery models, and adds live feeds and write-back (Integration) and portfolio comparison (Scaling). The proof has not run: no results yet.
-- **Divergence line:** The source case is one construction project's work packages, in preparation; the pack applies the same method to any project-based work, results to follow.
+- **Divergence line:** The source case is one construction project's work packages, in preparation; its proof of value will put the first figures on these measures.
 - **Source:** data-0929; brief; sow; user:2026-10-01
 - **Proof headline:** Work packages on a live mega-project, investigated against their schedules, cost reports and variations: results to follow
 
@@ -779,6 +844,8 @@ Heads of project controls whose schedules, costs and contracts don't link.
     - **Creator:** Startup Stock Photos
     - **Licence:** CC0 1.0
     - **Source URL:** https://stocksnap.io/photo/team-meeting-JBW2PXDOL6
+- **Seller lead:** What Plan vs actual investigation gives an account executive that a custom project does not.
+- **Layers subtitle:** How Plan vs actual investigation is layered, from the infrastructure it runs on to the customer's own rules.
 
 ### Provenance
 
