@@ -33,7 +33,7 @@ An account manager, a partnerships lead or a portfolio manager covers dozens of 
 
 ### Solution
 
-Each morning they review a ready list of the changes that matter across the companies they cover, what each means and the next move, and win the opening before a rival does.
+Each morning they review a ready list of the changes that matter across the companies they cover, what each means and the next move, and take the opening before a rival does.
 
 - **Problem points:**
   - **Too much to keep up with:** dozens of companies, hundreds of sources, one person
@@ -41,9 +41,9 @@ Each morning they review a ready list of the changes that matter across the comp
   - **Only the company in the headline:** what it means for its suppliers, customers, competitors or sister holdings is never worked out
 - **Outcome chips:** Coverage ↑; Time to first move ↓; Second-order opportunities surfaced
 - **Reframe:** Win the work the news opens
-- **Reframe question:** What if the team reviewed the list, not built it?
-- **Today:** They read what they can, usually the night before a meeting, and only about the company in the headline. What it means for the other companies they cover is never worked out, so rivals get there first.
-- **Tomorrow:** Each morning they open a short list: the changes that matter across their companies, what each means and the named next move, with the evidence beside it. They approve, reject or comment, and approved moves go to the system they work in. They reach each opening before a rival does.
+- **Reframe question:** What if the team got there before its rivals?
+- **Today:** They read what they can, the night before a meeting, and only about the company in the headline. Its effect on their other companies goes unseen, and rivals get there first.
+- **Tomorrow:** Each morning they open a short list: the changes that matter across their companies, what each means and the named next move, with the evidence beside it. They approve, reject or comment, and each approved move enters the pipeline before a rival calls.
 - **Note:** Rewritten after Alex called the first version "waterish" (2026-09-22). The original named an abstract activity — "commercial teams work out what a development means for their accounts by hand" — instead of the role and the concrete things piling up on that person. Test to apply: could an account manager say this sentence about their own week? Widened 2026-09-22 from the account-manager seat alone to the three seats the same job has.
 - **Source:** user:2026-10-01
 
@@ -73,7 +73,7 @@ Teams keeping up with the companies they cover — customers, partners, holdings
 - **Site label:** Logistics
 - **Framing:**
   - **Problem:** Account teams hear of a customer's expansion, market entry or disruption after a rival has won the logistics volume.
-  - **Solution:** A shipper's new plant, new market or supplier strike becomes a forwarding, warehousing or contract-logistics opportunity the team that serves it quotes before any rival, so the volume stays yours.
+  - **Solution:** A shipper's new plant, new market or supplier strike becomes a forwarding, warehousing or contract-logistics deal the team quotes first, keeping the volume.
   - **Entities:** customer accounts, service lines, trade lanes, sites
 - **Catalog type:** offering
 - **Status:** plausible
@@ -96,7 +96,7 @@ Teams keeping up with the companies they cover — customers, partners, holdings
 - **Site label:** Manufacturing
 - **Framing:**
   - **Problem:** A supplier or OEM customer event reshapes demand across several accounts at once, and by the time each is worked out the volume has gone to a competitor.
-  - **Solution:** A supplier or OEM customer event is traced to every affected company, with the supply, reallocation or partnership move for each, so the team bids before a competitor and keeps the volume.
+  - **Solution:** An OEM or supplier event is traced to every affected company, with the supply or reallocation move for each, so the team bids first and keeps the volume.
   - **Entities:** accounts, production sites, trade lanes
 - **Catalog type:** offering
 - **Status:** plausible
@@ -107,7 +107,7 @@ Teams keeping up with the companies they cover — customers, partners, holdings
 - **Site label:** Private equity
 - **Framing:**
   - **Problem:** A market or regulatory event moves a portfolio company's thesis, and the fund learns at the next board meeting, after the valuation has moved.
-  - **Solution:** News about a market, a regulator or a competitor is matched to the portfolio companies it touches and to the levers the fund pulls to grow them, before the valuation moves.
+  - **Solution:** News about a market, a regulator or a competitor is matched to the portfolio companies it touches and the levers the fund pulls, before valuations move.
   - **Entities:** portfolio companies, investment theses, value-creation levers
 - **Catalog type:** lever
 - **Status:** plausible
@@ -561,14 +561,14 @@ Teams keeping up with the companies they cover — customers, partners, holdings
 ### One-pager
 
 - **Eyebrow:** Oracle AI & Data Solutions
-- **Reframe:** Review, don't research
+- **Reframe:** Win the work first
 - **Sub:** short
 - **Data-flow notes:** no
 - **Tier scope:**
   - **Scaling:** Live write-back, outcome capture, tested on real outcomes.
 - **Cta:**
   - **Question:** Ready to test the fit on one customer's accounts?
-- **Source:** user:2026-09-23
+- **Source:** user:2026-10-01
 
 ### Executive summary
 
