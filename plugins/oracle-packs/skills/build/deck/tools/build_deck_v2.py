@@ -347,6 +347,16 @@ class Build:
                 ex.fill_text(tier_shape, "")
             self.note("cover: the reference's tier ladder line is removed "
                       "(no tier eyebrow); the shape now carries the ICP line.")
+            # The title block grows downward from the reference's place, and the ICP line
+            # sits at a fixed place under it. A long pack name wraps to three title lines
+            # and runs the one-liner into that line (Large docs processing and review,
+            # 2026-10-02): the ICP line moves down to clear the block, never the type.
+            need = self.text_height(title, [name, one_liner], ex.to_in(title.width))
+            clear_at = ex.to_in(title.top) + need + 0.12
+            if clear_at > ex.to_in(tier_shape.top):
+                tier_shape.top = ex.inch(clear_at)
+                self.note(f"cover: the title block needs {need:.2f} in, so the ICP line "
+                          f"moved down to {clear_at:.2f} in to clear it.")
         sub = self.spec.subheading()
         if sub:
             self.note(f"cover: the exemplar cover has no subheading slot — "
