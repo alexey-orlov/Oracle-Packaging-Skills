@@ -23,7 +23,7 @@ roadmap_block: Document processing
 
 - **Full:** Contracts reach your systems without days of keying by hand, and a wrong rate is caught at review, not on the invoice.
 - **Source:** user:2026-09-29
-- **Short:** Contracts in your systems without days of keying, and wrong rates stopped at review.
+- **Short:** Contracts in your systems without days of keying.
 - **Banned words checked:** yes
 - **Note:** The full line is the site's published one-liner (round 19, kept in the 2026-10-01 so-what pass), verbatim.
 
@@ -44,13 +44,17 @@ Values arrive extracted, each beside its page in the agreement. The reviewer con
   - **Openings come in bursts:** a new location brings eight to ten agreements at once, about a month of keying.
 - **Reframe:** Review instead of typing, and new partners go live sooner
 - **Today:** Specialists read each agreement page by page and key every rate, tier and condition into the cost system: 3–5 days a contract, errors found at invoice matching.
-- **Tomorrow:** Rates arrive extracted and cited to their page; the reviewer confirms each, guided by confidence and rule warnings, and checked data reaches the cost system before the first invoice.
+- **Tomorrow:** Rates arrive extracted and cited to their page; the reviewer confirms each, guided by confidence and rule warnings, and the checked data is ready for the cost system before the first invoice.
 - **Note:** The site's plates (2026-10-01 copy) with two corrections proposed with the listing change: the problem says what few can do ('read them'), and the solution says the reviewer confirms every value, as the delivered review screen requires, instead of checking only the flagged ones. The reframe is the solution plate's headline; the problem plate's headline: Every new supplier waits for a specialist to type its rates.
 - **Reframe question:** What if rates were checked, not keyed for days?
+- **Problem points:**
+  - **Few can read them:** tiered rates and derived charges need an expert.
+  - **Errors surface late:** a wrong rate is found at invoice matching.
+  - **Openings come in bursts:** a new site brings eight to ten agreements.
 
 ## Who buys it
 
-Heads of contract operations losing days to keying and money to wrong rates
+Contract operations losing days to keying and money to wrong rates
 
 - **Source:** user:2026-10-02
 - **Buyer roles:** Head of contract management; Head of procurement operations; Head of cost control or finance operations; Underwriting or policy operations lead; Credit operations lead
@@ -146,7 +150,7 @@ Heads of contract operations losing days to keying and money to wrong rates
   - **Solution:** Covenant definitions and thresholds, margin grids and repayment terms are extracted with the clause behind each, the reviewer confirms them, and the lending system tests each loan against what its agreement actually says.
   - **Entities:** credit agreements on standard loan-market forms, margin grids, covenant schedules, private borrowers' financial statements
 - **Status:** plausible
-- **What matters here:** Defined terms govern every page; covenant wording kept verbatim with a computable threshold; two-person sign-off.
+- **What matters here:** Defined terms govern every page; covenant wording kept verbatim; two-person sign-off comes at Integration.
 - **How the entities differ:** Definitions, covenants and payment schedules instead of rate rows; statements must tie out.
 - **Scope note:** Listed companies' statements are out: they are already published as tagged data.
 - **Source:** research-brief: The industries
@@ -407,7 +411,7 @@ Heads of contract operations losing days to keying and money to wrong rates
 - **Name:** Oracle Cloud Infrastructure
 - **Vendor:** Oracle
 - **Summary:** Dedicated AI Cluster (H100), OKE, Autonomous AI Database, Object Storage
-- **Items:** Dedicated AI Cluster (H100); OCI Kubernetes Engine (OKE); Oracle Autonomous AI Database; OCI Object Storage
+- **Items:** Dedicated AI Cluster (H100); OKE; Autonomous AI Database; Object Storage
 - **Catalog id:** oci-dedicated-ai-cluster; oci-kubernetes-engine; oracle-autonomous-ai-database; oci-object-storage
 
 ### Outputs
@@ -445,7 +449,7 @@ Heads of contract operations losing days to keying and money to wrong rates
 - **Figure:** -
 - **Direction:** down
 - **Chip:** Days to load a contract ↓
-- **Label:** Days to load a contract
+- **Label:** Today 3–5 days an agreement, keyed by hand
 - **One-pager label:** Days from signed agreement to loaded rates
 - **Note:** The proof of value timed the extraction alone: 5–15 minutes a contract for agreements of up to 40 pages, ready for review. The review was not timed, and in the source case operators still entered the checked rates by hand, because the cost system has no import.
 - **Source:** br3 §2.4; demo-deck slide 5; guide §6
@@ -459,7 +463,7 @@ Heads of contract operations losing days to keying and money to wrong rates
 - **Figure:** -
 - **Direction:** down
 - **Chip:** Time to go live ↓
-- **Label:** Time to bring a site live
+- **Label:** Today about a month for a new station
 - **One-pager label:** Days to bring a new site live
 - **Note:** The source case's onboarding measure; the proof did not run a whole station.
 - **Source:** br3 §2.4; arch §2.3
@@ -473,12 +477,12 @@ Heads of contract operations losing days to keying and money to wrong rates
 - **Figure:** -
 - **Direction:** down
 - **Chip:** Wrong-rate invoices ↓
-- **Label:** Invoice variances from wrong rates
+- **Label:** Baseline: last quarter's invoice variances
 - **One-pager label:** Invoice variances from wrong rates
 - **Note:** The customer estimates billing errors (rate mismatches, duplicate charges, flights not operated) add about 1% to ground-handling spend; only the rate share is this pack's lever.
 - **Source:** arch §2.3; br3 §2.5
 
-### fields accurate
+### fields match the answer key
 
 - **Kind:** technical
 - **Formula:** Fields that match documents the customer's experts already keyed ÷ fields expected, per section of the layout, with missing and invented rows counted apart
@@ -486,7 +490,7 @@ Heads of contract operations losing days to keying and money to wrong rates
 - **Note:** The source case's validation method; the threshold is agreed in the first weeks.
 - **Source:** br3 §8
 
-### citations correct
+### values cite the right page
 
 - **Kind:** technical
 - **Formula:** Extracted values whose page and clause reference points to the right place ÷ extracted values, on a checked sample
@@ -497,7 +501,7 @@ Heads of contract operations losing days to keying and money to wrong rates
 ## Packages
 
 - **Status:** confirmed
-- **Anchor line:** Runs on OCI and feeds the cost or ERP system that pays on the extracted terms.
+- **Anchor line:** Runs on OCI beside the cost or ERP system that pays on the extracted terms.
 - **Value for Oracle and NVIDIA:** {Customer}'s extraction runs on OCI: the vision-language model on a Dedicated AI Cluster of H100 GPUs, the NVIDIA AI-Q stack on OCI Kubernetes Engine (OKE) and the results in Oracle Autonomous AI Database. Each further contract category and station adds documents to the same environment.
 - **Value for the client:** {Customer}'s reviewers confirm each rate beside its clause instead of reading the whole agreement, and the rules a few operators held are now written down, so interpretation errors are caught before they reach an invoice.
 - **Legend:** ◐ partial · ● included · ●● multi-type / advanced
@@ -510,8 +514,8 @@ Heads of contract operations losing days to keying and money to wrong rates
 - **Duration:** 8–8 weeks (target 8, hard cap 10, status confirmed)
 - **Duration label:** 8 weeks
 - **Duration note:** The package deck's 2 months (2026-09-10), printed in weeks; the delivered case ran 8 weeks of build and 2 of acceptance, which the package counts outside the proof. The sample documents, the hand-keyed answers and named reviewers are an entry gate, not proof weeks.
-- **Services price:** €75K · indicative · Services, from the package deck of 2026-09-10; confirmed at scoping.
-- **Infrastructure price per month:** €0 · indicative · No cloud charge to the customer during the proof (package deck, 2026-09-10); the funding route is confirmed at scoping.
+- **Services price:** €75K · indicative · Indicative, confirmed at scoping; no cloud charge to the customer during the proof.
+- **Infrastructure price per month:** €0 · confirmed · Indicative, confirmed at scoping; no cloud charge to the customer during the proof.
 - **What you get:**
   - One document type's core fields extracted from your own documents, native or scanned
   - Every value cited to its page, with doubtful rows and rule breaks flagged
@@ -548,8 +552,8 @@ Heads of contract operations losing days to keying and money to wrong rates
 - **Scope:** Live for one document type, inside the team's workflow: repository in, target system out.
 - **Duration:** 13–22 weeks (status indicative)
 - **Duration note:** Approximate, confirmed at scoping: the site's standard row (3–5 months), as in the package deck.
-- **Services price:** to be defined · Set per engagement at scoping.
-- **Infrastructure price per month:** to be defined · Client-paid cloud consumption, sized to document volume at scoping.
+- **Services price:** to be defined
+- **Infrastructure price per month:** to be defined
 - **What you get:**
   - Documents picked up from the contract repository
   - The full schema with every rule: derived charges, formulas, discounts, amendments
@@ -570,11 +574,11 @@ Heads of contract operations losing days to keying and money to wrong rates
 ### Scaling · L
 
 - **Id:** scaling
-- **Scope:** Several document types, volumes and business units, each type with its own schema, checks and telemetry.
+- **Scope:** Several document types, volumes and business units.
 - **Duration:** 13–52 weeks (status indicative)
 - **Duration note:** Approximate, confirmed at scoping: the site's standard row (3–12 months), as in the package deck.
-- **Services price:** to be defined · Set per engagement at scoping.
-- **Infrastructure price per month:** to be defined · Client-paid cloud consumption, sized to document volume at scoping.
+- **Services price:** to be defined
+- **Infrastructure price per month:** to be defined
 - **What you get:**
   - Several document types, each set up without code
   - Values checked against related documents, such as an endorsement against its policy
@@ -592,21 +596,80 @@ Heads of contract operations losing days to keying and money to wrong rates
 
 ### How each capability area is handled per tier
 
-| Area | Feature areas | PoV | Integration | Scaling | Level at PoV | Level at Integration | Level at Scaling |
-|---|---|---|---|---|---|---|---|
-| Documents in | `Take in the documents` | Manual upload of one document type, native or scanned | Picked up from the repository | Several document types and languages | partial | included | advanced |
-| Fields extracted | `Extract the fields` | Core fields and the most common rules for one type | Full schema: derived charges, formulas, amendments | A schema per document type | partial | included | advanced |
-| Exceptions flagged | `Flag what needs a person` | Confidence, coverage and core rule checks | Full rule set, reference lists, required fields | Checks against related documents | partial | included | advanced |
-| Review | `Review against the source` | Source beside the rows; approve, edit, reject; edits logged | Roles, queues, search and filters | Several teams and workflows | included | included | advanced |
-| Data handed over | `Hand over the approved data` | Spreadsheet or JSON in the target layout | Loaded into the target system | Several target systems | partial | included | advanced |
-| Accuracy and operations | `Measure and improve` | Accuracy against hand-keyed answers; a sandboxed tenancy | Corrections loop; production tenancy, single sign-on, recovery | Telemetry per document type | partial | included | advanced |
+#### Documents in
+
+- **Feature areas:** `Take in the documents`
+- **PoV:** Manual upload of one document type, native or scanned
+- **Integration:** Picked up from the repository
+- **Scaling:** Several document types and languages
+- **Levels:**
+  - **PoV:** partial
+  - **Integration:** included
+  - **Scaling:** advanced
+
+#### Fields extracted
+
+- **Feature areas:** `Extract the fields`
+- **PoV:** Core fields and the most common rules for one type
+- **Integration:** Full schema: derived charges, formulas, amendments
+- **Scaling:** A schema per document type
+- **Levels:**
+  - **PoV:** partial
+  - **Integration:** included
+  - **Scaling:** advanced
+
+#### Exceptions flagged
+
+- **Feature areas:** `Flag what needs a person`
+- **PoV:** Confidence, coverage and core rule checks
+- **Integration:** Full rule set, reference lists, required fields
+- **Scaling:** Checks against related documents
+- **Levels:**
+  - **PoV:** partial
+  - **Integration:** included
+  - **Scaling:** advanced
+
+#### Review
+
+- **Feature areas:** `Review against the source`
+- **PoV:** Source beside the rows; approve, edit, reject; edits logged
+- **Integration:** Roles, queues, search and filters
+- **Scaling:** Several teams and workflows
+- **Levels:**
+  - **PoV:** included
+  - **Integration:** included
+  - **Scaling:** advanced
+- **Glyphs:**
+  - **PoV:** ●
+
+#### Data handed over
+
+- **Feature areas:** `Hand over the approved data`
+- **PoV:** Spreadsheet or JSON in the target layout
+- **Integration:** Loaded into the target system
+- **Scaling:** Several target systems
+- **Levels:**
+  - **PoV:** partial
+  - **Integration:** included
+  - **Scaling:** advanced
+
+#### Accuracy and operations
+
+- **Feature areas:** `Measure and improve`
+- **PoV:** Accuracy against hand-keyed answers; a sandboxed tenancy
+- **Integration:** Corrections loop; production tenancy, single sign-on, recovery
+- **Scaling:** Telemetry per document type
+- **Levels:**
+  - **PoV:** partial
+  - **Integration:** included
+  - **Scaling:** advanced
 
 ### Why it sells for the partner
 
-- **Consumption on the customer's own documents:** a Dedicated AI Cluster and Oracle Autonomous AI Database, growing with every document type
-- **A path into Oracle applications:** at Integration the terms load into the ERP, lease or procurement system that pays on them
-- **A door to Integration:** loading into the target system, then more document types and business units
-- **A contained start:** manual upload and an export file: nothing integrated during the proof
+- **Consumption on the customer's own documents:** GPU cluster and database use, growing with each document type
+- **A path into Oracle applications:** terms load into the ERP or procurement system at Integration
+- **A door to Integration:** loading, then more document types and business units
+- **A contained start:** manual upload, a file out, nothing integrated
 
 ### What each buyer gets
 
@@ -616,21 +679,21 @@ Heads of contract operations losing days to keying and money to wrong rates
 ## Proof
 
 - **Customer:** Riyadh Air
-- **Context:** At {Customer}, operators read ground-handling agreements of 60 to 200 pages and key every rate, tier and condition into the cost system by hand: three to five days a contract, about a month to open a new station. A wrong or missed rate surfaces at month-end invoice matching, and the know-how sits with a few experienced operators.
+- **Context:** At {Customer}, operators read ground-handling agreements of 60 to 100 pages and key every rate, tier and condition into the cost system by hand: three to five days a contract, about a month to open a new station. A wrong or missed rate surfaces at month-end invoice matching, and the know-how sits with a few experienced operators.
 - **Delivered:** {Customer}'s reviewers get an agreement's rates extracted in 5–15 minutes for agreements of up to 40 pages, every value cited to its page and clause, doubtful ones flagged. They check each row beside its source page and export a file that mirrors the cost system's structure.
 - **Divergence from the pack:** The source case is one airline's ground-handling agreements on the industry's standard template, in English, one document type (cargo handling was secondary scope), run in a SoftServe-controlled OCI environment the customer approved. Its export is a checked reference in the target data layout that operators key from, because the cost system has no import; built in 8 weeks with 2 of acceptance, delivered on 9 June 2026. The pack generalizes to long agreements, leases and policies with a definable target layout in four industries; adds repository pickup, loading into the target system, reference lists, roles and search at Integration (the source case's post-PoC backlog); and several document types, languages and business units at Scaling.
-- **Divergence line:** The source case is an airline's ground-handling agreements (June 2026), its checked rates entered into the cost system by hand.
+- **Divergence line:** The source case is a proof of value on an airline's ground-handling agreements (June 2026); its checked rates were entered into the cost system by hand.
 - **Source:** demo-deck; arch; br3; guide; backlog-post
-- **Proof headline:** Ground-handling rates extracted and cited for review in 5–15 minutes
-- **Proof story:** Riyadh Air's operators read ground-handling agreements page by page to key rates into the cost system, three to five days each. With the solution, reviewers check AI-extracted rates beside their cited page and export a file that mirrors the cost system's structure.
-- **Proof story, anonymized:** An international airline's operators read ground-handling agreements page by page to key rates into the cost system, three to five days each. With the solution, reviewers check AI-extracted rates beside their cited page and export a file that mirrors the cost system's structure.
+- **Proof headline:** Rates of agreements up to 40 pages extracted for review in 5–15 minutes
+- **Proof story:** Riyadh Air's operators keyed ground-handling rates into the cost system by hand, three to five days an agreement. In its June 2026 proof of value, an agreement of up to 40 pages was extracted for review in 5–15 minutes, every rate cited to its page.
+- **Proof story, anonymized:** An international airline's operators keyed ground-handling rates into the cost system by hand, three to five days an agreement. In its June 2026 proof of value, an agreement of up to 40 pages was extracted for review in 5–15 minutes, every rate cited to its page.
 
 ## Next steps
 
 1. **Time the whole job:** Extraction plus review, on a 60–100-page agreement.
-2. **Write the case study:** Riyadh Air is cleared; the site's case is still anonymous.
-3. **Build the Integration backlog:** Search, roles, schema screen, write-back.
-4. **Agree the Oracle position:** Beside OCI Document Understanding and Fusion's agents.
+2. **Write the case study:** Riyadh Air may be named; the website keeps it anonymous.
+3. **Build the Integration backlog:** Search, roles, schema set-up and loading into the target system.
+4. **Agree the Oracle position:** Beside OCI Document Understanding and Oracle AI for Fusion Applications.
 
 ## Open questions
 
@@ -731,7 +794,7 @@ Heads of contract operations losing days to keying and money to wrong rates
 ### Deck
 
 - **Seller lead:** What Large docs processing and review gives an account executive that a custom project does not.
-- **Layers subtitle:** How Large docs processing and review is layered, from the infrastructure it runs on to the customer's own rules.
+- **Layers subtitle:** How Large docs processing and review is layered, from the infrastructure it runs on to the screen the reviewer works in.
 - **Images:**
   - **Today:**
     - **File:** visuals/today-tomorrow-b-writing-papers.jpg
@@ -753,11 +816,12 @@ Heads of contract operations losing days to keying and money to wrong rates
 
 ### One-pager
 
-- **Sub:** short
+- **Sub:** full
 - **Tier scope:**
   - **PoV:** One document type, manual upload, core fields cited and reviewed.
   - **Integration:** Live for one type: repository in, target system out.
   - **Scaling:** Several document types, volumes and business units.
+- **Reframe:** Review instead of typing
 
 ### Executive summary
 
