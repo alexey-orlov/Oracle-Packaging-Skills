@@ -31,13 +31,13 @@ roadmap_block: Document processing
 
 ### Problem
 
-Operations staff read 60 to 100 pages of supplier terms and key rate cards into the cost system. Few can read them, so contracts queue and new partners go live late.
+Operations staff read 60–100 pages of supplier terms and key rate cards into the cost system. Few can read them, so contracts queue and new partners go live late.
 
 ### Solution
 
 Values arrive extracted, each beside its page in the agreement. The reviewer confirms each, correcting the flagged ones, so the first invoice is checked against the signed rate.
 
-- **Source:** user:2026-10-01
+- **Source:** user:2026-10-02
 - **Sub-problems:**
   - **Few can read them:** tiered rates, derived charges and exceptions take an experienced specialist, and the know-how is written down nowhere.
   - **Errors surface late:** a wrong or missed rate is found at month-end invoice matching, after the invoice is disputed or paid.
@@ -45,7 +45,7 @@ Values arrive extracted, each beside its page in the agreement. The reviewer con
 - **Reframe:** Review instead of typing, and new partners go live sooner
 - **Today:** Specialists read each agreement page by page and key every rate, tier and condition into the cost system: 3–5 days a contract, errors found at invoice matching.
 - **Tomorrow:** Rates arrive extracted and cited to their page; the reviewer confirms each, guided by confidence and rule warnings, and the checked data is ready for the cost system before the first invoice.
-- **Note:** The site's plates (2026-10-01 copy) with two corrections proposed with the listing change: the problem says what few can do ('read them'), and the solution says the reviewer confirms every value, as the delivered review screen requires, instead of checking only the flagged ones. The reframe is the solution plate's headline; the problem plate's headline: Every new supplier waits for a specialist to type its rates.
+- **Note:** The site's plates as corrected and approved on 2026-10-02 (the problem says what few can do; the solution says the reviewer confirms every value, as the delivered review screen requires). The reframe is the solution plate's headline; the problem plate's headline: Every new supplier waits for a specialist to type its rates.
 - **Reframe question:** What if rates were checked, not keyed for days?
 - **Problem points:**
   - **Few can read them:** tiered rates and derived charges need an expert.
@@ -89,7 +89,7 @@ Contract operations losing days to keying and money to wrong rates
 - **Status:** plausible
 - **What matters here:** Services by aircraft type and tier into exact rows; one schema per contract category; errors surface at invoice matching.
 - **How the entities differ:** Rate annexes per station and service; for carriers, lanes, weight breaks and surcharges.
-- **Note:** A proof of value delivered for one airline's ground-handling agreements (June 2026), not yet in production, so plausible rather than proven. The problem is the site's tab, verbatim; the solution is rewritten in business words (proposed with the listing change). Carriers' freight rates fold in: the same rate-card objects.
+- **Note:** A proof of value delivered for one airline's ground-handling agreements (June 2026), not yet in production, so plausible rather than proven. The problem is the site's tab, verbatim; the solution is rewritten in business words (on the site since 2026-10-02). Carriers' freight rates fold in: the same rate-card objects.
 - **Source:** site (§66 copy); br3 §2; demo-deck; research-brief: The industries
 - **Icon:**
   - **File:** visuals/vertical-0-plane-departure-ink.png
@@ -105,12 +105,12 @@ Contract operations losing days to keying and money to wrong rates
 - **Site label:** Every industry
 - **Framing:**
   - **Problem:** Rent schedules, escalations, break options and supplier price terms sit inside long leases and agreements, keyed into the lease or procurement system by hand and rarely re-read. A missed break date keeps rent running that could have stopped, and a wrong schedule misstates the lease liability the auditors test.
-  - **Solution:** Each lease and agreement's rents, escalations, options and price terms are extracted and cited to their clause, the reviewer confirms them, and the data loads into the lease or procurement system as the contract reads, so payments and options follow the terms signed.
+  - **Solution:** Each lease and agreement's rents, escalations, options and price terms are extracted and cited to their clause, and the reviewer confirms them. The data loads into the lease or procurement system as the contract reads, so payments and options follow the terms signed.
   - **Entities:** property, equipment and aircraft leases with their amendments; master services and supplier agreements with price schedules
 - **Status:** plausible
 - **What matters here:** An exact match to the lease system's import fields; the latest amendment wins; every option date sits inside the term.
 - **How the entities differ:** A dated payment schedule, options and key dates instead of a rate matrix; the amendment family matters.
-- **Note:** A corporate function in every industry, not a vertical, and the strongest Oracle fit: Oracle's lease accounting import fixes the lease field set. Replaces the site's Professional services tab (proposed with the listing change). Amendments applied over earlier terms are on the roadmap.
+- **Note:** A corporate function in every industry, not a vertical, and the strongest Oracle fit: Oracle's lease accounting import fixes the lease field set. Replaced the site's Professional services tab on 2026-10-02. Amendments applied over earlier terms are on the roadmap.
 - **Source:** research-brief: The industries; site (professional-services tab, re-scoped)
 - **Icon:**
   - **File:** visuals/vertical-1-building-skyscraper-ink.png
@@ -126,7 +126,7 @@ Contract operations losing days to keying and money to wrong rates
 - **Site label:** Insurance
 - **Framing:**
   - **Problem:** Underwriting operations re-key coverage, limits, deductibles and endorsements from policy schedules into the policy system by hand. A missed or mis-keyed endorsement surfaces only at claim time, when the insurer pays outside the cover it priced.
-  - **Solution:** Each schedule's limits, deductibles and endorsements are extracted and cited to their page, the schedule's own list of forms shows nothing is missing, and the reviewer confirms each value, so the policy system holds the cover that was sold.
+  - **Solution:** Each schedule's limits, deductibles and endorsements are extracted and cited to their page, and the schedule's own list of forms shows nothing is missing. The reviewer confirms each value, so the policy system holds the cover that was sold.
   - **Entities:** declarations pages, policy schedules and endorsements; delegated-authority bordereaux
 - **Status:** plausible
 - **What matters here:** The schedule lists its own forms, so completeness can be checked; an endorsement changes the form it amends.
@@ -147,7 +147,7 @@ Contract operations losing days to keying and money to wrong rates
 - **Site label:** Financial services
 - **Framing:**
   - **Problem:** Credit teams key covenants, margins and repayment schedules from 100-page loan agreements, and spread private borrowers' statements into the bank's template by hand. A covenant keyed wrong is found at the next test date, after lending decisions already rest on it.
-  - **Solution:** Covenant definitions and thresholds, margin grids and repayment terms are extracted with the clause behind each, the reviewer confirms them, and the lending system tests each loan against what its agreement actually says.
+  - **Solution:** Covenant definitions and thresholds, margin grids and repayment terms are extracted with the clause behind each, and the reviewer confirms them. The lending system then tests each loan against what its agreement actually says.
   - **Entities:** credit agreements on standard loan-market forms, margin grids, covenant schedules, private borrowers' financial statements
 - **Status:** plausible
 - **What matters here:** Defined terms govern every page; covenant wording kept verbatim; two-person sign-off comes at Integration.
